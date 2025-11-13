@@ -1,0 +1,3377 @@
+@import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
+@import "react-calendar/dist/Calendar.css";
+
+/* Нормализуем все выпадающие списки внутри формы заказа */
+#orderform select,
+#orderform .form-select,
+#orderform .custom-select,
+#orderform .select2-container--default .select2-selection--single,
+#orderform .react-select__control,
+#orderform .ant-select .ant-select-selector {
+  background-color: #1e2746 !important;
+  opacity: 1 !important;
+  color: #e3f2fd !important;
+  border: 1.5px solid #294c7a !important;
+  border-radius: 7px !important;
+  min-height: 38px;
+  box-shadow: none !important;
+}
+
+/* Состояние disabled — чтобы тоже было читаемо */
+#orderform select:disabled,
+#orderform .ant-select-disabled .ant-select-selector,
+#orderform .select2-container--disabled .select2-selection--single {
+  background-color: #202a3f !important;
+  color: #7ca1b8 !important;
+}
+
+/* Плейсхолдеры */
+#orderform .ant-select-selection-placeholder,
+#orderform .select2-selection__placeholder,
+#orderform .react-select__placeholder {
+  color: #9bb0c5 !important;
+}
+
+/* Меню выпадающих списков, которые рендерятся в body/портале (никогда не прозрачные) */
+.ant-select-dropdown,
+.select2-dropdown,
+.react-select__menu,
+.MuiAutocomplete-popper .MuiPaper-root,
+.MuiMenu-paper,
+.dropdown-menu,
+[role="listbox"] {
+  background-color: #202e4a !important;
+  color: #e3f2fd !important;
+  border: 1.5px solid #294c7a !important;
+  border-radius: 9px !important;
+  box-shadow: 0 8px 24px rgba(2, 16, 43, .28) !important;
+  opacity: 1 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* --- Unified CTA button (orders & transport) --- */
+.btn-cta {
+  /* эквивалент @apply из Tailwind, без arbitrary в @apply */
+  width: 100%;
+  /* w-full */
+  border-radius: 1rem;
+  /* rounded-2xl */
+  padding: 1.25rem 0;
+  /* py-5 */
+  font-size: 1.125rem;
+  /* text-lg */
+  font-weight: 600;
+  /* font-semibold */
+  letter-spacing: .025em;
+  /* tracking-wide */
+  color: #0f172a;
+  /* text-slate-900 */
+  background-image: linear-gradient(to right, #0ea5e9, #22d3ee);
+  /* from-sky-500 -> to-cyan-400 */
+  transition: all .2s ease;
+  /* transition */
+  /* тень: arbitrary utility перенесена в обычный CSS */
+  box-shadow: 0 12px 28px -12px rgba(56, 189, 248, .6);
+}
+
+.btn-cta:hover {
+  /* hover:from-sky-400 hover:to-cyan-300 */
+  background-image: linear-gradient(to right, #38bdf8, #67e8f9);
+}
+
+.btn-cta:active {
+  transform: translateY(1px);
+}
+
+/* active:translate-y-px */
+.btn-cta:disabled {
+  opacity: .6;
+  cursor: not-allowed;
+}
+
+/* disabled:* */
+
+/* ===== HARD LOCK: всегда тёмная тема ===== */
+/* Сообщаем браузеру, что интерфейс тёмный (влияет на скроллбары, автозаполнение и т.п.) */
+:root {
+  color-scheme: dark;
+}
+
+/* Пока React/Next не «гидратировался», возможна вспышка белого. Страхуемся. */
+html:not(.dark) {
+  background-color: #0b0f19 !important;
+}
+
+/* На всякий случай гасим возможный data-theme="light" от старого кода */
+html[data-theme="light"] {
+  /* снимаем влияние светлой темы */
+  color-scheme: dark !important;
+}
+
+/* Даже если кто-то поставит data-theme="light", оставляем тёмный фон */
+[data-theme="light"] body {
+  background: var(--background) !important;
+  background-image: none !important;
+}
+
+/* Portal root НЕ должен сам перекрывать страницу.
+   Перекрытие дают дочерние элементы (overlay и т.п.). */
+#modal-root {
+  position: static;
+  /* никакого fixed/fullscreen на корне */
+  z-index: 12000;
+  /* достаточный слой для потомков */
+  pointer-events: none;
+  /* сам корень клики не ловит */
+}
+
+#modal-root>* {
+  pointer-events: auto;
+}
+
+#modal-root:empty {
+  display: none;
+}
+
+/* когда пуст – не участвует в layout */
+
+.btn {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: 700
+}
+
+.btn--success {
+  background: #1e7e34;
+  color: #eaffea
+}
+
+.btn--danger {
+  background: #b33a3a;
+  color: #ffecec
+}
+
+.btn:disabled {
+  opacity: .6;
+  cursor: not-allowed
+}
+
+/* === Paywall blur helpers === */
+.pw-blur {
+  position: relative;
+  filter: blur(6px);
+}
+
+.pw-overlay::after {
+  content: "Доступ по подписке";
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+  color: #fff;
+  background: rgba(8, 15, 35, 0.35);
+  backdrop-filter: blur(3px);
+  border-radius: 14px;
+  pointer-events: none;
+}
+
+.pw-noevents {
+  pointer-events: none;
+}
+
+/* === Header theming (dark↔light) === */
+.header-root,
+.header-root-mobile {
+  color: rgb(var(--header-fg));
+}
+
+/* Навигация и кнопки — берут цвет текста темы */
+.header-root .nav-link,
+.header-root-mobile .nav-link,
+.header-root .header-btn,
+.header-root-mobile .header-btn,
+.header-root .header-user,
+.header-root-mobile .header-user {
+  color: rgb(var(--header-fg));
+}
+
+/* Иконки — чуточку приглушённые относительно текста */
+.header-root .nav-icon,
+.header-root-mobile .nav-icon,
+.header-root .header-icon-btn,
+.header-root-mobile .header-icon-btn {
+  color: rgb(var(--header-muted));
+}
+
+/* На светлой теме ховер по пунктам — очень мягкий */
+[data-theme="light"] .header-root .nav-link:hover,
+[data-theme="light"] .header-root-mobile .nav-link:hover {
+  background: rgb(var(--header-fg) / 6%);
+}
+
+/* [LOCK] светлая тема отключена */
+/* [data-theme="light"] body { ... } */
+
+/* --- Compact cards: vertical action rail --- */
+.ti-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.ti-toggle {
+  position: absolute;
+  top: 50%;
+  right: 6px;
+  transform: translateY(-50%);
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(15, 27, 45, .9);
+  border: 1px solid rgba(255, 255, 255, .08);
+  z-index: 3;
+  cursor: pointer;
+}
+
+.ti-toggle:focus {
+  outline: 2px solid #3aa8ff55;
+  outline-offset: 2px;
+}
+
+.ti-toggle .ti-chevron {
+  transition: transform .18s ease;
+}
+
+.ti-toggle[aria-expanded="true"] .ti-chevron {
+  transform: rotate(90deg);
+}
+
+.ti-action-rail {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 64px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-start;
+  background: rgba(10, 14, 22, .94);
+  backdrop-filter: blur(4px);
+  border-left: 1px solid rgba(255, 255, 255, .06);
+  transform: translateX(100%);
+  transition: transform .22s ease-out;
+  z-index: 2;
+}
+
+.ti-action-rail.open {
+  transform: translateX(0);
+}
+
+.ti-action-rail .ti-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0f1b2d;
+  border: 1px solid rgba(255, 255, 255, .08);
+}
+
+.ti-action-rail .ti-btn:hover {
+  background: #13223a;
+}
+
+/* На узких экранах прячем старую горизонтальную панель действий */
+@media (max-width: 900px) {
+  .ti-card .ti-actions-original {
+    display: none !important;
+  }
+
+  .ti-card .ti-toggle {
+    display: flex;
+  }
+}
+
+/* === Унифицированный двухколоночный лейаут === */
+.two-col {
+  display: flex;
+  flex-direction: row;
+  min-height: 100vh;
+  width: 100%;
+}
+
+.two-col__content {
+  flex: 1;
+  min-width: 0;
+  /* чтобы широкий контент не «толкал» лейаут */
+  display: flex;
+  flex-direction: column;
+}
+
+/* === Сайдбар (совместно с inline-стилями) === */
+.app-sidebar {
+  /* дублируем критичные параметры, чтобы перебить локальные контейнеры */
+  width: 232px;
+  flex: 0 0 232px;
+}
+
+@media (max-width: 768px) {
+  .app-sidebar {
+    position: static;
+    /* на мобилке обычно не липкий */
+  }
+}
+
+/* === Header: user chip width & subline === */
+.header-user-chip {
+  min-width: 300px;
+  max-width: 420px;
+}
+
+
+/* ——— Мелкие десктопы: позволяем чипу профиля ужиматься */
+@media (max-width: 1280px) {
+  .header-user-chip {
+    min-width: 220px !important;
+    max-width: 320px !important;
+  }
+}
+
+@media (max-width: 1120px) {
+  .header-user-chip {
+    min-width: 0 !important;
+    padding: 6px 8px !important;
+  }
+
+  /* нижняя строка с рейтингом — не нужна в узком варианте */
+  .header-user-chip .chip-rating {
+    display: none !important;
+  }
+}
+
+.header-rating-popunder {
+  pointer-events: none;
+}
+
+@media (max-width: 768px) {
+  .header-rating-popunder {
+    display: none !important;
+  }
+}
+
+/* === GPS Monitoring unified buttons === */
+/* Берём цвета от карточек; при отсутствии переменных даём тёмные дефолты */
+:root {
+  --gps-card-bg: var(--card-bg, #0F1B2A);
+  --gps-card-border: var(--card-border, rgba(255, 255, 255, .08));
+  --gps-card-fg: var(--card-fg, #DEE7F2);
+  --gps-accent: var(--brand, #4EA1FF);
+}
+
+.gps-tabs {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.gps-tab {
+  background: var(--gps-card-bg) !important;
+  border: 1px solid var(--gps-card-border) !important;
+  color: var(--gps-card-fg) !important;
+  padding: 10px 14px;
+  border-radius: 14px;
+  line-height: 1;
+  transition: box-shadow .2s ease, transform .08s ease;
+  user-select: none;
+}
+
+.gps-tab:hover {
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, .06) inset;
+}
+
+.gps-tab:active {
+  transform: translateY(1px);
+}
+
+.gps-tab.is-active,
+.gps-tab[aria-current="page"] {
+  box-shadow: 0 0 0 2px color-mix(in oklab, var(--gps-accent) 45%, transparent) inset,
+    0 0 0 1px rgba(255, 255, 255, .10) inset;
+}
+
+.gps-button {
+  background: var(--gps-card-bg) !important;
+  border: 1px solid var(--gps-card-border) !important;
+  color: var(--gps-card-fg) !important;
+  padding: 10px 14px;
+  border-radius: 12px;
+  line-height: 1;
+  transition: box-shadow .2s ease, transform .08s ease;
+}
+
+.gps-button:hover {
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, .06) inset;
+}
+
+.gps-button:active {
+  transform: translateY(1px);
+}
+
+/* Предотвращаем горизонтальный «уезд» на мобилках */
+html,
+body {
+  max-width: 100%;
+  overflow-x: clip;
+  /* можно hidden, но clip не создаёт лишний слой */
+}
+
+:root {
+  --bg-app: #0b0f19;
+  /* твой базовый фон */
+  --loader-backdrop: #0b0f19;
+  /* подложка для первого экрана (можешь поменять) */
+}
+
+/* 1) До гидратации (ставим в <head> data-booting) — прячем контент, чтобы не мигал десктоп */
+html[data-booting] body {
+  overflow: hidden;
+}
+
+html[data-booting] body> :not(#boot-loader) {
+  visibility: hidden;
+}
+
+/* 2) Полноэкранный boot-loader первого кадра */
+#boot-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: grid;
+  place-items: center;
+  background: var(--loader-backdrop);
+  transition: opacity .25s ease, visibility .25s ease;
+  opacity: 1;
+  visibility: visible;
+}
+
+#boot-loader.boot-hide {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.boot-spinner {
+  display: inline-flex;
+  gap: 10px;
+}
+
+.boot-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, .9);
+  animation: boot-bounce 1s infinite ease-in-out;
+}
+
+.boot-dot:nth-child(2) {
+  animation-delay: .15s;
+}
+
+.boot-dot:nth-child(3) {
+  animation-delay: .30s;
+}
+
+.boot-text {
+  margin-top: 8px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, .7);
+  text-align: center;
+}
+
+@keyframes boot-bounce {
+
+  0%,
+  80%,
+  100% {
+    transform: scale(0);
+    opacity: .25;
+  }
+
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* 3) Тонкая полоска при переходах */
+.route-loader-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 60;
+}
+
+.route-loader {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  overflow: hidden;
+  background: transparent;
+}
+
+.route-loader::before {
+  content: "";
+  position: absolute;
+  left: -30%;
+  top: 0;
+  height: 100%;
+  width: 30%;
+  animation: route-progress 1s infinite;
+  background: linear-gradient(90deg,
+      rgba(255, 255, 255, .25),
+      rgba(255, 255, 255, .95),
+      rgba(255, 255, 255, .25));
+}
+
+@keyframes route-progress {
+  0% {
+    left: -30%;
+  }
+
+  50% {
+    left: 50%;
+  }
+
+  100% {
+    left: 100%;
+  }
+}
+
+/* === Chat mobile dark + layout hardening === */
+@media (max-width: 768px) {
+
+  /* Принудительно тёмная палитра внутри чата */
+  #chat-root,
+  #chat-root .chat-sidebar,
+  #chat-root .chat-thread,
+  #chat-root .message-list,
+  #chat-root .composer {
+    background-color: #0E1B2A !important;
+    color: #E6EEF9 !important;
+  }
+
+  /* Чуть отличаем левую панель */
+  #chat-root .chat-sidebar {
+    background-color: #0F2136 !important;
+  }
+
+  /* Пузыри сообщений (если где-то остались светлые) */
+  #chat-root .bubble--me {
+    background-color: #246AB6 !important;
+    color: #fff !important;
+  }
+
+  #chat-root .bubble--them {
+    background-color: #16263B !important;
+    color: #E6EEF9 !important;
+  }
+
+  /* Правильная высота и прокрутка */
+  #chat-root {
+    min-height: 100svh;
+    height: 100svh;
+    overscroll-behavior: contain;
+  }
+
+  #chat-root .message-list {
+    /* header ~52 + composer ~64 */
+    height: calc(100svh - 52px - 64px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Липкие шапка и composer (+ safe-area) */
+  #chat-root .chat-header {
+    position: sticky;
+    top: env(safe-area-inset-top);
+    z-index: 20;
+    background-color: rgba(14, 27, 42, 0.85) !important;
+    backdrop-filter: blur(8px);
+  }
+
+  #chat-root .composer {
+    position: sticky;
+    bottom: env(safe-area-inset-bottom);
+    z-index: 20;
+    background-color: rgba(14, 27, 42, 0.92) !important;
+    backdrop-filter: blur(8px);
+    padding-bottom: calc(12px + env(safe-area-inset-bottom));
+  }
+
+  /* Глушим любые случайные «bg-white» внутри чата */
+  #chat-root .bg-white,
+  #chat-root [class*="bg-white"] {
+    background-color: transparent !important;
+  }
+}
+
+/* === Chat mobile dark + layout fix === */
+@media (max-width: 768px) {
+
+  /* Принудительно тёмный фон и текст для чата */
+  .chat-root,
+  .chat-root .chat-sidebar,
+  .chat-root .chat-thread,
+  .chat-root .message-list,
+  .chat-root .composer {
+    background-color: #0E1B2A !important;
+    /* как на десктопе */
+    color: #E6EEF9 !important;
+  }
+
+  /* Отдельный чуть светлее фон для левой панели */
+  .chat-root .chat-sidebar {
+    background-color: #0F2136 !important;
+  }
+
+  /* Пузыри сообщений (примерные селекторы — не ломают существующее) */
+  .chat-root .bubble--me {
+    background-color: #246AB6 !important;
+    color: #fff !important;
+  }
+
+  .chat-root .bubble--them {
+    background-color: #16263B !important;
+    color: #E6EEF9 !important;
+  }
+
+  /* Правильная высота и прокрутка */
+  .chat-root {
+    min-height: 100dvh;
+    height: 100dvh;
+    overscroll-behavior: contain;
+  }
+
+  .chat-root .message-list {
+    height: calc(100dvh - 52px - 64px);
+    /* header ~52 + composer ~64 */
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Липкие шапка и composer */
+  .chat-root .chat-header {
+    position: sticky;
+    top: env(safe-area-inset-top);
+    z-index: 20;
+    background-color: rgba(14, 27, 42, 0.85) !important;
+    backdrop-filter: blur(8px);
+  }
+
+  .chat-root .composer {
+    position: sticky;
+    bottom: env(safe-area-inset-bottom);
+    z-index: 20;
+    background-color: rgba(14, 27, 42, 0.92) !important;
+    backdrop-filter: blur(8px);
+    padding-bottom: calc(12px + env(safe-area-inset-bottom));
+  }
+
+  /* Подавляем случайные белые переопределения */
+  .chat-root .bg-white,
+  .chat-root [class*="bg-white"] {
+    background-color: transparent !important;
+  }
+}
+
+/* --- Login mobile overrides --- */
+@media (max-width: 480px) {
+  .login-form-root {
+    max-width: 100%;
+    margin: 0;
+    border-radius: 18px 18px 0 0;
+    padding: 20px 16px 16px;
+    box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.45);
+  }
+
+  /* --- Auth modal mobile full-screen --- */
+  @media (max-width: 480px) {
+    .auth-modal__inner {
+      width: 100%;
+      max-width: none;
+      height: 100dvh;
+      max-height: 100dvh;
+      border-radius: 18px 18px 0 0;
+      margin: 0;
+    }
+  }
+
+
+  .login-form-title {
+    font-size: 20px;
+    margin-bottom: 6px;
+  }
+
+  .login-form-input {
+    height: 48px;
+    font-size: 16px;
+    /* предотвращает iOS zoom */
+    padding: 12px 14px;
+  }
+
+  .login-form-btn {
+    padding: 14px 0;
+    font-size: 1.06rem;
+  }
+
+  .login-form-links {
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+}
+
+/* your-halo не перехватывает события мыши */
+.leaflet-pane.your-halo {
+  pointer-events: none;
+}
+
+.leaflet-pane.your-halo * {
+  pointer-events: none !important;
+}
+
+.main-blink-dot {
+  pointer-events: none;
+}
+
+.header-pro-rating {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.header-pro-rating svg {
+  display: inline-block;
+}
+
+/* === Header sizing (чтобы карточка всегда помещалась внутрь) === */
+:root {
+  --header-h: 64px;
+  /* desktop по умолчанию */
+}
+
+@media (max-width: 1280px) {
+  :root {
+    --header-h: 60px;
+  }
+}
+
+@media (max-width: 1024px) {
+  :root {
+    --header-h: 56px;
+  }
+}
+
+@media (max-width: 640px) {
+  :root {
+    --header-h: 52px;
+  }
+
+  /* мобильные */
+}
+
+/* Карточка пользователя в правом верхнем углу */
+.header-user-chip {
+  /* Всегда влезает внутрь хедера и не меняет «форму» */
+  max-height: calc(var(--header-h) - 8px);
+  height: calc(var(--header-h) - 8px);
+  border-radius: 16px;
+  /* одинаковое скругление на всех размерах */
+  overflow: hidden;
+  /* ничего не вылезает за границы */
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  padding: 0 .625rem;
+  /* 10px по бокам — компактно */
+  box-sizing: border-box;
+}
+
+/* Тексты внутри чипа не рвут макет */
+.header-user-chip .chip-text {
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* На маленьких — чуть компактнее типографика */
+@media (max-width: 640px) {
+  .header-user-chip {
+    padding: 0 .5rem;
+  }
+
+  .header-user-chip .chip-text {
+    font-size: 12px;
+  }
+}
+
+/* Rating bar under the profile chip (desktop only) */
+.header-rating-popunder {
+  pointer-events: none;
+}
+
+@media (max-width: 768px) {
+  .header-rating-popunder {
+    display: none !important;
+  }
+}
+
+/* === Chat action buttons: единый вид/размер === */
+:root {
+  --action-btn-size: 40px;
+  /* диаметр кнопки */
+  --action-btn-bg: #1f2b3a;
+  /* нейтральный фон */
+  --action-btn-fg: #c7d2fe;
+  /* нейтральный цвет иконки */
+  --action-btn-bg-hover: #26364a;
+  /* hover */
+  --action-btn-ring: 0 4px 14px rgba(0, 0, 0, .25);
+}
+
+.action-btn {
+  inline-size: var(--action-btn-size);
+  block-size: var(--action-btn-size);
+  border-radius: 9999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--action-btn-bg);
+  color: var(--action-btn-fg);
+  box-shadow: var(--action-btn-ring);
+  transition: transform .12s ease, background .12s ease, box-shadow .12s ease;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.action-btn:hover {
+  background: var(--action-btn-bg-hover);
+}
+
+.action-btn:active {
+  transform: scale(.96);
+}
+
+.action-btn>svg,
+.action-btn .icon {
+  width: 18px;
+  height: 18px;
+}
+
+.action-btn--accent {
+  background: #2aa9ff;
+  color: #fff;
+}
+
+.action-btn--accent:hover {
+  background: #169dfb;
+}
+
+/* микрофон: красный при записи/зажатии */
+.action-btn--mic[data-recording="true"],
+.action-btn--mic:active {
+  background: #ef4444;
+  color: #fff;
+}
+
+@keyframes mic-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, .45)
+  }
+
+  100% {
+    box-shadow: 0 0 0 14px rgba(239, 68, 68, 0)
+  }
+}
+
+
+/* === Profile page: mobile-first tweaks === */
+@media (max-width: 480px) {
+
+  .profile-mobile {
+    padding: 16px 10px 96px 10px !important;
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    align-items: stretch;
+  }
+
+  .profile-mobile .section-title {
+    font-size: 16px;
+  }
+
+  /* универсальная мобильная сетка списков */
+  .profile-mobile .compact-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+
+@media (min-width: 768px) {
+  .profile-mobile .compact-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+}
+
+/* гарантируем фуллскрин-режим модалки авторизации на маленьких экранах */
+@media (max-width: 480px) {
+  .auth-modal__inner {
+    width: 100%;
+    max-width: none;
+    height: 100dvh;
+    max-height: 100dvh;
+    border-radius: 18px 18px 0 0;
+    margin: 0;
+  }
+}
+
+.action-btn--mic[data-recording="true"] {
+  animation: mic-pulse 1.2s ease-out infinite;
+}
+
+/* whatsapp-audio.css */
+:root {
+  --gap: .6rem;
+  --pad: .6rem;
+  --radius: 1rem;
+}
+
+/* Пузырь аудио-сообщения */
+.whats-audio {
+  display: flex;
+  align-items: center;
+  gap: var(--gap);
+  padding: var(--pad) calc(var(--pad) * 1.3);
+  background: #264267;
+  color: #fff;
+  border-radius: var(--radius);
+  inline-size: fit-content;
+  max-inline-size: 100%;
+}
+
+.whats-audio__play {
+  inline-size: 2.1em;
+  aspect-ratio: 1 / 1;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, .14);
+  border: none;
+  cursor: pointer;
+}
+
+.whats-audio__range {
+  appearance: none;
+  -webkit-appearance: none;
+  flex: 1 1 auto;
+  block-size: .4rem;
+  border-radius: 999px;
+  outline: none;
+  background: rgba(255, 255, 255, .22);
+}
+
+.whats-audio__range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  inline-size: 1em;
+  aspect-ratio: 1 / 1;
+  border-radius: 999px;
+  background: #fff;
+  margin-top: calc(-.3rem);
+  /* без фиксированной высоты пузыря */
+}
+
+.whats-audio__time {
+  font-size: .9em;
+  opacity: .85;
+  white-space: nowrap;
+}
+
+.whats-audio__speed {
+  font-size: .85em;
+  padding: .2em .6em;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .14);
+  border: none;
+  cursor: pointer;
+}
+
+/* Панель записи (пилюля) */
+.whats-rec {
+  display: flex;
+  align-items: center;
+  gap: var(--gap);
+  padding: .5rem .75rem;
+  border-radius: 999px;
+  background: rgba(255, 77, 77, .12);
+  color: #fff;
+  box-shadow: 0 0 0 1px rgba(255, 77, 77, .25) inset;
+  inline-size: 100%;
+}
+
+.whats-rec__dot {
+  inline-size: .7em;
+  aspect-ratio: 1;
+  border-radius: 999px;
+  background: #ff4d4d;
+  animation: recpulse 1.2s infinite;
+}
+
+@keyframes recpulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 77, 77, .6)
+  }
+
+  70% {
+    box-shadow: 0 0 0 .8rem rgba(255, 77, 77, 0)
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 77, 77, 0)
+  }
+}
+
+.whats-rec__actions {
+  margin-inline-start: auto;
+  display: flex;
+  gap: .4rem;
+  flex-wrap: wrap;
+}
+
+.whats-chip {
+  background: rgba(255, 255, 255, .12);
+  border: none;
+  cursor: pointer;
+  border-radius: 999px;
+  padding: .25rem .7rem;
+  color: #fff;
+  font-size: .9em;
+}
+
+.whats-chip--ok {
+  background: rgba(0, 200, 120, .22);
+}
+
+.whats-chip--del {
+  background: rgba(255, 77, 77, .22);
+}
+
+/* ===== Mobile/Safe-area helpers ===== */
+:root {
+  --mobile-header-h: 56px;
+  --mobile-tabbar-h: 64px;
+  --safe-bottom: env(safe-area-inset-bottom);
+}
+
+/* Универсальная высота экрана с приоритетом dvh (iOS/Android) */
+.h-app {
+  height: 100vh;
+}
+
+@supports (height: 100svh) {
+  .h-app {
+    height: 100svh;
+  }
+}
+
+@supports (height: 100dvh) {
+  .h-app {
+    height: 100dvh;
+  }
+}
+
+/* Оставил твой класс для совместимости */
+@supports (height: 100svh) {
+  .h-svh {
+    height: 100svh;
+  }
+}
+
+.mobile-safe-top {
+  padding-top: max(env(safe-area-inset-top), 0px);
+}
+
+.mobile-safe-bottom {
+  padding-bottom: max(env(safe-area-inset-bottom), 12px);
+}
+
+/* Прокручиваемая область чата с учётом шапки и таббара + безопасное дно */
+.chat-scroll {
+  height: calc(100vh - var(--mobile-header-h) - var(--mobile-tabbar-h));
+  padding-bottom: var(--safe-bottom);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  overscroll-behavior: contain;
+}
+
+@supports (height: 100svh) {
+  .chat-scroll {
+    height: calc(100svh - var(--mobile-header-h) - var(--mobile-tabbar-h));
+  }
+}
+
+@supports (height: 100dvh) {
+  .chat-scroll {
+    height: calc(100dvh - var(--mobile-header-h) - var(--mobile-tabbar-h));
+  }
+}
+
+/* Крупные тапы (WCAG 44x44) */
+.tap {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+/* Однострочные/двухстрочные клампы */
+.clamp-1 {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* stylelint-disable-next-line property-no-vendor-prefix */
+.clamp-2 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  /* для WebKit */
+  line-clamp: 2;
+  /* прогрессивный стандартный синтаксис */
+}
+
+/* ===== Modal portal basics ===== */
+#modal-root {
+  position: relative;
+  z-index: 12000;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 17, 28, .55);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  z-index: 1000;
+}
+
+.modal-sheet {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1001;
+  background: #0b1422;
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+  max-height: 85vh;
+  overflow: auto;
+}
+
+.modal-full {
+  position: fixed;
+  inset: 0;
+  z-index: 1001;
+}
+
+/* ==== Mobile-friendly notifications popover ==== */
+@media (max-width: 768px) {
+  .notif-popover {
+    position: fixed !important;
+    left: 8px !important;
+    right: 8px !important;
+    top: 56px !important;
+    /* высота мобильного header */
+    width: auto !important;
+    max-height: 70vh !important;
+    overflow: auto !important;
+    border-radius: 16px !important;
+    z-index: 120 !important;
+  }
+
+  /* компактный бейдж на иконках */
+  .header-icon-btn .badge,
+  .notif-badge {
+    font-size: 10px !important;
+    min-width: 18px !important;
+    line-height: 18px !important;
+  }
+}
+
+@supports (padding: max(0px)) {
+  .safe-bottom {
+    padding-bottom: calc(64px + env(safe-area-inset-bottom));
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* === Лого в шапке: фикс габаритов и отсутствие влияния прозрачных полей === */
+.header-logo .logo-box {
+  width: var(--logo-box) !important;
+  height: var(--logo-box) !important;
+  min-width: var(--logo-box) !important;
+  min-height: var(--logo-box) !important;
+  position: relative;
+  display: block;
+  flex-shrink: 0 !important;
+  line-height: 0;
+  /* убираем строковый зазор */
+}
+
+.header-logo .logo-box .logo-img {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: var(--logo-inner) !important;
+  height: var(--logo-inner) !important;
+  object-fit: contain !important;
+  display: block !important;
+  pointer-events: none;
+}
+
+
+:root {
+  --safe-bottom: env(safe-area-inset-bottom);
+}
+
+@supports (height: 100dvh) {
+  .min-h-screen-dvh {
+    min-height: 100dvh;
+  }
+}
+
+@supports not (height: 100dvh) {
+  .min-h-screen-dvh {
+    min-height: 100vh;
+  }
+}
+
+* {
+  touch-action: manipulation;
+}
+
+/* --- убираем зазор перед футером на страницах --- */
+main>.section:last-child,
+main>*:last-child {
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+footer a:hover {
+  color: var(--accent);
+  transform: translateY(-1px);
+}
+
+/* Заполняет ширину без «пустой» правой колонки */
+.transport-card-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+/* Адаптивные брейкпоинты как у грузов */
+@media (max-width: 1280px) {
+  .transport-card-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .transport-card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .transport-card-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@keyframes radarPulse {
+  0% {
+    opacity: 0.32;
+    transform: scale(1);
+  }
+
+  80% {
+    opacity: 0.09;
+    transform: scale(2.8);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(3.2);
+  }
+}
+
+.your-truck-radar {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 58px;
+  height: 58px;
+  pointer-events: none;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, #43c8ff33 64%, #43c8ff11 100%);
+  animation: radarPulse 2.2s cubic-bezier(.43, .95, .55, 1) infinite;
+  z-index: 2;
+}
+
+.your-truck-marker-wrap {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3;
+}
+
+.your-truck-img {
+  width: 32px;
+  height: 32px;
+  display: block;
+  border-radius: 50%;
+  box-shadow: 0 0 12px #53b7ff77;
+  background: #f6fafd;
+  z-index: 3;
+}
+
+.filter-date-field {
+  min-width: 148px;
+  max-width: 175px;
+  flex: 1 1 160px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  margin-bottom: 0 !important;
+  margin-right: 10px;
+  /* <--- ДОБАВЬ! */
+}
+
+/* Убери правый margin у последнего поля, чтобы не было лишнего отступа */
+.order-filter-row .filter-date-field:last-child,
+.transport-filter-row .filter-date-field:last-child {
+  margin-right: 0;
+}
+
+.react-calendar__tile--disabled,
+.react-calendar__tile--disabled:hover,
+.react-calendar__tile--disabled:active,
+.react-calendar__tile--disabled:focus {
+  color: #bfc5db !important;
+  background: #23242b !important;
+  opacity: 0.29 !important;
+  filter: grayscale(1) brightness(1.13) !important;
+  cursor: not-allowed !important;
+  pointer-events: none !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+  outline: none !important;
+}
+
+
+/* Можно добавить в global.css, styles.css или рядом с компонентом */
+
+.disable-all-hover:hover,
+.disable-all-hover:active,
+.disable-all-hover:focus {
+  filter: none !important;
+  box-shadow: none !important;
+  border-color: inherit !important;
+  background: inherit !important;
+  transition: none !important;
+  cursor: default !important;
+}
+
+
+.disable-hover:hover,
+.disable-hover:active,
+.disable-hover:focus {
+  /* Отключаем hover-эффекты для программно выделенной карточки */
+  filter: none !important;
+  box-shadow: none !important;
+  border-color: inherit !important;
+  background: inherit !important;
+  /* любые другие hover-стили тоже сбрасывай тут */
+}
+
+@keyframes highlight-card {
+  0% {
+    box-shadow: 0 0 0 0 #43c8ff88;
+  }
+
+  20% {
+    box-shadow: 0 0 0 8px #43c8ff55;
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 #43c8ff00;
+  }
+}
+
+.highlight-card {
+  animation: highlightFlash 1.1s cubic-bezier(.45, 1.8, .42, 1.01);
+}
+
+@keyframes highlightFlash {
+  0% {
+    box-shadow: 0 0 0 18px #41cfff77, 0 2px 8px #121e3844;
+  }
+
+  60% {
+    box-shadow: 0 0 0 10px #41cfff44, 0 2px 8px #121e3844;
+  }
+
+  100% {
+    box-shadow: 0 0 0 0px #41cfff00, 0 2px 8px #121e3844;
+  }
+}
+
+.highlight-card {
+  animation: highlightFlash 1.1s cubic-bezier(.45, 1.8, .42, 1.01);
+}
+
+@keyframes highlightFlash {
+  0% {
+    box-shadow: 0 0 0 18px #41cfff77, 0 2px 8px #121e3844;
+  }
+
+  60% {
+    box-shadow: 0 0 0 10px #41cfff44, 0 2px 8px #121e3844;
+  }
+
+  100% {
+    box-shadow: 0 0 0 0px #41cfff00, 0 2px 8px #121e3844;
+  }
+}
+
+.profile-card-highlight {
+  animation: highlight-card 1.2s cubic-bezier(.4, 2, .6, 1);
+  box-shadow: 0 0 0 0 #43c8ff88;
+  border-radius: 18px !important;
+  z-index: 3;
+}
+
+.cluster-marker.cluster-hovered {
+  box-shadow: 0 0 38px 8px #43c8ff, 0 0 0 3px #ffd600;
+  border-radius: 50% !important;
+  z-index: 990 !important;
+  filter: drop-shadow(0 0 24px #43c8ff88);
+  transform: scale(1.10);
+  transition: box-shadow 0.15s, background 0.13s, transform 0.14s;
+}
+
+.modal-content,
+.modal,
+.modal-body {
+  overflow: visible !important;
+}
+
+.mini-card-hovered {
+  background: linear-gradient(90deg, #263148 60%, #232940 100%);
+  box-shadow: 0 0 20px #43c8ff77, 0 0 1px #fff;
+  transform: scale(1.03);
+  transition: box-shadow 0.14s, transform 0.15s;
+  z-index: 50 !important;
+}
+
+.pin-hovered-card {
+  background: linear-gradient(90deg, #233359 40%, #274083 100%) !important;
+  box-shadow: 0 8px 36px 0 #2196f322, 0 0px 0 #43c8ff;
+  transform: scale(1.04);
+  z-index: 10;
+  transition: all .17s cubic-bezier(.4, 2, .6, 1);
+}
+
+.map-dot {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #53b7ff;
+  box-shadow: 0 0 0 2px #53b7ff33;
+  transition: transform 0.17s cubic-bezier(.7, .4, .16, 1.6), box-shadow 0.19s cubic-bezier(.7, .4, .16, 1.6);
+  z-index: 30;
+}
+
+.map-dot.hovered {
+  transform: scale(1.25) translateY(-6px);
+  box-shadow: 0 4px 24px 3px #53b7ff99;
+  background: #8ad0fd;
+  z-index: 9999;
+}
+
+.order-card {
+  transition: box-shadow 0.14s, background 0.14s;
+}
+
+.order-card.hovered {
+  background: #253a5a !important;
+  box-shadow: 0 0 0 2px #53b7ff99;
+}
+
+.leaflet-marker-icon.main-blink-dot {
+  z-index: 9999 !important;
+  filter: drop-shadow(0 0 10px #53b7ff);
+}
+
+.chat-message-item:hover .msg-reaction-btn {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
+/* --- DARK CUSTOM STYLES FOR react-phone-input-2 (always override) --- */
+.react-tel-input {
+  width: 100% !important;
+  border-radius: 8px !important;
+  background: #23242c !important;
+  border: 1.5px solid #43c8ff !important;
+  color: #8ac6c8 !important;
+  font-size: 16px !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+}
+
+.react-tel-input .form-control {
+  background: #23242c !important;
+  color: #fff !important;
+  border-radius: 8px !important;
+  border: none !important;
+  height: 42px !important;
+  font-size: 16px !important;
+  box-shadow: none !important;
+  padding-left: 48px !important;
+  /* чтобы не наезжало на флаг */
+}
+
+.react-tel-input .flag-dropdown,
+.react-tel-input .selected-flag {
+  background: #23242c !important;
+  border: none !important;
+  border-radius: 8px 0 0 8px !important;
+  box-shadow: none !important;
+}
+
+.react-tel-input .country-list {
+  background: #23242c !important;
+  border-radius: 12px !important;
+  border: 1.5px solid #43c8ff !important;
+  color: #fff !important;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, .20) !important;
+  margin-top: 6px !important;
+  font-size: 15px !important;
+}
+
+.react-tel-input .country-list .country {
+  background: none !important;
+  color: #c5e2f5 !important;
+  padding: 6px 14px !important;
+  border-radius: 6px !important;
+  transition: background 0.1s !important;
+}
+
+.react-tel-input .country-list .country:hover,
+.react-tel-input .country-list .country.highlight {
+  background: #20323f !important;
+  color: #fff !important;
+}
+
+.react-tel-input .country-list .country .dial-code {
+  color: #43c8ff !important;
+  font-size: 14px !important;
+  margin-left: 6px !important;
+}
+
+.react-tel-input .search-box {
+  background: #181f2b !important;
+  color: #fff !important;
+  border-radius: 6px !important;
+  border: 1px solid #43c8ff !important;
+  margin: 8px 12px !important;
+  padding: 8px 10px !important;
+  font-size: 15px !important;
+}
+
+.header-pro-avatar {
+  width: 34px !important;
+  height: 34px !important;
+  border-radius: 50% !important;
+  overflow: hidden !important;
+  background: #43c8ff !important;
+  color: #fff !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.header-pro-avatar img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  border-radius: 50% !important;
+  display: block !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+}
+
+.profile-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.profile-tabs button {
+  background: #f6fafd;
+  border: none;
+  border-radius: 12px 12px 0 0;
+  font-size: 1rem;
+  padding: 12px 28px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.13s;
+  color: #2363a0;
+}
+
+.profile-tabs button.active {
+  background: #e8f3ff;
+  color: #118be3;
+  box-shadow: 0 2px 14px #abd6ff27;
+}
+
+
+.highlight {
+  outline: 3px solid #ff9800;
+  border-radius: 12px;
+  transition: outline 0.4s ease-in-out;
+}
+
+.leaflet-marker-icon.pin-hovered,
+.leaflet-marker-icon.pin-hovered img {
+  /* чуть больше и тень только при hover! */
+  transform: scale(1.18);
+  z-index: 300 !important;
+  box-shadow: 0 12px 34px 0 #2196f344, 0 0px 0 #43c8ff, 0 0 0 #fff !important;
+  border-radius: 50%;
+  transition: transform 0.17s cubic-bezier(.4, 2, .6, 1), box-shadow 0.18s cubic-bezier(.4, 2, .6, 1);
+  will-change: transform, box-shadow;
+}
+
+/* === ГЛАВНЫЕ ЦВЕТОВЫЕ ПЕРЕМЕННЫЕ === */
+:root {
+  /* Привязка к токенам темы (theme.css) */
+  --background: rgb(var(--bg));
+  --background-light: rgb(var(--card));
+  --foreground: rgb(var(--fg));
+  --border: rgb(var(--border));
+  --accent: rgb(var(--primary));
+  --accent-dark: rgb(var(--primary));
+  --accent-hover: rgb(var(--primary));
+  --accent-green: #17be9a;
+  /* Карточки и алиасы для совместимости */
+  --card-bg: rgb(var(--card));
+  --card-fg: rgb(var(--fg));
+  --card-border: rgba(0, 0, 0, .12);
+  --surface: var(--card-bg);
+  --text: var(--foreground);
+}
+
+.header-icon-btn {
+  background: none;
+  color: #bfe6fa;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  font-size: 22px;
+  height: 40px;
+  width: 40px;
+  transition: color 0.17s, background 0.14s;
+  outline: none;
+}
+
+.header-icon-btn:hover,
+.header-icon-btn:focus {
+  color: #43c8ff;
+  background: rgba(67, 200, 255, 0.09);
+}
+
+.leaflet-container,
+.leaflet-pane,
+.leaflet-pane>*,
+.leaflet-control,
+.leaflet-top,
+.leaflet-bottom {
+  z-index: 10 !important;
+  /* базовый */
+}
+
+
+/* карта внутри модалки всегда поверх блюра и других слоёв */
+.modal-full .leaflet-container,
+.modal-sheet .leaflet-container {
+  z-index: 1002 !important;
+}
+
+/* --- Выравнивание фильтров для списка заявок и транспорта --- */
+.order-filter-row,
+.transport-filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+/* === Темный плавный современный стиль для react-calendar === */
+.react-calendar {
+  background: #232a39 !important;
+  border-radius: 13px !important;
+  border: 1.5px solid var(--accent) !important;
+  box-shadow: 0 10px 40px #112042b9 !important;
+  color: #e3f2fd !important;
+  font-family: inherit !important;
+  font-size: 15px !important;
+  padding: 10px 6px 14px 6px !important;
+  animation: fadein .25s cubic-bezier(.42, 0, .58, 1);
+  transition: box-shadow .17s, background .17s;
+}
+
+@keyframes fadein {
+  from {
+    opacity: 0;
+    transform: translateY(25px) scale(.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.react-calendar__tile {
+  background: none !important;
+  border-radius: 8px !important;
+  padding: 8px 0 !important;
+  transition: background .14s, color .15s, transform .13s;
+  cursor: pointer;
+  outline: none;
+}
+
+.react-calendar__tile:enabled:hover,
+.react-calendar__tile--now {
+  background: #273152 !important;
+  color: #ffd600 !important;
+  transform: scale(1.08);
+  box-shadow: 0 2px 10px #ffd60022;
+}
+
+.react-calendar__tile--active,
+.react-calendar__tile--active:enabled:focus,
+.react-calendar__tile--active:enabled:hover {
+  background: var(--accent) !important;
+  color: #232a39 !important;
+  font-weight: 700;
+  transform: scale(1.12);
+  box-shadow: 0 2px 10px #43c8ff33;
+}
+
+.react-calendar__navigation {
+  background: none !important;
+  border: none !important;
+  margin-bottom: 11px !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+}
+
+.react-calendar__navigation button {
+  color: #ffd600 !important;
+  background: #242b3a !important;
+  border-radius: 7px !important;
+  font-size: 18px !important;
+  min-width: 33px !important;
+  border: none !important;
+  margin: 0 1px;
+  transition: background .16s, color .16s, transform .11s, box-shadow .15s;
+  box-shadow: 0 1px 6px #232f4c50;
+  cursor: pointer;
+  font-weight: 700;
+  outline: none;
+}
+
+.react-calendar__navigation button:active {
+  background: #273152 !important;
+  color: #fff !important;
+  transform: scale(0.95);
+}
+
+.react-calendar__navigation button:disabled {
+  color: #575d70 !important;
+  background: #232a39 !important;
+  opacity: .53;
+}
+
+.react-calendar__month-view__days__day--weekend {
+  color: #65e6ff !important;
+}
+
+.react-calendar__tile--now {
+  border: 1.3px solid var(--accent);
+}
+
+.react-calendar__month-view__weekdays {
+  color: #a7cfff !important;
+  font-weight: 600 !important;
+  letter-spacing: .02em;
+}
+
+.react-calendar__month-view__weekdays__weekday {
+  padding: 7px 0 !important;
+}
+
+.react-calendar__tile--rangeStart,
+.react-calendar__tile--rangeEnd,
+.react-calendar__tile--rangeBothEnds {
+  background: var(--accent-hover) !important;
+  color: #232a39 !important;
+  font-weight: 700;
+  box-shadow: 0 2px 12px #63b2d633;
+}
+
+
+/* --- Глобальные --- */
+/* Базовые параметры (фон задаём по темам ниже) */
+body {
+  color: var(--foreground);
+  font-family: 'Segoe UI', Arial, Helvetica, sans-serif;
+  margin: 0;
+  min-height: 100vh;
+  position: relative;
+  /* без z-index, чтобы не создавать лишний stacking context */
+}
+
+/* ТЁМНАЯ тема — как было, с фото-фоном */
+:root:not([data-theme="light"]) body {
+  background: url('/b6dd7a8f-b3a3-46d3-aaa5-703fdbae0617.webp') no-repeat center center fixed, var(--background);
+  background-size: cover;
+}
+
+/* [LOCK] светлая тема отключена */
+/* [data-theme="light"] body { ... } */
+/* (удалено) fullscreen #modal-root – он и создавал «невидимую пленку» */
+
+.modal-open {
+  overflow: hidden;
+}
+
+.order-map-container {
+  width: 100%;
+  /* height: 220px;   <-- убрать, пусть высоту задаёт сам MapContainer */
+  min-height: 220px;
+  /* или min-height, если хотите ограничить */
+  border-radius: 0 0 16px 16px;
+  background: #181f36;
+  overflow: hidden;
+  position: relative;
+}
+
+@media (max-width: 900px) {
+  .order-map-container {
+    min-height: 170px;
+  }
+}
+
+@media (max-width: 600px) {
+  .order-map-container {
+    min-height: 120px;
+  }
+}
+
+/* --- Контейнер списка заявок --- */
+.orderlist-root {
+  max-width: none;
+  /* full-width как в /transport */
+  width: 100%;
+  margin: 0;
+  /* убираем центрирование */
+  padding: 10px 0 0 0;
+}
+
+.orderlist-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.orderlist-card {
+  background: rgba(24, 34, 54, 0.98);
+  border-radius: 13px;
+  padding: 13px 12px;
+  margin-bottom: 7px;
+  border: 1px solid #233655;
+  box-shadow: 0 3px 16px #192f4c85;
+  transition: box-shadow 0.14s, transform 0.11s;
+}
+
+.section-nopadleft {
+  padding-left: 0 !important;
+}
+
+.header-root {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22px 3vw 17px 3vw;
+  background: rgba(22, 34, 54, 0.93);
+  border-bottom: 2px solid #234167;
+  box-shadow: 0 6px 32px #18336e22;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+/* ——— Поджимаем отступы/зазоры у header и навигации на узких десктопах */
+@media (max-width: 1280px) {
+  .header-root {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+
+  .header-nav {
+    gap: 18px !important;
+  }
+}
+
+@media (max-width: 1120px) {
+  .header-root {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .header-nav {
+    gap: 12px !important;
+  }
+}
+
+
+/* Светлая тема: фон/бордер/тень из токенов */
+[data-theme="light"] .header-root {
+  background: rgb(var(--header-bg)) !important;
+  border-bottom: 1px solid rgb(var(--border)) !important;
+  box-shadow: var(--header-shadow) !important;
+}
+
+.header-logo {
+  font-weight: 900;
+  font-size: 2.15rem;
+  color: var(--accent);
+  letter-spacing: 2.5px;
+  text-shadow: 0 1px 13px #223c60cc;
+  text-decoration: none;
+  padding: 2px 0 0 0;
+  transition: color .12s;
+  cursor: pointer;
+}
+
+.header-logo:hover {
+  color: #ffd600;
+}
+
+.header-nav {
+  display: flex;
+  gap: 32px;
+  align-items: end;
+}
+
+.nav-link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  color: #e3f2fd;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 1.09rem;
+  letter-spacing: 0.01em;
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: none;
+  transition: background 0.17s, color 0.13s, box-shadow .12s;
+  position: relative;
+  box-shadow: none;
+  border: none;
+  cursor: pointer;
+  min-width: 108px;
+  /* чтобы не прыгали */
+}
+
+
+/* Текст подписи в nav — явный класс, чтобы можно было скрывать на узких десктопах */
+.nav-text {
+  display: inline;
+}
+
+@media (max-width: 1120px) {
+  .nav-text {
+    display: none !important;
+  }
+}
+
+.nav-icon {
+  font-size: 1.35em;
+  color: #b3e6fc;
+  margin-bottom: 3px;
+  transition: color 0.16s;
+}
+
+.header-nav .nav-link:hover .nav-icon {
+  color: var(--accent);
+}
+
+.header-profile-link {
+  color: var(--accent);
+  background: rgba(33, 150, 243, 0.10);
+  margin-left: 13px;
+  margin-right: 9px;
+  border-radius: 10px;
+  font-weight: 800;
+  box-shadow: 0 2px 8px #2256a188;
+  padding: 8px 15px;
+  text-decoration: none;
+  transition: background 0.13s, color 0.12s;
+}
+
+.header-profile-link:hover {
+  background: #236fbd25;
+  color: #ffd600;
+}
+
+.header-btn,
+.header-btn-logout {
+  font-weight: 800;
+  cursor: pointer;
+  border-radius: 10px;
+  border: 1.5px solid var(--accent);
+  background: none;
+  transition: background 0.15s, color 0.15s, border .15s;
+  padding: 7px 19px;
+  font-size: 1.08rem;
+}
+
+.header-btn:hover,
+.header-btn:active {
+  background: var(--accent);
+  color: #17344d;
+  border: 1.5px solid #ffd600;
+}
+
+
+@media (max-width: 800px) {
+  .header-root {
+    padding: 14px 7vw 10px 7vw;
+  }
+
+  .header-logo {
+    font-size: 1.55rem;
+  }
+
+  .header-nav {
+    gap: 10px;
+  }
+
+  .nav-link,
+  .header-profile-link,
+  .header-btn,
+  .header-btn-logout {
+    font-size: 0.99rem;
+    padding: 7px 10px;
+  }
+}
+
+.header-nav {
+  display: flex;
+  gap: 32px;
+  align-items: end;
+}
+
+.nav-link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  color: #e3f2fd;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 1.09rem;
+  letter-spacing: 0.01em;
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: none;
+  transition: background 0.17s, color 0.13s, box-shadow .12s;
+  position: relative;
+  box-shadow: none;
+  border: none;
+  cursor: pointer;
+  min-width: 108px;
+}
+
+.nav-icon {
+  font-size: 1.35em;
+  color: #b3e6fc;
+  margin-bottom: 3px;
+  transition: color 0.16s;
+}
+
+.header-nav .nav-link:hover .nav-icon {
+  color: var(--accent);
+}
+
+.transportlist-card {
+  background: rgba(24, 34, 54, 0.98);
+  border-radius: 13px;
+  padding: 13px 12px;
+  margin-bottom: 7px;
+  border: 1px solid #233655;
+  box-shadow: 0 3px 16px #192f4c85;
+  transition: box-shadow 0.14s, transform 0.11s;
+}
+
+@media (max-width: 700px) {
+  .mobile-landing-root {
+    min-height: 100vh;
+    background: var(--background);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 0 28px 0;
+  }
+
+  .mobile-header {
+    width: 100vw;
+    background: rgba(24, 34, 54, 0.93);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 14px 8px 17px;
+    border-bottom: 2px solid #233655;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  /* Светлая тема: мобильный header тоже на токенах */
+  [data-theme="light"] .mobile-header {
+    background: rgb(var(--header-bg)) !important;
+    border-bottom: 1px solid rgb(var(--border)) !important;
+    box-shadow: var(--header-shadow) !important;
+  }
+
+  .mobile-logo {
+    font-weight: 900;
+    font-size: 1.38rem;
+    color: var(--accent);
+    letter-spacing: 2px;
+    text-shadow: 0 1px 9px #223c60cc;
+    text-decoration: none;
+  }
+
+  .mobile-login-btn {
+    background: linear-gradient(90deg, #1e88e5 0%, #43c8ff 100%);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 7px 19px;
+    font-weight: 700;
+    font-size: 1.07rem;
+    box-shadow: 0 2px 9px #19315825;
+    cursor: pointer;
+    margin-left: 13px;
+    transition: background .15s, color .15s, transform .12s;
+  }
+
+  .mobile-login-btn:active,
+  .mobile-login-btn:hover {
+    background: linear-gradient(90deg, #43c8ff 0%, #1e88e5 100%);
+    color: #ffd600;
+  }
+
+  .mobile-hero-title {
+    font-size: 1.35rem;
+    font-weight: 800;
+    margin-top: 34px;
+    color: var(--accent);
+    text-align: center;
+    letter-spacing: 0.01em;
+    text-shadow: 0 1px 12px #11417080;
+    margin-bottom: 15px;
+  }
+
+  .mobile-hero-desc {
+    color: #b7eaff;
+    font-size: 1.07rem;
+    text-align: center;
+    margin-bottom: 30px;
+    font-weight: 400;
+  }
+
+  .mobile-role-btns {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 30px;
+    width: 100vw;
+    padding: 0 10vw;
+  }
+
+  .mobile-role-btn {
+    background: #233655;
+    color: var(--accent);
+    border: none;
+    border-radius: 12px;
+    padding: 14px 9px;
+    font-size: 1.01rem;
+    font-weight: 700;
+    min-width: 110px;
+    box-shadow: 0 2px 9px #19315818;
+    cursor: pointer;
+    transition: background .15s, color .14s, transform .10s;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+
+  .mobile-role-btn:active,
+  .mobile-role-btn.selected {
+    background: var(--accent);
+    color: #16222b;
+    transform: scale(1.04) translateY(-1px);
+    box-shadow: 0 3px 13px #43c8ff34;
+  }
+}
+
+/* --- Hero section --- */
+.hero {
+  text-align: center;
+  margin: 80px 0 44px 0;
+  z-index: 1;
+  position: relative;
+}
+
+.hero-title {
+  font-size: 2.7rem;
+  color: var(--accent);
+  font-weight: 800;
+  margin-bottom: 26px;
+  letter-spacing: 0.02em;
+  text-shadow: 0 2px 22px #10204099;
+}
+
+.hero-desc {
+  font-size: 1.22rem;
+  color: #c9e6fb;
+  margin-bottom: 38px;
+  font-weight: 400;
+}
+
+.hero-btns {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  margin-bottom: 30px;
+  z-index: 1;
+}
+
+.big-btn {
+  background: linear-gradient(90deg, var(--accent-dark) 0%, var(--accent) 100%);
+  color: #e3f2fd;
+  border: none;
+  border-radius: 19px;
+  padding: 32px 46px;
+  font-size: 1.5rem;
+  font-weight: 700;
+  box-shadow: 0 6px 28px #0b2438b5;
+  cursor: pointer;
+  transition: background 0.14s, transform 0.15s, box-shadow 0.13s;
+}
+
+.big-btn:hover {
+  background: linear-gradient(90deg, var(--accent) 0%, var(--accent-hover) 100%);
+  color: #fff;
+  transform: translateY(-2px) scale(1.04);
+  box-shadow: 0 10px 44px #112240ad;
+}
+
+/* --- Section --- */
+.section {
+  background: rgba(24, 34, 54, 0.94);
+  margin: 0 auto;
+  max-width: 1800px;
+  border-radius: 20px;
+  padding: 30px 24px 32px 24px;
+  box-shadow: 0 8px 42px #0d1833e0;
+  margin-bottom: 40px;
+  z-index: 1;
+  position: relative;
+}
+
+.section-title {
+  font-size: 1.4rem;
+  color: var(--accent);
+  font-weight: 700;
+  margin-bottom: 20px;
+  letter-spacing: 0.01em;
+  text-align: center;
+  position: relative;
+  padding-bottom: 10px;
+}
+
+.section-title::after {
+  content: "";
+  display: block;
+  margin: 12px auto 0 auto;
+  width: 54px;
+  height: 4px;
+  background: linear-gradient(90deg, var(--accent) 60%, var(--accent-hover) 100%);
+  border-radius: 2px;
+  opacity: 0.91;
+}
+
+.profile-page-root {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  /* было center — из-за этого контент сужался */
+  padding: 28px 0 0 0;
+  gap: 36px;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+}
+
+.profile-loading {
+  color: #43c8ff;
+  text-align: center;
+  margin-top: 80px;
+  font-size: 22px;
+}
+
+.profile-block {
+  background: #172135;
+  border-radius: 18px;
+  box-shadow: 0 2px 8px rgba(60, 130, 255, 0.08);
+  padding: 28px 32px;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  margin-bottom: 0;
+}
+
+.profile-avatar {
+  width: 86px;
+  height: 86px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #e3f1fd;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40px;
+  font-weight: 600;
+  color: #43c8ff;
+}
+
+.profile-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatar-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.profile-card-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.profile-card-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 1rem;
+}
+
+.profile-card-role {
+  font-weight: 600;
+  color: #208dbe;
+  text-transform: uppercase;
+  font-size: 1.1rem;
+  letter-spacing: .03em;
+}
+
+.profile-card-name {
+  font-size: 1.33rem;
+  font-weight: 700;
+  letter-spacing: .01em;
+  margin-top: 2px;
+}
+
+.profile-edit-btn {
+  margin-left: 12px;
+  background: none;
+  border: none;
+  color: #bbb;
+  cursor: pointer;
+  font-size: 1.12em;
+  transition: color .15s;
+}
+
+.profile-edit-btn:hover {
+  color: #43c8ff;
+}
+
+.profile-card-status {
+  margin-top: 2px;
+  font-size: 1.01rem;
+  gap: 6px;
+  font-weight: 500;
+  color: #444;
+}
+
+.profile-card-email {
+  color: #515a6e;
+  font-size: 0.98em;
+  gap: 16px;
+}
+
+.profile-card-country {
+  color: #90a4ae;
+  font-size: .96em;
+  margin-top: 3px;
+}
+
+
+
+.profile-tabs-bar {
+  display: flex;
+  gap: 1px;
+  border-bottom: 1.5px solid #e3f1fd;
+  margin-bottom: 9px;
+}
+
+
+@media (max-width: 600px) {
+
+  .profile-page-root,
+  .profile-card-main,
+  .profile-tabs-main {
+    max-width: 100vw;
+    min-width: 0;
+  }
+
+  .profile-card-main,
+  .profile-tabs-main {
+    border-radius: 13px;
+  }
+
+  .profile-card-main {
+    flex-direction: column;
+    gap: 16px;
+    padding: 20px 10px 17px 10px;
+  }
+
+  .profile-tabs-main {
+    padding: 4px 0 2px 0;
+  }
+
+  .profile-tabs-content {
+    padding: 10px 2px 12px 2px;
+  }
+}
+
+.add-transport-btn {
+  background: #43c8ff;
+  color: #233655;
+  padding: 9px 18px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  box-shadow: 0 2px 12px #36c8ff30;
+  margin-bottom: 18px;
+  margin-top: 8px;
+  transition: 0.15s;
+}
+
+.add-transport-btn:hover {
+  background: #1db2fa;
+}
+
+/* --- Login --- */
+.login-form-root {
+  background: var(--background, #191b1d);
+  border-radius: 16px;
+  max-width: 430px;
+  margin: 36px auto;
+  box-shadow: 0 2px 28px #0006;
+  padding: 32px;
+  color: var(--foreground, #e3f2fd);
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.login-form-title {
+  color: var(--accent, #FFD600);
+  text-align: center;
+  font-weight: 700;
+  font-size: 1.45rem;
+  letter-spacing: 0.5px;
+  margin-bottom: 10px;
+}
+
+.login-form-input {
+  border-radius: 8px;
+  border: 1.5px solid var(--border, #233655);
+  background: var(--input, #23242b);
+  color: var(--foreground, #e3f2fd);
+  padding: 10px 15px;
+  font-size: 1.11rem;
+  margin-top: 2px;
+  outline: none;
+  transition: border 0.16s;
+}
+
+.login-form-input:focus {
+  border-color: var(--accent, #FFD600);
+  background: #26314b;
+}
+
+.login-form-btn {
+  /* Primary: яркая кнопка на тёмном фоне */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 44px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(67, 200, 255, .55);
+  background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%) !important;
+  color: #ffffff !important;
+  font-weight: 700;
+  font-size: 1.06rem;
+  letter-spacing: .2px;
+  cursor: pointer;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, .25), 0 0 0 3px rgba(67, 200, 255, .18);
+  transition: transform .06s ease, box-shadow .15s ease, filter .15s ease, background .15s ease;
+}
+
+.login-form-btn:hover {
+  filter: brightness(1.03) saturate(1.05);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 0 rgba(0, 0, 0, .28), 0 0 0 4px rgba(67, 200, 255, .22);
+}
+
+.login-form-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(67, 200, 255, .32);
+}
+
+.login-form-btn:disabled {
+  opacity: .65;
+  cursor: not-allowed;
+  filter: grayscale(.25);
+}
+
+.login-form-msg {
+  margin-top: 7px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 1.07rem;
+  letter-spacing: 0.2px;
+}
+
+.login-form-msg.ok {
+  color: #22FF7B;
+}
+
+.login-form-msg.err {
+  color: var(--accent, #FFD600);
+}
+
+/* --- Cards (universal) --- */
+.order-card {
+  background: transparent;
+  box-shadow: none;
+  border: none;
+}
+
+.card-title,
+.order-title,
+.transport-title {
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 1.26rem;
+  margin-bottom: 6px;
+}
+
+.card-desc,
+.order-desc,
+.transport-desc {
+  color: #e3f2fd;
+  font-size: 1.08rem;
+  margin-bottom: 5px;
+}
+
+.card-meta,
+.order-meta,
+.transport-meta {
+  color: #b0bcdc;
+  font-size: 0.98rem;
+  margin-top: 7px;
+}
+
+.card-date,
+.order-date,
+.transport-date {
+  color: #9eb9d4;
+  font-size: 0.89rem;
+  margin-top: 4px;
+}
+
+/* --- Скроллы --- */
+::-webkit-scrollbar {
+  width: 7px;
+  background: #13203a;
+  border-radius: 7px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #213057;
+  border-radius: 7px;
+}
+
+
+
+.register-form-root {
+  background: rgba(24, 34, 54, 0.97);
+  border-radius: 20px;
+  max-width: 430px;
+  margin: 50px auto 40px auto;
+  box-shadow: 0 8px 44px #152c4685;
+  padding: 38px 32px 32px 32px;
+  color: var(--foreground);
+  border: 1.5px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+@media (max-width: 650px) {
+  .register-form-root {
+    padding: 18px 7vw 18px 7vw;
+    max-width: 98vw;
+    margin: 28px auto 16px auto;
+    border-radius: 13px;
+    gap: 15px;
+  }
+
+  .register-form-btn {
+    font-size: 1.08rem;
+    padding: 12px 0;
+  }
+}
+
+.register-form-title {
+  color: var(--accent);
+  text-align: center;
+  font-weight: 900;
+  font-size: 2rem;
+  letter-spacing: 1.5px;
+  margin-bottom: 24px;
+  text-shadow: 0 2px 18px #11336e50;
+}
+
+.register-form-rolebtns {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 13px;
+  margin-bottom: 22px;
+}
+
+.register-form-rolebtn {
+  background: var(--background-light);
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 16px;
+  border: 0;
+  border-radius: 10px;
+  padding: 11px 22px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px #192f4c22;
+  transition: background .14s, color .12s, transform .10s;
+  outline: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.register-form-rolebtn.active {
+  background: var(--accent);
+  color: #22344c;
+  box-shadow: 0 2px 12px #ffd60044;
+  transform: translateY(-2px) scale(1.04);
+}
+
+.register-form-input,
+.register-form-select {
+  border-radius: 7px;
+  border: 1.5px solid var(--border);
+  padding: 9px 15px;
+  font-size: 1.09rem;
+  background: #23242b;
+  color: #e3f2fd;
+  margin-bottom: 0;
+  transition: border .16s;
+}
+
+.register-form-input:focus,
+.register-form-select:focus {
+  border: 1.5px solid var(--accent);
+  background: #2c425c;
+}
+
+.register-form-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 44px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(67, 200, 255, .55);
+  background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%) !important;
+  color: #ffffff !important;
+  font-weight: 700;
+  font-size: 1.06rem;
+  letter-spacing: .2px;
+  cursor: pointer;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, .25), 0 0 0 3px rgba(67, 200, 255, .18);
+  transition: transform .06s ease, box-shadow .15s ease, filter .15s ease, background .15s ease;
+}
+
+.register-form-btn:hover {
+  filter: brightness(1.03) saturate(1.05);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 0 rgba(0, 0, 0, .28), 0 0 0 4px rgba(67, 200, 255, .22);
+}
+
+.register-form-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(67, 200, 255, .32);
+}
+
+.register-form-btn:disabled {
+  opacity: .65;
+  cursor: not-allowed;
+  filter: grayscale(.25);
+}
+
+/* Кнопки в попапе подтверждения e‑mail из RegisterForm */
+.register-submit-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(67, 200, 255, .55);
+  background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%) !important;
+  color: #ffffff !important;
+  font-weight: 700;
+  letter-spacing: .2px;
+  cursor: pointer;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, .25), 0 0 0 3px rgba(67, 200, 255, .18);
+  transition: transform .06s ease, box-shadow .15s ease, filter .15s ease, background .15s ease;
+}
+
+.register-submit-btn:hover {
+  filter: brightness(1.03) saturate(1.05);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 0 rgba(0, 0, 0, .28), 0 0 0 4px rgba(67, 200, 255, .22);
+}
+
+.register-submit-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(67, 200, 255, .32);
+}
+
+.register-cancel-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(67, 200, 255, .35);
+  background: transparent;
+  color: #bde8ff;
+  font-weight: 500;
+  transition: border-color .15s ease, color .15s ease, background .15s ease;
+}
+
+.register-cancel-btn:hover {
+  border-color: rgba(67, 200, 255, .6);
+  background: rgba(67, 200, 255, .06);
+  color: #e6f7ff;
+}
+
+.register-form-msg {
+  color: var(--accent);
+  margin-top: 8px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 1.05rem;
+}
+
+.register-form-msg.ok {
+  color: #24c17a;
+}
+
+@media (max-width: 680px) {
+  .hero-title {
+    font-size: 2.05rem;
+  }
+
+  .big-btn {
+    padding: 18px 17px;
+    font-size: 1.1rem;
+  }
+
+  .section {
+    padding: 10px 1vw 10px 1vw;
+  }
+
+  .sidebar-link:hover {
+    background: rgba(33, 150, 243, 0.13);
+    color: #4fc3f7 !important;
+    box-shadow: 0 4px 24px #18336e28;
+  }
+
+  .sidebar-link:hover {
+    background: rgba(33, 75, 155, 0.20);
+    color: #90caf9 !important;
+  }
+
+  .auth-container {
+    max-width: 520px;
+    margin: 0 auto;
+    padding: 50px 20px 70px 20px;
+    z-index: 1;
+    position: relative;
+    text-align: center;
+  }
+
+  .auth-toggle-btn {
+    background: linear-gradient(90deg, var(--accent-dark, #17be9a), var(--accent, #FFD600) 100%);
+    color: #21222b;
+    font-weight: 600;
+    font-size: 1rem;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 24px;
+    cursor: pointer;
+    margin-bottom: 28px;
+    box-shadow: 0 4px 22px #0a1f35a8;
+    transition: background 0.18s ease, transform 0.13s ease;
+  }
+
+  .auth-toggle-btn:hover {
+    background: linear-gradient(90deg, var(--accent, #FFD600), var(--accent-hover, #63b2d6) 100%);
+    transform: translateY(-2px);
+    color: #141414;
+  }
+
+  .auth-form-wrapper {
+    z-index: 1;
+  }
+
+  .orderlist-cardsection,
+  .transport-cardsection {
+    background: rgba(20, 28, 39, 0.93);
+    border-radius: 14px;
+    margin-bottom: 10px;
+    padding: 15px 15px 12px 18px;
+    box-shadow: 0 1px 7px #1e88e51c;
+  }
+
+  .orderlist-sectiontitle,
+  .transport-sectiontitle {
+    color: #19b7ff;
+    font-weight: 700;
+    font-size: 16px;
+    margin-bottom: 8px;
+    letter-spacing: 0.01em;
+  }
+
+  .orderlist-detailsbtn,
+  .transport-detailsbtn {
+    background: linear-gradient(90deg, #1e88e5 0%, #43c8ff 100%);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 15px;
+    padding: 6px 22px;
+    cursor: pointer;
+    box-shadow: 0 1px 7px #13419733;
+    margin-left: 0;
+    transition: background 0.16s, color 0.13s, box-shadow 0.11s;
+  }
+
+  .orderlist-detailsbtn:hover,
+  .transport-detailsbtn:hover {
+    background: linear-gradient(90deg, #43c8ff 0%, #1e88e5 100%);
+    color: #fff;
+  }
+
+  .switch {
+    position: relative;
+    display: inline-block;
+    width: 38px;
+    height: 22px;
+    margin: 0 3px;
+    vertical-align: middle;
+  }
+
+  .switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  .slider {
+    position: absolute;
+    cursor: pointer;
+    background-color: #949db6;
+    border-radius: 22px;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    transition: .23s;
+  }
+
+  .slider:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 3px;
+    bottom: 3px;
+    background-color: #fff;
+    border-radius: 50%;
+    transition: .23s;
+    box-shadow: 0 2px 7px #0002;
+  }
+
+  input:checked+.slider {
+    background-color: #00e081;
+  }
+
+  input:checked+.slider:before {
+    transform: translateX(16px);
+  }
+
+  /* Tooltip style */
+  .custom-tooltip {
+    pointer-events: none;
+    animation: fadein .23s;
+  }
+
+  @keyframes fadein {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
+
+  .filter-input {
+    border-radius: 7px;
+    border: 1.5px solid var(--border);
+    background: var(--background-light, #23242b);
+    color: #e3f2fd;
+    padding: 7px 12px;
+    font-size: 15px;
+    outline: none;
+    width: 145px;
+    /* ширина — настраивается, можно 120-170px */
+    min-width: 110px;
+    box-sizing: border-box;
+    transition: border .16s, background .13s;
+  }
+
+  .filter-input:focus {
+    border: 1.5px solid var(--accent);
+    background: #222b3a;
+  }
+
+  @media (max-width: 800px) {
+    .filter-input {
+      width: 100%;
+      min-width: 0;
+      font-size: 14px;
+      padding: 7px 8px;
+    }
+  }
+
+  .header-user-problock {
+    display: flex !important;
+    align-items: center !important;
+    gap: 11px !important;
+    flex-direction: row !important;
+    background: none !important;
+    box-shadow: none !important;
+    padding: 0 0 0 10px !important;
+  }
+
+  .header-pro-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    background: none;
+    border: none;
+    border-radius: 8px;
+    color: #99e0ff;
+    font-size: 1.07em;
+    margin-right: 1px;
+    transition: background 0.15s, color 0.15s;
+  }
+
+  .header-pro-btn:hover {
+    background: #223555;
+    color: #ffd600;
+  }
+
+  .header-pro-profile {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: transparent;
+    border-radius: 12px;
+    padding: 0 10px 0 4px;
+    min-width: 0;
+    text-decoration: none;
+    transition: background 0.13s;
+  }
+
+  .header-pro-avatar,
+  .header-pro-avatar-fallback {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: #43c8ff;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.01rem;
+    font-weight: 700;
+    object-fit: cover;
+  }
+
+  .header-pro-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .header-pro-name {
+    font-size: 0.97rem;
+    font-weight: 700;
+    color: #e3f2fd;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    line-height: 1.1;
+  }
+
+  .header-pro-meta {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.93em;
+    color: #b0bcdc;
+    font-weight: 500;
+    margin-top: 1px;
+    flex-wrap: wrap;
+  }
+
+  .header-pro-id,
+  .header-pro-days,
+  .header-pro-rating {
+    white-space: nowrap;
+  }
+
+  .header-pro-logout {
+    background: none;
+    border: none;
+    color: #8eb9e6;
+    border-radius: 9px;
+    padding: 6px 7px;
+    font-size: 1.01em;
+    margin-left: 4px;
+    transition: background 0.15s, color 0.13s;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+  }
+
+  .header-pro-logout:hover {
+    background: #1b253d;
+    color: #ffd600;
+  }
+
+  .header-root {
+    display: flex;
+    align-items: center;
+    height: 80px;
+    background: rgba(22, 34, 54, 0.93);
+    border-bottom: 2px solid #234167;
+    box-shadow: 0 6px 32px #18336e22;
+    padding: 0 38px 0 30px;
+    position: sticky;
+    top: 0;
+    z-index: 20;
+  }
+
+  .header-logo {
+    font-weight: 900;
+    font-size: 2.15rem;
+    color: var(--accent);
+    letter-spacing: 2.5px;
+    text-shadow: 0 1px 13px #223c60cc;
+    text-decoration: none;
+    padding: 2px 0 0 0;
+    transition: color .12s;
+    cursor: pointer;
+    margin-right: 45px;
+  }
+
+  .header-nav {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+  }
+
+  .nav-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #e3f2fd;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 1.09rem;
+    letter-spacing: 0.01em;
+    padding: 8px 14px;
+    border-radius: 8px;
+    background: none;
+    transition: background 0.17s, color 0.13s, box-shadow .12s;
+    position: relative;
+    box-shadow: none;
+    border: none;
+    cursor: pointer;
+    min-width: 108px;
+  }
+
+  .header-profile-and-actions {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-left: 30px;
+  }
+
+
+  .mini-profile-header {
+    display: flex;
+    align-items: center;
+    background: #212d42;
+    border-radius: 15px;
+    padding: 4px 15px 4px 8px;
+    box-shadow: 0 2px 10px rgba(60, 130, 255, 0.11);
+    gap: 10px;
+    cursor: pointer;
+    min-width: 0;
+    text-decoration: none;
+    height: 40px;
+  }
+
+  .leaflet-marker-icon img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain !important;
+    display: block;
+    border-radius: 50%;
+    /* если нужны круглые иконки */
+  }
+
+  .leaflet-pane .gradient-route-polyline {
+    stroke: url(#route-gradient);
+    stroke-width: 8px;
+    filter: drop-shadow(0px 0px 8px #ffd60077);
+  }
+
+  .leaflet-pane .gradient-route-glow {
+    stroke: #fff;
+    stroke-width: 15px;
+    opacity: 0.12;
+    filter: blur(2px);
+  }
+
+  .route-arrow-anim {
+    will-change: transform, opacity;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  .radius-tooltip {
+    pointer-events: none;
+  }
+
+  label span:hover .radius-tooltip,
+  label span:focus-within .radius-tooltip {
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: all !important;
+  }
+
+  @media (max-width: 550px) {
+    .register-form-root {
+      max-width: 99vw !important;
+      padding: 12px 3vw !important;
+      font-size: 15px;
+    }
+
+    .register-form-title {
+      font-size: 21px !important;
+    }
+  }
+
+}
+
+
+/* === Form controls (unified) === */
+:root {
+  --ctl-h: 40px;
+  --ctl-radius: 8px;
+  --ctl-pad: 8px 13px;
+  --ctl-border: 1.5px solid var(--border, #233655);
+  --ctl-bg: var(--input, #23242b);
+  --ctl-fg: var(--foreground, #e3f2fd);
+  --ctl-placeholder: #9bb0c5;
+  --ctl-focus-ring: 0 0 0 3px color-mix(in oklab, var(--accent, #43c8ff) 30%, transparent);
+}
+
+/* Base */
+.ti-control {
+  width: 100%;
+  height: var(--ctl-h);
+  border-radius: var(--ctl-radius);
+  border: var(--ctl-border);
+  background: var(--ctl-bg);
+  color: var(--ctl-fg);
+  padding: var(--ctl-pad);
+  font-size: 15px;
+  outline: none;
+  transition: box-shadow .12s ease, border-color .12s ease, background .12s ease;
+  box-sizing: border-box;
+}
+
+.ti-control::placeholder {
+  color: var(--ctl-placeholder);
+  opacity: .9;
+}
+
+.ti-control:focus {
+  box-shadow: var(--ctl-focus-ring);
+}
+
+/* Textarea */
+.ti-textarea {
+  min-height: calc(var(--ctl-h) + 14px);
+  resize: vertical;
+}
+
+/* Select (displayed value) and custom select trigger */
+.ti-select {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+/* Error state */
+.ti-control.is-error,
+.ti-select.is-error {
+  border: 2px solid var(--accent, #FFD600) !important;
+  box-shadow: 0 0 0 1px color-mix(in oklab, var(--accent) 35%, transparent);
+}
+
+/* Disabled */
+.ti-control[disabled] {
+  opacity: .65;
+  cursor: not-allowed;
+}

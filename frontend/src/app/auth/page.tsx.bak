@@ -1,0 +1,64 @@
+"use client";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import LoginForm from "../components/LoginForm";
+import RegisterForm from "../components/RegisterForm";
+
+export default function AuthPage() {
+  const router = useRouter();
+  const sp = useSearchParams();
+
+  // если открыли /auth с токеном (в query ?token=... или в hash #token=...),
+  // а также supabase‑подобным форматом (#access_token=...&type=recovery),
+  // сразу перебрасываем на /auth/reset?token=...
+  useEffect(() => {
+    // 1) читаем и query, и hash
+    const q = sp;
+    const h = typeof window !== "undefined"
+      ? new URLSearchParams(window.location.hash.replace(/^#/, ""))
+      : null;
+
+    // 2) поддерживаем оба варианта: token ИЛИ access_token (+ type=recovery)
+    const token =
+      q?.get("token") ||
+      q?.get("access_token") ||
+      h?.get("token") ||
+      h?.get("access_token") ||
+      "";
+
+    const isRecovery =
+      q?.get("type") === "recovery" || h?.get("type") === "recovery";
+
+    if (token || isRecovery) {
+      // чистим хэш и, если токен был только в hash, переносим его в query (?token=...)
+      if (typeof window !== "undefined" && window.location.hash) {
+        const url = new URL(window.location.href);
+        if (!q?.get("token") && token) {
+          url.searchParams.set("token", token);
+        }
+        url.hash = "";
+        window.history.replaceState(null, "", url.toString());
+      }
+      router.replace(token
+        ? `/auth/reset?token=${encodeURIComponent(token)}`
+        : `/auth/reset`);
+    }
+  }, [sp, router]);
+
+  const [showLogin, setShowLogin] = useState(true);
+
+  return (
+    <div className="auth-container">
+      <div className="auth-form-wrapper">
+        {showLogin ? (
+          <LoginForm
+            onLogin={() => router.push("/profile")}
+            onShowRegister={() => setShowLogin(false)}
+          />
+        ) : (
+          <RegisterForm onSuccess={() => setShowLogin(true)} />
+        )}
+      </div>
+    </div>
+  );
+}

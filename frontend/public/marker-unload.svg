@@ -1,0 +1,8 @@
+<svg width="36" height="44" viewBox="0 0 36 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <ellipse cx="18" cy="17" rx="11" ry="11" fill="#ffb871"></ellipse>
+  <ellipse cx="18" cy="17" rx="6" ry="6" fill="#fff" opacity="0.7"></ellipse>
+  <path d="M18 41C20.8 34 29 29.5 29 20C29 11.7157 22.2843 5 14 5C5.71573 5 -1 11.7157 -1 20C-1 29.5 8.2 34 11 41H18Z" fill="#ffb871" opacity="0.6"></path>
+  <ellipse cx="18" cy="17" rx="11" ry="11" stroke="#fff" stroke-width="2"></ellipse>
+  <!-- Белый квадрат -->
+  <rect x="15" y="15" width="6" height="6" rx="1.5" fill="#fff"></rect>
+</svg>

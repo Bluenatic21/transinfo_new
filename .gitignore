@@ -1,0 +1,47 @@
+# ==== Python backend ====
+backend/.venv/
+backend/**/__pycache__/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# ==== Node / frontend ====
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/.turbo/
+frontend/.cache/
+
+# ==== Логи и временные файлы ====
+*.log
+*.log.*
+logs/
+tmp/
+.cache/
+
+# ==== Файлы окружения (секреты и их бэкапы) ====
+.env
+.env.*
+backend/.env*
+frontend/.env*
+
+# Если есть пример env-файла, НЕ игнорируем его:
+!*.env.example
+!env.example
+
+# ==== Бэкапы, архивы, stage-версии ====
+_snap/
+back-backup-*/
+front-backup-*/
+backend-stage/
+frontend-stage/
+frontend.BROKEN.*/
+*.zip
+*.tgz
+*.tar
+
+# ==== Пользовательские файлы (данные, а не код) ====
+backend/static/uploads/
+backend/static/chat_files/
+backend/static/avatars/

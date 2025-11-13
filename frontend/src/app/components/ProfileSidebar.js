@@ -1,0 +1,409 @@
+"use client";
+import Link from "next/link";
+import { useUser } from "@/app/UserContext";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import {
+    FaFileAlt, FaTruck, FaRegComments, FaIdCard, FaCertificate, FaLock,
+    FaUser, FaUserFriends, FaInbox, FaUserShield, FaUserCog, FaChevronRight, FaDollarSign, FaMapMarker, FaUserSlash, FaUserPlus,
+    FaBookmark, FaLanguage
+} from "react-icons/fa";
+import LangSwitcher from "./LangSwitcher";
+import { FaSignOutAlt } from "react-icons/fa";
+import { useEffect, useState } from "react";
+import { Headset } from "lucide-react";
+import { useOpenSupport } from "../../hooks/useOpenSupport";
+import { useLang } from "../i18n/LangProvider";
+import { api } from "@/config/env";
+
+export default function ProfileSidebar({ variant = "desktop" }) {
+    const { t } = useLang();
+    const [showSoon, setShowSoon] = useState(false);
+    const { isAdmin, contacts = [], contactReq = { incoming: [], outgoing: [] }, fetchContacts, fetchContactRequests } = useUser();
+    const [user, setUser] = useState(null);
+    const { authFetchWithRefresh } = useUser();
+    // для выхода из аккаунта
+    const { handleLogoutClick } = useUser();
+
+    // Общий хук открытия поддержки — то же поведение, что и у иконки в десктопе
+    const openSupport = useOpenSupport();
+    useEffect(() => { try { fetchContacts?.(); fetchContactRequests?.(); } catch { } }, []);
+
+    const router = useRouter();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
+
+    useEffect(() => {
+        authFetchWithRefresh(api(`/me`))
+            .then(res => res.json())
+            .then(data => setUser(data));
+    }, []);
+
+    const baseStyle = {
+        minWidth: 280,
+        background: "#182033",
+        borderRadius: 18,
+        padding: "38px 14px 28px 18px",
+        color: "#f8fafd",
+        height: "fit-content",
+        marginRight: 22
+    };
+    const mobStyle = {
+        ...baseStyle,
+        minWidth: "auto",
+        width: "100%",
+        marginRight: 0,
+        borderRadius: 14,
+        padding: "22px 12px 18px 12px",
+    };
+
+    if (!user) return (
+        <aside style={variant === "mobile" ? mobStyle : baseStyle}>
+            {variant === "mobile" ? (
+                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+                    <div style={{ fontWeight: 800, fontSize: 18, color: "#e3f2fd" }}>
+                        {t("auth.loginOrRegister", "შესვლა / რეგისტრაცია")}
+                    </div>
+                    <div style={{ marginLeft: "auto" }}>
+                        <LangSwitcher variant="compact" />
+                    </div>
+                </div>
+            ) : (
+                <div style={{ fontWeight: 700, fontSize: 18, color: "#8bc6fc" }}>
+                    {t("nav.profile", "Профиль")}
+                </div>
+            )}
+            <div style={{ marginTop: variant === "mobile" ? 6 : 25, color: "#aaa" }}>
+                {t("common.loading", "Загрузка...")}
+            </div>
+        </aside>
+    );
+
+    return (
+        <aside
+            style={{
+                ...(variant === "mobile" ? mobStyle : baseStyle),
+                display: "flex",
+                flexDirection: "column",
+                gap: 15
+            }}>
+            {variant !== "mobile" && (
+                <div style={{
+                    fontWeight: 700,
+                    fontSize: 22,
+                    color: "#43c8ff",
+                    marginBottom: 17,
+                    marginLeft: 3,
+                }}>
+                    {user.first_name || user.username || t("nav.profile", "Профиль")}
+                </div>
+            )}
+
+
+            {/* Язык — показываем прямо в списке, только в мобильной версии */}
+            {variant === "mobile" && (
+                <div
+                    style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 13,
+                        padding: "10px 8px 10px 6px",
+                        borderRadius: 9,
+                        color: "#e3f2fd",
+                        fontWeight: 600,
+                        fontSize: 16,
+                        background: "none",
+                        boxShadow: "none"
+                    }}
+                >
+                    <span style={{ fontSize: 18 }}>
+                        <FaLanguage color="#b3f1fc" />
+                    </span>
+                    <span>{t("lang.title", "Язык")}</span>
+                    <span style={{ marginLeft: "auto" }}>
+                        {/* компактная кнопка-флаг, по тапу открывается список с флагами и названиями */}
+                        <LangSwitcher variant="compact" />
+                    </span>
+                </div>
+            )}
+
+            {/* Основной профиль */}
+            <SidebarLink
+                href="/profile"
+                icon={<FaIdCard color="#3ac6ff" />}
+                active={pathname === "/profile" && !searchParams.toString()}
+            >{t("sidebar.myProfile", "Мой профиль")}</SidebarLink>
+
+            {/* Мониторинг GPS (заглушка) */}
+            <button
+                type="button"
+                onClick={() => setShowSoon(true)}
+                className="w-full"
+                style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 13,
+                    padding: "10px 8px 10px 6px",
+                    borderRadius: 9,
+                    color: "#e3f2fd",
+                    fontWeight: 600,
+                    fontSize: 16,
+                    background: "none",
+                    border: "none",
+                    textAlign: "left",
+                    boxShadow: "none",
+                    transition: "all .18s",
+                    cursor: "pointer"
+                }}
+            >
+                <span style={{ fontSize: 18 }}><FaMapMarker color="#43c8ff" /></span>
+                {t("live.title", "GPS мониторинг")}
+            </button>
+
+            {/* Сохранённые */}
+            <SidebarLink
+                href="/profile?saved=1"
+                icon={<FaBookmark color="#ffda6b" />}
+                active={!!searchParams.get("saved")}
+            >{t("sidebar.saved", "Сохранённые")}</SidebarLink>
+
+            {/* Owner: заявки */}
+            {user.role?.toLowerCase() === "owner" && (
+                <SidebarLink
+                    href="/profile?orders=1"
+                    icon={<FaFileAlt color="#ffd600" />}
+                    active={!!searchParams.get("orders")}
+                >{t("sidebar.orders", "Заявки")}</SidebarLink>
+            )}
+
+            {user.role?.toLowerCase() === "transport" && (
+                <>
+                    <SidebarLink
+                        href="/profile?transports=1"
+                        icon={<FaTruck color="#00ffaa" />}
+                        active={!!searchParams.get("transports")}
+                    >{t("sidebar.transports", "Транспорт")}</SidebarLink>
+
+                    <SidebarLink
+                        href="/profile?mybids=1"
+                        icon={<FaDollarSign color="#34c759" />}
+                        active={!!searchParams.get("mybids")}
+                    >{t("sidebar.bids", "Ставки")}</SidebarLink>
+                </>
+            )}
+
+            {/* Экспедитор: заявки, транспорт и ставки */}
+            {user.role?.toLowerCase() === "manager" && (
+                <>
+                    <SidebarLink
+                        href="/profile?orders=1"
+                        icon={<FaFileAlt color="#ffd600" />}
+                        active={!!searchParams.get("orders")}
+                    >{t("sidebar.orders", "Заявки")}</SidebarLink>
+                    <SidebarLink
+                        href="/profile?transports=1"
+                        icon={<FaTruck color="#00ffaa" />}
+                        active={!!searchParams.get("transports")}
+                    >{t("sidebar.transports", "Транспорт")}</SidebarLink>
+                    <SidebarLink
+                        href="/profile?mybids=1"
+                        icon={<FaDollarSign color="#34c759" />}
+                        active={!!searchParams.get("mybids")}
+                    >{t("sidebar.bids", "Ставки")}</SidebarLink>
+                    <SidebarLink
+                        href="/profile?employees=1"
+                        icon={<FaUserCog color="#8bc6fc" />}
+                        active={!!searchParams.get("employees")}
+                    >{t("sidebar.employees", "Сотрудники")}</SidebarLink>
+                </>
+            )}
+            {user.role?.toLowerCase() === "employee" && (
+                <>
+                    <SidebarLink
+                        href="/profile?orders=1"
+                        icon={<FaFileAlt color="#ffd600" />}
+                        active={!!searchParams.get("orders")}
+                    >{t("sidebar.orders", "Заявки")}</SidebarLink>
+                    <SidebarLink
+                        href="/profile?transports=1"
+                        icon={<FaTruck color="#00ffaa" />}
+                        active={!!searchParams.get("transports")}
+                    >{t("sidebar.transports", "Транспорт")}</SidebarLink>
+                    <SidebarLink
+                        href="/profile?mybids=1"
+                        icon={<FaDollarSign color="#34c759" />}
+                        active={!!searchParams.get("mybids")}
+                    >{t("sidebar.bids", "Ставки")}</SidebarLink>
+                </>
+            )}
+
+            {/* Контакты */}
+            <SidebarLink
+                href="/profile?contacts=1"
+                icon={<FaUserFriends color="#b3f1fc" />}
+                active={!!searchParams.get("contacts")}
+            >
+                <>
+                    <span>{t("sidebar.contacts", "Контакты")}</span>
+                    <span style={{ marginLeft: "auto", background: "#0b1222", color: "#b3f1fc", border: "1px solid #1d2b4a", borderRadius: 10, padding: "2px 8px", fontSize: 12 }}>
+                        {(contacts || []).length || 0}
+                    </span>
+                </>
+            </SidebarLink>
+
+            {/* Запросы в контакты — перенесены внутрь страницы "Контакты" */}
+
+            {/* Заблокированные */}
+            <SidebarLink
+                href="/profile?blocked=1"
+                icon={<FaUserSlash color="#ff9aa2" />}
+                active={!!searchParams.get("blocked")}
+            >{t("sidebar.blocked", "Заблокированные")}</SidebarLink>
+
+            {/* Отзывы */}
+            <SidebarLink
+                href="/profile?reviews=1"
+                icon={<FaRegComments color="#72ebff" />}
+                active={!!searchParams.get("reviews")}
+            >{t("sidebar.reviews", "Отзывы")}</SidebarLink>
+
+            {/* Поддержка (всегда доступна). Жмём тот же сценарий, что и FAB → open by chatId */}
+            <button
+                type="button"
+                data-close
+                onClick={openSupport}
+                className="w-full"
+                style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 13,
+                    padding: "10px 8px 10px 6px",
+                    borderRadius: 9,
+                    color: "#e3f2fd",
+                    fontWeight: 600,
+                    fontSize: 16,
+                    background: "none",
+                    border: "none",
+                    textAlign: "left",
+                    boxShadow: "none",
+                    transition: "all .18s"
+                }}
+            >
+                <span style={{ fontSize: 18 }}>
+                    <Headset size={18} color="#72ebff" />
+                </span>
+                {t("sidebar.support", "Поддержка")}
+            </button>
+
+            {/* Выйти — только в мобильной версии сайдбара, сразу под "Настройки" */}
+            {variant === "mobile" && (
+                <button
+                    type="button"
+                    data-close
+                    onClick={async () => {
+                        try { await handleLogoutClick?.(); }
+                        finally {
+                            try { router.push("/"); } catch { }
+                            try { router.refresh(); } catch { }
+                        }
+                    }}
+                    className="w-full"
+                    style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 13,
+                        padding: "10px 8px 10px 6px",
+                        borderRadius: 9,
+                        color: "#e3f2fd",
+                        fontWeight: 600,
+                        fontSize: 16,
+                        textDecoration: "none",
+                        background: "none",
+                        border: "none",
+                        width: "100%",
+                        textAlign: "left",
+                        marginBottom: 10
+                    }}
+                >
+                    <span style={{ fontSize: 18 }}>
+                        <FaSignOutAlt color="#ff7b7b" />
+                    </span>
+                    {t("sidebar.logout", "Выйти")}
+                </button>
+            )}
+
+            {/* Админка — только для ADMIN */}
+            {isAdmin && (
+                <SidebarLink
+                    href="/admin"
+                    icon={<FaUserShield color="#43c8ff" />}
+                    active={false}
+                >{t("sidebar.admin", "Админ-панель")}</SidebarLink>
+            )}
+
+            {/* --- Простая модалка "Скоро доступно" (внутри компонента) --- */}
+            {showSoon && (
+                <div
+                    onClick={() => setShowSoon(false)}
+                    style={{
+                        position: "fixed", inset: 0, background: "#001a", zIndex: 200000,
+                        display: "flex", alignItems: "center", justifyContent: "center"
+                    }}
+                >
+                    <div
+                        onClick={(e) => e.stopPropagation()}
+                        style={{
+                            width: "min(92vw, 420px)",
+                            background: "#0f1b2e",
+                            border: "1px solid #1f3355",
+                            borderRadius: 14,
+                            padding: 22,
+                            color: "#cde2ff",
+                            boxShadow: "0 10px 40px #0008"
+                        }}
+                    >
+                        <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 10 }}>
+                            {t("gps.soon.title", "Скоро доступно")}
+                        </div>
+                        <div style={{ fontSize: 14, lineHeight: 1.5, color: "#9ec8ff" }}>
+                            {t("gps.soon.body", "GPS-мониторинг находится в разработке и появится в ближайших обновлениях.")}
+                        </div>
+                        <div style={{ display: "flex", gap: 10, marginTop: 18, justifyContent: "flex-end" }}>
+                            <button
+                                onClick={() => setShowSoon(false)}
+                                style={{ background: "#43c8ff", color: "#fff", border: "none", borderRadius: 9, padding: "8px 18px", fontWeight: 800, cursor: "pointer" }}
+                            >
+                                {t("common.ok", "Понятно")}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </aside>
+    );
+}
+
+function SidebarLink({ href, icon, active, children }) {
+    return (
+        <Link
+            href={href}
+            style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 13,
+                padding: "10px 8px 10px 6px",
+                background: active ? "#20325a" : "none",
+                borderRadius: 9,
+                color: active ? "#43c8ff" : "#e3f2fd",
+                fontWeight: 600,
+                fontSize: 16,
+                textDecoration: "none",
+                boxShadow: active ? "0 2px 8px #2276ff22" : "none",
+                transition: "all .18s"
+            }}
+        >
+            <span style={{ fontSize: 18 }}>{icon}</span>
+            {children}
+            {active && <FaChevronRight size={15} style={{ marginLeft: "auto", color: "#43c8ff" }} />}
+        </Link>
+    );
+}

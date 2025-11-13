@@ -1,0 +1,216 @@
+// src/app/components/OrderListMobile.js
+"use client";
+
+import React, { useState, useMemo, useEffect, useRef } from "react";
+import { useMapHover } from "./MapHoverContext";
+import OrderCardMobile from "./OrderCardMobile";
+import MobileFilterSheet from "./mobile/MobileFilterSheet";
+import MobileMapSheet from "./mobile/MobileMapSheet";
+import { useUser } from "../UserContext";
+import { useLang } from "../i18n/LangProvider";
+import { api } from "@/config/env";
+
+export default function OrderListMobile({
+    orders = [],
+    fetchOrders,
+    filters = {},
+    setFilters,
+    visibleIds,
+    onFilteredIdsChange,
+    setFiltersFromMap,
+    estimatedCount, // initial from parent (текущее применённое)
+}) {
+    const { t } = useLang();
+    // синхронизируем «карта → список»: прокрутка к карточке после клика по пину
+    const cardRefs = useRef(new Map());
+    const { clickedItemId } = useMapHover();
+    const { authFetchWithRefresh } = useUser();
+
+    useEffect(() => {
+        if (!clickedItemId) return;
+        const el = cardRefs.current.get(clickedItemId);
+        if (el) {
+            try {
+                el.scrollIntoView({ behavior: "smooth", block: "center" });
+            } catch { }
+            el.classList.add("highlight");
+            setTimeout(() => el.classList.remove("highlight"), 1100);
+            try {
+                setMapOpen(false);
+            } catch { }
+        }
+    }, [clickedItemId]);
+
+    // фиксим иконки Leaflet (модуль общий для приложения)
+    useEffect(() => {
+        import("../leaflet-fix");
+    }, []);
+
+    const toolbarBtnStyle = {
+        border: "1px solid rgba(255,255,255,.15)",
+        background: "transparent",
+        color: "#cfe7ff",
+        padding: "8px 12px",
+        borderRadius: 12,
+        fontWeight: 800,
+        fontSize: 13,
+    };
+
+    const [mapOpen, setMapOpen] = useState(false);
+    const [filterOpen, setFilterOpen] = useState(false);
+    // Открываем фильтр только при «прямом переходе» (клик по «Заявки»),
+    // помеченном sessionStorage("openMobileFilterOnEntry") === "1",
+    // либо по URL-параметру ?openFilter=1. Исключение — ?matches_only=1.
+    useEffect(() => {
+        try {
+            const qs = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
+            const mo = qs?.get?.("matches_only");
+            const hasMatchesOnly = mo && mo !== "0" && String(mo).toLowerCase() !== "false";
+            const openFromUrl = (qs?.get?.("openFilter") === "1");
+            let openFromNav = false;
+            try {
+                if (typeof window !== "undefined") {
+                    openFromNav = sessionStorage.getItem("openMobileFilterOnEntry") === "1";
+                    if (openFromNav) sessionStorage.removeItem("openMobileFilterOnEntry");
+                }
+            } catch { }
+            setFilterOpen(!hasMatchesOnly && (openFromUrl || openFromNav));
+        } catch {
+            // по умолчанию ничего не открываем автоматически
+            setFilterOpen(false);
+        }
+    }, []);
+    const [previewCount, setPreviewCount] = useState(
+        Number.isFinite(estimatedCount) ? estimatedCount : undefined
+    );
+    const previewReqRef = useRef(0);
+    const previewAbortRef = useRef(null);
+    useEffect(() => {
+        if (Number.isFinite(estimatedCount)) setPreviewCount(estimatedCount);
+    }, [estimatedCount]);
+
+    // NEW: стабильное превью количества (без «миганий»)
+    const handlePreview = async (norm) => {
+        // маркируем этот запрос как «последний»
+        const reqId = ++previewReqRef.current;
+        // отменяем предыдущий запрос, если ещё идёт
+        try { if (previewAbortRef.current) previewAbortRef.current.abort(); } catch { }
+        const abort = new AbortController();
+        previewAbortRef.current = abort;
+        try {
+            // сериализация параметров
+            const q = Object.entries(norm)
+                .filter(([_, v]) => v !== "" && v !== undefined && v !== null && !(typeof v === "boolean" && v === false))
+                .map(([k, v]) =>
+                    Array.isArray(v)
+                        ? v.map((val) => `${encodeURIComponent(k)}=${encodeURIComponent(val)}`).join("&")
+                        : `${encodeURIComponent(k)}=${encodeURIComponent(v)}`
+                )
+                .join("&");
+            const pageQuery = `page=1&page_size=1`;
+            const url = api(`/orders${q ? "?" + q + "&" + pageQuery : "?" + pageQuery}`);
+            const resp = await authFetchWithRefresh(url, { cache: "no-store", signal: abort.signal });
+            const totalHeader = resp.headers.get("X-Total-Count") || resp.headers.get("x-total-count");
+            // если хедера нет, аккуратно пытаемся прочесть JSON-клон (page_size=1 → 0 или 1)
+            const nextVal = totalHeader
+                ? (parseInt(totalHeader, 10) || 0)
+                : (async () => { try { return (Array.isArray(await resp.clone().json()) ? 1 : 0); } catch { return 0; } })();
+            if (reqId === previewReqRef.current) {
+                const val = typeof nextVal.then === "function" ? await nextVal : nextVal;
+                setPreviewCount(Number.isFinite(val) ? val : 0);
+            }
+        } catch (e) {
+            // на ошибках/отмене предыдущее значение не трогаем — без «мигания»
+        }
+    };
+
+    const filtered = useMemo(() => {
+        const arr = Array.isArray(orders) ? orders : [];
+        if (Array.isArray(visibleIds)) return arr.filter((o) => visibleIds.includes(o.id));
+        return arr;
+    }, [orders, visibleIds]);
+
+    return (
+        <div style={{ background: "#182337", minHeight: "100vh", paddingBottom: 64 }}>
+            {/* шапка */}
+            <div
+                style={{
+                    position: "sticky",
+                    top: 0,
+                    background: "#212c46",
+                    zIndex: 10,
+                    padding: "18px 16px 10px 16px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                }}
+            >
+                <span style={{ fontWeight: 800, fontSize: 21, color: "#43c8ff" }}>
+                    {t("orders.title", "Заявки")}
+                </span>
+                <div style={{ display: "flex", gap: 8 }}>
+                    <button onClick={() => setMapOpen(true)} style={toolbarBtnStyle}>
+                        {t("common.map", "Карта")}
+                    </button>
+                    <button onClick={() => setFilterOpen(true)} style={toolbarBtnStyle}>
+                        {t("common.filter", "Фильтр")}
+                    </button>
+                </div>
+            </div>
+
+            <div style={{ padding: "12px 0 0 0" }}>
+                {filtered.length === 0 ? (
+                    <div style={{ textAlign: "center", color: "#aaa", marginTop: 30 }}>
+                        {t("orders.emptyByFilter", "Нет заявок по выбранным фильтрам.")}
+                    </div>
+                ) : (
+                    filtered.map((o, idx) => {
+                        const key = o?.id ?? o?.uid ?? `order-${idx}`;
+                        const refId = o?.id ?? o?.uid;
+                        return (
+                            <div
+                                key={key}
+                                data-order-id={refId ?? key}
+                                ref={(el) => {
+                                    if (el && refId) cardRefs.current.set(refId, el);
+                                }}
+                            >
+                                <OrderCardMobile key={`card-${key}`} order={o} />
+                            </div>
+                        );
+                    })
+                )}
+            </div>
+
+            {/* Фильтр именно для заявок */}
+            <MobileFilterSheet
+                type="orders"
+                open={filterOpen}
+                initialFilters={filters}
+                onClose={() => setFilterOpen(false)}
+                estimatedCount={previewCount}
+                onPreview={handlePreview}
+                onReset={() => {
+                    setFilters({});
+                    setFilterOpen(false);
+                }}
+                onApply={(norm) => {
+                    // заменяем фильтры целиком, чтобы не оставались хвосты
+                    setFilters(norm);
+                    fetchOrders?.();
+                    setFilterOpen(false);
+                }}
+            />
+
+            {/* Карта: передаём список ЗАЯВОК в проп orders */}
+            <MobileMapSheet
+                open={mapOpen}
+                onClose={() => setMapOpen(false)}
+                orders={Array.isArray(orders) ? orders : []}
+                filters={filters}
+                setFiltersFromMap={setFiltersFromMap || setFilters}
+                onFilteredIdsChange={onFilteredIdsChange}
+            />
+        </div>
+    );
+}
