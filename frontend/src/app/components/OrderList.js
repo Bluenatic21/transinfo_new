@@ -28,6 +28,7 @@ import SaveToggleButton from "./SaveToggleButton";
 import { useMapHover } from "./MapHoverContext";
 import IconLabel from "./ui/IconLabel";
 import { FiMap as MapIcon, FiList as ListIcon } from "react-icons/fi";
+import ShareMenu from "./ShareMenu";
 
 import MobileFilterSheet from "./mobile/MobileFilterSheet";
 import MobileMapSheet from "./mobile/MobileMapSheet"; // если у грузов тоже одна и та же SimpleMap
@@ -873,13 +874,13 @@ function OrderCard({
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        width: 38,
-        height: 38,
+        width: 34,
+        height: 34,
         borderRadius: "50%",
         background: "#162239",
         color: "#43c8ff",
         border: "none",
-        fontSize: 18,
+        fontSize: 16,
         cursor: "pointer",
         boxShadow: "0 1px 8px #43c8ff17",
         transition: "background .16s",
@@ -1006,6 +1007,65 @@ function OrderCard({
     const { openMessenger } = useMessenger();
     const [ownerProfile, setOwnerProfile] = useState(null);
     const [loadingOwner, setLoadingOwner] = useState(false);
+
+    const shareData = useMemo(() => {
+        const cargoName = String(mainCargo?.name || order.cargo || order.title || "").trim();
+        const fromLabel = String(fromLocations[0] || order.from_location || order.from || "").trim();
+        const toLabel = toLocations
+            .filter((loc) => loc && loc !== "-")
+            .map((loc) => String(loc).trim())
+            .join(", ");
+
+        const loadPart = loadDate
+            ? t("share.cargoLoadDate", "дата погрузки {date}", { date: loadDate })
+            : unloadDate
+                ? t("share.cargoUnloadDate", "дата выгрузки {date}", { date: unloadDate })
+                : order.regularity || "";
+
+        const weightValue = mainCargo?.tons || order.weight;
+        const volumeValue = mainCargo?.volume || order.volume;
+        const capacitySegments = [];
+        if (weightValue) {
+            capacitySegments.push(
+                t("share.cargoWeight", "вес {weight} т", { weight: weightValue })
+            );
+        }
+        if (volumeValue) {
+            capacitySegments.push(
+                t("share.cargoVolume", "объём {volume} м³", { volume: volumeValue })
+            );
+        }
+        const capacityPart = capacitySegments.join(", ");
+
+        const segments = [
+            `${t("share.cargoLabel", "Груз")}: ${cargoName || t("share.cargoUnknown", "Без названия")}`,
+            `${(fromLabel || t("share.unknownLocation", "—")).trim()} → ${(toLabel || t("share.unknownLocation", "—")).trim()}`,
+        ];
+        if (loadPart) segments.push(loadPart);
+        if (capacityPart) segments.push(capacityPart);
+        segments.push(`${t("share.identifierLabel", "ID")} ${order.id}`);
+
+        return {
+            url: `/orders/${order.id}`,
+            title: `${t("share.cargoTitle", "Груз")} #${order.id}`,
+            text: `${segments.join(", ")}. ${t("share.moreLink", "Подробнее на Transinfo.ge")}`,
+        };
+    }, [
+        fromLocations,
+        toLocations,
+        loadDate,
+        unloadDate,
+        mainCargo,
+        order.cargo,
+        order.title,
+        order.from_location,
+        order.from,
+        order.weight,
+        order.volume,
+        order.regularity,
+        order.id,
+        t,
+    ]);
 
     const [sending, setSending] = useState(false);
     const [yourBid, setYourBid] = useState(null);
@@ -1669,7 +1729,7 @@ function OrderCard({
                     zIndex: 11,
                     background: "rgba(25,40,72,0.96)",
                     borderRadius: 11,
-                    padding: "6px 15px",
+                    padding: "10px 16px 12px",
                     minHeight: 44,
                     boxShadow: "0 2px 8px #23416722",
                     display: "flex",
@@ -1922,6 +1982,13 @@ function OrderCard({
                     <button onClick={handleChatClick} title={t("nav.chat", "Чат")} style={{ ...iconBtnStyle, color: "#43c8ff" }}>
                         <FaComments />
                     </button>
+                    <ShareMenu
+                        url={shareData.url}
+                        title={shareData.title}
+                        text={shareData.text}
+                        triggerStyle={{ ...iconBtnStyle, marginLeft: 6 }}
+                        ariaLabel={t("share.shareAction", "Поделиться")}
+                    />
                     {ownerProfile?.phone && (
                         <a href={`tel:${ownerProfile.phone}`} title={t("chat.call", "Звонок")} style={iconBtnStyle}>
                             <FaPhone />
