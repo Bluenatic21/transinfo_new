@@ -22,11 +22,14 @@ import UserAvatar from "./UserAvatar";
 import SaveToggleButton from "./SaveToggleButton";
 import MobileFilterSheet from "./mobile/MobileFilterSheet";
 import MobileMapSheet from "./mobile/MobileMapSheet";
+import ShareMenu from "./ShareMenu";
 import { api, abs } from "@/config/env";
 import IconLabel from "./ui/IconLabel";
 import { FiMap as MapIcon, FiList as ListIcon } from "react-icons/fi";
 import { useLang } from "../i18n/LangProvider";
 import { LOADING_TYPES, getTruckBodyTypes, getLoadingTypes, localizeRegularity as mapRegularity } from "./truckOptions";
+
+
 
 // Цвет рейтинга 0→красный, 10→зелёный
 function ratingToColor(value) {
@@ -80,9 +83,9 @@ const iconBtnStyle = {
     color: "#43c8ff",
     border: "none",
     borderRadius: "50%",
-    width: 36,
-    height: 36,
-    fontSize: 18,
+    width: 32,
+    height: 32,
+    fontSize: 16,
     cursor: "pointer",
     marginLeft: 3,
     boxShadow: "0 1px 8px #23416722",
@@ -913,6 +916,92 @@ function TransportCard({ transport, expanded, onToggle }) {
         }
     }, [clickedItemId, transport.id]);
 
+    const formatReadyDate = useCallback((value) => {
+        if (!value) return "";
+        const iso = parseDateDMY(value);
+        const source = iso || value;
+        const date = new Date(source);
+        if (Number.isNaN(date.getTime())) return typeof value === "string" ? value : "";
+        return date.toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit", year: "2-digit" });
+    }, []);
+
+    const shareData = useMemo(() => {
+        const fromLabel =
+            transport.from_location || transport.from || (typeof transport.from_location === "number" ? String(transport.from_location) : "");
+        const rawToLocations = Array.isArray(transport.to_locations)
+            ? transport.to_locations
+            : transport.to_location
+                ? [transport.to_location]
+                : transport.to
+                    ? (Array.isArray(transport.to) ? transport.to : [transport.to])
+                    : [];
+        const toLabel = rawToLocations
+            .map((item) => {
+                if (!item) return "";
+                if (typeof item === "string") return item;
+                if (typeof item?.location === "string") return item.location;
+                return "";
+            })
+            .filter(Boolean)
+            .join(", ");
+
+        const readyFrom = formatReadyDate(transport.ready_date_from);
+        const readyTo = formatReadyDate(transport.ready_date_to);
+
+        let readyPart = "";
+        if (readyFrom && readyTo && readyFrom !== readyTo) {
+            readyPart = t("share.transportReadyRange", "готов с {from} по {to}", { from: readyFrom, to: readyTo });
+        } else if (readyFrom) {
+            readyPart = t("share.transportReadyFrom", "готов с {from}", { from: readyFrom });
+        } else if (readyTo) {
+            readyPart = t("share.transportReadyTo", "готов до {to}", { to: readyTo });
+        } else if (transport.regularity) {
+            readyPart = localizeRegularity(transport.regularity);
+        }
+
+        const typePrimary = findBodyLabelByValue(transport.truck_type);
+        const typeSecondary = localizeTransportKind(transport.transport_kind);
+        const typeCombined =
+            typePrimary && typeSecondary && typePrimary !== typeSecondary
+                ? `${typePrimary}, ${typeSecondary}`
+                : typePrimary || typeSecondary || t("share.transportLabel", "Транспорт");
+
+        const ratingValue = ownerProfile?.final_rating;
+        const ratingPart =
+            ratingValue !== undefined && ratingValue !== null
+                ? t("share.transportRating", "рейтинг {rating}/10", {
+                    rating: Number(ratingValue).toFixed(1),
+                })
+                : "";
+
+        const idPart = `${t("share.identifierLabel", "ID")} ${transport.id}`;
+        const identifierPart = ratingPart ? `${idPart}, ${ratingPart}` : idPart;
+
+        const fromText = fromLabel ? String(fromLabel).trim() : "";
+        const toText = toLabel ? String(toLabel).trim() : "";
+
+        const segments = [
+            `${t("share.transportLabel", "Транспорт")}: ${typeCombined}`,
+            `${fromText || t("share.unknownLocation", "—")} → ${toText || t("share.unknownLocation", "—")}`,
+        ];
+        if (readyPart) segments.push(readyPart);
+        segments.push(identifierPart);
+
+        return {
+            url: `/transport/${transport.id}`,
+            title: `${t("share.transportTitle", "Транспорт")} #${transport.id}`,
+            text: `${segments.join(", ")}. ${t("share.moreLink", "Подробнее на Transinfo.ge")}`,
+        };
+    }, [
+        transport,
+        findBodyLabelByValue,
+        localizeTransportKind,
+        localizeRegularity,
+        ownerProfile,
+        t,
+        formatReadyDate,
+    ]);
+
     async function handleChatClick() {
         const userId = ownerId;
         if (!userId) return;
@@ -1690,7 +1779,7 @@ function TransportCard({ transport, expanded, onToggle }) {
                         gridColumn: "1 / -1",
                         background: "rgba(25,40,72,0.96)",
                         borderRadius: 11,
-                        padding: "6px 15px",
+                        padding: "10px 16px 12px",
                         /* небольшой отступ, чтобы панель визуально “дышала” от секций */
                         marginTop: 4,
                         minHeight: 44,
@@ -1962,6 +2051,13 @@ function TransportCard({ transport, expanded, onToggle }) {
                         <button onClick={handleChatClick} title={t("nav.chat", "Чат")} style={{ ...iconBtnStyle, color: "#43c8ff" }}>
                             <FaComments />
                         </button>
+                        <ShareMenu
+                            url={shareData.url}
+                            title={shareData.title}
+                            text={shareData.text}
+                            triggerStyle={{ ...iconBtnStyle, marginLeft: 6 }}
+                            ariaLabel={t("share.shareAction", "Поделиться")}
+                        />
                         {ownerProfile?.phone && (
                             <a href={`tel:${ownerProfile.phone}`} title={t("chat.call", "Позвонить")} style={iconBtnStyle}>
                                 <FaPhone />

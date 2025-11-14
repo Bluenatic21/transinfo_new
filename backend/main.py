@@ -1,7 +1,7 @@
 from fastapi import Query, Depends, Response
 from typing import Optional, List
 from billing_tasks import start_billing_scheduler
-## TEMP: billing выключен, чтобы поднять API; вернём после фикса импорта в billing_rest
+# TEMP: billing выключен, чтобы поднять API; вернём после фикса импорта в billing_rest
 # from billing_rest import router as billing_router
 from fastapi import Query, Depends
 import mimetypes
@@ -96,9 +96,9 @@ from ws_chat import ws_router as ws_chat_router
 from password_reset_rest import router as password_reset_router
 
 
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, Tuple
 from pydantic import BaseModel
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 import uuid
 import json
 import time
@@ -268,6 +268,7 @@ def _load_env_file(path: str) -> bool:
 
 ENV_FILE_USED = None
 BASE_DIR = os.path.dirname(__file__)
+# root репозитория (на уровень выше backend/)
 ROOT_DIR = os.path.abspath(os.path.join(BASE_DIR, ".."))
 
 # Порядок поиска: backend/.env.local → backend/.env → repo/.env.local → repo/.env
@@ -313,9 +314,11 @@ def healthz():
     return {"ok": True}
 
 # --- Lightweight health endpoint for LB/monitors (returns 204, no body) ---
+
+
 @app.get("/health", status_code=204)
 def health() -> StarletteResponse:
-    return StarletteResponse(status_code=204)    
+    return StarletteResponse(status_code=204)
 
 
 # ==== РОУТЕР ДЛЯ chat_files (Range-отдача) ====
@@ -480,8 +483,28 @@ global_ws_connections = {}
 
 FRONTEND_ORIGIN = os.getenv("FRONTEND_ORIGIN", "https://transinfo.ge")
 
+# --- HTTP-кэш списков/чатов: ограниченный LRU, чтобы не съедать всю память ---
+HTTP_CACHE_MAX_ITEMS = int(os.getenv("HTTP_CACHE_MAX_ITEMS", "5000"))
+
 # ключ: "<auth-идентификатор>:<path>?<query>" -> (ts, body, headers, status, etag)
-_HTTP_CACHE: Dict[str, Tuple[float, bytes, dict, int, str]] = {}
+_HTTP_CACHE = OrderedDict()
+
+
+def _http_cache_get(key: str):
+    """Достаём элемент и помечаем его как недавно использованный."""
+    rec = _HTTP_CACHE.get(key)
+    if not rec:
+        return None
+    _HTTP_CACHE.move_to_end(key, last=True)
+    return rec
+
+
+def _http_cache_set(key: str, value: Tuple[float, bytes, dict, int, str]):
+    """Кладём элемент и вычищаем самые старые записи при переполнении."""
+    _HTTP_CACHE[key] = value
+    _HTTP_CACHE.move_to_end(key, last=True)
+    while len(_HTTP_CACHE) > HTTP_CACHE_MAX_ITEMS:
+        _HTTP_CACHE.popitem(last=False)
 
 
 class ChatCacheMiddleware(BaseHTTPMiddleware):
@@ -515,7 +538,7 @@ class ChatCacheMiddleware(BaseHTTPMiddleware):
         cache_key = f"{auth_id}:{path}?{request.url.query}"
         now = time.time()
 
-        cached = _HTTP_CACHE.get(cache_key) if request.query_params.get(
+        cached = _http_cache_get(cache_key) if request.query_params.get(
             "nocache") not in ("1", "true") else None
         if cached and (now - cached[0]) < self.ttl:
             _, body, headers, status_code, etag = cached
@@ -554,8 +577,8 @@ class ChatCacheMiddleware(BaseHTTPMiddleware):
                 headers["ETag"] = etag
             headers.setdefault(
                 "Cache-Control", "private, max-age=1, stale-while-revalidate=5")
-            _HTTP_CACHE[cache_key] = (
-                now, body, headers, response.status_code, etag)
+            _http_cache_set(cache_key, (
+                now, body, headers, response.status_code, etag))
         else:
             etag = None  # не ставим и не кэшируем
 
@@ -597,7 +620,7 @@ class ListCacheMiddleware(BaseHTTPMiddleware):
         cache_key = f"{auth_id}:{path}?{request.url.query}"
         now = time.time()
 
-        cached = _HTTP_CACHE.get(cache_key)
+        cached = _http_cache_get(cache_key)
         if cached and (now - cached[0]) < self.ttl:
             _, body, headers, status_code, etag = cached
             inm = request.headers.get("if-none-match")
@@ -632,8 +655,8 @@ class ListCacheMiddleware(BaseHTTPMiddleware):
             headers.setdefault(
                 "Cache-Control", "private, max-age=1, stale-while-revalidate=5")
             headers.setdefault("X-Poll-Interval", "1500")
-            _HTTP_CACHE[cache_key] = (
-                now, body, headers, response.status_code, etag)
+            _http_cache_set(cache_key, (
+                now, body, headers, response.status_code, etag))
         else:
             # ошибки/не-JSON не кэшируем
             pass
@@ -709,7 +732,7 @@ start_scheduler()
 
 
 # --- BILLING ---
-#app.include_router(billing_router)
+# app.include_router(billing_router)
 
 start_billing_scheduler()
 
@@ -795,7 +818,7 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     # важно: ЯВНО разрешаем клиентский trace-header
-    allow_headers=["*", "X-Client-Trace-Id"],
+    allow_headers=["*", "X-Client-Trace-Id", "x-ui-lang", "X-UI-Lang"],
     # и разрешаем читать trace-header из ответа
     expose_headers=["ETag", "X-Total-Count", "X-Page", "X-Page-Size",
                     "X-Trace-Id", "X-View-Mode", "X-Has-Full-Access"],

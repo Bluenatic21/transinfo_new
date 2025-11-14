@@ -1,61 +1,43 @@
-// src/config/env.ts
-type AppEnv = 'production' | 'staging' | 'development';
+// frontend/src/config/env.ts
 
-export const APP_ENV: AppEnv =
-  (process.env.NEXT_PUBLIC_APP_ENV as AppEnv) ||
-  (process.env.NODE_ENV === 'production' ? 'production' : 'development');
+// Берём базовый URL из env, по умолчанию локальный backend
+const RAW_API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:8000';
 
-// Базовые хосты по окружениям
-const HOST_BY_ENV: Record<AppEnv, string> = {
-  production: 'https://www.transinfo.ge',
-  staging: 'https://staging.transinfo.ge',
-  development: 'http://127.0.0.1:3000'
-};
+const RAW_WS_BASE_URL =
+  process.env.NEXT_PUBLIC_WS_BASE_URL ||
+  RAW_API_BASE_URL.replace(/^http/, 'ws');
 
-// В проде закрепляемся на prod-домене
-export const BASE =
-  APP_ENV === 'production' ? 'https://www.transinfo.ge' : HOST_BY_ENV[APP_ENV];
+// То, к чему уже привязан новый код
+export const API_BASE_URL = RAW_API_BASE_URL;
+export const WS_BASE_URL = RAW_WS_BASE_URL;
 
-// База API
-export const API_BASE = `${BASE}/api`;
+// Старые имена, которые импортируются по всему проекту
+export const API_BASE = API_BASE_URL;
 
-// Совместимость с существующим кодом
-export const API = API_BASE;
-
-/** Склеивает абсолютный URL к API */
-export function api(path = ''): string {
-  const p = path.startsWith('/') ? path : `/${path}`;
-  return `${API_BASE}${p}`;
+// Удобная функция для HTTP-запросов
+export function api(path: string): string {
+  // Если уже абсолютный URL — не трогаем
+  if (path.startsWith('http://') || path.startsWith('https://')) {
+    return path;
+  }
+  let p = path.startsWith('/') ? path : `/${path}`;
+  return `${API_BASE_URL}${p}`;
 }
 
-// alias под старые импорты
-export const withApi = api;
-
-/** Абсолютный URL к сайту (assets и пр.) */
-export function abs(path = ''): string {
-  const p = path.startsWith('/') ? path : `/${path}`;
-  return `${BASE}${p}`;
+// Получить абсолютный URL до того же API (по сути дубль api)
+export function abs(path: string): string {
+  let p = path.startsWith('/') ? path : `/${path}`;
+  return `${API_BASE_URL}${p}`;
 }
 
-/** WebSocket URL на тот же хост */
-export function ws(path = ''): string {
-  const host = BASE.replace(/^https?:\/\//, '');
-  const proto = BASE.startsWith('https') ? 'wss' : 'ws';
-  const p = path.startsWith('/') ? path : `/${path}`;
-  return `${proto}://${host}${p}`;
+// WebSocket URL
+export function ws(path: string): string {
+  let p = path.startsWith('/') ? path : `/${path}`;
+  return `${WS_BASE_URL}${p}`;
 }
 
-// Иногда в коде встречается makeWsUrl — оставляем алиас
-export const makeWsUrl = ws;
-
-export default {
-  APP_ENV,
-  BASE,
-  API_BASE,
-  API,
-  api,
-  withApi,
-  abs,
-  ws,
-  makeWsUrl
-};
+// Обёртка, если где-то используют withApi
+export function withApi(path: string): string {
+  return api(path);
+}
