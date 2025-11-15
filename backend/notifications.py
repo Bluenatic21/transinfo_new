@@ -2,10 +2,12 @@ from math import radians, cos, sin, asin, sqrt
 from datetime import datetime, timedelta
 import asyncio
 from collections import defaultdict
+import heapq
+from typing import Iterator, TypeVar
 from jose import jwt, JWTError
 from auth import get_token_from_header_or_cookie, SECRET_KEY, ALGORITHM
 from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect, Query
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, noload
 from sqlalchemy import and_, or_
 import os
 import json
@@ -91,6 +93,22 @@ async def _notifications_ws_impl(websocket: WebSocket):
 
 # user_id -> set of websocket connections
 user_notification_connections = defaultdict(set)
+
+# --- streaming helpers -------------------------------------------------------
+
+T = TypeVar("T")
+
+
+def _stream_query(query, *, chunk_size: int = 256) -> Iterator[T]:
+    """Iterate over a SQLAlchemy query without loading everything into memory."""
+
+    query = query.options(noload("*"))
+    stream = query.execution_options(stream_results=True).yield_per(chunk_size)
+    session = query.session
+    for row in stream:
+        yield row
+        session.expunge(row)
+
 
 # --------------------------- WEBSOCKET /notifications ---------------------------
 # Фронт соединяется как ws://<host>/notifications?user_id=...&token=...
@@ -519,14 +537,15 @@ def find_and_notify_auto_match_for_order(order: Order, db: Session):
         return
 
     # Включаем «постоянные» транспорты даже без дат
-    all_transports = db.query(Transport).filter(
+    transport_query = db.query(Transport).filter(
         Transport.is_active == True,
         Transport.from_location.isnot(None),
-    ).all()
+    )
+    total_transports = transport_query.order_by(None).count()
     print(
-        f"[AUTO_MATCH][ORDER->TRANSPORT] Total transports in DB: {len(all_transports)}")
+        f"[AUTO_MATCH][ORDER->TRANSPORT] Total transports in DB: {total_transports}")
 
-    for tr in all_transports:
+    for tr in _stream_query(transport_query):
         # Тип
         tr_type = canon_truck_type(getattr(tr, "truck_type", ""))
         if tr_type != order_type:
@@ -623,16 +642,17 @@ def find_and_notify_auto_match_for_transport(transport: Transport, db: Session):
                   transport.ready_date_from, transport.ready_date_to)
             return
 
-    all_orders = db.query(Order).filter(
+    order_query = db.query(Order).filter(
         Order.is_active == True,
         Order.from_locations.isnot(None),
         Order.load_date.isnot(None),
-    ).all()
+    )
+    total_orders = order_query.order_by(None).count()
     print(
-        f"[AUTO_MATCH][TRANSPORT->ORDER] Total orders in DB: {len(all_orders)}")
+        f"[AUTO_MATCH][TRANSPORT->ORDER] Total orders in DB: {total_orders}")
 
     candidates = []
-    for order in all_orders:
+    for order in _stream_query(order_query):
         # Тип кузова
         order_type = canon_truck_type(getattr(order, "truck_type", ""))
         if not are_truck_types_compatible(order_type, tr_type):
@@ -700,7 +720,9 @@ def find_matching_orders_for_transport(transport: Transport, db: Session, exclud
     Находит заказы, совпадающие с транспортом. Без отправки уведомлений.
     Учитывает блокировки.
     """
-    orders = db.query(Order).filter(Order.is_active == True).all()
+    order_query = db.query(Order).filter(Order.is_active == True)
+    total_orders = order_query.order_by(None).count()
+    print(f"[MATCH LIST T->O] scanning {total_orders} active orders for matches")
     results = []
     seen = set()  # dedupe by id
 
@@ -722,7 +744,7 @@ def find_matching_orders_for_transport(transport: Transport, db: Session, exclud
     tr_to = parse_date(getattr(transport, "ready_date_to", "")) or tr_from
     tr_city = normalize_city(getattr(transport, "from_location", ""))
 
-    for order in orders:
+    for order in _stream_query(order_query):
         if exclude_user_id and order.owner_id == exclude_user_id:
             continue
         if _is_blocked_pair(db, order.owner_id, transport.owner_id):
@@ -779,9 +801,10 @@ def find_matching_transports(order: Order, db: Session, exclude_user_id=None):
         f"\"{_order_iso.strftime('%Y-%m-%d') if _order_iso else '-'}\""
     )
 
-    candidates = db.query(Transport).filter(Transport.is_active == True).all()
+    transport_query = db.query(Transport).filter(Transport.is_active == True)
+    total_candidates = transport_query.order_by(None).count()
     print(
-        f"[MATCH DEBUG] found {len(candidates)} transport candidates (all active)")
+        f"[MATCH DEBUG] found {total_candidates} transport candidates (all active)")
 
     results = []
     seen = set()  # dedupe by id
@@ -789,14 +812,10 @@ def find_matching_transports(order: Order, db: Session, exclude_user_id=None):
     order_truck_type = canon_truck_type(getattr(order, "truck_type", ""))
     order_date = parse_date(getattr(order, "load_date", ""))
 
-    for tr in candidates:
+    for tr in _stream_query(transport_query):
         if exclude_user_id and tr.owner_id == exclude_user_id:
             continue
         if _is_blocked_pair(db, order.owner_id, tr.owner_id):
-            continue
-
-        tr_truck_type = canon_truck_type(getattr(tr, "truck_type", ""))
-        if not are_truck_types_compatible(order_truck_type, tr_truck_type):
             continue
 
         tr_mode = normalize_str(getattr(tr, "mode", ""))
@@ -829,31 +848,43 @@ def nearest_orders_for_transport(transport: Transport, db: Session, limit: int =
     tr_point = _transport_pickup_point(transport)
     if not tr_point:
         return []
-    orders = db.query(Order).filter(Order.is_active == True).all()
-    scored = []
-    for order in orders:
+    order_query = db.query(Order).filter(Order.is_active == True)
+    scored_heap = []
+    for order in _stream_query(order_query):
         coords = _order_pickup_coords(order)
         if not coords:
             continue
         d = _nearest_distance_km(tr_point, coords)
-        if d != float("inf"):
-            scored.append((order, d))
-    scored.sort(key=lambda x: x[1])
-    return scored[:limit]
+        if d == float("inf"):
+            continue
+        if len(scored_heap) < limit:
+            heapq.heappush(scored_heap, (-d, order))
+        else:
+            worst = -scored_heap[0][0]
+            if d < worst:
+                heapq.heapreplace(scored_heap, (-d, order))
+    scored = sorted(scored_heap, key=lambda item: -item[0])
+    return [(order, -distance) for distance, order in scored]
 
 
 def nearest_transports_for_order(order: Order, db: Session, limit: int = 10):
     coords = _order_pickup_coords(order)
     if not coords:
         return []
-    transports = db.query(Transport).filter(Transport.is_active == True).all()
-    scored = []
-    for tr in transports:
+    transport_query = db.query(Transport).filter(Transport.is_active == True)
+    scored_heap = []
+    for tr in _stream_query(transport_query):
         tr_point = _transport_pickup_point(tr)
         if not tr_point:
             continue
         d = _nearest_distance_km(tr_point, coords)
-        if d != float("inf"):
-            scored.append((tr, d))
-    scored.sort(key=lambda x: x[1])
-    return scored[:limit]
+        if d == float("inf"):
+            continue
+        if len(scored_heap) < limit:
+            heapq.heappush(scored_heap, (-d, tr))
+        else:
+            worst = -scored_heap[0][0]
+            if d < worst:
+                heapq.heapreplace(scored_heap, (-d, tr))
+    scored = sorted(scored_heap, key=lambda item: -item[0])
+    return [(tr, -distance) for distance, tr in scored]
