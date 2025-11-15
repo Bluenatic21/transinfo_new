@@ -169,7 +169,7 @@ def dbg_mem(tag: str) -> None:
     """
     try:
         usage = resource.getrusage(resource.RUSAGE_SELF)
-        rss_mb = usage.ru_maxrss / 1024  # ru_maxrss в Кб → Мб
+        rss_mb = usage.ru_maxrss / 1024  # ru_maxrss в Кб → МБ
         line = f"[MEM] {tag}: rss≈{rss_mb:.1f} MB (pid={os.getpid()})"
     except Exception as e:
         line = f"[MEM] {tag}: error: {e}"
@@ -504,12 +504,27 @@ FRONTEND_ORIGIN = os.getenv("FRONTEND_ORIGIN", "https://transinfo.ge")
 # ключ: "<auth-идентификатор>:<path>?<query>" -> (ts, body, headers, status, etag)
 _HTTP_CACHE: Dict[str, Tuple[float, bytes, dict, int, str]] = {}
 
-# ВРЕМЕННО: полностью отключаем HTTP‑кеш (на выходные)
-DISABLE_HTTP_CACHE = True
+
+def _get_env_bool(name: str, default: bool = False) -> bool:
+    raw = os.getenv(name)
+    if raw is None:
+        return default
+    return raw.strip().lower() in {"1", "true", "yes", "on"}
+
+
+# Возможность мгновенно отключить HTTP-кэш без деплоя.
+DISABLE_HTTP_CACHE = _get_env_bool("DISABLE_HTTP_CACHE", False)
 
 # Максимальное число записей в памяти.
 # 0 или отрицательное значение полностью выключает кэширование.
 HTTP_CACHE_MAX_ITEMS = int(os.getenv("HTTP_CACHE_MAX_ITEMS", "0") or "0")
+
+# TTL записей (в секундах). После его истечения элементы удаляются.
+HTTP_CACHE_TTL = float(os.getenv("HTTP_CACHE_TTL", "5") or "5")
+
+# За один проход чистки удаляем не более указанного количества записей.
+HTTP_CACHE_CLEANUP_BUDGET = int(os.getenv("HTTP_CACHE_CLEANUP_BUDGET", "100") or "100")
+
 
 # Порог, при котором мы считаем, что кэш раздулся и надо перезапустить сервис.
 # 0 или отрицательное значение = автоперезапуск выключен.
@@ -518,10 +533,36 @@ HTTP_CACHE_RESTART_AT = int(os.getenv("HTTP_CACHE_RESTART_AT", "0") or "0")
 # Минимальный интервал (в секундах) между перезапусками по кэшу.
 HTTP_CACHE_RESTART_COOLDOWN = int(os.getenv("HTTP_CACHE_RESTART_COOLDOWN", "300") or "300")
 
+if DISABLE_HTTP_CACHE:
+    HTTP_CACHE_MAX_ITEMS = 0
+
+
 _last_cache_restart_ts: float = 0.0
 
 print(f"[HTTP_CACHE] max items = {HTTP_CACHE_MAX_ITEMS}")
+print(f"[HTTP_CACHE] ttl = {HTTP_CACHE_TTL}s, cleanup_budget = {HTTP_CACHE_CLEANUP_BUDGET}")
 print(f"[HTTP_CACHE] restart_at = {HTTP_CACHE_RESTART_AT}, cooldown = {HTTP_CACHE_RESTART_COOLDOWN}s")
+
+def _http_cache_enabled() -> bool:
+    return HTTP_CACHE_MAX_ITEMS > 0 and HTTP_CACHE_TTL > 0 and not DISABLE_HTTP_CACHE
+
+
+def _http_cache_cleanup(now: Optional[float] = None) -> None:
+    """Удаляет протухшие записи из кэша, чтобы не накапливать память."""
+
+    if not _HTTP_CACHE:
+        return
+
+    now = now or time.time()
+    removed = 0
+    for key, value in list(_HTTP_CACHE.items()):
+        ts = value[0]
+        if now - ts >= HTTP_CACHE_TTL:
+            _HTTP_CACHE.pop(key, None)
+            removed += 1
+            if removed >= HTTP_CACHE_CLEANUP_BUDGET:
+                break
+
 
 
 def _restart_backend_service(reason: str) -> None:
@@ -567,11 +608,14 @@ def _http_cache_put(key: str, entry: Tuple[float, bytes, dict, int, str]):
     Кладём запись в _HTTP_CACHE с ограничением по количеству.
     entry: (ts, body, headers, status_code, etag)
     """
-    if HTTP_CACHE_MAX_ITEMS <= 0:
+    if not _http_cache_enabled():
         # Кэш полностью выключен
         return
 
     try:
+                # Перед добавлением вычищаем протухшие записи.
+        _http_cache_cleanup(now=entry[0])
+
         current_size = len(_HTTP_CACHE)
 
         # Если кэш разросся — пробуем аккуратно перезапустить backend
@@ -601,7 +645,7 @@ class ChatCacheMiddleware(BaseHTTPMiddleware):
     TTL ~1.5с на пользователя и конкретный путь+query.
     Отдаём 304, если If-None-Match совпал с ETag.
 
-    При HTTP_CACHE_MAX_ITEMS <= 0 кэширование полностью отключено.
+    При выключенном _http_cache_enabled() кэширование полностью отключено.
     """
 
     def __init__(self, app, ttl: float = 1.5):
@@ -610,7 +654,7 @@ class ChatCacheMiddleware(BaseHTTPMiddleware):
 
     async def dispatch(self, request, call_next):
         # если кэш глобально выключен — просто пропускаем дальше
-        if request.method != "GET" or HTTP_CACHE_MAX_ITEMS <= 0:
+        if request.method != "GET" or not _http_cache_enabled():
             return await call_next(request)
 
         path = request.url.path
@@ -631,7 +675,11 @@ class ChatCacheMiddleware(BaseHTTPMiddleware):
         if request.query_params.get("nocache") not in ("1", "true"):
             cached = _HTTP_CACHE.get(cache_key)
 
-        if cached and (now - cached[0]) < self.ttl:
+        if cached and (now - cached[0]) >= self.ttl:
+            _HTTP_CACHE.pop(cache_key, None)
+            cached = None
+
+        if cached:
             _, body, headers, status_code, etag = cached
             inm = request.headers.get("if-none-match")
             if inm and etag and inm == etag:
@@ -696,7 +744,7 @@ class ListCacheMiddleware(BaseHTTPMiddleware):
 
     async def dispatch(self, request, call_next):
         # глобальный выключатель кэша
-        if request.method != "GET" or HTTP_CACHE_MAX_ITEMS <= 0:
+        if request.method != "GET" or not _http_cache_enabled():
             return await call_next(request)
 
         path = request.url.path
@@ -713,7 +761,11 @@ class ListCacheMiddleware(BaseHTTPMiddleware):
         now = time.time()
 
         cached = _HTTP_CACHE.get(cache_key)
-        if cached and (now - cached[0]) < self.ttl:
+        if cached and (now - cached[0]) >= self.ttl:
+            _HTTP_CACHE.pop(cache_key, None)
+            cached = None
+
+        if cached:
             _, body, headers, status_code, etag = cached
             inm = request.headers.get("if-none-match")
             if inm and etag and inm == etag:
