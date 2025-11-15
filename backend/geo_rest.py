@@ -42,6 +42,31 @@ CACHE_TTL = int(os.getenv("GEO_CACHE_TTL", "86400"))   # 24h
 CACHE_MAX = int(os.getenv("GEO_CACHE_MAX", "2000"))
 
 
+def prune_expired_cache(current_time: Optional[float] = None) -> int:
+    """Remove expired entries from the in-memory cache.
+
+    Parameters
+    ----------
+    current_time:
+        Optional timestamp (in seconds) used for comparisons.  Supplying a
+        value allows deterministic unit tests; when omitted ``time.time()`` is
+        used.  The function returns the number of entries that were evicted so
+        the caller may log or otherwise react to aggressive pruning.
+    """
+
+    if current_time is None:
+        current_time = time.time()
+
+    expired: List[str] = []
+    for key, (ts, _data) in list(_CACHE.items()):
+        if current_time - ts > CACHE_TTL:
+            expired.append(key)
+
+    for key in expired:
+        _CACHE.pop(key, None)
+
+    return len(expired)
+
 def _cache_get(key):
     rec = _CACHE.get(key)
     if not rec:
