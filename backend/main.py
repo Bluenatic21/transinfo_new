@@ -15,7 +15,7 @@ from sqlalchemy import func
 from fastapi.responses import RedirectResponse
 from admin_rest import router as admin_router
 from places_rest import router as places_router
-from geo_rest import router as geo_router, prune_expired_cache
+from geo_rest import router as geo_router
 from typing import List        # уже используется в файле
 from fastapi import Request
 from datetime import datetime
