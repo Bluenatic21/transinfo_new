@@ -357,7 +357,16 @@ async def push_notification(user_id, data):
                 print(f"[ERROR] push_notification WS send_json: {e}")
 
 
-def create_notification(db: Session, user_id, notif_type, message, related_id=None, payload=None):
+def create_notification(
+    db: Session,
+    user_id,
+    notif_type,
+    message,
+    related_id=None,
+    payload=None,
+    *,
+    auto_commit: bool = True,
+):
     """
     Создаёт запись в БД notifications и пушит событие по WS (асинхронно).
     Для AUTO_MATCH действует дедупликация за последние 7 дней по (user_id, type, related_id).
@@ -414,8 +423,13 @@ def create_notification(db: Session, user_id, notif_type, message, related_id=No
         read=False,
     )
     db.add(notif)
-    db.commit()
-    db.refresh(notif)
+    if auto_commit:
+        db.commit()
+        db.refresh(notif)
+    else:
+        # Flush to assign primary key/values without ending the surrounding
+        # transaction – the caller is responsible for committing later.
+        db.flush()
 
     event = {
         "event": "new_notification",
@@ -545,67 +559,74 @@ def find_and_notify_auto_match_for_order(order: Order, db: Session):
     print(
         f"[AUTO_MATCH][ORDER->TRANSPORT] Total transports in DB: {total_transports}")
 
-    for tr in _stream_query(transport_query):
-        # Тип
-        tr_type = canon_truck_type(getattr(tr, "truck_type", ""))
-        if tr_type != order_type:
-            continue
-
-        # Локация: симметричный радиус + фоллбек по городу
-        matched, loc_reason, nearest_km = _check_location_match(tr, order)
-        if not matched:
-            continue
-
-        # Дата: если транспорт «постоянно» — игнорируем (учитываем синонимы/локали)
-        tr_mode_raw = getattr(tr, "mode", "")
-        tr_mode = normalize_str(tr_mode_raw)
-        is_permanent = is_permanent_mode(tr_mode)
-        print(
-            f"[MATCH O->T] tr.id={getattr(tr, 'id', None)} mode='{tr_mode_raw}' -> permanent={is_permanent}")
-        if not is_permanent:
-            tr_from = parse_date(getattr(tr, "ready_date_from", ""))
-            tr_to = parse_date(getattr(tr, "ready_date_to", "")) or tr_from
-            if not tr_from or not tr_to:
-                continue
-            if not (tr_from <= order_date <= tr_to):
+    try:
+        for tr in _stream_query(transport_query):
+            # Тип
+            tr_type = canon_truck_type(getattr(tr, "truck_type", ""))
+            if tr_type != order_type:
                 continue
 
-        # Сам на себя
-        if order.owner_id == tr.owner_id:
-            continue
+            # Локация: симметричный радиус + фоллбек по городу
+            matched, loc_reason, nearest_km = _check_location_match(tr, order)
+            if not matched:
+                continue
 
-        # БЛОКИРОВКИ (ОСНОВНОЕ)
-        if _is_blocked_pair(db, order.owner_id, tr.owner_id):
-            continue
+            # Дата: если транспорт «постоянно» — игнорируем (учитываем синонимы/локали)
+            tr_mode_raw = getattr(tr, "mode", "")
+            tr_mode = normalize_str(tr_mode_raw)
+            is_permanent = is_permanent_mode(tr_mode)
+            print(
+                f"[MATCH O->T] tr.id={getattr(tr, 'id', None)} mode='{tr_mode_raw}' -> permanent={is_permanent}")
+            if not is_permanent:
+                tr_from = parse_date(getattr(tr, "ready_date_from", ""))
+                tr_to = parse_date(getattr(tr, "ready_date_to", "")) or tr_from
+                if not tr_from or not tr_to:
+                    continue
+                if not (tr_from <= order_date <= tr_to):
+                    continue
 
-        # Уведомляем владельца транспорта
-        period_txt = f"дата погрузки {order.load_date}"
-        # Пометка причины Соответствия
-        reason_label = ""
-        if loc_reason == "by_transport_radius":
-            reason_label = " · Соответствия по радиусу транспорта"
-        elif loc_reason == "by_order_radius":
-            reason_label = " · Соответствия по радиусу груза"
-        elif loc_reason == "by_city":
-            reason_label = " · Соответствия по городу"
-        import json
-        route = ", ".join(order.from_locations or [])
-        date = order.load_date or ""
-        truck_type = getattr(order, "truck_type", "")
-        params = json.dumps(
-            {"route": route, "date": date, "truckType": truck_type},
-            ensure_ascii=False
-        )
-        fallback = f"Найден новый груз: {route}, дата: {date}. Тип транспорта: {truck_type}."
-        message = f"notif.match.orderFound|{params}|{fallback}"
-        create_notification(
-            db=db,
-            user_id=tr.owner_id,
-            notif_type=NotificationType.AUTO_MATCH,
-            message=message,
-            related_id=str(order.id),
-            payload={"entity": "order", "target_url": f"/orders/{order.id}"},
-        )
+            # Сам на себя
+            if order.owner_id == tr.owner_id:
+                continue
+
+            # БЛОКИРОВКИ (ОСНОВНОЕ)
+            if _is_blocked_pair(db, order.owner_id, tr.owner_id):
+                continue
+
+            # Уведомляем владельца транспорта
+            period_txt = f"дата погрузки {order.load_date}"
+            # Пометка причины Соответствия
+            reason_label = ""
+            if loc_reason == "by_transport_radius":
+                reason_label = " · Соответствия по радиусу транспорта"
+            elif loc_reason == "by_order_radius":
+                reason_label = " · Соответствия по радиусу груза"
+            elif loc_reason == "by_city":
+                reason_label = " · Соответствия по городу"
+            import json
+            route = ", ".join(order.from_locations or [])
+            date = order.load_date or ""
+            truck_type = getattr(order, "truck_type", "")
+            params = json.dumps(
+                {"route": route, "date": date, "truckType": truck_type},
+                ensure_ascii=False
+            )
+            fallback = f"Найден новый груз: {route}, дата: {date}. Тип транспорта: {truck_type}."
+            message = f"notif.match.orderFound|{params}|{fallback}"
+            create_notification(
+                db=db,
+                user_id=tr.owner_id,
+                notif_type=NotificationType.AUTO_MATCH,
+                message=message,
+                related_id=str(order.id),
+                payload={"entity": "order", "target_url": f"/orders/{order.id}"},
+                auto_commit=False,
+            )
+
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
 
 
 def find_and_notify_auto_match_for_transport(transport: Transport, db: Session):
@@ -683,34 +704,41 @@ def find_and_notify_auto_match_for_transport(transport: Transport, db: Session):
 
     print(
         f"[AUTO_MATCH][TRANSPORT->ORDER] Candidates found: {len(candidates)}")
-    for order, loc_reason in candidates:
-        # Пометка причины Соответствия
-        reason_label = ""
-        if loc_reason == "by_transport_radius":
-            reason_label = " · Соответствия по радиусу транспорта"
-        elif loc_reason == "by_order_radius":
-            reason_label = " · Соответствия по радиусу груза"
-        elif loc_reason == "by_city":
-            reason_label = " · Соответствия по городу"
-        import json
-        _from = transport.from_location or ""
-        _period = _format_transport_period(transport)
-        _type = getattr(transport, "truck_type", "")
-        params = json.dumps(
-            {"from": _from, "period": _period, "truckType": _type},
-            ensure_ascii=False
-        )
-        fallback = f"Найден новый транспорт: {_from}, период: {_period}, тип: {_type}."
-        message = f"notif.match.transportFound|{params}|{fallback}"
-        create_notification(
-            db=db,
-            user_id=order.owner_id,
-            notif_type=NotificationType.AUTO_MATCH,
-            message=message,
-            related_id=str(transport.id),
-            payload={"entity": "transport",
-                     "target_url": f"/transport/{transport.id}"},
-        )
+    try:
+        for order, loc_reason in candidates:
+            # Пометка причины Соответствия
+            reason_label = ""
+            if loc_reason == "by_transport_radius":
+                reason_label = " · Соответствия по радиусу транспорта"
+            elif loc_reason == "by_order_radius":
+                reason_label = " · Соответствия по радиусу груза"
+            elif loc_reason == "by_city":
+                reason_label = " · Соответствия по городу"
+            import json
+            _from = transport.from_location or ""
+            _period = _format_transport_period(transport)
+            _type = getattr(transport, "truck_type", "")
+            params = json.dumps(
+                {"from": _from, "period": _period, "truckType": _type},
+                ensure_ascii=False
+            )
+            fallback = f"Найден новый транспорт: {_from}, период: {_period}, тип: {_type}."
+            message = f"notif.match.transportFound|{params}|{fallback}"
+            create_notification(
+                db=db,
+                user_id=order.owner_id,
+                notif_type=NotificationType.AUTO_MATCH,
+                message=message,
+                related_id=str(transport.id),
+                payload={"entity": "transport",
+                         "target_url": f"/transport/{transport.id}"},
+                auto_commit=False,
+            )
+
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
 
 # --------------------------- ПОИСК Соответствий (без уведомлений) ---------------------------
 
