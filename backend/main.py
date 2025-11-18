@@ -168,7 +168,6 @@ import resource  # для измерения памяти процесса
 
 def dbg_mem(tag: str) -> None:
     """
-<<<<<<< HEAD
     Логируем использование памяти процесса в mem.log (рядом с main.py)
     и дублируем в stdout.
 
@@ -210,26 +209,12 @@ def dbg_mem(tag: str) -> None:
         line = f"[MEM] {tag}: error: {e}"
 
     # Пишем в файл рядом с main.py
-=======
-    Логируем использование памяти в отдельный файл mem.log рядом с main.py
-    и дублируем в stdout.
-    """
-    try:
-        usage = resource.getrusage(resource.RUSAGE_SELF)
-        rss_mb = usage.ru_maxrss / 1024  # ru_maxrss в Кб → МБ
-        line = f"[MEM] {tag}: rss≈{rss_mb:.1f} MB (pid={os.getpid()})"
-    except Exception as e:
-        line = f"[MEM] {tag}: error: {e}"
-
-    # пишем в файл рядом с main.py
->>>>>>> 079ad89ca93d100fb39ef229da87d088028674ce
     try:
         base_dir = os.path.dirname(__file__)
         path = os.path.join(base_dir, "mem.log")
         with open(path, "a", encoding="utf-8") as f:
             f.write(line + "\n")
     except Exception:
-<<<<<<< HEAD
         # Логирование не должно ломать работу API
         pass
 
@@ -267,13 +252,7 @@ def enqueue_auto_match(kind: str, object_id):
     except Exception as e:
         # В случае ошибки просто логируем, но не валим API
         print("[AUTO_MATCH] failed to spawn worker:", e)
-=======
-        # если вдруг не получилось — просто проглатываем
-        pass
->>>>>>> 079ad89ca93d100fb39ef229da87d088028674ce
 
-    # на всякий случай всё равно печатаем
-    print(line)
 
 def get_optional_current_user(
     request: Request, db: Session = Depends(get_db)
@@ -3819,29 +3798,27 @@ def get_transports(
     from_radius: float = Query(None, alias="from_radius"),
     to_radius: float = Query(None, alias="to_radius"),
     db: Session = Depends(get_db),
-    current_user: Optional[UserModel] = Depends(get_optional_current_user)
-
+    current_user: Optional[UserModel] = Depends(get_optional_current_user),
 ):
-if DEBUG_SQL:
-    print('--- /transports QUERY PARAMS ---')
-    print('from_location:', repr(from_location))
-    print('to_location:', repr(to_location))
-    print('ready_date_from:', repr(ready_date_from))
-    print('ready_date_to:', repr(ready_date_to))
-    print('truck_type:', repr(truck_type))
-    print('transport_kind:', repr(transport_kind))
-    print('q:', repr(q))
-    print('gps_monitor:', repr(gps_monitor))
-    print('adr:', repr(adr))
-    print('body_length:', repr(body_length))
-    print('weight:', repr(weight))
-    print('volume:', repr(volume))
-    print('load_types:', repr(load_types))
-    print('from_location_lat:', repr(from_location_lat))
-    print('from_location_lng:', repr(from_location_lng))
-    print('from_radius:', repr(from_radius))
-    print('---')
-
+    if DEBUG_SQL:
+        print('--- /transports QUERY PARAMS ---')
+        print('from_location:', repr(from_location))
+        print('to_location:', repr(to_location))
+        print('ready_date_from:', repr(ready_date_from))
+        print('ready_date_to:', repr(ready_date_to))
+        print('truck_type:', repr(truck_type))
+        print('transport_kind:', repr(transport_kind))
+        print('q:', repr(q))
+        print('gps_monitor:', repr(gps_monitor))
+        print('adr:', repr(adr))
+        print('body_length:', repr(body_length))
+        print('weight:', repr(weight))
+        print('volume:', repr(volume))
+        print('load_types:', repr(load_types))
+        print('from_location_lat:', repr(from_location_lat))
+        print('from_location_lng:', repr(from_location_lng))
+        print('from_radius:', repr(from_radius))
+        print('---')
 
     query = db.query(TransportModel).filter(TransportModel.is_active == True)
 
@@ -4539,7 +4516,6 @@ def create_order(
     # Гарантируем, что координаты всегда массивы
     order_data["from_locations_coords"] = order_data.get("from_locations_coords") or []
     order_data["to_locations_coords"] = order_data.get("to_locations_coords") or []
-<<<<<<< HEAD
     if (
         order_data.get("from_locations")
         and len(order_data["from_locations_coords"]) < len(order_data["from_locations"])
@@ -4547,10 +4523,6 @@ def create_order(
         diff = len(order_data["from_locations"]) - len(
             order_data["from_locations_coords"]
         )
-=======
-    if order_data.get("from_locations") and len(order_data["from_locations_coords"]) < len(order_data["from_locations"]):
-        diff = len(order_data["from_locations"]) - len(order_data["from_locations_coords"])
->>>>>>> 079ad89ca93d100fb39ef229da87d088028674ce
         order_data["from_locations_coords"].extend([{} for _ in range(diff)])
 
     db_order = OrderModel(**order_data)
@@ -4558,16 +4530,10 @@ def create_order(
     db.commit()
     db.refresh(db_order)
 
-<<<<<<< HEAD
     # Вместо тяжёлого inline‑подбора — запускаем отдельный процесс‑воркер
     dbg_mem("create_order: before enqueue_auto_match")
     enqueue_auto_match("order", db_order.id)
     dbg_mem("create_order: after enqueue_auto_match")
-=======
-    dbg_mem("create_order: before auto_match")
-    find_and_notify_auto_match_for_order(db_order, db)
-    dbg_mem("create_order: after auto_match")
->>>>>>> 079ad89ca93d100fb39ef229da87d088028674ce
 
     return db_order
 
@@ -5403,24 +5369,32 @@ def get_unread_matches(
 def get_order_new_matches_count(
     order_id: int,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user)
+    current_user=Depends(get_current_user),
 ):
-    if DISABLE_MATCH_COUNTERS:
-        return {"new_matches": 0}
+    """
+    Лёгкий подсчёт количества новых совпадений по заявке.
 
-    from notifications import find_matching_transports
+    Вместо тяжёлого find_matching_transports считаем только
+    непрочитанные уведомления типа AUTO_MATCH с related_id = order_id.
+    """
     order = db.query(OrderModel).filter(OrderModel.id == order_id).first()
     if not order:
-        raise HTTPException(status_code=404, detail={
-                            "code": "error.order.notFound", "message": "Заявка не найдена"})
-    view = db.query(OrderMatchView).filter_by(
-        user_id=current_user.id, order_id=order_id).first()
-    last_view = view.last_viewed_at if view else datetime(1970, 1, 1)
-    matches = [
-        t for t in find_matching_transports(order, db, exclude_user_id=current_user.id)
-        if t.created_at > last_view
-    ]
-    return {"new_matches": len(matches)}
+        raise HTTPException(
+            status_code=404,
+            detail={"code": "error.order.notFound", "message": "Заявка не найдена"},
+        )
+
+    new_count = (
+        db.query(Notification)
+        .filter(
+            Notification.user_id == current_user.id,
+            Notification.type == NotificationType.AUTO_MATCH,
+            Notification.read == False,
+            Notification.related_id == str(order_id),
+        )
+        .count()
+    )
+    return {"new_matches": new_count}
 # Отметить Соответствия по заявке просмотренными
 
 
@@ -5449,25 +5423,31 @@ def mark_order_matches_viewed(
 def get_transport_new_matches_count(
     transport_id: str,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user)
+    current_user=Depends(get_current_user),
 ):
-    if DISABLE_MATCH_COUNTERS:
-        return {"new_matches": 0}
+    """
+    Лёгкий подсчёт новых совпадений по транспорту.
 
-    from notifications import find_matching_orders_for_transport
-    transport = db.query(TransportModel).filter(
-        TransportModel.id == transport_id).first()
-    if not transport:
-        raise HTTPException(status_code=404, detail={
-                            "code": "error.transport.notFound", "message": "Транспорт не найден"})
-    view = db.query(TransportMatchView).filter_by(
-        user_id=current_user.id, transport_id=transport_id).first()
-    last_view = view.last_viewed_at if view else datetime(1970, 1, 1)
-    matches = [
-        o for o in find_matching_orders_for_transport(transport, db, exclude_user_id=current_user.id)
-        if getattr(o, "created_at", None) and o.created_at > last_view
-    ]
-    return {"new_matches": len(matches)}
+    Считаем только непрочитанные AUTO_MATCH-уведомления с related_id = transport_id.
+    """
+    tr = db.query(TransportModel).filter(TransportModel.id == transport_id).first()
+    if not tr:
+        raise HTTPException(
+            status_code=404,
+            detail={"code": "error.transport.notFound", "message": "Транспорт не найден"},
+        )
+
+    new_count = (
+        db.query(Notification)
+        .filter(
+            Notification.user_id == current_user.id,
+            Notification.type == NotificationType.AUTO_MATCH,
+            Notification.read == False,
+            Notification.related_id == str(transport_id),
+        )
+        .count()
+    )
+    return {"new_matches": new_count}
 
 
 # Отметить Соответствия по транспорту просмотренными
