@@ -168,6 +168,7 @@ import resource  # для измерения памяти процесса
 
 def dbg_mem(tag: str) -> None:
     """
+<<<<<<< HEAD
     Логируем использование памяти процесса в mem.log (рядом с main.py)
     и дублируем в stdout.
 
@@ -209,12 +210,26 @@ def dbg_mem(tag: str) -> None:
         line = f"[MEM] {tag}: error: {e}"
 
     # Пишем в файл рядом с main.py
+=======
+    Логируем использование памяти в отдельный файл mem.log рядом с main.py
+    и дублируем в stdout.
+    """
+    try:
+        usage = resource.getrusage(resource.RUSAGE_SELF)
+        rss_mb = usage.ru_maxrss / 1024  # ru_maxrss в Кб → МБ
+        line = f"[MEM] {tag}: rss≈{rss_mb:.1f} MB (pid={os.getpid()})"
+    except Exception as e:
+        line = f"[MEM] {tag}: error: {e}"
+
+    # пишем в файл рядом с main.py
+>>>>>>> 079ad89ca93d100fb39ef229da87d088028674ce
     try:
         base_dir = os.path.dirname(__file__)
         path = os.path.join(base_dir, "mem.log")
         with open(path, "a", encoding="utf-8") as f:
             f.write(line + "\n")
     except Exception:
+<<<<<<< HEAD
         # Логирование не должно ломать работу API
         pass
 
@@ -252,7 +267,13 @@ def enqueue_auto_match(kind: str, object_id):
     except Exception as e:
         # В случае ошибки просто логируем, но не валим API
         print("[AUTO_MATCH] failed to spawn worker:", e)
+=======
+        # если вдруг не получилось — просто проглатываем
+        pass
+>>>>>>> 079ad89ca93d100fb39ef229da87d088028674ce
 
+    # на всякий случай всё равно печатаем
+    print(line)
 
 def get_optional_current_user(
     request: Request, db: Session = Depends(get_db)
@@ -4518,6 +4539,7 @@ def create_order(
     # Гарантируем, что координаты всегда массивы
     order_data["from_locations_coords"] = order_data.get("from_locations_coords") or []
     order_data["to_locations_coords"] = order_data.get("to_locations_coords") or []
+<<<<<<< HEAD
     if (
         order_data.get("from_locations")
         and len(order_data["from_locations_coords"]) < len(order_data["from_locations"])
@@ -4525,6 +4547,10 @@ def create_order(
         diff = len(order_data["from_locations"]) - len(
             order_data["from_locations_coords"]
         )
+=======
+    if order_data.get("from_locations") and len(order_data["from_locations_coords"]) < len(order_data["from_locations"]):
+        diff = len(order_data["from_locations"]) - len(order_data["from_locations_coords"])
+>>>>>>> 079ad89ca93d100fb39ef229da87d088028674ce
         order_data["from_locations_coords"].extend([{} for _ in range(diff)])
 
     db_order = OrderModel(**order_data)
@@ -4532,10 +4558,16 @@ def create_order(
     db.commit()
     db.refresh(db_order)
 
+<<<<<<< HEAD
     # Вместо тяжёлого inline‑подбора — запускаем отдельный процесс‑воркер
     dbg_mem("create_order: before enqueue_auto_match")
     enqueue_auto_match("order", db_order.id)
     dbg_mem("create_order: after enqueue_auto_match")
+=======
+    dbg_mem("create_order: before auto_match")
+    find_and_notify_auto_match_for_order(db_order, db)
+    dbg_mem("create_order: after auto_match")
+>>>>>>> 079ad89ca93d100fb39ef229da87d088028674ce
 
     return db_order
 
