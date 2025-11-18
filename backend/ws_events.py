@@ -14,8 +14,13 @@ def register_ws(chat_id: int, ws: WebSocket) -> None:
 
 def unregister_ws(chat_id: int, ws: WebSocket) -> None:
     try:
-        if ws in active_connections.get(chat_id, []):
-            active_connections[chat_id].remove(ws)
+        conns = active_connections.get(chat_id)
+        if not conns:
+            return
+        if ws in conns:
+            conns.remove(ws)
+        if not conns:
+            active_connections.pop(chat_id, None)
     except Exception:
         pass
 
@@ -53,7 +58,4 @@ async def ws_emit_to_chat(chat_id: int, arg1, arg2=None, skip: Optional[WebSocke
             drop.append(ws)
     if drop:
         for ws in drop:
-            try:
-                active_connections[chat_id].remove(ws)
-            except Exception:
-                pass
+            unregister_ws(chat_id, ws)

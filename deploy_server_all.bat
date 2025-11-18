@@ -1,22 +1,23 @@
 @echo off
-set SERVER_USER=root
-set SERVER_HOST=91.239.207.26
+setlocal
 
-echo === FULL DEPLOY на %SERVER_HOST% (backend + frontend) ===
+rem === НАСТРОЙКА: куда подключаться ===
+rem здесь укажи то же, что используешь в VS Code (например root@transinfo или root@X.X.X.X)
+set SSH_TARGET=root@91.239.207.26
 
-ssh %SERVER_USER%@%SERVER_HOST% ^
-  "cd /opt/transinfo && \
-   git pull && \
-   cd /opt/transinfo/backend && \
-   source .venv/bin/activate && \
-   pip install -r requirements.txt && \
-   deactivate && \
-   sudo systemctl restart transinfo-backend.service && \
-   cd /opt/transinfo/frontend && \
-   npm install --omit=dev && \
-   npm run build && \
-   sudo systemctl restart transinfo-frontend.service"
+echo ==== GIT PULL на %SSH_TARGET% ====
+ssh %SSH_TARGET% "cd /opt/transinfo && git pull --ff-only"
+
+echo ==== РЕСТАРТ backend ====
+ssh %SSH_TARGET% "systemctl restart transinfo-backend.service"
+
+echo ==== РЕСТАРТ frontend ====
+ssh %SSH_TARGET% "systemctl restart transinfo-frontend.service"
+
+echo ==== СТАТУС СЕРВИСОВ ====
+ssh %SSH_TARGET% "systemctl --no-pager status transinfo-backend.service transinfo-frontend.service"
 
 echo.
-echo === ГОТОВО: backend и frontend обновлены ===
+echo === ГОТОВО ===
 pause
+endlocal

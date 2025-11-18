@@ -4,7 +4,7 @@ const TERMS_VERSION = "2025-09-17-ru-v1";
 import { useState, useEffect } from "react";
 import { FaTruck, FaUser, FaClipboardCheck, FaEye, FaEyeSlash } from "react-icons/fa6";
 import { useRouter } from "next/navigation";
-import PhoneWithOtp from "@/features/auth/PhoneWithOtp";
+import { API_BASE } from "@/app/lib/apiBase";
 import { setTokenEverywhere, setUserEverywhere, removeTokenEverywhere } from "./yourTokenUtils";
 import { useUser } from "../UserContext";
 import PhoneInput from "react-phone-input-2";
@@ -94,6 +94,14 @@ export default function RegisterForm({ onSuccess }) {
     const [eyeHover2, setEyeHover2] = useState(false);
     const { authFetchWithRefresh } = useUser();
     const [phoneVerified, setPhoneVerified] = useState(false);
+    const [showPhoneVerify, setShowPhoneVerify] = useState(false);
+    const [phoneCode, setPhoneCode] = useState("");
+    const [phoneVerifyMsg, setPhoneVerifyMsg] = useState("");
+    const [phoneResendLeft, setPhoneResendLeft] = useState(0);
+    const [pendingRegisterPayload, setPendingRegisterPayload] = useState(null);
+    const [isPhoneCodeSending, setIsPhoneCodeSending] = useState(false);
+    // одно состояние для проверки кода
+    const [isPhoneVerifyLoading, setIsPhoneVerifyLoading] = useState(false);
 
     const [form, setForm] = useState({
         organization: "",
@@ -139,7 +147,12 @@ export default function RegisterForm({ onSuccess }) {
         const id = setInterval(() => setResendLeft((s) => (s > 0 ? s - 1 : 0)), 1000);
         return () => clearInterval(id);
     }, [showVerify, resendLeft]);
-    const router = useRouter();
+
+    useEffect(() => {
+        if (!showPhoneVerify || phoneResendLeft <= 0) return;
+        const id = setInterval(() => setPhoneResendLeft((s) => (s > 0 ? s - 1 : 0)), 1000);
+        return () => clearInterval(id);
+    }, [showPhoneVerify, phoneResendLeft]);
 
     function handleRole(r) {
         setRole(r);
@@ -158,6 +171,9 @@ export default function RegisterForm({ onSuccess }) {
         setErrors(initialFieldErrors);
         // уберём ошибку роли, если она была
         setErrors((prev) => ({ ...prev, role: [] }));
+        setPhoneVerified(false);
+        setPendingRegisterPayload(null);
+        setShowPhoneVerify(false);
     }
 
     function handleChange(e) {
@@ -269,11 +285,6 @@ export default function RegisterForm({ onSuccess }) {
 
     async function handleRegister(e) {
         e.preventDefault();
-        // Блокируем сабмит, если телефон не подтверждён
-        if (!phoneVerified) {
-            alert(uiLang === "ka" ? "დაადასტურეთ ტელეფონი" : uiLang === "ru" ? "Подтвердите телефон" : "Verify phone first");
-            return;
-        }
         setMsg("");
         setErrors(initialFieldErrors);
         const hasErrors = validateFormAndSetErrors();
@@ -281,21 +292,161 @@ export default function RegisterForm({ onSuccess }) {
 
         const data = {
             ...form,
+            // гарантируем +995...
             phone: form.phone.startsWith("+") ? form.phone : "+" + form.phone,
             role,
             person_type: personType,
         };
 
+        const payload = {
+            ...data,
+            accepted_terms: agreeTerms,
+            terms_version: TERMS_VERSION,
+        };
+
+        // 1) если телефон ещё НЕ подтверждён – сначала шлём SMS и открываем модалку
+        if (!phoneVerified) {
+            await startPhoneVerificationFlow(payload);
+            return;
+        }
+
+        // 2) телефон уже подтверждён – сразу регистрация
+        await submitRegistration(payload);
+    }
+
+
+    async function startPhoneVerificationFlow(payload) {
+        if (!payload?.phone) {
+            setErrors((prev) => ({ ...prev, phone: ["Укажите номер телефона."] }));
+            return;
+        }
+        setIsPhoneCodeSending(true);
+        setPhoneVerifyMsg("");
+        setPendingRegisterPayload(payload);
+        const sent = await sendPhoneCode(payload.phone);
+        setIsPhoneCodeSending(false);
+        if (!sent) {
+            setPendingRegisterPayload(null);
+            return;
+        }
+        setPhoneCode("");
+        setPhoneResendLeft(60);
+        setShowPhoneVerify(true);  // <-- показываем модалку ввода кода
+    }
+
+    async function sendPhoneCode(phone) {
+        try {
+            const res = await fetch(api(`/phone/send-code`), {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ phone, lang: uiLang }),
+            });
+            if (!res.ok) {
+                let detail = await res.text();
+                try {
+                    const parsed = detail ? JSON.parse(detail) : null;
+                    if (parsed && typeof parsed.detail === "string") detail = parsed.detail;
+                } catch (_) {
+                    // ignore
+                }
+                throw new Error(detail || "send_failed");
+            }
+            return true;
+        } catch (err) {
+            const msg = mapPhoneError(err?.message);
+            setPhoneVerifyMsg(msg);
+            setErrors((prev) => ({ ...prev, phone: [msg] }));
+            return false;
+        }
+    }
+
+    function mapPhoneError(detail) {
+        if (!detail) return "Не удалось отправить код. Попробуйте ещё раз.";
+        if (detail.includes("cooldown")) return "Код уже отправлен. Попробуйте позже.";
+        if (detail.includes("sms_failed")) return "Не удалось отправить SMS. Попробуйте позже.";
+        if (detail.includes("phone_required")) return "Укажите номер телефона.";
+        return "Не удалось отправить код. Попробуйте ещё раз.";
+    }
+
+    const handlePhoneVerifySubmit = async (e) => {
+        e.preventDefault();
+        setIsPhoneVerifyLoading(true);
+        setError(null);
+
+        try {
+            const payload = pendingRegisterPayload;
+            if (!payload) {
+                throw new Error("შიდა შეცდომა: არ არის მონაცემები რეგისტრაციისთვის");
+            }
+
+            const resp = await fetch(api(`/phone/verify`), {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    phone: payload.phone,
+                    code: phoneCode.trim(),
+                }),
+                credentials: "include",
+            });
+
+            if (!resp.ok) {
+                const data = await resp.json().catch(() => ({}));
+                throw new Error(
+                    data.detail?.message || data.detail || "არასწორი კოდი"
+                );
+            }
+
+            // телефон подтверждён
+            setPhoneVerified(true);
+            setShowPhoneVerify(false);
+
+            // сразу продолжаем регистрацию теми же данными
+            setPendingRegisterPayload(null);
+            await submitRegistration(payload);
+        } catch (err) {
+            setError(err.message || "კოდის დადასტურების შეცდომა");
+        } finally {
+            setIsPhoneVerifyLoading(false);
+        }
+    };
+
+    function mapPhoneVerifyError(detail) {
+        if (!detail) return "Неверный код.";
+        if (detail === "code_expired") return "Срок действия кода истёк. Запросите новый.";
+        if (detail === "code_invalid") return "Неверный код.";
+        if (detail === "too_many_attempts") return "Слишком много попыток. Попробуйте позже.";
+        if (detail === "code_not_requested") return "Сначала запросите код.";
+        return "Не удалось подтвердить код.";
+    }
+
+    async function handlePhoneResend() {
+        if (phoneResendLeft > 0) return;
+        const phone = pendingRegisterPayload?.phone || form.phone;
+        if (!phone) return;
+        const sent = await sendPhoneCode(phone);
+        if (sent) {
+            setPhoneResendLeft(60);
+            setPhoneVerifyMsg("");
+        }
+    }
+
+    function cancelPhoneVerification() {
+        setShowPhoneVerify(false);
+        setPhoneCode("");
+        setPhoneVerifyMsg("");
+        setIsPhoneVerifyLoading(false);
+        setPhoneResendLeft(0);
+        setPendingRegisterPayload(null);
+    }
+
+    async function submitRegistration(payload) {
+        setPendingRegisterPayload(null);
         let res, resp;
         try {
             res = await fetch(api(`/register`), {
                 method: "POST",
                 headers: { "Content-Type": "application/json", "x-ui-lang": uiLang },
-                body: JSON.stringify({
-                    ...data,
-                    accepted_terms: agreeTerms,
-                    terms_version: TERMS_VERSION,
-                }),
+                body: JSON.stringify(payload),
             });
         } catch (_) {
             setMsg("Сеть недоступна. Проверьте подключение.");
@@ -308,9 +459,8 @@ export default function RegisterForm({ onSuccess }) {
             resp = {};
         }
 
-        // Новый поток: сервер сообщил, что код отправлен на почту
         if (res.ok && resp && resp.status === "verification_sent") {
-            setEmailForVerify(form.email);
+            setEmailForVerify(payload.email || form.email);
             setVerifyCode("");
             setVerifyMsg("");
             setShowVerify(true);
@@ -325,7 +475,7 @@ export default function RegisterForm({ onSuccess }) {
                 const loginRes = await fetch(api(`/login`), {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ email: form.email, password: form.password }),
+                    body: JSON.stringify({ email: payload.email, password: payload.password }),
                     credentials: "include",
                 });
                 const loginData = await loginRes.json();
@@ -646,6 +796,12 @@ export default function RegisterForm({ onSuccess }) {
                             value={form.phone}
                             onChange={(phone) => {
                                 setForm((f) => ({ ...f, phone }));
+                                setPhoneVerified(false);
+                                setPendingRegisterPayload(null);
+                                setShowPhoneVerify(false);
+                                setPhoneVerifyMsg("");
+                                setPhoneCode("");
+                                setPhoneResendLeft(0);
                                 if (errors.phone.length) setErrors((prev) => ({ ...prev, phone: [] }));
                             }}
                             inputProps={{
@@ -656,15 +812,6 @@ export default function RegisterForm({ onSuccess }) {
                             containerStyle={{ width: "100%" }}
                         />
                         {errors.phone.length > 0 && <div style={errorStyle}>{errors.phone[0]}</div>}
-                        {/* Кнопка “Код” + поле ввода кода + галочка при успехе */}
-                        <div style={{ marginTop: 8 }}>
-                            <PhoneWithOtp
-                                lang={uiLang}
-                                value={form.phone}
-                                onChange={(p) => setForm((f) => ({ ...f, phone: p }))}
-                                onVerified={(p) => { setForm((f) => ({ ...f, phone: p })); setPhoneVerified(true); }}
-                            />
-                        </div>
                     </div>
 
                     <div id="field-email">
@@ -794,7 +941,7 @@ export default function RegisterForm({ onSuccess }) {
                         {errors.accepted_terms.length > 0 && <div style={errorStyle}>{errors.accepted_terms[0]}</div>}
                     </div>
 
-                    <button type="submit" className="register-form-btn" disabled={showSuccess}>
+                    <button type="submit" className="register-form-btn" disabled={showSuccess || isPhoneCodeSending}>
                         {t("auth.register", "Регистрация")}
                     </button>
 
@@ -815,6 +962,96 @@ export default function RegisterForm({ onSuccess }) {
                         </div>
                     )}
                 </form>
+            )}
+
+            {showPhoneVerify && (
+                <div
+                    onClick={cancelPhoneVerification}
+                    style={{
+                        position: "fixed",
+                        left: 0,
+                        top: 0,
+                        width: "100vw",
+                        height: "100vh",
+                        background: "rgba(0,0,0,0.45)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        zIndex: 2100,
+                    }}
+                >
+                    <div
+                        onClick={(e) => e.stopPropagation()}
+                        style={{
+                            width: 420,
+                            maxWidth: "92vw",
+                            background: "rgba(34,36,52,0.98)",
+                            borderWidth: 2,
+                            borderStyle: "solid",
+                            borderColor: "#43c8ff",
+                            borderRadius: 16,
+                            padding: 20,
+                            boxShadow: "0 8px 40px rgba(0,0,0,.3)",
+                        }}
+                    >
+                        <h3 style={{ margin: 0, marginBottom: 8, fontSize: 20 }}>Подтверждение телефона</h3>
+                        <div style={{ opacity: .85, marginBottom: 14 }}>
+                            Мы отправили 6-значный код на <b>{pendingRegisterPayload?.phone || form.phone}</b>.
+                        </div>
+                        <form onSubmit={handlePhoneVerifySubmit}>
+                            <input
+                                inputMode="numeric"
+                                autoFocus
+                                placeholder="Введите 6-значный код"
+                                value={phoneCode}
+                                onChange={(e) => setPhoneCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                                style={{
+                                    width: "100%",
+                                    fontSize: 22,
+                                    letterSpacing: 4,
+                                    textAlign: "center",
+                                    padding: "10px 12px",
+                                    borderRadius: 12,
+                                    border: "2px solid #43c8ff",
+                                    outline: "none",
+                                    background: "rgba(255,255,255,0.04)",
+                                    color: "white",
+                                }}
+                                disabled={isPhoneVerifyLoading}
+                            />
+                            {phoneVerifyMsg && (
+                                <div style={{ color: "#ff7b7b", marginTop: 8 }}>{phoneVerifyMsg}</div>
+                            )}
+                            <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
+                                <button
+                                    type="submit"
+                                    disabled={isPhoneVerifyLoading || phoneCode.replace(/\D/g, '').length !== 6}
+                                    className="register-submit-btn"
+                                    style={{ flex: 1 }}
+                                >
+                                    Подтвердить
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={handlePhoneResend}
+                                    disabled={phoneResendLeft > 0 || isPhoneVerifyLoading}
+                                    className="register-cancel-btn"
+                                    style={{ flex: 1 }}
+                                >
+                                    Отправить ещё раз{phoneResendLeft > 0 ? ` (${phoneResendLeft})` : ''}
+                                </button>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={cancelPhoneVerification}
+                                className="register-cancel-btn"
+                                style={{ marginTop: 10, width: "100%" }}
+                            >
+                                Отмена
+                            </button>
+                        </form>
+                    </div>
+                </div>
             )}
 
             {showVerify && (

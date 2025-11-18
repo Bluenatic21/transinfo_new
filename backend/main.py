@@ -1,7 +1,7 @@
 from fastapi import Query, Depends, Response
 from typing import Optional, List
 from billing_tasks import start_billing_scheduler
-# TEMP: billing выключен, чтобы поднять API; вернём после фикса импорта в billing_rest
+## TEMP: billing выключен, чтобы поднять API; вернём после фикса импорта в billing_rest
 # from billing_rest import router as billing_router
 from fastapi import Query, Depends
 import mimetypes
@@ -63,6 +63,7 @@ import secrets
 from schemas import BidOut, Order
 from datetime import datetime, timedelta, date
 import os
+DEBUG_SQL = os.getenv('DEBUG_SQL', '0') == '1'
 import secrets
 from order_reminders import start_scheduler
 from notifications import user_notification_connections, push_notification, find_matching_orders
@@ -88,6 +89,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import or_, func, text, cast, ARRAY, String, and_
 from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.dialects import postgresql
 from sqlalchemy.types import String
 from models import UserBlock as UB
 from jose import jwt, JWTError
@@ -96,18 +98,22 @@ from ws_chat import ws_router as ws_chat_router
 from password_reset_rest import router as password_reset_router
 
 
-from typing import List, Optional, Dict, Tuple
+from typing import List, Optional, Dict
 from pydantic import BaseModel
-from collections import defaultdict, OrderedDict
+from collections import defaultdict
 import uuid
 import json
 import time
 import logging
+import contextlib
 import redis
 import requests
+import subprocess
 from uuid import uuid4
 import schemas
 import threading
+import sys
+from pathlib import Path
 
 # Импорты своих модулей
 from auth import router as auth_router, authenticate_user, create_access_token, get_current_user, SECRET_KEY, ALGORITHM
@@ -156,15 +162,96 @@ except ImportError:
     load_dotenv = None
 
 # --- Paywall helpers -------------------------------------------------
+import subprocess
+import resource  # для измерения памяти процесса
 
 
-def _billing_account_id(u: UserModel) -> int:
-    # EMPLOYEE биллится на менеджера
-    if u and u.role == UserRole.EMPLOYEE and u.manager_id:
-        return u.manager_id
-    return u.id if u else None
+def dbg_mem(tag: str) -> None:
+    """
+    Логируем использование памяти процесса в mem.log (рядом с main.py)
+    и дублируем в stdout.
 
-# <-- НОВОЕ: Добавляем эту функцию рядом с другими хелперами аутентификации
+    Показываем:
+      - текущий RSS (resident set size, MB)
+      - пиковый RSS за всё время работы процесса (peak)
+    """
+    try:
+        import resource
+
+        # Пиковый RSS с начала жизни процесса
+        usage = resource.getrusage(resource.RUSAGE_SELF)
+        peak_mb = usage.ru_maxrss / 1024.0  # ru_maxrss в Кб → МБ
+
+        current_mb = None
+        try:
+            # /proc/self/statm: total, resident, shared, ...
+            with open("/proc/self/statm", "r") as f:
+                parts = f.read().split()
+            if len(parts) >= 2:
+                rss_pages = int(parts[1])
+                page_size = os.sysconf("SC_PAGE_SIZE")  # байт
+                current_mb = rss_pages * page_size / (1024.0 * 1024.0)
+        except Exception:
+            current_mb = None
+
+        if current_mb is not None:
+            line = (
+                f"[MEM] {tag}: rss={current_mb:.1f} MB, "
+                f"peak={peak_mb:.1f} MB (pid={os.getpid()})"
+            )
+        else:
+            # fallback, если /proc/self/statm по какой‑то причине не прочитался
+            line = (
+                f"[MEM] {tag}: rss≈{peak_mb:.1f} MB (peak only, "
+                f"pid={os.getpid()})"
+            )
+    except Exception as e:
+        line = f"[MEM] {tag}: error: {e}"
+
+    # Пишем в файл рядом с main.py
+    try:
+        base_dir = os.path.dirname(__file__)
+        path = os.path.join(base_dir, "mem.log")
+        with open(path, "a", encoding="utf-8") as f:
+            f.write(line + "\n")
+    except Exception:
+        # Логирование не должно ломать работу API
+        pass
+
+    print(line)
+
+# Временный флажок: можно полностью отключить тяжёлые пересчёты счётчиков совпадений.
+DISABLE_MATCH_COUNTERS = os.getenv("DISABLE_MATCH_COUNTERS", "0") == "1"    
+
+# Путь до скрипта воркера авто‑матча
+AUTO_MATCH_WORKER_PATH = Path(__file__).with_name("auto_match_worker.py")
+
+
+
+def enqueue_auto_match(kind: str, object_id):
+    """
+    Стартует отдельный процесс auto_match_worker.py, чтобы подобрать совпадения.
+    kind: "order" или "transport"
+    object_id: id заявки или транспорта
+    """
+    try:
+        cmd = [
+            sys.executable,                      # тот же python, что и у uvicorn
+            str(AUTO_MATCH_WORKER_PATH),
+            "--kind", kind,
+            "--id", str(object_id),
+        ]
+        # Запускаем процесс в фоне, не блокируя запрос
+        subprocess.Popen(
+            cmd,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            close_fds=True,
+        )
+        print(f"[AUTO_MATCH] spawned worker: {' '.join(cmd)}")
+    except Exception as e:
+        # В случае ошибки просто логируем, но не валим API
+        print("[AUTO_MATCH] failed to spawn worker:", e)
 
 
 def get_optional_current_user(
@@ -268,7 +355,6 @@ def _load_env_file(path: str) -> bool:
 
 ENV_FILE_USED = None
 BASE_DIR = os.path.dirname(__file__)
-# root репозитория (на уровень выше backend/)
 ROOT_DIR = os.path.abspath(os.path.join(BASE_DIR, ".."))
 
 # Порядок поиска: backend/.env.local → backend/.env → repo/.env.local → repo/.env
@@ -308,17 +394,16 @@ def admin_required(current_user: UserModel = Depends(get_current_user)):
 
 app = FastAPI()
 
+dbg_mem("startup")
 
 @app.get("/healthz")
 def healthz():
     return {"ok": True}
 
 # --- Lightweight health endpoint for LB/monitors (returns 204, no body) ---
-
-
 @app.get("/health", status_code=204)
 def health() -> StarletteResponse:
-    return StarletteResponse(status_code=204)
+    return StarletteResponse(status_code=204)    
 
 
 # ==== РОУТЕР ДЛЯ chat_files (Range-отдача) ====
@@ -456,13 +541,22 @@ def haversine(lat1, lon1, lat2, lon2):
 
 
 async def notify_user(user_id, message):
-    ws_set = active_websockets.get(str(user_id))
-    if ws_set:
-        for ws in ws_set.copy():
+    key = str(user_id)
+    ws_set = active_websockets.get(key)
+    if not ws_set:
+        return
+
+    for ws in ws_set.copy():
+        try:
+            await ws.send_json(message)
+        except Exception:
             try:
-                await ws.send_json(message)
+                ws_set.discard(ws)
             except Exception:
-                active_websockets[str(user_id)].discard(ws)
+                pass
+
+    if not ws_set:
+        active_websockets.pop(key, None)
 
 # Логирование
 logging.basicConfig(
@@ -483,28 +577,139 @@ global_ws_connections = {}
 
 FRONTEND_ORIGIN = os.getenv("FRONTEND_ORIGIN", "https://transinfo.ge")
 
-# --- HTTP-кэш списков/чатов: ограниченный LRU, чтобы не съедать всю память ---
-HTTP_CACHE_MAX_ITEMS = int(os.getenv("HTTP_CACHE_MAX_ITEMS", "5000"))
-
 # ключ: "<auth-идентификатор>:<path>?<query>" -> (ts, body, headers, status, etag)
-_HTTP_CACHE = OrderedDict()
+_HTTP_CACHE: Dict[str, Tuple[float, bytes, dict, int, str]] = {}
 
 
-def _http_cache_get(key: str):
-    """Достаём элемент и помечаем его как недавно использованный."""
-    rec = _HTTP_CACHE.get(key)
-    if not rec:
-        return None
-    _HTTP_CACHE.move_to_end(key, last=True)
-    return rec
+def _get_env_bool(name: str, default: bool = False) -> bool:
+    raw = os.getenv(name)
+    if raw is None:
+        return default
+    return raw.strip().lower() in {"1", "true", "yes", "on"}
 
 
-def _http_cache_set(key: str, value: Tuple[float, bytes, dict, int, str]):
-    """Кладём элемент и вычищаем самые старые записи при переполнении."""
-    _HTTP_CACHE[key] = value
-    _HTTP_CACHE.move_to_end(key, last=True)
-    while len(_HTTP_CACHE) > HTTP_CACHE_MAX_ITEMS:
-        _HTTP_CACHE.popitem(last=False)
+# Возможность мгновенно отключить HTTP-кэш без деплоя.
+DISABLE_HTTP_CACHE = _get_env_bool("DISABLE_HTTP_CACHE", False)
+
+# Максимальное число записей в памяти.
+# 0 или отрицательное значение полностью выключает кэширование.
+HTTP_CACHE_MAX_ITEMS = int(os.getenv("HTTP_CACHE_MAX_ITEMS", "0") or "0")
+
+# TTL записей (в секундах). После его истечения элементы удаляются.
+HTTP_CACHE_TTL = float(os.getenv("HTTP_CACHE_TTL", "5") or "5")
+
+# За один проход чистки удаляем не более указанного количества записей.
+HTTP_CACHE_CLEANUP_BUDGET = int(os.getenv("HTTP_CACHE_CLEANUP_BUDGET", "100") or "100")
+
+
+# Порог, при котором мы считаем, что кэш раздулся и надо перезапустить сервис.
+# 0 или отрицательное значение = автоперезапуск выключен.
+HTTP_CACHE_RESTART_AT = int(os.getenv("HTTP_CACHE_RESTART_AT", "0") or "0")
+
+# Минимальный интервал (в секундах) между перезапусками по кэшу.
+HTTP_CACHE_RESTART_COOLDOWN = int(os.getenv("HTTP_CACHE_RESTART_COOLDOWN", "300") or "300")
+
+if DISABLE_HTTP_CACHE:
+    HTTP_CACHE_MAX_ITEMS = 0
+
+
+_last_cache_restart_ts: float = 0.0
+
+print(f"[HTTP_CACHE] max items = {HTTP_CACHE_MAX_ITEMS}")
+print(f"[HTTP_CACHE] ttl = {HTTP_CACHE_TTL}s, cleanup_budget = {HTTP_CACHE_CLEANUP_BUDGET}")
+print(f"[HTTP_CACHE] restart_at = {HTTP_CACHE_RESTART_AT}, cooldown = {HTTP_CACHE_RESTART_COOLDOWN}s")
+
+def _http_cache_enabled() -> bool:
+    return HTTP_CACHE_MAX_ITEMS > 0 and HTTP_CACHE_TTL > 0 and not DISABLE_HTTP_CACHE
+
+
+def _http_cache_cleanup(now: Optional[float] = None) -> None:
+    """Удаляет протухшие записи из кэша, чтобы не накапливать память."""
+
+    if not _HTTP_CACHE:
+        return
+
+    now = now or time.time()
+    removed = 0
+    for key, value in list(_HTTP_CACHE.items()):
+        ts = value[0]
+        if now - ts >= HTTP_CACHE_TTL:
+            _HTTP_CACHE.pop(key, None)
+            removed += 1
+            if removed >= HTTP_CACHE_CLEANUP_BUDGET:
+                break
+
+
+
+def _restart_backend_service(reason: str) -> None:
+    """
+    Автоперезапуск сервиса, когда кэш разрастается.
+
+    Управляется переменными окружения:
+      - HTTP_CACHE_RESTART_AT — порог по числу записей (0 = выкл)
+      - HTTP_CACHE_RESTART_COOLDOWN — минимальный интервал между рестартами.
+    """
+    global _last_cache_restart_ts
+
+    if HTTP_CACHE_RESTART_AT <= 0:
+        # Автоперезапуск отключен
+        return
+
+    now = time.time()
+    # Защита от частых рестартов
+    if _last_cache_restart_ts and now - _last_cache_restart_ts < HTTP_CACHE_RESTART_COOLDOWN:
+        return
+
+    _last_cache_restart_ts = now
+    try:
+        size = len(_HTTP_CACHE)
+        print(f"[HTTP_CACHE] size={size}, reason={reason} → restarting transinfo-backend.service")
+
+        # Перезапуск сервиса
+        subprocess.run(
+            ["sudo", "systemctl", "restart", "transinfo-backend.service"],
+            check=False,
+        )
+        # Логируем статус (вывод попадёт в journalctl)
+        subprocess.run(
+            ["sudo", "systemctl", "status", "transinfo-backend.service"],
+            check=False,
+        )
+    except Exception as e:
+        print(f"[HTTP_CACHE] restart failed: {e}")
+
+
+def _http_cache_put(key: str, entry: Tuple[float, bytes, dict, int, str]):
+    """
+    Кладём запись в _HTTP_CACHE с ограничением по количеству.
+    entry: (ts, body, headers, status_code, etag)
+    """
+    if not _http_cache_enabled():
+        # Кэш полностью выключен
+        return
+
+    try:
+                # Перед добавлением вычищаем протухшие записи.
+        _http_cache_cleanup(now=entry[0])
+
+        current_size = len(_HTTP_CACHE)
+
+        # Если кэш разросся — пробуем аккуратно перезапустить backend
+        if HTTP_CACHE_RESTART_AT > 0 and current_size >= HTTP_CACHE_RESTART_AT:
+            _restart_backend_service("HTTP cache size limit reached")
+
+        if current_size >= HTTP_CACHE_MAX_ITEMS:
+            # выкидываем ~10% самых старых ключей (по ts)
+            to_drop = sorted(
+                _HTTP_CACHE.items(), key=lambda kv: kv[1][0]
+            )[: max(1, HTTP_CACHE_MAX_ITEMS // 10)]
+            for k, _ in to_drop:
+                _HTTP_CACHE.pop(k, None)
+
+        _HTTP_CACHE[key] = entry
+    except Exception:
+        # На всякий случай, чтобы из-за возможной ошибки не рухнул весь запрос
+        _HTTP_CACHE.clear()
 
 
 class ChatCacheMiddleware(BaseHTTPMiddleware):
@@ -512,8 +717,11 @@ class ChatCacheMiddleware(BaseHTTPMiddleware):
     Дебаунс/кэш для частых запросов к:
       - /my-chats
       - /my-chats/unread_count
+
     TTL ~1.5с на пользователя и конкретный путь+query.
     Отдаём 304, если If-None-Match совпал с ETag.
+
+    При выключенном _http_cache_enabled() кэширование полностью отключено.
     """
 
     def __init__(self, app, ttl: float = 1.5):
@@ -521,7 +729,8 @@ class ChatCacheMiddleware(BaseHTTPMiddleware):
         self.ttl = ttl
 
     async def dispatch(self, request, call_next):
-        if request.method != "GET":
+        # если кэш глобально выключен — просто пропускаем дальше
+        if request.method != "GET" or not _http_cache_enabled():
             return await call_next(request)
 
         path = request.url.path
@@ -538,9 +747,15 @@ class ChatCacheMiddleware(BaseHTTPMiddleware):
         cache_key = f"{auth_id}:{path}?{request.url.query}"
         now = time.time()
 
-        cached = _http_cache_get(cache_key) if request.query_params.get(
-            "nocache") not in ("1", "true") else None
-        if cached and (now - cached[0]) < self.ttl:
+        cached = None
+        if request.query_params.get("nocache") not in ("1", "true"):
+            cached = _HTTP_CACHE.get(cache_key)
+
+        if cached and (now - cached[0]) >= self.ttl:
+            _HTTP_CACHE.pop(cache_key, None)
+            cached = None
+
+        if cached:
             _, body, headers, status_code, etag = cached
             inm = request.headers.get("if-none-match")
             if inm and etag and inm == etag:
@@ -551,9 +766,14 @@ class ChatCacheMiddleware(BaseHTTPMiddleware):
             if etag:
                 out_headers["ETag"] = etag
             out_headers.setdefault(
-                "Cache-Control", "private, max-age=1, stale-while-revalidate=5")
-            return Response(content=body, status_code=status_code,
-                            headers=out_headers, media_type=headers.get("content-type"))
+                "Cache-Control", "private, max-age=1, stale-while-revalidate=5"
+            )
+            return Response(
+                content=body,
+                status_code=status_code,
+                headers=out_headers,
+                media_type=headers.get("content-type"),
+            )
 
         # Нет кэша или протух — выполняем реальный handler
         response = await call_next(request)
@@ -568,6 +788,7 @@ class ChatCacheMiddleware(BaseHTTPMiddleware):
 
         # Кэшируем только успешный JSON
         ctype = headers.get("content-type", "")
+        etag = None
         if response.status_code == 200 and ("application/json" in ctype):
             try:
                 etag = 'W/"%s"' % hashlib.md5(body).hexdigest()
@@ -576,26 +797,20 @@ class ChatCacheMiddleware(BaseHTTPMiddleware):
             if etag:
                 headers["ETag"] = etag
             headers.setdefault(
-                "Cache-Control", "private, max-age=1, stale-while-revalidate=5")
-            _http_cache_set(cache_key, (
-                now, body, headers, response.status_code, etag))
-        else:
-            etag = None  # не ставим и не кэшируем
+                "Cache-Control", "private, max-age=1, stale-while-revalidate=5"
+            )
+            _http_cache_put(
+                cache_key, (now, body, headers, response.status_code, etag)
+            )
 
         # Возвращаем «пересобранный» ответ
-        return Response(content=body, status_code=response.status_code,
-                        headers=headers, media_type=response.media_type)
+        return Response(
+            content=body,
+            status_code=response.status_code,
+            headers=headers,
+            media_type=response.media_type,
+        )
 
-
-# Регистрируем middleware сразу после создания приложения
-# Регистрируем chat-middleware (с защитой от двойной регистрации при дублирующемся коде)
-if not getattr(app.state, "_chat_cache_installed", False):
-    app.add_middleware(ChatCacheMiddleware)
-    app.state._chat_cache_installed = True
-
-# --- Debounce/ETag-кеш для «списочных» GET-эндпоинтов ---
-_CACHEABLE_LIST_PATHS = {"/orders", "/saved/orders",
-                         "/saved/transports", "/transports"}
 
 
 class ListCacheMiddleware(BaseHTTPMiddleware):
@@ -604,7 +819,8 @@ class ListCacheMiddleware(BaseHTTPMiddleware):
         self.ttl = ttl
 
     async def dispatch(self, request, call_next):
-        if request.method != "GET":
+        # глобальный выключатель кэша
+        if request.method != "GET" or not _http_cache_enabled():
             return await call_next(request)
 
         path = request.url.path
@@ -620,8 +836,12 @@ class ListCacheMiddleware(BaseHTTPMiddleware):
         cache_key = f"{auth_id}:{path}?{request.url.query}"
         now = time.time()
 
-        cached = _http_cache_get(cache_key)
-        if cached and (now - cached[0]) < self.ttl:
+        cached = _HTTP_CACHE.get(cache_key)
+        if cached and (now - cached[0]) >= self.ttl:
+            _HTTP_CACHE.pop(cache_key, None)
+            cached = None
+
+        if cached:
             _, body, headers, status_code, etag = cached
             inm = request.headers.get("if-none-match")
             if inm and etag and inm == etag:
@@ -629,11 +849,16 @@ class ListCacheMiddleware(BaseHTTPMiddleware):
             out_headers = dict(headers)
             if etag:
                 out_headers["ETag"] = etag
-            headers.setdefault(
-                "Cache-Control", "private, max-age=2, stale-while-revalidate=5")
-            headers.setdefault("X-Poll-Interval", "2000")
-            return Response(content=body, status_code=status_code,
-                            headers=out_headers, media_type=headers.get("content-type"))
+            out_headers.setdefault(
+                "Cache-Control", "private, max-age=2, stale-while-revalidate=5"
+            )
+            out_headers.setdefault("X-Poll-Interval", "2000")
+            return Response(
+                content=body,
+                status_code=status_code,
+                headers=out_headers,
+                media_type=headers.get("content-type"),
+            )
 
         response = await call_next(request)
 
@@ -653,27 +878,19 @@ class ListCacheMiddleware(BaseHTTPMiddleware):
             if etag:
                 headers["ETag"] = etag
             headers.setdefault(
-                "Cache-Control", "private, max-age=1, stale-while-revalidate=5")
+                "Cache-Control", "private, max-age=1, stale-while-revalidate=5"
+            )
             headers.setdefault("X-Poll-Interval", "1500")
-            _http_cache_set(cache_key, (
-                now, body, headers, response.status_code, etag))
-        else:
-            # ошибки/не-JSON не кэшируем
-            pass
+            _http_cache_put(
+                cache_key, (now, body, headers, response.status_code, etag)
+            )
 
-        return Response(content=body, status_code=response.status_code,
-                        headers=headers, media_type=response.media_type)
-
-
-# Регистрируем list-middleware (также с защитой от дубликатов)
-if not getattr(app.state, "_list_cache_installed", False):
-    app.add_middleware(ListCacheMiddleware, ttl=3.0)
-    app.state._list_cache_installed = True
-
-# ---- lightweight in-memory cache for chat endpoints ----
-_CHAT_CACHE_TTL = 3.0  # seconds
-_chat_cache_items = {}       # key: user_id -> (ts, data, etag)
-_chat_cache_unread = {}      # key: user_id -> (ts, data, etag)
+        return Response(
+            content=body,
+            status_code=response.status_code,
+            headers=headers,
+            media_type=response.media_type,
+        )
 
 
 def _cache_get(bucket: dict, key: int):
@@ -732,7 +949,7 @@ start_scheduler()
 
 
 # --- BILLING ---
-# app.include_router(billing_router)
+#app.include_router(billing_router)
 
 start_billing_scheduler()
 
@@ -818,7 +1035,7 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     # важно: ЯВНО разрешаем клиентский trace-header
-    allow_headers=["*", "X-Client-Trace-Id", "x-ui-lang", "X-UI-Lang"],
+    allow_headers=["*", "X-Client-Trace-Id"],
     # и разрешаем читать trace-header из ответа
     expose_headers=["ETag", "X-Total-Count", "X-Page", "X-Page-Size",
                     "X-Trace-Id", "X-View-Mode", "X-Has-Full-Access"],
@@ -1063,6 +1280,7 @@ async def revoke_public_share_link(
         except:
             pass
     link_watchers[str(sess.id)].clear()
+    link_watchers.pop(str(sess.id), None)
     # Пересчитать live и, при необходимости, отправить live_end
     await _recalc_and_emit_live(db, sess)
     return {"ok": True}
@@ -1308,8 +1526,13 @@ async def ws_transport_live(
                 break
     finally:
         try:
-            transport_live_watchers[str(transport_id)].discard(websocket)
-        except:
+            key = str(transport_id)
+            bucket = transport_live_watchers.get(key)
+            if bucket is not None:
+                bucket.discard(websocket)
+                if not bucket:
+                    transport_live_watchers.pop(key, None)
+        except Exception:
             pass
         db.close()
 
@@ -1318,14 +1541,20 @@ async def _emit_transport_live_event(transport_id: str, kind: str, session_id: s
     # kind: 'live_start' | 'live_end'
     payload = {"type": kind, "transport_id": str(
         transport_id), "session_id": str(session_id)}
+    key = str(transport_id)
     dead = []
-    for ws in list(transport_live_watchers.get(str(transport_id), set())):
+    for ws in list(transport_live_watchers.get(key, set())):
         try:
             await ws.send_json(payload)
         except Exception:
             dead.append(ws)
-    for ws in dead:
-        transport_live_watchers[str(transport_id)].discard(ws)
+    if dead:
+        bucket = transport_live_watchers.get(key)
+        if bucket is not None:
+            for ws in dead:
+                bucket.discard(ws)
+            if not bucket:
+                transport_live_watchers.pop(key, None)
 
 # Кто смотрит список получателей по сессии
 share_session_watchers = defaultdict(set)   # session_id -> set[WebSocket]
@@ -1450,8 +1679,9 @@ async def _emit_share_event(session: TrackingSession, kind: str, recipient: User
 
     # Рассылка подписчикам сессии
     if kind in ("share", "unshare", "end"):
+        key = str(session.id)
         dead = []
-        for ws in list(share_session_watchers.get(str(session.id), set())):
+        for ws in list(share_session_watchers.get(key, set())):
             try:
                 payload = dict(data_base)
                 if recipient is not None:
@@ -1462,38 +1692,52 @@ async def _emit_share_event(session: TrackingSession, kind: str, recipient: User
                 await ws.send_json(payload)
             except Exception:
                 dead.append(ws)
-        for ws in dead:
-            share_session_watchers[str(session.id)].discard(ws)
+        if dead:
+            bucket = share_session_watchers.get(key)
+            if bucket is not None:
+                for ws in dead:
+                    bucket.discard(ws)
+                if not bucket:
+                    share_session_watchers.pop(key, None)
 
     # Персональные рассылки
     # входящая сторона (получатель)
     if kind in ("incoming_share", "incoming_unshare") and recipient is not None:
+        key = int(recipient.id)
         dead = []
-        for ws in list(share_user_watchers.get(recipient.id, set())):
+        for ws in list(share_user_watchers.get(key, set())):
             try:
                 payload = dict(data_base)
-                payload["to_user_id"] = int(recipient.id)
                 await ws.send_json(payload)
             except Exception:
                 dead.append(ws)
-        for ws in dead:
-            share_user_watchers[recipient.id].discard(ws)
+        if dead:
+            bucket = share_user_watchers.get(key)
+            if bucket is not None:
+                for ws in dead:
+                    bucket.discard(ws)
+                if not bucket:
+                    share_user_watchers.pop(key, None)
 
     # исходящая сторона (создатель сессии)
     if kind in ("outgoing_share", "outgoing_unshare"):
         creator_id = session.created_by
         if creator_id:
+            key = int(creator_id)
             dead = []
-            for ws in list(share_user_watchers.get(int(creator_id), set())):
+            for ws in list(share_user_watchers.get(key, set())):
                 try:
                     payload = dict(data_base)
-                    if recipient is not None:
-                        payload["to_user_id"] = int(recipient.id)
                     await ws.send_json(payload)
                 except Exception:
                     dead.append(ws)
-            for ws in dead:
-                share_user_watchers[int(creator_id)].discard(ws)
+            if dead:
+                bucket = share_user_watchers.get(key)
+                if bucket is not None:
+                    for ws in dead:
+                        bucket.discard(ws)
+                    if not bucket:
+                        share_user_watchers.pop(key, None)
 
 # === WebSockets for tracking ===
 track_watchers = defaultdict(set)  # session_id -> set[WebSocket]
@@ -1621,14 +1865,31 @@ async def track_publish(
                 db.commit()
 
                 dead = []
-                for ws in list(track_watchers.get(str(session_id), set())):
+                key = str(session_id)
+                dead = []
+                for ws in list(track_watchers.get(key, set())):
                     try:
-                        await ws.send_json({"type": "point", "session_id": str(session_id),
-                                            "point": {"lat": p.lat, "lng": p.lng, "ts": p.ts.isoformat(), "speed": p.speed, "heading": p.heading, "accuracy": p.accuracy}})
+                        await ws.send_json({
+                            "type": "point",
+                            "session_id": key,
+                            "point": {
+                                "lat": p.lat,
+                                "lng": p.lng,
+                                "ts": p.ts.isoformat(),
+                                "speed": p.speed,
+                                "heading": p.heading,
+                                "accuracy": p.accuracy,
+                            },
+                        })
                     except Exception:
                         dead.append(ws)
-                for ws in dead:
-                    track_watchers[str(session_id)].discard(ws)
+                if dead:
+                    bucket = track_watchers.get(key)
+                    if bucket is not None:
+                        for ws in dead:
+                            bucket.discard(ws)
+                        if not bucket:
+                            track_watchers.pop(key, None)
     finally:
         db.close()
 
@@ -2412,8 +2673,98 @@ def get_matching_orders(
     db: Session = Depends(get_db),
     user=Depends(get_current_user),
 ):
-    matches = find_matching_orders(order_data, db, exclude_user_id=user.id)
-    return matches
+    """
+    ЛЁГКИЙ подбор совпадающих заявок для превью.
+
+    Важно:
+    - НЕ вызываем тяжёлую find_matching_orders;
+    - только SQL‑фильтры + LIMIT 50;
+    - поэтому при выборе адреса память больше не взлетает.
+    """
+    q = (
+        db.query(OrderModel)
+        .filter(OrderModel.is_active == True)
+        .filter(OrderModel.owner_id != user.id)
+    )
+
+    # Берём первую точку "откуда" и "куда" из формы (если есть)
+    from_loc = None
+    to_loc = None
+    try:
+        from_loc = (order_data.from_locations or [])[0]
+    except Exception:
+        pass
+    try:
+        to_loc = (order_data.to_locations or [])[0]
+    except Exception:
+        pass
+
+    from sqlalchemy import func, text
+    from datetime import datetime, timedelta
+
+    if from_loc:
+        q = q.filter(
+            text("""
+                EXISTS (
+                    SELECT 1
+                    FROM jsonb_array_elements_text(orders.from_locations) AS t(val)
+                    WHERE lower(t.val) ILIKE lower(:from_loc)
+                )
+            """)
+        ).params(from_loc=f"%{from_loc}%")
+
+    if to_loc:
+        q = q.filter(
+            text("""
+                EXISTS (
+                    SELECT 1
+                    FROM jsonb_array_elements_text(orders.to_locations) AS t(val)
+                    WHERE lower(t.val) ILIKE lower(:to_loc)
+                )
+            """)
+        ).params(to_loc=f"%{to_loc}%")
+
+    # Тип машины, если задан
+    if getattr(order_data, "truck_type", None):
+        q = q.filter(OrderModel.truck_type == order_data.truck_type)
+
+    # Дата загрузки ± 3 дня, если её можно распарсить
+    load_date_raw = getattr(order_data, "load_date", None) or ""
+    load_date_raw = load_date_raw.strip()
+    if load_date_raw:
+        parsed = None
+        for fmt in ("%d.%m.%Y", "%d/%m/%Y", "%Y-%m-%d"):
+            try:
+                parsed = datetime.strptime(load_date_raw, fmt)
+                break
+            except ValueError:
+                continue
+
+        if parsed:
+            date_min = (parsed - timedelta(days=3)).strftime("%Y-%m-%d")
+            date_max = (parsed + timedelta(days=3)).strftime("%Y-%m-%d")
+
+            load_date_col = func.to_date(
+                func.nullif(
+                    func.replace(func.coalesce(OrderModel.load_date, ""), ".", "/"),
+                    ""
+                ),
+                "DD/MM/YYYY",
+            )
+
+            q = q.filter(
+                load_date_col >= func.to_date(date_min, "YYYY-MM-DD"),
+                load_date_col <= func.to_date(date_max, "YYYY-MM-DD"),
+            )
+
+    # Легко: только свежие, ограничение по количеству
+    items = (
+        q.order_by(OrderModel.created_at.desc())
+        .limit(50)
+        .all()
+    )
+
+    return [OrderOut.model_validate(o, from_attributes=True) for o in items]
 
 
 @app.get("/transports/{transport_id}/matches", response_model=List[schemas.OrderOut])
@@ -2497,9 +2848,15 @@ async def notifications_ws(
             traceback.print_exc()
         finally:
             try:
-                user_notification_connections[str(user_id)].discard(websocket)
+                key = str(user_id)
+                bucket = user_notification_connections.get(key)
+                if bucket is not None:
+                    bucket.discard(websocket)
+                    if not bucket:
+                        user_notification_connections.pop(key, None)
+                left = len(user_notification_connections.get(key, []))
                 print(
-                    f"WebSocket отключён: user_id={user_id}, осталось: {len(user_notification_connections[str(user_id)])}")
+                    f"WebSocket отключён: user_id={user_id}, осталось: {left}")
             except Exception as e:
                 print(f"[WS ERROR] Error removing notification ws: {e}")
             print(f"[WS DEBUG] FINALLY user_id={user_id}")
@@ -3168,32 +3525,58 @@ def get_my_transports(
         .order_by(TransportModel.created_at.desc())
         .all()
     )
-    result = []
+    result: List[schemas.Transport] = []
     for tr in transports:
-        matches = find_matching_orders_for_transport(
-            tr, db, exclude_user_id=current_user.id)
         tr_out = schemas.Transport.model_validate(tr, from_attributes=True)
-        tr_out.matchesCount = len(matches)
-        tr_out.isMine = (tr.owner_id == current_user.id)   # ← ДОБАВЛЕНО!
+        # Больше НЕ считаем совпадения через find_matching_orders_for_transport
+        tr_out.matchesCount = 0
+        tr_out.isMine = True
         result.append(tr_out)
     return result
 
-
-# === НОВОЕ: общий транспорт аккаунта ===
 @app.get("/transports/account", response_model=List[schemas.Transport])
 def get_account_transports(
     db: Session = Depends(get_db),
     current_user: UserModel = Depends(get_current_user)
 ):
-    if current_user.role == UserRole.MANAGER:
+    """
+    Лёгкий список транспорта аккаунта.
+
+    matchesCount здесь всегда = 0, чтобы не запускать тяжёлый подбор
+    при каждом заходе в раздел. Полные совпадения по конкретному
+    транспорту смотри через /transports/{id}/matching_orders.
+    """
+    role_val = getattr(current_user.role, "value", current_user.role)
+    role = (role_val or "").upper()
+
+    if role == "MANAGER":
         account_manager_id = current_user.id
-    elif current_user.role == UserRole.EMPLOYEE and current_user.manager_id:
+    elif role == "EMPLOYEE" and current_user.manager_id:
         account_manager_id = current_user.manager_id
     else:
-        return []
+        account_manager_id = None
 
+    # Не менеджерский аккаунт — просто свои записи
+    if not account_manager_id:
+        trs = (
+            db.query(TransportModel)
+            .filter(TransportModel.owner_id == current_user.id)
+            .order_by(TransportModel.created_at.desc())
+            .all()
+        )
+        out: List[schemas.Transport] = []
+        for tr in trs:
+            t = schemas.Transport.model_validate(tr, from_attributes=True)
+            t.matchesCount = 0
+            t.isMine = True
+            t.owner_name = current_user.contact_person or current_user.email
+            out.append(t)
+        return out
+
+    # Менеджерский аккаунт: менеджер + сотрудники
     employees = db.query(UserModel).filter(
-        UserModel.manager_id == account_manager_id).all()
+        UserModel.manager_id == account_manager_id
+    ).all()
     account_user_ids = [account_manager_id] + [e.id for e in employees]
 
     transports = (
@@ -3202,26 +3585,23 @@ def get_account_transports(
         .order_by(TransportModel.created_at.desc())
         .all()
     )
+
     users = db.query(UserModel).filter(
-        UserModel.id.in_(account_user_ids)).all()
+        UserModel.id.in_(account_user_ids)
+    ).all()
     users_by_id = {u.id: u for u in users}
 
-    result: List[TransportSchema] = []
+    result: List[schemas.Transport] = []
     for tr in transports:
-        # считаем Соответствия с грузами (если функция есть)
-        try:
-            matches = find_matching_orders_for_transport(
-                tr, db, exclude_user_id=current_user.id)
-            matches_count = len(matches)
-        except Exception:
-            matches_count = 0
         t = schemas.Transport.model_validate(tr, from_attributes=True)
-        t.matchesCount = matches_count
+        t.matchesCount = 0
         t.isMine = (tr.owner_id == current_user.id)
         owner = users_by_id.get(tr.owner_id)
         t.owner_name = (owner.contact_person or owner.email) if owner else ""
         result.append(t)
+
     return result
+
 
 
 @app.post("/ratings", response_model=RatingSchema)
@@ -3421,24 +3801,26 @@ def get_transports(
     current_user: Optional[UserModel] = Depends(get_optional_current_user)
 
 ):
-    print("--- /transports QUERY PARAMS ---")
-    print("from_location:", repr(from_location))
-    print("to_location:", repr(to_location))
-    print("ready_date_from:", repr(ready_date_from))
-    print("ready_date_to:", repr(ready_date_to))
-    print("truck_type:", repr(truck_type))
-    print("transport_kind:", repr(transport_kind))
-    print("q:", repr(q))
-    print("gps_monitor:", repr(gps_monitor))
-    print("adr:", repr(adr))
-    print("body_length:", repr(body_length))
-    print("weight:", repr(weight))
-    print("volume:", repr(volume))
-    print("load_types:", repr(load_types))
-    print("from_location_lat:", repr(from_location_lat))
-    print("from_location_lng:", repr(from_location_lng))
-    print("from_radius:", repr(from_radius))
-    print("---")
+if DEBUG_SQL:
+    print('--- /transports QUERY PARAMS ---')
+    print('from_location:', repr(from_location))
+    print('to_location:', repr(to_location))
+    print('ready_date_from:', repr(ready_date_from))
+    print('ready_date_to:', repr(ready_date_to))
+    print('truck_type:', repr(truck_type))
+    print('transport_kind:', repr(transport_kind))
+    print('q:', repr(q))
+    print('gps_monitor:', repr(gps_monitor))
+    print('adr:', repr(adr))
+    print('body_length:', repr(body_length))
+    print('weight:', repr(weight))
+    print('volume:', repr(volume))
+    print('load_types:', repr(load_types))
+    print('from_location_lat:', repr(from_location_lat))
+    print('from_location_lng:', repr(from_location_lng))
+    print('from_radius:', repr(from_radius))
+    print('---')
+
 
     query = db.query(TransportModel).filter(TransportModel.is_active == True)
 
@@ -3569,94 +3951,87 @@ def get_transports(
             (TransportModel.email.ilike(ilike_q))
         )
 
-        # --- ФИЛЬТР «только Соответствия» ---
-    # Берём все заказы текущего пользователя и собираем id транспортов,
-    # которые с ними совпадают по нашей бизнес-логике.
+    # --- ФИЛЬТР «только Соответствия» (лёгкая версия) ---
     if matches_only and current_user is not None:
-        my_orders = (
-            db.query(OrderModel)
-              .filter(OrderModel.owner_id == current_user.id)
-              .all()
-        )
-        matched_ids = set()
-        for od in my_orders:
-            try:
-                for tr in find_matching_transports(od, db, exclude_user_id=current_user.id):
-                    matched_ids.add(tr.id)
-            except Exception:
-                continue
-        if not matched_ids:
-            return []
-        query = query.filter(TransportModel.id.in_(list(matched_ids)))
+        from models import Match
 
-    print("--- SQL QUERY ---")
-    try:
+        sub = (
+            db.query(Match.transport_id)
+            .filter(
+                Match.user_id == current_user.id,
+                Match.transport_id != None,
+            )
+            .distinct()
+            .subquery()
+        )
+        query = query.filter(TransportModel.id.in_(sub))
+
+    if DEBUG_SQL:
+        print('--- SQL QUERY [transports] ---')
         print(str(query.statement.compile(
-            compile_kwargs={"literal_binds": True})))
-    except Exception as e:
-        print("SQL Compile error:", e)
-    print("---")
+            dialect=postgresql.dialect(),
+            compile_kwargs={'literal_binds': True}
+        )))
+        print('---')
+
+    # --- Радиусные фильтры "откуда / куда" на уровне SQL (bbox) ---
+    def _bbox(center_lat, center_lng, radius_km):
+        try:
+            r = float(radius_km or 0)
+        except (TypeError, ValueError):
+            return None
+        if center_lat is None or center_lng is None or r <= 0:
+            return None
+
+        # 1 градус широты ≈ 111 км
+        lat_delta = r / 111.0
+        lat_min = center_lat - lat_delta
+        lat_max = center_lat + lat_delta
+
+        # Долгота зависит от широты
+        lng_delta = r / (111.0 * max(cos(radians(center_lat)), 0.1))
+        lng_min = center_lng - lng_delta
+        lng_max = center_lng + lng_delta
+
+        return lat_min, lat_max, lng_min, lng_max
+
+    # 1) FROM‑радиус — по обычным числовым колонкам
+    bbox_from = _bbox(from_location_lat, from_location_lng, from_radius)
+    if bbox_from:
+        lat_min, lat_max, lng_min, lng_max = bbox_from
+        query = query.filter(
+            TransportModel.from_location_lat >= lat_min,
+            TransportModel.from_location_lat <= lat_max,
+            TransportModel.from_location_lng >= lng_min,
+            TransportModel.from_location_lng <= lng_max,
+        )
+
+    # 2) TO‑радиус — по JSON‑массиву to_locations (lat/lng внутри JSON)
+    bbox_to = _bbox(to_location_lat, to_location_lng, to_radius)
+    if bbox_to:
+        t_lat_min, t_lat_max, t_lng_min, t_lng_max = bbox_to
+        query = query.filter(
+            text("""
+                EXISTS (
+                    SELECT 1
+                    FROM jsonb_array_elements(
+                        COALESCE(transports.to_locations, '[]'::jsonb)
+                    ) AS dest
+                    WHERE dest ? 'lat'
+                      AND dest ? 'lng'
+                      AND dest->>'lat' <> '' AND dest->>'lng' <> ''
+                      AND (dest->>'lat')::double precision BETWEEN :to_lat_min AND :to_lat_max
+                      AND (dest->>'lng')::double precision BETWEEN :to_lng_min AND :to_lng_max
+                )
+            """)
+        ).params(
+            to_lat_min=t_lat_min,
+            to_lat_max=t_lat_max,
+            to_lng_min=t_lng_min,
+            to_lng_max=t_lng_max,
+        )
 
     base_q = query.order_by(TransportModel.created_at.desc())
-
-    # --- ПАГИНАЦИЯ + РАДИУС (ОТКУДА/КУДА) ---
-    if (
-        (from_location_lat is not None and from_location_lng is not None and from_radius not in [
-         None, 0, "0"])
-        or
-        (to_location_lat is not None and to_location_lng is not None and to_radius not in [
-         None, 0, "0"])
-    ):
-        # Получаем кандидатов и фильтруем по радиусу в Python (как раньше)
-        result = base_q.all()
-
-        def within(a_lat, a_lng, b_lat, b_lng, r):
-            try:
-                return haversine(a_lat, a_lng, float(b_lat), float(b_lng)) <= float(r)
-            except Exception:
-                return False
-
-        def tr_from_hit(tr):
-            if from_location_lat is None or from_location_lng is None or from_radius in [None, 0, "0"]:
-                return True
-            lat = getattr(tr, "from_location_lat", None)
-            lng = getattr(tr, "from_location_lng", None)
-            tr_r = 0.0
-            if getattr(tr, "from_radius", None):
-                try:
-                    tr_r = float(tr.from_radius)
-                except Exception:
-                    tr_r = 0.0
-            return (lat is not None and lng is not None) and within(from_location_lat, from_location_lng, lat, lng, float(from_radius) + tr_r)
-
-        def tr_to_hit(tr):
-            if to_location_lat is None or to_location_lng is None or to_radius in [None, 0, "0"]:
-                return True
-            # у транспорта «куда» — это массив объектов с lat/lng
-            for dest in (getattr(tr, "to_locations", []) or []):
-                lat, lng = dest.get("lat"), dest.get("lng")
-                if lat is None or lng is None:
-                    continue
-                if within(to_location_lat, to_location_lng, lat, lng, to_radius):
-                    return True
-            return False
-
-        filtered = [tr for tr in result if tr_from_hit(tr) and tr_to_hit(tr)]
-
-        # ПАГИНАЦИЯ ПОСЛЕ РАДИУС-ФИЛЬТРА
-        if page and page_size:
-            total = len(filtered)
-            start = (page - 1) * page_size
-            items = filtered[start:start + page_size]
-            if response is not None:
-                response.headers["X-Total-Count"] = str(total)
-                response.headers["X-Page"] = str(page)
-                response.headers["X-Page-Size"] = str(page_size)
-            print(f"RESULT COUNT: {len(items)} / TOTAL: {total}")
-            return items
-
-        print(f"RESULT COUNT: {len(filtered)}")
-        return filtered
 
     # --- БЕЗ РАДИУСА: чистая SQL-пагинация ---
     if page and page_size:
@@ -3680,6 +4055,9 @@ def create_transport(
     db: Session = Depends(get_db),
     current_user: Optional[UserModel] = Depends(get_optional_current_user)
 ):
+    # Снимаем срез памяти в начале обработки транспорта
+    dbg_mem("create_transport: start")
+
     data = transport.dict()
     if isinstance(data.get("adr_class"), str):
         try:
@@ -3767,8 +4145,12 @@ def create_transport(
         touch_usage_snapshot_for_user(db, current_user.id)
     except Exception as e:
         print("[Billing] snapshot on create_transport failed:", e)
-    print("== TRANSPORT FROM DB ==", db_transport.from_location_coords)
-    find_and_notify_auto_match_for_transport(db_transport, db)
+
+    # Теперь авто‑подбор по транспорту выносим в отдельный процесс‑воркер
+    dbg_mem("create_transport: before enqueue_auto_match")
+    enqueue_auto_match("transport", db_transport.id)
+    dbg_mem("create_transport: after enqueue_auto_match")
+
     return db_transport
 
 
@@ -3812,18 +4194,19 @@ def get_orders(
     response: Response = None,
     current_user: Optional[UserModel] = Depends(get_optional_current_user)
 ):
-    print("--- /orders QUERY PARAMS ---")
-    print("from_location:", repr(from_location))
-    print("to_location:", repr(to_location))
-    print("truck_type:", repr(truck_type))
-    print("load_date_from:", repr(load_date_from))
-    print("load_date_to:", repr(load_date_to))
-    print("price_from:", repr(price_from))
-    print("price_to:", repr(price_to))
-    print("with_attachments:", repr(with_attachments))
-    print("q:", repr(q))
-    print("loading_types:", repr(loading_types))
-    print("---")
+    if DEBUG_SQL:
+        print('--- /orders QUERY PARAMS ---')
+        print('from_location:', repr(from_location))
+        print('to_location:', repr(to_location))
+        print('truck_type:', repr(truck_type))
+        print('load_date_from:', repr(load_date_from))
+        print('load_date_to:', repr(load_date_to))
+        print('price_from:', repr(price_from))
+        print('price_to:', repr(price_to))
+        print('with_attachments:', repr(with_attachments))
+        print('q:', repr(q))
+        print('loading_types:', repr(loading_types))
+        print('---')
 
     query = db.query(OrderModel).filter(OrderModel.is_active == True)
     if current_user is not None:
@@ -3903,33 +4286,100 @@ def get_orders(
             (OrderModel.comment.ilike(ilike_q))
         )
 
-        # --- ФИЛЬТР «только Соответствия» ---
-    # Берём все транспорты текущего пользователя и собираем id заказов,
-    # которые с ними совпадают по нашей бизнес-логике.
+    # --- ФИЛЬТР «только Соответствия» (лёгкая версия) ---
     if matches_only and current_user is not None:
-        user_transports = (
-            db.query(TransportModel)
-              .filter(TransportModel.owner_id == current_user.id)
-              .all()
-        )
-        matched_ids = set()
-        for tr in user_transports:
-            try:
-                for od in find_matching_orders_for_transport(tr, db, exclude_user_id=current_user.id):
-                    matched_ids.add(od.id)
-            except Exception:
-                continue
-        if not matched_ids:
-            return []
-        query = query.filter(OrderModel.id.in_(list(matched_ids)))
+        # Берём id заявок из таблицы Match, которую заполняет auto_match_worker.
+        from models import Match
 
-    print("--- SQL QUERY ---")
-    try:
+        sub = (
+            db.query(Match.order_id)
+            .filter(
+                Match.user_id == current_user.id,
+                Match.order_id != None,
+            )
+            .distinct()
+            .subquery()
+        )
+        query = query.filter(OrderModel.id.in_(sub))
+
+    if DEBUG_SQL:
+        print('--- SQL QUERY [orders] ---')
         print(str(query.statement.compile(
-            compile_kwargs={"literal_binds": True})))
-    except Exception as e:
-        print("SQL Compile error:", e)
-    print("---")
+            dialect=postgresql.dialect(),
+            compile_kwargs={'literal_binds': True}
+        )))
+        print('---')
+
+    # --- Радиусные фильтры по координатам на уровне SQL (bbox по JSON coords) ---
+    def _bbox(center_lat, center_lng, radius_km):
+        try:
+            r = float(radius_km or 0)
+        except (TypeError, ValueError):
+            return None
+        if center_lat is None or center_lng is None or r <= 0:
+            return None
+
+        # 1 градус широты ≈ 111 км
+        lat_delta = r / 111.0
+        lat_min = center_lat - lat_delta
+        lat_max = center_lat + lat_delta
+
+        # Долгота зависит от широты
+        lng_delta = r / (111.0 * max(cos(radians(center_lat)), 0.1))
+        lng_min = center_lng - lng_delta
+        lng_max = center_lng + lng_delta
+
+        return lat_min, lat_max, lng_min, lng_max
+
+    # FROM‑радиус: orders.from_locations_coords (jsonb массив координат)
+    bbox_from = _bbox(from_location_lat, from_location_lng, from_radius)
+    if bbox_from:
+        lat_min, lat_max, lng_min, lng_max = bbox_from
+        query = query.filter(
+            text("""
+                EXISTS (
+                    SELECT 1
+                    FROM jsonb_array_elements(
+                        COALESCE(orders.from_locations_coords, '[]'::jsonb)
+                    ) AS coord
+                    WHERE coord ? 'lat'
+                      AND coord ? 'lng'
+                      AND coord->>'lat' <> '' AND coord->>'lng' <> ''
+                      AND (coord->>'lat')::double precision BETWEEN :from_lat_min AND :from_lat_max
+                      AND (coord->>'lng')::double precision BETWEEN :from_lng_min AND :from_lng_max
+                )
+            """)
+        ).params(
+            from_lat_min=lat_min,
+            from_lat_max=lat_max,
+            from_lng_min=lng_min,
+            from_lng_max=lng_max,
+        )
+
+    # TO‑радиус: orders.to_locations_coords
+    bbox_to = _bbox(to_location_lat, to_location_lng, to_radius)
+    if bbox_to:
+        t_lat_min, t_lat_max, t_lng_min, t_lng_max = bbox_to
+        query = query.filter(
+            text("""
+                EXISTS (
+                    SELECT 1
+                    FROM jsonb_array_elements(
+                        COALESCE(orders.to_locations_coords, '[]'::jsonb)
+                    ) AS coord
+                    WHERE coord ? 'lat'
+                      AND coord ? 'lng'
+                      AND coord->>'lat' <> '' AND coord->>'lng' <> ''
+                      AND (coord->>'lat')::double precision BETWEEN :to_lat_min AND :to_lat_max
+                      AND (coord->>'lng')::double precision BETWEEN :to_lng_min AND :to_lng_max
+                )
+            """)
+        ).params(
+            to_lat_min=t_lat_min,
+            to_lat_max=t_lat_max,
+            to_lng_min=t_lng_min,
+            to_lng_max=t_lng_max,
+        )
 
     base_q = query.order_by(OrderModel.created_at.desc())
     # Режим выдачи: авторизованным — полный, гостям — публичный
@@ -3941,64 +4391,25 @@ def get_orders(
         except Exception:
             pass
 
-    coord_filter = (
-        (from_location_lat is not None and from_location_lng is not None and from_radius not in [None, 0, "0"]) or
-        (to_location_lat is not None and to_location_lng is not None and to_radius not in [
-         None, 0, "0"])
-    )
-
-    # Если координатные фильтры заданы — берём кандидатов и режем в Python
-    if coord_filter:
-        candidates = base_q.all()
-
-        def hit(coords_list, lat, lng, r_km):
-            if lat is None or lng is None or r_km in [None, 0, "0"]:
-                return True
-            try:
-                R = float(r_km)
-            except Exception:
-                return True
-            if not coords_list:
-                return False
-            for c in coords_list:
-                try:
-                    if haversine(lat, lng, float(c.get("lat")), float(c.get("lng"))) <= R:
-                        return True
-                except Exception:
-                    continue
-            return False
-
-        filtered = []
-        for od in candidates:
-            if not hit(getattr(od, "from_locations_coords", []), from_location_lat, from_location_lng, from_radius):
-                continue
-            if not hit(getattr(od, "to_locations_coords", []), to_location_lat, to_location_lng, to_radius):
-                continue
-            filtered.append(od)
-
-        total = len(filtered)
-        if page and page_size:
-            start = (page - 1) * page_size
-            items = filtered[start:start + page_size]
-            if response is not None:
-                response.headers["X-Total-Count"] = str(total)
-            return items
-        if response is not None:
-            response.headers["X-Total-Count"] = str(total)
-        # Публичный режим для гостей
-        if not view_full:
-            return [_sanitize_order_for_limited(o) for o in filtered]
-        return filtered
-
     # иначе — обычная SQL пагинация
     if page and page_size:
         total = base_q.count()
         items = base_q.offset((page - 1) * page_size).limit(page_size).all()
         if response is not None:
             response.headers["X-Total-Count"] = str(total)
-        return items if view_full else [_sanitize_order_for_limited(o) for o in items]
+            response.headers["X-Page"] = str(page)
+            response.headers["X-Page-Size"] = str(page_size)
+
+        if view_full:
+            return items
+        else:
+            return [_sanitize_order_for_limited(o) for o in items]
+
     items = base_q.all()
-    return items if view_full else [_sanitize_order_for_limited(o) for o in items]
+    if view_full:
+        return items
+    else:
+        return [_sanitize_order_for_limited(o) for o in items]
 
 
 @app.get("/orders/my", response_model=List[OrderOut])
@@ -4013,97 +4424,120 @@ def get_my_orders(
         .order_by(OrderModel.created_at.desc())
         .all()
     )
-    results = []
+    results: List[OrderOut] = []
     for order in orders:
-        matched_transports = find_matching_transports(
-            order, db, exclude_user_id=current_user.id)
         order_out = OrderOut.from_orm(order)
         # нормализуем attachments на выдачу
         order_out.attachments = _normalize_attachments_read(order.attachments)
-        order_out.matchesCount = len(matched_transports)
-        order_out.isMine = (order.owner_id == current_user.id)
+        # ВАЖНО: больше не запускаем тяжёлый пересчёт совпадений
+        order_out.matchesCount = 0
+        order_out.isMine = True
         results.append(order_out)
     return results
 
 
-# === НОВОЕ: общие заявки аккаунта ===
 @app.get("/orders/account", response_model=List[OrderOut])
 def get_account_orders(
     db: Session = Depends(get_db),
     current_user: UserModel = Depends(get_current_user)
 ):
-    # Определяем корневого менеджера аккаунта
-    if current_user.role == UserRole.MANAGER:
+    # Определяем роль и корневого менеджера аккаунта
+    role_val = getattr(current_user.role, "value", current_user.role)
+    role = (role_val or "").upper()
+
+    if role == "MANAGER":
         account_manager_id = current_user.id
-    elif current_user.role == UserRole.EMPLOYEE and current_user.manager_id:
+    elif role == "EMPLOYEE" and current_user.manager_id:
         account_manager_id = current_user.manager_id
     else:
-        # Для остальных ролей — пусто (или свои, по желанию)
-        return []
+        # Прочие роли — СВОИ заявки (как было у тебя раньше)
+        orders = (
+            db.query(OrderModel)
+            .filter(OrderModel.owner_id == current_user.id)
+            .order_by(OrderModel.created_at.desc())
+            .all()
+        )
+        out: List[OrderOut] = []
+        for od in orders:
+            o = OrderOut.model_validate(od, from_attributes=True)
+            o.matchesCount = 0
+            o.isMine = True
+            o.owner_name = current_user.contact_person or current_user.email
+            out.append(o)
+        return out
 
-    employees = db.query(UserModel).filter(
-        UserModel.manager_id == account_manager_id).all()
+    # Все сотрудники этого менеджера
+    employees = (
+        db.query(UserModel)
+        .filter(UserModel.manager_id == account_manager_id)
+        .all()
+    )
     account_user_ids = [account_manager_id] + [e.id for e in employees]
 
+    # Заявки аккаунта
     orders = (
         db.query(OrderModel)
         .filter(OrderModel.owner_id.in_(account_user_ids))
         .order_by(OrderModel.created_at.desc())
         .all()
     )
-    # для подписи «чья заявка»
-    users = db.query(UserModel).filter(
-        UserModel.id.in_(account_user_ids)).all()
+
+    # Подгружаем пользователей для подписи владельца
+    users = (
+        db.query(UserModel)
+        .filter(UserModel.id.in_(account_user_ids))
+        .all()
+    )
     users_by_id = {u.id: u for u in users}
 
     out: List[OrderOut] = []
     for od in orders:
         o = OrderOut.model_validate(od, from_attributes=True)
-        o.matchesCount = 0  # при желании посчитаем реально
+        o.matchesCount = 0          # тяжёлые совпадения тут не считаем
         o.isMine = (od.owner_id == current_user.id)
         owner = users_by_id.get(od.owner_id)
         o.owner_name = (owner.contact_person or owner.email) if owner else ""
         out.append(o)
+
     return out
+
 
 
 @app.post("/orders", response_model=OrderSchema)
 def create_order(
     order: OrderCreate,
     db: Session = Depends(get_db),
-    current_user: UserModel = Depends(get_current_user)
+    current_user: UserModel = Depends(get_current_user),
 ):
+    dbg_mem("create_order: start")
+
     order_data = order.dict()
     order_data["email"] = current_user.email
     order_data["owner_id"] = current_user.id
 
-    # Новое! — гарантируем что координаты есть всегда (массивы)
-    order_data["from_locations_coords"] = order_data.get(
-        "from_locations_coords") or []
-    order_data["to_locations_coords"] = order_data.get(
-        "to_locations_coords") or []
-    # Гарантируем: если есть from_locations, то и from_locations_coords должен быть такого же размера
-    if order_data.get("from_locations") and len(order_data["from_locations_coords"]) < len(order_data["from_locations"]):
-        # Заполняем отсутствующие координаты пустыми словарями (или None)
-        diff = len(order_data["from_locations"]) - \
-            len(order_data["from_locations_coords"])
+    # Гарантируем, что координаты всегда массивы
+    order_data["from_locations_coords"] = order_data.get("from_locations_coords") or []
+    order_data["to_locations_coords"] = order_data.get("to_locations_coords") or []
+    if (
+        order_data.get("from_locations")
+        and len(order_data["from_locations_coords"]) < len(order_data["from_locations"])
+    ):
+        diff = len(order_data["from_locations"]) - len(
+            order_data["from_locations_coords"]
+        )
         order_data["from_locations_coords"].extend([{} for _ in range(diff)])
 
     db_order = OrderModel(**order_data)
     db.add(db_order)
     db.commit()
     db.refresh(db_order)
-    find_and_notify_auto_match_for_order(db_order, db)
+
+    # Вместо тяжёлого inline‑подбора — запускаем отдельный процесс‑воркер
+    dbg_mem("create_order: before enqueue_auto_match")
+    enqueue_auto_match("order", db_order.id)
+    dbg_mem("create_order: after enqueue_auto_match")
+
     return db_order
-
-   # === НОВОЕ: нормализация вложений при создании ===
-    # фронт может прислать список строк/объектов; приводим к [{name,file_type,file_url}]
-    try:
-        raw_attachments = order_data.get("attachments") or []
-        order_data["attachments"] = _normalize_attachments(raw_attachments)
-    except Exception:
-        order_data["attachments"] = []
-
 
 @app.delete("/orders/{order_id}")
 def delete_order(order_id: int, db: Session = Depends(get_db)):
@@ -4939,6 +5373,9 @@ def get_order_new_matches_count(
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user)
 ):
+    if DISABLE_MATCH_COUNTERS:
+        return {"new_matches": 0}
+
     from notifications import find_matching_transports
     order = db.query(OrderModel).filter(OrderModel.id == order_id).first()
     if not order:
@@ -4947,13 +5384,11 @@ def get_order_new_matches_count(
     view = db.query(OrderMatchView).filter_by(
         user_id=current_user.id, order_id=order_id).first()
     last_view = view.last_viewed_at if view else datetime(1970, 1, 1)
-    # Новый список: только те, что совпадают и созданы после просмотра
     matches = [
         t for t in find_matching_transports(order, db, exclude_user_id=current_user.id)
         if t.created_at > last_view
     ]
     return {"new_matches": len(matches)}
-
 # Отметить Соответствия по заявке просмотренными
 
 
@@ -4984,6 +5419,9 @@ def get_transport_new_matches_count(
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user)
 ):
+    if DISABLE_MATCH_COUNTERS:
+        return {"new_matches": 0}
+
     from notifications import find_matching_orders_for_transport
     transport = db.query(TransportModel).filter(
         TransportModel.id == transport_id).first()
@@ -4993,12 +5431,12 @@ def get_transport_new_matches_count(
     view = db.query(TransportMatchView).filter_by(
         user_id=current_user.id, transport_id=transport_id).first()
     last_view = view.last_viewed_at if view else datetime(1970, 1, 1)
-    # Новый список: только те, что совпадают и созданы после просмотра
     matches = [
         o for o in find_matching_orders_for_transport(transport, db, exclude_user_id=current_user.id)
         if getattr(o, "created_at", None) and o.created_at > last_view
     ]
     return {"new_matches": len(matches)}
+
 
 # Отметить Соответствия по транспорту просмотренными
 
@@ -5100,104 +5538,6 @@ def delete_order_attachment(order_id: int, filename: str, db: Session = Depends(
         order.attachments = new_list
         db.commit()
         return {"attachments": _normalize_attachments_read(order.attachments)}
-
-
-@app.get("/transports/account", response_model=List[schemas.Transport])
-def get_account_transports(
-    db: Session = Depends(get_db),
-    current_user: UserModel = Depends(get_current_user)
-):
-    # Определяем "корневого" менеджера аккаунта
-    if current_user.role == UserRole.MANAGER:
-        account_manager_id = current_user.id
-    elif current_user.role == UserRole.EMPLOYEE and current_user.manager_id:
-        account_manager_id = current_user.manager_id
-    else:
-        # Для прочих ролей просто возвращаем свои
-        trs = db.query(TransportModel).filter(TransportModel.owner_id == current_user.id)\
-            .order_by(TransportModel.created_at.desc()).all()
-        out = []
-        for tr in trs:
-            matches = find_matching_orders_for_transport(
-                tr, db, exclude_user_id=current_user.id)
-            t = schemas.Transport.model_validate(tr, from_attributes=True)
-            t.matchesCount = len(matches)
-            t.isMine = (tr.owner_id == current_user.id)
-            t.owner_name = current_user.contact_person or current_user.email
-            out.append(t)
-        return out
-
-    # Собираем всех участников аккаунта (менеджер + сотрудники)
-    employees = db.query(UserModel).filter(
-        UserModel.manager_id == account_manager_id).all()
-    account_user_ids = [account_manager_id] + [e.id for e in employees]
-
-    transports = (
-        db.query(TransportModel)
-        .filter(TransportModel.owner_id.in_(account_user_ids))
-        .order_by(TransportModel.created_at.desc())
-        .all()
-    )
-
-    # Проставим owner_name и matchesCount
-    users_by_id = {u.id: u for u in (
-        [db.query(UserModel).get(account_manager_id)] + employees) if u}
-    out = []
-    for tr in transports:
-        matches = find_matching_orders_for_transport(
-            tr, db, exclude_user_id=current_user.id)
-        t = schemas.Transport.model_validate(tr, from_attributes=True)
-        t.matchesCount = len(matches)
-        t.isMine = (tr.owner_id == current_user.id)
-        owner = users_by_id.get(tr.owner_id)
-        t.owner_name = (owner.contact_person or owner.email) if owner else ""
-        out.append(t)
-    return out
-
-
-@app.get("/orders/account", response_model=List[schemas.OrderOut])
-def get_account_orders(
-    db: Session = Depends(get_db),
-    current_user: UserModel = Depends(get_current_user)
-):
-    if current_user.role == UserRole.MANAGER:
-        account_manager_id = current_user.id
-    elif current_user.role == UserRole.EMPLOYEE and current_user.manager_id:
-        account_manager_id = current_user.manager_id
-    else:
-        # Прочие роли — свои заявки
-        orders = db.query(OrderModel).filter(OrderModel.owner_id == current_user.id)\
-            .order_by(OrderModel.created_at.desc()).all()
-        out = []
-        for od in orders:
-            o = schemas.OrderOut.model_validate(od, from_attributes=True)
-            o.matchesCount = 0
-            o.isMine = (od.owner_id == current_user.id)
-            o.owner_name = current_user.contact_person or current_user.email
-            out.append(o)
-        return out
-
-    employees = db.query(UserModel).filter(
-        UserModel.manager_id == account_manager_id).all()
-    account_user_ids = [account_manager_id] + [e.id for e in employees]
-
-    orders = (
-        db.query(OrderModel)
-        .filter(OrderModel.owner_id.in_(account_user_ids))
-        .order_by(OrderModel.created_at.desc())
-        .all()
-    )
-    users_by_id = {u.id: u for u in (
-        [db.query(UserModel).get(account_manager_id)] + employees) if u}
-    out = []
-    for od in orders:
-        o = schemas.OrderOut.model_validate(od, from_attributes=True)
-        o.matchesCount = 0  # при желании заменим на реальное число
-        o.isMine = (od.owner_id == current_user.id)
-        owner = users_by_id.get(od.owner_id)
-        o.owner_name = (owner.contact_person or owner.email) if owner else ""
-        out.append(o)
-    return out
 
 
 @app.get("/users/simple_list")

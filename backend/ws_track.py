@@ -42,11 +42,15 @@ async def _emit_to_user(user_id: int, payload: Any) -> None:
         if not ok:
             drop.append(ws)
     if drop:
-        for ws in drop:
-            try:
-                track_user_connections[int(user_id)].discard(ws)
-            except Exception:
-                pass
+        bucket = track_user_connections.get(int(user_id))
+        if bucket is not None:
+            for ws in drop:
+                try:
+                    bucket.discard(ws)
+                except Exception:
+                    pass
+            if not bucket:
+                track_user_connections.pop(int(user_id), None)
 
 
 # ===== Эмиттеры для вызова из REST-обработчиков =====
@@ -150,7 +154,11 @@ async def ws_shares_for_user(websocket: WebSocket) -> None:
         pass
     finally:
         try:
-            track_user_connections[int(user_id)].discard(websocket)
+            bucket = track_user_connections.get(int(user_id))
+            if bucket is not None:
+                bucket.discard(websocket)
+                if not bucket:
+                    track_user_connections.pop(int(user_id), None)
         except Exception:
             pass
         try:

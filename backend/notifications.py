@@ -2,10 +2,12 @@ from math import radians, cos, sin, asin, sqrt
 from datetime import datetime, timedelta
 import asyncio
 from collections import defaultdict
+import heapq
+from typing import Iterator, TypeVar
 from jose import jwt, JWTError
 from auth import get_token_from_header_or_cookie, SECRET_KEY, ALGORITHM
 from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect, Query
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, noload
 from sqlalchemy import and_, or_
 import os
 import json
@@ -92,6 +94,22 @@ async def _notifications_ws_impl(websocket: WebSocket):
 # user_id -> set of websocket connections
 user_notification_connections = defaultdict(set)
 
+# --- streaming helpers -------------------------------------------------------
+
+T = TypeVar("T")
+
+
+def _stream_query(query, *, chunk_size: int = 256) -> Iterator[T]:
+    """Iterate over a SQLAlchemy query without loading everything into memory."""
+
+    query = query.options(noload("*"))
+    stream = query.execution_options(stream_results=True).yield_per(chunk_size)
+    session = query.session
+    for row in stream:
+        yield row
+        session.expunge(row)
+
+
 # --------------------------- WEBSOCKET /notifications ---------------------------
 # Фронт соединяется как ws://<host>/notifications?user_id=...&token=...
 # Здесь мы регистрируем соединение и держим его открытым (для push по create_notification).
@@ -123,6 +141,18 @@ def haversine(lat1, lon1, lat2, lon2):
 
 
 ORDER_DEFAULT_RADIUS_KM = float(os.getenv("ORDER_DEFAULT_RADIUS_KM", "80"))
+
+# Максимальное количество автосовпадений для одного заказа/транспорта
+# (чтобы не слать десятки/сотни уведомлений и не грузить CPU/ОЗУ)
+AUTO_MATCH_MAX_NOTIFICATIONS_PER_ENTITY = int(
+    os.getenv("AUTO_MATCH_MAX_NOTIFICATIONS_PER_ENTITY", "50")
+)
+
+# На сколько дней назад смотреть при автопоиске совпадений (по created_at).
+# Если поставить 0 или отрицательное значение, ограничение по давности отключится.
+AUTO_MATCH_LOOKBACK_DAYS = int(
+    os.getenv("AUTO_MATCH_LOOKBACK_DAYS", "90")
+)
 
 
 def _parse_km(val, default=0.0):
@@ -339,7 +369,16 @@ async def push_notification(user_id, data):
                 print(f"[ERROR] push_notification WS send_json: {e}")
 
 
-def create_notification(db: Session, user_id, notif_type, message, related_id=None, payload=None):
+def create_notification(
+    db: Session,
+    user_id,
+    notif_type,
+    message,
+    related_id=None,
+    payload=None,
+    *,
+    auto_commit: bool = True,
+):
     """
     Создаёт запись в БД notifications и пушит событие по WS (асинхронно).
     Для AUTO_MATCH действует дедупликация за последние 7 дней по (user_id, type, related_id).
@@ -396,8 +435,13 @@ def create_notification(db: Session, user_id, notif_type, message, related_id=No
         read=False,
     )
     db.add(notif)
-    db.commit()
-    db.refresh(notif)
+    if auto_commit:
+        db.commit()
+        db.refresh(notif)
+    else:
+        # Flush to assign primary key/values without ending the surrounding
+        # transaction – the caller is responsible for committing later.
+        db.flush()
 
     event = {
         "event": "new_notification",
@@ -494,98 +538,144 @@ def _format_transport_period(tr: Transport) -> str:
 
 def find_and_notify_auto_match_for_order(order: Order, db: Session):
     """
-    ORDER -> TRANSPORT: находит подходящие транспорты и уведомляет владельцев транспортов.
-    Учитывает блокировки _в обе стороны_ (A↔B).
+    ORDER -> TRANSPORT: находит подходящие транспорты и уведомляет владельцев транспорта.
+    Учитывает блокировки (A↔B).
+    Использует _stream_query, чтобы не грузить все транспорты в память.
     """
     print(
         f"\n[AUTO_MATCH][ORDER->TRANSPORT] START "
         f"order.id={order.id} owner_id={order.owner_id} "
-        f"type={order.truck_type} (code={canon_truck_type(getattr(order, 'truck_type', ''))}) "
-        f"from={order.from_locations} date={order.load_date} -> "
-        f"{(parse_date(getattr(order, 'load_date', '')) or datetime.min).strftime('%Y-%m-%d') if parse_date(getattr(order, 'load_date', '')) else '-'}"
+        f"type={order.truck_type} (code={canon_truck_type(getattr(order, 'truck_type', ''))})"
     )
 
+    # Базовая валидация
     if not order.from_locations or not order.truck_type or not order.load_date:
         print("[AUTO_MATCH][ORDER->TRANSPORT] order missing key data")
         return
 
-    order_cities = [normalize_city(city)
-                    for city in (order.from_locations or [])]
-    order_type = canon_truck_type(getattr(order, "truck_type", ""))
+    order_cities = [normalize_city(c) for c in (order.from_locations or [])]
+    order_truck_type = canon_truck_type(getattr(order, "truck_type", ""))
     order_date = parse_date(getattr(order, "load_date", ""))
+
     if not order_date:
-        print(
-            "[AUTO_MATCH][ORDER->TRANSPORT] Cannot parse order.load_date", order.load_date)
+        print("[AUTO_MATCH][ORDER->TRANSPORT] cannot parse order.load_date")
         return
 
-    # Включаем «постоянные» транспорты даже без дат
-    all_transports = db.query(Transport).filter(
+    # Ограничение по давности (по created_at транспорта)
+    cutoff = None
+    if AUTO_MATCH_LOOKBACK_DAYS > 0:
+        try:
+            cutoff = datetime.utcnow() - timedelta(days=AUTO_MATCH_LOOKBACK_DAYS)
+        except Exception:
+            cutoff = None
+
+    transport_query = db.query(Transport).filter(
         Transport.is_active == True,
         Transport.from_location.isnot(None),
-    ).all()
+        Transport.ready_date_from.isnot(None),
+    )
+    if cutoff is not None:
+        transport_query = transport_query.filter(Transport.created_at >= cutoff)
+
+    total_candidates = transport_query.order_by(None).count()
     print(
-        f"[AUTO_MATCH][ORDER->TRANSPORT] Total transports in DB: {len(all_transports)}")
+        f"[AUTO_MATCH][ORDER->TRANSPORT] "
+        f"Total active transports (with created_at filter={cutoff is not None}): "
+        f"{total_candidates}"
+    )
 
-    for tr in all_transports:
-        # Тип
-        tr_type = canon_truck_type(getattr(tr, "truck_type", ""))
-        if tr_type != order_type:
-            continue
+    matched = 0
 
-        # Локация: симметричный радиус + фоллбек по городу
-        matched, loc_reason, nearest_km = _check_location_match(tr, order)
-        if not matched:
-            continue
+    try:
+        for tr in _stream_query(transport_query):
+            # Не уведомляем самого себя
+            if tr.owner_id == order.owner_id:
+                continue
 
-        # Дата: если транспорт «постоянно» — игнорируем (учитываем синонимы/локали)
-        tr_mode_raw = getattr(tr, "mode", "")
-        tr_mode = normalize_str(tr_mode_raw)
-        is_permanent = is_permanent_mode(tr_mode)
-        print(
-            f"[MATCH O->T] tr.id={getattr(tr, 'id', None)} mode='{tr_mode_raw}' -> permanent={is_permanent}")
-        if not is_permanent:
+            # Блокировки в обе стороны
+            if _is_blocked_pair(db, order.owner_id, tr.owner_id):
+                continue
+
+            tr_truck_type = canon_truck_type(getattr(tr, "truck_type", ""))
+            if not are_truck_types_compatible(order_truck_type, tr_truck_type):
+                continue
+
+            tr_mode_raw = getattr(tr, "mode", "")
+            tr_mode = normalize_str(tr_mode_raw)
+            is_permanent = is_permanent_mode(tr_mode)
             tr_from = parse_date(getattr(tr, "ready_date_from", ""))
             tr_to = parse_date(getattr(tr, "ready_date_to", "")) or tr_from
-            if not tr_from or not tr_to:
+
+            # Дата
+            if not is_permanent:
+                if not tr_from or not tr_to:
+                    continue
+                if not (tr_from <= order_date <= tr_to):
+                    continue
+
+            # Локация
+            matched_loc, loc_reason, nearest_km = _check_location_match(tr, order)
+            if not matched_loc:
                 continue
-            if not (tr_from <= order_date <= tr_to):
-                continue
 
-        # Сам на себя
-        if order.owner_id == tr.owner_id:
-            continue
+            # --- формируем уведомление (как было) ---
+            import json
 
-        # БЛОКИРОВКИ (ОСНОВНОЕ)
-        if _is_blocked_pair(db, order.owner_id, tr.owner_id):
-            continue
+            route = ", ".join(order.from_locations or [])
+            date = order.load_date or ""
+            truck_type = getattr(order, "truck_type", "")
 
-        # Уведомляем владельца транспорта
-        period_txt = f"дата погрузки {order.load_date}"
-        # Пометка причины Соответствия
-        reason_label = ""
-        if loc_reason == "by_transport_radius":
-            reason_label = " · Соответствия по радиусу транспорта"
-        elif loc_reason == "by_order_radius":
-            reason_label = " · Соответствия по радиусу груза"
-        elif loc_reason == "by_city":
-            reason_label = " · Соответствия по городу"
-        import json
-        route = ", ".join(order.from_locations or [])
-        date = order.load_date or ""
-        truck_type = getattr(order, "truck_type", "")
-        params = json.dumps(
-            {"route": route, "date": date, "truckType": truck_type},
-            ensure_ascii=False
+            params = json.dumps(
+                {
+                    "route": route,
+                    "date": date,
+                    "truckType": truck_type,
+                },
+                ensure_ascii=False,
+            )
+
+            reason_label = ""
+            if loc_reason == "by_transport_radius":
+                reason_label = " · Соответствия по радиусу транспорта"
+            elif loc_reason == "by_order_radius":
+                reason_label = " · Соответствия по радиусу груза"
+            elif loc_reason == "by_city":
+                reason_label = " · Соответствия по городу"
+
+            fallback = (
+                f"Найден новый груз: {route}, дата: {date}. "
+                f"Тип транспорта: {truck_type}."
+            )
+            message = f"notif.match.orderFound|{params}|{fallback}{reason_label}"
+
+            create_notification(
+                db=db,
+                user_id=tr.owner_id,
+                notif_type=NotificationType.AUTO_MATCH,
+                message=message,
+                related_id=str(order.id),
+                payload={
+                    "entity": "order",
+                    "target_url": f"/orders/{order.id}",
+                },
+            )
+            matched += 1
+
+            # Лимит по количеству уведомлений для одного заказа
+            if matched >= AUTO_MATCH_MAX_NOTIFICATIONS_PER_ENTITY:
+                print(
+                    f"[AUTO_MATCH][ORDER->TRANSPORT] "
+                    f"limit {AUTO_MATCH_MAX_NOTIFICATIONS_PER_ENTITY} reached, stop"
+                )
+                break
+
+        print(
+            f"[AUTO_MATCH][ORDER->TRANSPORT] DONE order_id={getattr(order, 'id', None)} "
+            f"matches={matched}"
         )
-        fallback = f"Найден новый груз: {route}, дата: {date}. Тип транспорта: {truck_type}."
-        message = f"notif.match.orderFound|{params}|{fallback}"
-        create_notification(
-            db=db,
-            user_id=tr.owner_id,
-            notif_type=NotificationType.AUTO_MATCH,
-            message=message,
-            related_id=str(order.id),
-            payload={"entity": "order", "target_url": f"/orders/{order.id}"},
+    except Exception as e:
+        print(
+            f"[AUTO_MATCH][ORDER->TRANSPORT] ERROR order_id={getattr(order, 'id', None)}: {e}"
         )
 
 
@@ -593,136 +683,181 @@ def find_and_notify_auto_match_for_transport(transport: Transport, db: Session):
     """
     TRANSPORT -> ORDER: находит подходящие заказы и уведомляет владельцев заказов.
     Учитывает блокировки _в обе стороны_ (A↔B).
+    Использует _stream_query + лимиты, чтобы не грузить память.
     """
     print(
         f"\n[AUTO_MATCH][TRANSPORT->ORDER] START "
         f"transport.id={transport.id} owner_id={transport.owner_id} "
-        f"type={transport.truck_type} (code={canon_truck_type(getattr(transport, 'truck_type', ''))}) "
-        f"from={transport.from_location} date={transport.ready_date_from} -> "
-        f"{(parse_date(getattr(transport, 'ready_date_from', '')) or datetime.min).strftime('%Y-%m-%d') if parse_date(getattr(transport, 'ready_date_from', '')) else '-'}"
+        f"type={transport.truck_type} (code={canon_truck_type(getattr(transport, 'truck_type', ''))})"
     )
 
-    # Для «постоянно» даты не требуем
+    # Базовая валидация
     if not transport.from_location or not transport.truck_type:
         print("[AUTO_MATCH][TRANSPORT->ORDER] transport missing key data")
         return
 
     tr_type = canon_truck_type(getattr(transport, "truck_type", ""))
-
     tr_mode_raw = getattr(transport, "mode", "")
     tr_mode = normalize_str(tr_mode_raw)
     is_permanent = is_permanent_mode(tr_mode)
-    print(
-        f"[MATCH T->O] tr.id={transport.id} mode='{tr_mode_raw}' -> permanent={is_permanent}")
-    tr_from = tr_to = None
-    if not is_permanent:
-        tr_from = parse_date(getattr(transport, "ready_date_from", ""))
-        tr_to = parse_date(getattr(transport, "ready_date_to", "")) or tr_from
-        if not tr_from or not tr_to:
-            print("[AUTO_MATCH][TRANSPORT->ORDER] Cannot parse ready_date_from/to",
-                  transport.ready_date_from, transport.ready_date_to)
-            return
+    tr_from = parse_date(getattr(transport, "ready_date_from", ""))
+    tr_to = parse_date(getattr(transport, "ready_date_to", "")) or tr_from
 
-    all_orders = db.query(Order).filter(
+    _iso_from = tr_from
+    _iso_to = tr_to
+    print(
+        f"[AUTO_MATCH][TRANSPORT->ORDER] mode='{tr_mode_raw}' -> permanent={is_permanent} "
+        f"ready={getattr(transport, 'ready_date_from', '')}."
+        f"{getattr(transport, 'ready_date_to', '')} -> "
+        f"\"{_iso_from.strftime('%Y-%m-%d') if _iso_from else '-'}."
+        f"{_iso_to.strftime('%Y-%m-%d') if _iso_to else '-'}\""
+    )
+
+    # Ограничение по давности (по created_at заказа)
+    cutoff = None
+    if AUTO_MATCH_LOOKBACK_DAYS > 0:
+        try:
+            cutoff = datetime.utcnow() - timedelta(days=AUTO_MATCH_LOOKBACK_DAYS)
+        except Exception:
+            cutoff = None
+
+    # Стриминг активных заказов
+    order_query = db.query(Order).filter(
         Order.is_active == True,
         Order.from_locations.isnot(None),
         Order.load_date.isnot(None),
-    ).all()
+    )
+    if cutoff is not None:
+        order_query = order_query.filter(Order.created_at >= cutoff)
+
+    total_orders = order_query.order_by(None).count()
     print(
-        f"[AUTO_MATCH][TRANSPORT->ORDER] Total orders in DB: {len(all_orders)}")
+        f"[AUTO_MATCH][TRANSPORT->ORDER] Total active orders "
+        f"(with created_at filter={cutoff is not None}): {total_orders}"
+    )
 
-    candidates = []
-    for order in all_orders:
-        # Тип кузова
-        order_type = canon_truck_type(getattr(order, "truck_type", ""))
-        if not are_truck_types_compatible(order_type, tr_type):
-            continue
+    matched = 0
 
-        # Локация: симметричный радиус + фоллбек по городу (даёт loc_reason)
-        matched, loc_reason, nearest_km = _check_location_match(
-            transport, order)
-        if not matched:
-            continue
+    try:
+        import json
 
-        # Дата: order_date ∈ [tr_from, tr_to] (если доступны)
-        order_date = parse_date(getattr(order, "load_date", ""))
-        if tr_from and tr_to:
-            if not order_date or not (tr_from <= order_date <= tr_to):
+        for order in _stream_query(order_query):
+            # Не матчим самих себя
+            if order.owner_id == transport.owner_id:
                 continue
 
-        # Сам на себя
-        if order.owner_id == transport.owner_id:
-            continue
+            # Блокировки (оба направления)
+            if _is_blocked_pair(db, order.owner_id, transport.owner_id):
+                continue
 
-        # БЛОКИРОВКИ (ОСНОВНОЕ)
-        if _is_blocked_pair(db, order.owner_id, transport.owner_id):
-            continue
+            order_type = canon_truck_type(getattr(order, "truck_type", ""))
+            if not are_truck_types_compatible(order_type, tr_type):
+                continue
 
-        # Храним вместе с причиной Соответствия
-        candidates.append((order, loc_reason))
+            order_date = parse_date(getattr(order, "load_date", ""))
+            if not order_date:
+                continue
 
-    print(
-        f"[AUTO_MATCH][TRANSPORT->ORDER] Candidates found: {len(candidates)}")
-    for order, loc_reason in candidates:
-        # Пометка причины Соответствия
-        reason_label = ""
-        if loc_reason == "by_transport_radius":
-            reason_label = " · Соответствия по радиусу транспорта"
-        elif loc_reason == "by_order_radius":
-            reason_label = " · Соответствия по радиусу груза"
-        elif loc_reason == "by_city":
-            reason_label = " · Соответствия по городу"
-        import json
-        _from = transport.from_location or ""
-        _period = _format_transport_period(transport)
-        _type = getattr(transport, "truck_type", "")
-        params = json.dumps(
-            {"from": _from, "period": _period, "truckType": _type},
-            ensure_ascii=False
+            # Дата
+            if not is_permanent:
+                if not tr_from or not tr_to:
+                    continue
+                if not (tr_from <= order_date <= tr_to):
+                    continue
+
+            # Локация
+            matched_loc, loc_reason, nearest_km = _check_location_match(
+                transport, order
+            )
+            if not matched_loc:
+                continue
+
+            # --- формируем уведомление (как раньше) ---
+            route = ", ".join(order.from_locations or [])
+            date = order.load_date or ""
+            truck_type = getattr(order, "truck_type", "")
+
+            params = json.dumps(
+                {"route": route, "date": date, "truckType": truck_type},
+                ensure_ascii=False,
+            )
+
+            reason_label = ""
+            if loc_reason == "by_transport_radius":
+                reason_label = " · Соответствия по радиусу транспорта"
+            elif loc_reason == "by_order_radius":
+                reason_label = " · Соответствия по радиусу груза"
+            elif loc_reason == "by_city":
+                reason_label = " · Соответствия по городу"
+
+            fallback = (
+                f"Найден новый груз: {route}, дата: {date}. "
+                f"Тип транспорта: {truck_type}."
+            )
+            message = f"notif.match.orderFound|{params}|{fallback}{reason_label}"
+
+            create_notification(
+                db=db,
+                user_id=order.owner_id,
+                notif_type=NotificationType.AUTO_MATCH,
+                message=message,
+                related_id=str(transport.id),
+                payload={
+                    "entity": "transport",
+                    "target_url": f"/transports/{transport.id}",
+                },
+            )
+            matched += 1
+
+            # Лимит по количеству уведомлений для одного транспорта
+            if matched >= AUTO_MATCH_MAX_NOTIFICATIONS_PER_ENTITY:
+                print(
+                    f"[AUTO_MATCH][TRANSPORT->ORDER] "
+                    f"limit {AUTO_MATCH_MAX_NOTIFICATIONS_PER_ENTITY} reached, stop"
+                )
+                break
+
+        print(
+            f"[AUTO_MATCH][TRANSPORT->ORDER] DONE transport_id={getattr(transport, 'id', None)} "
+            f"matches={matched}"
         )
-        fallback = f"Найден новый транспорт: {_from}, период: {_period}, тип: {_type}."
-        message = f"notif.match.transportFound|{params}|{fallback}"
-        create_notification(
-            db=db,
-            user_id=order.owner_id,
-            notif_type=NotificationType.AUTO_MATCH,
-            message=message,
-            related_id=str(transport.id),
-            payload={"entity": "transport",
-                     "target_url": f"/transport/{transport.id}"},
+    except Exception as e:
+        print(
+            f"[AUTO_MATCH][TRANSPORT->ORDER] ERROR transport_id={getattr(transport, 'id', None)}: {e}"
         )
-
 # --------------------------- ПОИСК Соответствий (без уведомлений) ---------------------------
 
 
-def find_matching_orders_for_transport(transport: Transport, db: Session, exclude_user_id=None):
+def find_matching_orders_for_transport(
+    transport: Transport,
+    db: Session,
+    exclude_user_id=None,
+):
     """
-    Находит заказы, совпадающие с транспортом. Без отправки уведомлений.
-    Учитывает блокировки.
+    Находит заказы, совпадающие с транспортом (для UI/фильтра matches_only).
+    Без уведомлений. Учитывает блокировки.
     """
-    orders = db.query(Order).filter(Order.is_active == True).all()
+    # Базовый запрос по активным заказам
+    order_query = db.query(Order).filter(Order.is_active == True)
+    if exclude_user_id:
+        order_query = order_query.filter(Order.owner_id != exclude_user_id)
+
+    total_orders = order_query.order_by(None).count()
+    print(
+        f"[MATCH LIST T->O] total active orders={total_orders} for transport_id={getattr(transport, 'id', None)}"
+    )
+
     results = []
-    seen = set()  # dedupe by id
+    seen = set()
 
     tr_type = canon_truck_type(getattr(transport, "truck_type", ""))
     tr_mode_raw = getattr(transport, "mode", "")
     tr_mode = normalize_str(tr_mode_raw)
     is_permanent = is_permanent_mode(tr_mode)
-    # Для диагностики карточек/счётчиков:
-    _iso_from = parse_date(getattr(transport, "ready_date_from", ""))
-    _iso_to = parse_date(getattr(transport, "ready_date_to", "")) or _iso_from
-    print(
-        f"[MATCH LIST T->O] tr.id={getattr(transport, 'id', None)} "
-        f"truck_type={getattr(transport, 'truck_type', '-')} (code={canon_truck_type(getattr(transport, 'truck_type', ''))}) "
-        f"mode='{tr_mode_raw}' -> permanent={is_permanent} "
-        f"ready={getattr(transport, 'ready_date_from', '')}..{getattr(transport, 'ready_date_to', '')} -> "
-        f"\"{_iso_from.strftime('%Y-%m-%d') if _iso_from else '-'}..{_iso_to.strftime('%Y-%m-%d') if _iso_to else '-'}\""
-    )
     tr_from = parse_date(getattr(transport, "ready_date_from", ""))
     tr_to = parse_date(getattr(transport, "ready_date_to", "")) or tr_from
-    tr_city = normalize_city(getattr(transport, "from_location", ""))
 
-    for order in orders:
+    for order in _stream_query(order_query):
         if exclude_user_id and order.owner_id == exclude_user_id:
             continue
         if _is_blocked_pair(db, order.owner_id, transport.owner_id):
@@ -735,21 +870,27 @@ def find_matching_orders_for_transport(transport: Transport, db: Session, exclud
         order_date = parse_date(getattr(order, "load_date", ""))
         if not order_date:
             continue
+
         if not is_permanent:
             if not tr_from or not tr_to:
                 continue
             if not (tr_from <= order_date <= tr_to):
                 continue
 
-        # Локация: симметричный радиус + фоллбек по городу
         matched, _, _ = _check_location_match(transport, order)
         if not matched:
             continue
-        if getattr(order, 'id', None) not in seen:
-            seen.add(getattr(order, 'id', None))
+
+        oid = getattr(order, "id", None)
+        if oid is not None and oid not in seen:
+            seen.add(oid)
             results.append(order)
 
+    print(
+        f"[MATCH LIST T->O] transport_id={getattr(transport, 'id', None)} matches={len(results)}"
+    )
     return results
+
 
 
 def find_matching_orders(order_data: Order, db: Session, exclude_user_id=None):
@@ -770,6 +911,7 @@ def find_matching_transports(order: Order, db: Session, exclude_user_id=None):
     """
     Находит совпадающие транспорты к заказу. Без отправки уведомлений.
     Учитывает блокировки.
+    Используется фильтр matches_only и карточки Соответствий.
     """
     _order_iso = parse_date(getattr(order, "load_date", ""))
     print(
@@ -779,9 +921,16 @@ def find_matching_transports(order: Order, db: Session, exclude_user_id=None):
         f"\"{_order_iso.strftime('%Y-%m-%d') if _order_iso else '-'}\""
     )
 
-    candidates = db.query(Transport).filter(Transport.is_active == True).all()
+    transport_query = db.query(Transport).filter(Transport.is_active == True)
+    if exclude_user_id:
+        transport_query = transport_query.filter(
+            Transport.owner_id != exclude_user_id
+        )
+
+    total_candidates = transport_query.order_by(None).count()
     print(
-        f"[MATCH DEBUG] found {len(candidates)} transport candidates (all active)")
+        f"[MATCH DEBUG] found {total_candidates} transport candidates (all active)"
+    )
 
     results = []
     seen = set()  # dedupe by id
@@ -789,7 +938,7 @@ def find_matching_transports(order: Order, db: Session, exclude_user_id=None):
     order_truck_type = canon_truck_type(getattr(order, "truck_type", ""))
     order_date = parse_date(getattr(order, "load_date", ""))
 
-    for tr in candidates:
+    for tr in _stream_query(transport_query):
         if exclude_user_id and tr.owner_id == exclude_user_id:
             continue
         if _is_blocked_pair(db, order.owner_id, tr.owner_id):
@@ -803,6 +952,7 @@ def find_matching_transports(order: Order, db: Session, exclude_user_id=None):
         is_permanent = is_permanent_mode(tr_mode)
         tr_from = parse_date(getattr(tr, "ready_date_from", ""))
         tr_to = parse_date(getattr(tr, "ready_date_to", "")) or tr_from
+
         if not order_date:
             continue
         if not is_permanent:
@@ -811,49 +961,63 @@ def find_matching_transports(order: Order, db: Session, exclude_user_id=None):
             if not (tr_from <= order_date <= tr_to):
                 continue
 
-        # Локация: симметричный радиус (транспорт ↔ груз) + фоллбек по городу
         matched, _, _ = _check_location_match(tr, order)
-        if matched:
-            if getattr(tr, 'id', None) not in seen:
-                seen.add(getattr(tr, 'id', None))
-                results.append(tr)
+        if not matched:
+            continue
+
+        tr_id = getattr(tr, "id", None)
+        if tr_id is not None and tr_id not in seen:
+            seen.add(tr_id)
+            results.append(tr)
 
     print(
-        f"[MATCH DEBUG] order_id={getattr(order, 'id', None)}: {len(results)} matches found")
+        f"[MATCH DEBUG] order_id={getattr(order, 'id', None)}: {len(results)} matches found"
+    )
     return results
 
-    # --- БЛИЖАЙШИЕ ПРЕДЛОЖЕНИЯ (для UI-подсказок, без уведомлений) ---
 
 
 def nearest_orders_for_transport(transport: Transport, db: Session, limit: int = 10):
     tr_point = _transport_pickup_point(transport)
     if not tr_point:
         return []
-    orders = db.query(Order).filter(Order.is_active == True).all()
-    scored = []
-    for order in orders:
+    order_query = db.query(Order).filter(Order.is_active == True)
+    scored_heap = []
+    for order in _stream_query(order_query):
         coords = _order_pickup_coords(order)
         if not coords:
             continue
         d = _nearest_distance_km(tr_point, coords)
-        if d != float("inf"):
-            scored.append((order, d))
-    scored.sort(key=lambda x: x[1])
-    return scored[:limit]
+        if d == float("inf"):
+            continue
+        if len(scored_heap) < limit:
+            heapq.heappush(scored_heap, (-d, order))
+        else:
+            worst = -scored_heap[0][0]
+            if d < worst:
+                heapq.heapreplace(scored_heap, (-d, order))
+    scored = sorted(scored_heap, key=lambda item: -item[0])
+    return [(order, -distance) for distance, order in scored]
 
 
 def nearest_transports_for_order(order: Order, db: Session, limit: int = 10):
     coords = _order_pickup_coords(order)
     if not coords:
         return []
-    transports = db.query(Transport).filter(Transport.is_active == True).all()
-    scored = []
-    for tr in transports:
+    transport_query = db.query(Transport).filter(Transport.is_active == True)
+    scored_heap = []
+    for tr in _stream_query(transport_query):
         tr_point = _transport_pickup_point(tr)
         if not tr_point:
             continue
         d = _nearest_distance_km(tr_point, coords)
-        if d != float("inf"):
-            scored.append((tr, d))
-    scored.sort(key=lambda x: x[1])
-    return scored[:limit]
+        if d == float("inf"):
+            continue
+        if len(scored_heap) < limit:
+            heapq.heappush(scored_heap, (-d, tr))
+        else:
+            worst = -scored_heap[0][0]
+            if d < worst:
+                heapq.heapreplace(scored_heap, (-d, tr))
+    scored = sorted(scored_heap, key=lambda item: -item[0])
+    return [(tr, -distance) for distance, tr in scored]

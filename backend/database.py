@@ -6,7 +6,7 @@ from sqlalchemy.orm import sessionmaker
 # Централизация: берём DSN из ENV, иначе безопасный дефолт (локальный)
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    "postgresql://postgres:Fatsanta1211@localhost:5432/transinfo_utf",
+    "postgresql://postgres:Remus141411@localhost:5432/transinfo_utf",
 )
 
 # Параметры пула тоже можно управлять через ENV (значения по умолчанию сохранены)

@@ -14,7 +14,45 @@ import uuid
 import os
 from typing import Dict, Any, List, Optional
 
+# Логгер для гео‑автокомлита
+log = logging.getLogger("geo_autocomplete")
+
+# Таймауты и бюджеты по времени (можно переопределить через ENV)
+HTTP_TIMEOUT = float(os.getenv("GEO_HTTP_TIMEOUT", "0.7") or "0.7")
+TOTAL_TIME_BUDGET = float(os.getenv("GEO_TOTAL_TIME_BUDGET", "0.9") or "0.9")
+
+# Проверять ли SSL у внешних геокодеров (по умолчанию да)
+VERIFY_SSL = os.getenv("GEO_VERIFY_SSL", "1").lower() not in ("0", "false", "no")
+
+# Сколько результатов считается «достаточно», чтобы не ждать остальных провайдеров
+FAST_ENOUGH_RESULTS = int(os.getenv("GEO_FAST_ENOUGH_RESULTS", "5") or "5")
+
+# Простая эвристика для аэропортов
+_RE_AIRPORT = re.compile(r"airport|аэропорт|aerodrome|airfield", re.IGNORECASE)
+
+# Веса типов населённых пунктов для сортировки
+TYPE_WEIGHT: Dict[str, int] = {
+    "city": 100,
+    "town": 90,
+    "village": 80,
+    "hamlet": 70,
+    "suburb": 60,
+    "locality": 50,
+    "neighbourhood": 40,
+    "quarter": 30,
+    "administrative": 80,
+    "city_district": 70,
+    "borough": 70,
+}
+
 router = APIRouter(prefix="/geo", tags=["geo"])
+
+# Поддерживаемые языки для переводов названий
+SUPPORTED_LANGS = {"ru", "en", "ka", "tr", "az"}
+
+# Значение по умолчанию для параметра limit в /geo/autocomplete
+# (используется в Query(DEFAULT_LIMIT, ...))
+DEFAULT_LIMIT = 8
 
 NOMINATIM = "https://nominatim.openstreetmap.org"
 PHOTON = "https://photon.komoot.io/api/"
@@ -38,56 +76,75 @@ except Exception:
 
 # --- simple in-process TTL cache ---
 _CACHE = OrderedDict()  # key -> (ts, data)
-CACHE_TTL = int(os.getenv("GEO_CACHE_TTL", "86400"))   # 24h
-CACHE_MAX = int(os.getenv("GEO_CACHE_MAX", "2000"))
+# 0 = полностью выключить кэш
+CACHE_TTL = int(os.getenv("GEO_CACHE_TTL", "0") or "0")
+CACHE_MAX = int(os.getenv("GEO_CACHE_MAX", "0") or "0")
 
 
-def _cache_get(key):
-    rec = _CACHE.get(key)
-    if not rec:
-        return None
-    ts, data = rec
-    if time.time() - ts > CACHE_TTL:
+def prune_expired_cache(current_time: Optional[float] = None) -> int:
+    """Remove expired entries from the in-memory cache.
+
+    Parameters
+    ----------
+    current_time:
+        Optional timestamp (in seconds) used for comparisons.  Supplying a
+        value allows deterministic unit tests; when omitted ``time.time()`` is
+        used.  The function returns the number of entries that were evicted so
+        the caller may log or otherwise react to aggressive pruning.
+    """
+
+    if current_time is None:
+        current_time = time.time()
+
+    expired: List[str] = []
+    for key, (ts, _data) in list(_CACHE.items()):
+        if current_time - ts > CACHE_TTL:
+            expired.append(key)
+
+    for key in expired:
         _CACHE.pop(key, None)
+
+    return len(expired)
+
+def _cache_get(key: str) -> Optional[List[Dict[str, Any]]]:
+    """
+    Достаём из кэша список айтемов, если он включён и не протух.
+    """
+    # Кэш гео можно полностью отключить через ENV:
+    #   GEO_CACHE_MAX=0 или GEO_CACHE_TTL=0
+    if CACHE_MAX <= 0 or CACHE_TTL <= 0:
         return None
-    _CACHE.move_to_end(key)
+
+    entry = _CACHE.get(key)
+    if not entry:
+        return None
+
+    ts, data = entry
+    if time.time() - ts > CACHE_TTL:
+        # устарело — выкидываем
+        try:
+            del _CACHE[key]
+        except KeyError:
+            pass
+        return None
+
     return data
 
 
-def _cache_set(key, data):
-    # пустые ответы не кэшируем
-    try:
-        if not data:
-            return
-        if isinstance(data, (list, tuple)) and len(data) == 0:
-            return
-    except Exception:
-        pass
-    _CACHE[key] = (time.time(), data)
+def _cache_set(key: str, items: List[Dict[str, Any]]) -> None:
+    """
+    Кладём в кэш (в простом формате: (timestamp, items)).
+    """
+    if CACHE_MAX <= 0 or CACHE_TTL <= 0:
+        return
+
+    now = time.time()
+    _CACHE[key] = (now, items)
+
+    # Лишнее выкидываем с начала (самые старые)
     while len(_CACHE) > CACHE_MAX:
         _CACHE.popitem(last=False)
 
-
-SUPPORTED_LANGS = {"ru", "en", "ka", "tr", "az"}
-DEFAULT_LIMIT = 8
-
-log = logging.getLogger("geo")
-VERIFY_SSL = os.getenv("GEOCODER_VERIFY_SSL", "1") == "1"
-
-# скорость/таймауты
-HTTP_CONNECT_TIMEOUT = float(os.getenv("GEO_HTTP_CONNECT_TIMEOUT", "0.5"))
-HTTP_READ_TIMEOUT = float(os.getenv("GEO_HTTP_READ_TIMEOUT", "0.9"))
-HTTP_TIMEOUT = (HTTP_CONNECT_TIMEOUT, HTTP_READ_TIMEOUT)
-TOTAL_TIME_BUDGET = float(os.getenv("GEO_TOTAL_TIME_BUDGET", "1.6"))
-FAST_ENOUGH_RESULTS = int(os.getenv("GEO_MIN_RESULTS_FAST", "1"))
-
-_RE_AIRPORT = re.compile(r"(airport|аэропорт|აეროპორტ)", re.I)
-
-TYPE_WEIGHT = {
-    "city": 100, "town": 90, "village": 80, "hamlet": 70,
-    "suburb": 50, "locality": 40, "neighbourhood": 35, "quarter": 33,
-    "administrative": 85, "city_district": 70, "borough": 70,
-}
 
 
 def _looks_like_poi(item: Dict[str, Any]) -> bool:
@@ -467,16 +524,13 @@ def autocomplete(
     if cached is not None:
         return {"items": cached}
 
+    # Полностью оффлайн‑режим: не ходим ни в какие внешние геокодеры,
+    # работаем только с локальной таблицей places.
     if os.getenv("GEOCODER_OFFLINE") == "1":
-        demo = [{
-            "source": "demo", "osm_id": 1, "osm_type": "relation",
-            "class": "place", "type": "city",
-            "lat": 41.715, "lon": 44.827, "country_iso2": "GE",
-            "name": {"ru": "Тбилиси", "en": "Tbilisi", "ka": "თბილისი"}.get(lang, "Tbilisi"),
-            "translations": {"ru": "Тбилиси", "en": "Tbilisi", "ka": "თბილისი"},
-            "container_city": None, "address": {}
-        }]
-        return {"items": demo}
+        items = _local_fallback_items(db, q, eff_lang, limit)
+        # На всякий случай можем закэшировать, если GEO_CACHE_MAX > 0
+        _cache_set(cache_key, items)
+        return {"items": items}
 
     combined: List[Dict[str, Any]] = []
 

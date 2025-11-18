@@ -155,8 +155,21 @@ const eqBounds = (a, b) => !!a && !!b && a[0] === b[0] && a[1] === b[1] && a[2] 
 
 const useDebounced = (fn, delay = 250) => {
     const fnRef = React.useRef(fn);
-    useEffect(() => void (fnRef.current = fn), [fn]);
     const timer = useRef(null);
+
+    useEffect(() => {
+        fnRef.current = fn;
+    }, [fn]);
+
+    // Чистим таймер при размонтировании, чтобы не дергать setState на размонтированном компоненте
+    useEffect(() => {
+        return () => {
+            if (timer.current) {
+                clearTimeout(timer.current);
+            }
+        };
+    }, []);
+
     return React.useCallback(
         (...args) => {
             if (timer.current) clearTimeout(timer.current);
@@ -562,13 +575,25 @@ export default function SimpleMap({
     const { setHoveredItem, hoveredItem, setClickedItemId, clickedItemId } = useMapHover();
     const [hoveredId, setHoveredId] = useCrossHover(list, hoveredItemId, setHoveredItemId);
 
-    // DEBUG: логируем изменения состояний ховера/оверлея
+    // Чистим таймер ховера при размонтировании и сбрасываем lastHoverRef
     useEffect(() => {
-        console.log('[HOVER STATE]', {
-            hoveredId,
-            hoveredItem,
-            popupPos,
-        });
+        return () => {
+            if (hoverTimerRef.current) {
+                clearTimeout(hoverTimerRef.current);
+            }
+            lastHoverRef.current = { id: null, x: null, y: null };
+        };
+    }, []);
+
+    // DEBUG: логируем состояния ховера/оверлея только в dev
+    useEffect(() => {
+        if (process.env.NODE_ENV === "development") {
+            console.log("[HOVER STATE]", {
+                hoveredId,
+                hoveredItem,
+                popupPos,
+            });
+        }
     }, [hoveredId, hoveredItem, popupPos]);
 
     const userDrivenRef = useRef(false);
@@ -839,7 +864,9 @@ export default function SimpleMap({
 
     useEffect(() => {
         if (!leafletMap) return;
-        setTimeout(() => {
+        let outerId = null;
+        let innerId = null;
+        outerId = setTimeout(() => {
             try {
                 leafletMap.invalidateSize(true);
             } catch { }
@@ -856,8 +883,13 @@ export default function SimpleMap({
             leafletMap.once("moveend", sync);
             leafletMap.once("zoomend", sync);
             runInitialFit(leafletMap);
-            setTimeout(sync, 0);
+            innerId = setTimeout(sync, 0);
         }, 150);
+
+        return () => {
+            if (outerId) clearTimeout(outerId);
+            if (innerId) clearTimeout(innerId);
+        };
     }, [refreshKey, leafletMap, runInitialFit]);
 
     useEffect(() => {
@@ -1022,9 +1054,7 @@ export default function SimpleMap({
         return false;
     }
 
-    /* -------------------- Hover hydration (детальные данные) -------------------- */
-    // Кэшируем промисы, чтобы не спамить сеть одинаковыми запросами при движении мыши.
-    const hydrateCacheRef = useRef({ orders: new Map(), transports: new Map() });
+    const MAX_HYDRATE_CACHE_PER_KIND = 200; // можно подстроить под реальные нагрузки
 
     // Достаточно ли данных, чтобы отрисовать «богатый» оверлей?
     const hasOverlayData = (it) =>
@@ -1042,14 +1072,40 @@ export default function SimpleMap({
         );
 
     // Лениво тянем фулл-объект по id
+    const hydrateCacheRef = useRef({
+        orders: new Map(),
+        transports: new Map(),
+    });
+
+    // Вспомогательная функция для добавления в кэш с ограничением по размеру
+    function getFromLimitedCache(kindKey, id, factory) {
+        const bucket = hydrateCacheRef.current[kindKey];
+        if (!bucket) {
+            return factory();
+        }
+
+        if (!bucket.has(id)) {
+            // если кэш переполнен — выкидываем самый старый ключ
+            if (bucket.size >= MAX_HYDRATE_CACHE_PER_KIND) {
+                const oldestKey = bucket.keys().next().value;
+                bucket.delete(oldestKey);
+            }
+            bucket.set(id, factory());
+        }
+
+        return bucket.get(id);
+    }
+
+    // Лениво тянем фулл-объект по id с ограниченным кэшем
     const fetchFullItem = async (kind, id) => {
         if (!id) return null;
         const key = kind === "transport" ? "transports" : "orders";
-        const cache = hydrateCacheRef.current[key];
-        if (!cache.has(id)) {
-            cache.set(id, fetch(api(`/${key}/${id}`)).then((r) => r.json()).catch(() => null));
-        }
-        return cache.get(id);
+
+        return getFromLimitedCache(key, id, () =>
+            fetch(api(`/${key}/${id}`))
+                .then((r) => r.json())
+                .catch(() => null)
+        );
     };
 
     function clusterContainsIntersectingOrder(cluster, supercluster, list, filters, radiusMode, radiusCenter, radius) {
@@ -1100,7 +1156,9 @@ export default function SimpleMap({
     function makePinHandlers({ id, lat, lng, item, map }) {
         return {
             mouseover: (e) => {
-                console.log('[PIN mouseover]', { id, lat, lng, ev: e?.latlng });
+                if (process.env.NODE_ENV === "development") {
+                    console.log("[PIN mouseover]", { id, lat, lng, ev: e?.latlng });
+                }
 
                 if (hoverTimerRef.current) {
                     clearTimeout(hoverTimerRef.current);
@@ -1111,21 +1169,25 @@ export default function SimpleMap({
                     const pt = mp.latLngToContainerPoint(e?.latlng || L.latLng(lat, lng));
                     const rc = mp.getContainer().getBoundingClientRect();
                     const pos = { x: rc.left + pt.x, y: rc.top + pt.y };
-                    console.log('[PIN pos computed]', {
-                        id,
-                        pos,
-                        rc: { left: rc.left, top: rc.top }
-                    });
+                    if (process.env.NODE_ENV === "development") {
+                        console.log("[PIN pos computed]", {
+                            id,
+                            pos,
+                            rc: { left: rc.left, top: rc.top },
+                        });
+                    }
                     const sameId = lastHoverRef.current.id === id;
                     const samePos = lastHoverRef.current.x === pos.x && lastHoverRef.current.y === pos.y;
                     if (!sameId || !samePos) {
-                        console.log('[HOVER update]', {
-                            id,
-                            sameId,
-                            samePos,
-                            prev: { ...lastHoverRef.current },
-                            next: { id, x: pos.x, y: pos.y }
-                        });
+                        if (process.env.NODE_ENV === "development") {
+                            console.log("[HOVER update]", {
+                                id,
+                                sameId,
+                                samePos,
+                                prev: { ...lastHoverRef.current },
+                                next: { id, x: pos.x, y: pos.y },
+                            });
+                        }
                         lastHoverRef.current = { id, x: pos.x, y: pos.y };
                         setPopupPos(pos);
                         setHoveredId(id);
@@ -1145,14 +1207,21 @@ export default function SimpleMap({
                 } catch { }
             },
             mouseout: () => {
-                console.log('[PIN mouseout start]', { id });
+                if (process.env.NODE_ENV === "development") {
+                    console.log("[PIN mouseout start]", { id });
+                }
                 if (hoverTimerRef.current) {
                     clearTimeout(hoverTimerRef.current);
                     hoverTimerRef.current = null;
                 }
                 hoverTimerRef.current = setTimeout(() => {
                     if (lastHoverRef.current.id === id) {
-                        console.log('[HOVER cleared]', { id, lastHover: { ...lastHoverRef.current } });
+                        if (process.env.NODE_ENV === "development") {
+                            console.log("[HOVER cleared]", {
+                                id,
+                                lastHover: { ...lastHoverRef.current },
+                            });
+                        }
                         lastHoverRef.current = { id: null, x: null, y: null };
                         setHoveredId(null);
                         setHoveredItem(null);
