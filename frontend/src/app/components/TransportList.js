@@ -26,7 +26,6 @@ import { api, abs } from "@/config/env";
 import IconLabel from "./ui/IconLabel";
 import { FiMap as MapIcon, FiList as ListIcon } from "react-icons/fi";
 import { useLang } from "../i18n/LangProvider";
-import { useLang } from "../i18n/LangProvider";
 import { LOADING_TYPES, getTruckBodyTypes, getLoadingTypes, localizeRegularity as mapRegularity } from "./truckOptions";
 import TransportShareButtons from "./TransportShareButtons";
 

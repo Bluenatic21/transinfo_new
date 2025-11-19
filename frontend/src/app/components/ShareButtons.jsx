@@ -235,7 +235,6 @@ export default function ShareButtons({ share, variant = "compact", buttonStyle, 
                 <div style={menuBaseStyle} role="menu">
                     {buttons.map((btn) => {
                         const commonProps = {
-                            key: btn.key,
                             title: btn.title,
                             "aria-label": btn.title,
                         };
@@ -269,6 +268,7 @@ export default function ShareButtons({ share, variant = "compact", buttonStyle, 
                         if (btn.href) {
                             return (
                                 <a
+                                    key={btn.key}
                                     {...commonProps}
                                     href={btn.href}
                                     target="_blank"
@@ -284,6 +284,7 @@ export default function ShareButtons({ share, variant = "compact", buttonStyle, 
 
                         return (
                             <button
+                                key={btn.key}
                                 type="button"
                                 {...commonProps}
                                 onClick={btn.onClick}
