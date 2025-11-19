@@ -225,9 +225,12 @@ function FileIcon({ ext }) {
 }
 
 export default function OrderDetailsPage() {
-    const { t } = useLang?.() || { t: (_k, f) => f };
+    // Достаём контексты единообразно, без условных вызовов хуков
+    const langCtx = useLang();
+    const { t } = langCtx || { t: (_k, f) => f };
     // ОДНА декларация useUser на весь компонент
-    const { user, authFetchWithRefresh } = useUser() || {};
+    const userCtx = useUser();
+    const { user, authFetchWithRefresh } = userCtx || {};
     // Витрины: label = перевод, value = канон (RU)
     const BODY_TYPES = useMemo(() => getTruckBodyTypes(t), [t]);
     const LOADING_TYPES_I18N = useMemo(() => getLoadingTypes(t), [t]);
@@ -461,6 +464,20 @@ export default function OrderDetailsPage() {
             .catch(() => { });
     }, [order?.id]);
 
+    const cardStyle = useMemo(
+        () => ({
+            background: "#1f2f48",
+            border: "1px solid #223c62",
+            borderRadius: 16,
+            padding: isMobile ? 14 : 18,
+            display: "flex",
+            flexDirection: "column",
+            gap: isMobile ? 10 : 12,
+            boxShadow: "0 14px 30px rgba(7, 19, 38, 0.32)",
+        }),
+        [isMobile]
+    );
+
     // На мобильных «голый» текст загрузки выглядел как пустой экран
     // из‑за наследования цвета. Делаем явный, контрастный лоадер,
     // как в странице транспорта.
@@ -575,20 +592,6 @@ export default function OrderDetailsPage() {
         gap: 10,
         letterSpacing: 0.1,
     };
-
-    const cardStyle = useMemo(
-        () => ({
-            background: "#1f2f48",
-            border: "1px solid #223c62",
-            borderRadius: 16,
-            padding: isMobile ? 14 : 18,
-            display: "flex",
-            flexDirection: "column",
-            gap: isMobile ? 10 : 12,
-            boxShadow: "0 14px 30px rgba(7, 19, 38, 0.32)",
-        }),
-        [isMobile]
-    );
 
     const sectionTextStyle = {
         lineHeight: 1.45,
