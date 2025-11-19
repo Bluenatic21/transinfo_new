@@ -8,6 +8,7 @@ try:
 except Exception:
     from email_utils import send_email
     # Фолбэк: простая загрузка .env из текущей/родительской папки
+
     def _ensure_env_loaded():  # type: ignore
         import pathlib
         env_paths = [
@@ -38,6 +39,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from schemas import UserRegister, UserProfile, EmployeeRegister, UserUpdate
 from models import User
+from services.presence_tracker import record_user_activity
 from database import SessionLocal, get_db
 from datetime import datetime, timedelta, timezone
 from sqlalchemy.orm import Session
@@ -71,7 +73,8 @@ _ensure_env_loaded()  # подхватить /opt/transinfo/backend/.env
 # === Feature flag: полностью выключить email‑верификацию (не отправлять коды) ===
 # Поддерживаем оба имени переменной: EMAIL_VERIFICATION_ENABLED и (на всякий случай) SEND_EMAIL_VERIFICATION.
 EMAIL_VERIFICATION_ENABLED = (
-    os.getenv("EMAIL_VERIFICATION_ENABLED", os.getenv("SEND_EMAIL_VERIFICATION", "1"))
+    os.getenv("EMAIL_VERIFICATION_ENABLED",
+              os.getenv("SEND_EMAIL_VERIFICATION", "1"))
     .strip().lower() in ("1", "true", "yes", "on")
 )
 
@@ -115,7 +118,8 @@ def _sms_text(lang: str, code: str) -> str:
 def _send_verification_code(db: Session, user: User):
     """Создать/обновить код подтверждения и отправить письмо."""
     # анти-спам: проверим cooldown по последней отправке (всегда UTC-aware)
-    ev = db.query(EmailVerification).filter(EmailVerification.user_id == user.id).first()
+    ev = db.query(EmailVerification).filter(
+        EmailVerification.user_id == user.id).first()
     now_ = _to_utc(now())
     if ev and (now_ - _to_utc(ev.sent_at)).total_seconds() < COOLDOWN_SEC:
         # слишком часто — просто молчим (или бросаем 429)
@@ -227,13 +231,15 @@ def _domain_from_email(email: str) -> str:
     except Exception:
         return ""
 
+
 def _is_disposable_domain(domain: str) -> bool:
     disposable = {
-        "mailinator.com","10minutemail.com","guerrillamail.com","tempmail.com",
-        "temp-mail.org","yopmail.com","getnada.com","trashmail.com","sharklasers.com",
-        "moakt.com","maildrop.cc","dispostable.com","tempmailaddress.com","throwawaymail.com"
+        "mailinator.com", "10minutemail.com", "guerrillamail.com", "tempmail.com",
+        "temp-mail.org", "yopmail.com", "getnada.com", "trashmail.com", "sharklasers.com",
+        "moakt.com", "maildrop.cc", "dispostable.com", "tempmailaddress.com", "throwawaymail.com"
     }
     return domain in disposable
+
 
 def _domain_has_mx_or_a(domain: str) -> bool:
     # Сначала пробуем MX через dnspython (если установлен)
@@ -257,6 +263,7 @@ def _domain_has_mx_or_a(domain: str) -> bool:
     except Exception:
         return False
 
+
 def _email_domain_looks_deliverable(email: str) -> tuple[bool, str | None]:
     d = _domain_from_email(email)
     if not d:
@@ -265,7 +272,7 @@ def _email_domain_looks_deliverable(email: str) -> tuple[bool, str | None]:
         return False, "disposable"
     if not _domain_has_mx_or_a(d):
         return False, "no_mx"
-    return True, None    
+    return True, None
 
 
 def _normalize_phone_e164_digits(raw: str) -> str:
@@ -371,9 +378,11 @@ def _truncate72_bytes(s: str) -> bytes:
     b = (s or "").encode("utf-8")
     return b[:72] if len(b) > 72 else b
 
+
 def _truncate72_bytes(s: str) -> bytes:
     b = (s or "").encode("utf-8")
     return b[:72] if len(b) > 72 else b
+
 
 def verify_password(plain_password, hashed_password):
     # Поддерживаем старые хэши ($pbkdf2-sha256$), затем bcrypt
@@ -382,17 +391,20 @@ def verify_password(plain_password, hashed_password):
             return pbkdf2_sha256.verify(plain_password, hashed_password)
         except Exception:
             return False
-    hp = hashed_password if isinstance(hashed_password, (bytes, bytearray)) else (hashed_password or "").encode("utf-8")
+    hp = hashed_password if isinstance(hashed_password, (bytes, bytearray)) else (
+        hashed_password or "").encode("utf-8")
     try:
         return bcrypt.checkpw(_truncate72_bytes(plain_password), hp)
     except Exception:
         return False
-    hp = hashed_password if isinstance(hashed_password, (bytes, bytearray)) else (hashed_password or "").encode("utf-8")
+    hp = hashed_password if isinstance(hashed_password, (bytes, bytearray)) else (
+        hashed_password or "").encode("utf-8")
     try:
         return bcrypt.checkpw(_truncate72_bytes(plain_password), hp)
     except Exception:
         return False
-    hp = hashed_password if isinstance(hashed_password, (bytes, bytearray)) else (hashed_password or "").encode("utf-8")
+    hp = hashed_password if isinstance(hashed_password, (bytes, bytearray)) else (
+        hashed_password or "").encode("utf-8")
     try:
         return bcrypt.checkpw(_truncate72_bytes(plain_password), hp)
     except Exception:
@@ -405,7 +417,8 @@ def get_password_hash(password):
 
 def authenticate_user(db, email, password):
     normalized_email = email.strip().lower()
-    user = db.query(User).filter(func.lower(User.email) == normalized_email).first()
+    user = db.query(User).filter(func.lower(
+        User.email) == normalized_email).first()
     if not user:
         return None
     ok = verify_password(password, user.hashed_password)
@@ -414,7 +427,8 @@ def authenticate_user(db, email, password):
     if isinstance(user.hashed_password, str) and user.hashed_password.startswith("$pbkdf2-sha256$"):
         try:
             user.hashed_password = get_password_hash(password)
-            db.add(user); db.commit()
+            db.add(user)
+            db.commit()
         except Exception:
             pass
     return user
@@ -851,7 +865,7 @@ def refresh_token(
         # Создаём новый access token (по текущему юзеру)
         new_access = create_access_token({
             "sub": user.email,
-            "role": str((getattr(getattr(user,"role",None),"value",None) or getattr(user,"role_name",None) or getattr(user,"user_role",None) or getattr(user,"role",None) or "OWNER")),
+            "role": str((getattr(getattr(user, "role", None), "value", None) or getattr(user, "role_name", None) or getattr(user, "user_role", None) or getattr(user, "role", None) or "OWNER")),
             "user_id": user.id,
             "sid": user.session_uuid,
         })
@@ -867,6 +881,7 @@ def refresh_token(
 def get_current_user(
     db: Session = Depends(get_db),
     token: str = Depends(get_token_from_header_or_cookie),
+    request: Request = None,
 ):
     credentials_exception = HTTPException(
         status_code=401,
@@ -893,6 +908,11 @@ def get_current_user(
         if getattr(user, "is_active", True) is False:
             raise HTTPException(
                 status_code=403, detail="error.account.blocked")
+            # Track presence for every authenticated request
+        try:
+            record_user_activity(db, user, request)
+        except Exception:
+            pass
         return user
     except Exception as e:
         print("[Auth Error]:", e)
@@ -1147,6 +1167,8 @@ def get_optional_current_user(
         return None
 
 # --- compat helper: role -> str (Enum/str/alt-attr/missing) ---
+
+
 def _role_str(user):
     """
     Возвращает строковое значение роли пользователя, устойчиво к
@@ -1157,7 +1179,8 @@ def _role_str(user):
         return str(r.value)
     if r is not None:
         return str(r)
-    r2 = getattr(user, "user_role", None) or getattr(user, "type", None) or getattr(user, "role_name", None)
+    r2 = getattr(user, "user_role", None) or getattr(
+        user, "type", None) or getattr(user, "role_name", None)
     if hasattr(r2, "value"):
         return str(r2.value)
     if r2 is not None:

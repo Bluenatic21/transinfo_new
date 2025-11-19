@@ -16,6 +16,8 @@ from models import (
     Transport,
     Match,
     TrackingSession,
+    UserSession,
+    SiteVisit,
 )
 
 try:
@@ -100,6 +102,22 @@ class TrackingSessionOut(BaseModel):
             orm_mode = True
 
 
+class OnlineUserOut(BaseModel):
+    id: int
+    email: Optional[str] = None
+    name: Optional[str] = None
+    role: Optional[str] = None
+    phone: Optional[str] = None
+    last_seen_at: datetime
+    last_path: Optional[str] = None
+
+
+class VisitStatOut(BaseModel):
+    date: str
+    total_visits: int
+    unique_users: int
+
+
 class AdminActionOut(BaseModel):
     id: int
     admin_user_id: int
@@ -154,6 +172,81 @@ def admin_stats(
         "generated_at": now.isoformat(),
     }
 
+
+@router.get("/stats/online-users")
+def admin_online_users(
+    db: Session = Depends(get_db),
+    _: UserModel = Depends(admin_required),
+):
+    now = datetime.utcnow()
+    cutoff = now - timedelta(minutes=5)
+    rows = (
+        db.query(UserSession, UserModel)
+        .join(UserModel, UserModel.id == UserSession.user_id)
+        .filter(UserSession.last_seen_at >= cutoff)
+        .order_by(UserSession.last_seen_at.desc())
+        .all()
+    )
+    users = []
+    for session, user in rows:
+        role_val = getattr(user.role, "value", user.role)
+        name = getattr(user, "name", None) or getattr(
+            user, "contact_person", None) or getattr(user, "organization", None)
+        users.append({
+            "id": user.id,
+            "email": user.email,
+            "name": name or user.email,
+            "role": role_val,
+            "phone": getattr(user, "phone", None),
+            "last_seen_at": session.last_seen_at.isoformat() if session.last_seen_at else None,
+            "last_path": session.last_path,
+        })
+
+    return {
+        "count": len(users),
+        "users": users,
+        "generated_at": now.isoformat(),
+    }
+
+
+@router.get("/stats/visits")
+def admin_visit_stats(
+    db: Session = Depends(get_db),
+    _: UserModel = Depends(admin_required),
+):
+    now = datetime.utcnow()
+    days = 30
+    start_date = (now - timedelta(days=days - 1)).date()
+    start_dt = datetime.combine(start_date, datetime.min.time())
+
+    rows = (
+        db.query(
+            func.date(SiteVisit.visited_at).label("visit_date"),
+            func.count(SiteVisit.id).label("total_visits"),
+            func.count(func.distinct(SiteVisit.user_id)).label("unique_users"),
+        )
+        .filter(SiteVisit.visited_at >= start_dt)
+        .group_by(func.date(SiteVisit.visited_at))
+        .order_by(func.date(SiteVisit.visited_at))
+        .all()
+    )
+
+    by_date = {row.visit_date: row for row in rows}
+    stats = []
+    for idx in range(days):
+        day = start_date + timedelta(days=idx)
+        row = by_date.get(day)
+        stats.append({
+            "date": day.isoformat(),
+            "total_visits": int(row.total_visits) if row else 0,
+            "unique_users": int(row.unique_users) if row else 0,
+        })
+
+    return {
+        "from": start_date.isoformat(),
+        "to": now.date().isoformat(),
+        "days": stats,
+    }
 # ----- USERS LIST
 
 

@@ -186,6 +186,31 @@ class User(Base):
     session_updated_at = Column(DateTime, default=datetime.utcnow)
 
 
+class UserSession(Base):
+    __tablename__ = "user_sessions"
+
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id"),
+                     nullable=False, unique=True)
+    last_seen_at = Column(DateTime, default=datetime.utcnow, index=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    last_visit_at = Column(DateTime, default=datetime.utcnow)
+    ip_address = Column(String(64), nullable=True)
+    user_agent = Column(String(512), nullable=True)
+    last_path = Column(String(512), nullable=True)
+
+
+class SiteVisit(Base):
+    __tablename__ = "site_visits"
+
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey(
+        "users.id"), nullable=True, index=True)
+    visited_at = Column(DateTime, default=datetime.utcnow, index=True)
+    path = Column(String(512), nullable=True)
+    ip_address = Column(String(64), nullable=True)
+
+
 class Review(Base):
     __tablename__ = "reviews"
 
