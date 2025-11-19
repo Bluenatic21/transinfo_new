@@ -558,6 +558,11 @@ export default function TransportDetailPage() {
                             style={{ rowGap: 6 }}
                         />
                     </div>
+                    {ownerUser && (
+                        <div style={{ marginBottom: 12 }}>
+                            <MiniUserCard user={ownerUser} transport={transport} />
+                        </div>
+                    )}
                     <Section title={<>{icons.route}{t("route.title", "Маршрут и дата")}</>}>
                         <div style={{ marginBottom: 5, display: "flex", alignItems: "center" }}>
                             <b>{t("route.from", "Откуда")}:</b>
