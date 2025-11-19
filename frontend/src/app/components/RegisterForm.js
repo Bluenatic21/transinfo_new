@@ -116,8 +116,8 @@ export default function RegisterForm({ onSuccess }) {
     const [msg, setMsg] = useState(""); // общие/непривязанные ошибки
     const [agreeTerms, setAgreeTerms] = useState(false);
 
-    // Ошибки по полям
-    const initialFieldErrors = {
+    // Ошибки по полям␊
+    const createEmptyErrors = () => ({
         role: [],
         organization: [],
         contact_person: [],
@@ -129,9 +129,9 @@ export default function RegisterForm({ onSuccess }) {
         password: [],
         password2: [],
         accepted_terms: [],
-        form: [], // для ошибок сервера без конкретного поля
-    };
-    const [errors, setErrors] = useState(initialFieldErrors);
+        form: [], // для ошибок сервера без конкретного поля␊
+    });
+    const [errors, setErrors] = useState(() => createEmptyErrors());
     const [hoveredRole, setHoveredRole] = useState(null);
 
     const [showSuccess, setShowSuccess] = useState(false);
@@ -168,7 +168,7 @@ export default function RegisterForm({ onSuccess }) {
         });
         setPassword2("");
         setMsg("");
-        setErrors(initialFieldErrors);
+        setErrors(createEmptyErrors());
         // уберём ошибку роли, если она была
         setErrors((prev) => ({ ...prev, role: [] }));
         setPhoneVerified(false);
@@ -193,7 +193,7 @@ export default function RegisterForm({ onSuccess }) {
 
     // Приземление ошибок сервера по полям
     function mapServerErrors(detailArray) {
-        const next = { ...initialFieldErrors };
+        const next = createEmptyErrors();
         const known = {
             email: "email",
             organization: "organization",
@@ -260,7 +260,7 @@ export default function RegisterForm({ onSuccess }) {
 
     // Клиентская валидация -> раскладка по полям
     function validateFormAndSetErrors() {
-        const next = { ...initialFieldErrors };
+        const next = createEmptyErrors();
         const empty = (v) => !v || (typeof v === "string" && !v.trim());
         if (!role) next.role.push("Выберите роль.");
         if (empty(form.organization)) next.organization.push("Укажите название организации.");
@@ -286,9 +286,12 @@ export default function RegisterForm({ onSuccess }) {
     async function handleRegister(e) {
         e.preventDefault();
         setMsg("");
-        setErrors(initialFieldErrors);
         const hasErrors = validateFormAndSetErrors();
-        if (hasErrors) return;
+        if (hasErrors) {
+            setShowPhoneVerify(false);
+            setPendingRegisterPayload(null);
+            return;
+        }
 
         const data = {
             ...form,
@@ -370,13 +373,18 @@ export default function RegisterForm({ onSuccess }) {
 
     const handlePhoneVerifySubmit = async (e) => {
         e.preventDefault();
+        if (phoneCode.replace(/\D/g, "").length !== 6) {
+            setPhoneVerifyMsg("Введите 6-значный код.");
+            return;
+        }
+
         setIsPhoneVerifyLoading(true);
-        setError(null);
+        setPhoneVerifyMsg("");
 
         try {
             const payload = pendingRegisterPayload;
-            if (!payload) {
-                throw new Error("შიდა შეცდომა: არ არის მონაცემები რეგისტრაციისთვის");
+            if (!payload || !payload.phone) {
+                throw new Error("code_not_requested");
             }
 
             const resp = await fetch(api(`/phone/verify`), {
@@ -390,21 +398,28 @@ export default function RegisterForm({ onSuccess }) {
             });
 
             if (!resp.ok) {
-                const data = await resp.json().catch(() => ({}));
-                throw new Error(
-                    data.detail?.message || data.detail || "არასწორი კოდი"
-                );
+                let detail = "";
+                try {
+                    const data = await resp.json();
+                    detail = data?.detail?.message || data?.detail || "";
+                } catch (_) {
+                    detail = await resp.text().catch(() => "");
+                }
+                throw new Error(detail || "code_invalid");
             }
 
             // телефон подтверждён
             setPhoneVerified(true);
             setShowPhoneVerify(false);
+            setPhoneVerifyMsg("");
 
             // сразу продолжаем регистрацию теми же данными
+            const payloadCopy = { ...payload };
             setPendingRegisterPayload(null);
-            await submitRegistration(payload);
+            await submitRegistration(payloadCopy);
         } catch (err) {
-            setError(err.message || "კოდის დადასტურების შეცდომა");
+            const msg = mapPhoneVerifyError(err?.message);
+            setPhoneVerifyMsg(msg);
         } finally {
             setIsPhoneVerifyLoading(false);
         }

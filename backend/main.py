@@ -1,7 +1,72 @@
+from database import get_db
+from models import Match, Order, Transport, TrackingSession, TrackingShare, TrackingPoint, User as UserModel, Order as OrderModel, Transport as TransportModel  # get_db убран отсюда
+from models import Notification, NotificationType
+from notifications import router as notifications_router
+import models
+from notifications import find_matching_orders_for_transport
+from math import radians, cos, sin, asin, sqrt
+import asyncio
+from notifications import create_notification, find_and_notify_auto_match_for_order, find_and_notify_auto_match_for_transport, find_matching_orders
+from notification_rest import router as notification_router
+from order_comments import router as order_comments_router
+from chat_rest import router as chat_rest_router
+from chat_upload import router as chat_upload_router
+from schemas import SavedToggleResponse
+from schemas import (
+    UserRegister, ChatMessageOut, UserProfile, UserOut, UserUpdate, RatingCreate, Rating as RatingSchema,
+    Token, TransportCreate, Transport, OrderCreate, Order, RatingOut, BidOut, BidCreate, OrderOut
+)
+from models import (
+    Transport as TransportModel,
+    Order as OrderModel,
+    User as UserModel,
+    Rating as RatingModel,
+    Rating, Chat, ChatMessage, ChatParticipant, ChatFile, Bid, BidStatus, Order,
+    NotificationType, OrderMatchView, TransportMatchView, InternalComment,
+    SavedOrder, SavedTransport,
+    OrderDailyView, TransportDailyView
+)
+from database import engine, Base
+from auth import router as auth_router, authenticate_user, create_access_token, get_current_user, SECRET_KEY, ALGORITHM
+import sys
+import threading
+import schemas
+from uuid import uuid4
+import subprocess
+import requests
+import redis
+import contextlib
+import logging
+import uuid
+from collections import defaultdict
+from pydantic import BaseModel
+from typing import List, Optional, Dict
+from password_reset_rest import router as password_reset_router
+from ws_chat import ws_router as ws_chat_router
+from starlette.websockets import WebSocketDisconnect, WebSocketState
+from jose import jwt, JWTError
+from models import UserBlock as UB
+from sqlalchemy.types import String
+from sqlalchemy.dialects import postgresql
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy import or_, func, text, cast, ARRAY, String, and_
+from sqlalchemy.exc import IntegrityError
+from schemas import OrderShort
+from database import SessionLocal, get_db
+from fastapi.exceptions import RequestValidationError
+from fastapi.security import OAuth2PasswordRequestForm
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
+from starlette.websockets import WebSocketState
+from starlette.responses import Response
+from fastapi import FastAPI, WebSocket, Query, Path as ApiPath, Response, Depends, HTTPException, status, Body, UploadFile, File, APIRouter, Request, Header, Response, Request
+from notifications import user_notification_connections, push_notification, find_matching_orders
+from order_reminders import start_scheduler
 from fastapi import Query, Depends, Response
 from typing import Optional, List
 from billing_tasks import start_billing_scheduler
-## TEMP: billing выключен, чтобы поднять API; вернём после фикса импорта в billing_rest
+# TEMP: billing выключен, чтобы поднять API; вернём после фикса импорта в billing_rest
 # from billing_rest import router as billing_router
 from fastapi import Query, Depends
 import mimetypes
@@ -64,106 +129,34 @@ from schemas import BidOut, Order
 from datetime import datetime, timedelta, date
 import os
 DEBUG_SQL = os.getenv('DEBUG_SQL', '0') == '1'
-import secrets
-from order_reminders import start_scheduler
-from notifications import user_notification_connections, push_notification, find_matching_orders
-from fastapi import FastAPI, WebSocket, Query, Path as ApiPath, Response, Depends, HTTPException, status, Body, UploadFile, File, APIRouter, Request, Header, Response, Request
-from starlette.middleware.base import BaseHTTPMiddleware
-from starlette.responses import Response
-import time
-import hashlib
-import json
-from typing import Dict, Tuple
-import hashlib
-import json
-import time
-from starlette.websockets import WebSocketState
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
-from fastapi.staticfiles import StaticFiles
-from fastapi.security import OAuth2PasswordRequestForm
-from fastapi.exceptions import RequestValidationError
-from database import SessionLocal, get_db
-from schemas import OrderShort
-from sqlalchemy.orm import Session
-from sqlalchemy.exc import IntegrityError
-from sqlalchemy import or_, func, text, cast, ARRAY, String, and_
-from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.dialects import postgresql
-from sqlalchemy.types import String
-from models import UserBlock as UB
-from jose import jwt, JWTError
-from starlette.websockets import WebSocketDisconnect, WebSocketState
-from ws_chat import ws_router as ws_chat_router
-from password_reset_rest import router as password_reset_router
 
-
-from typing import List, Optional, Dict
-from pydantic import BaseModel
-from collections import defaultdict
-import uuid
-import json
-import time
-import logging
-import contextlib
-import redis
-import requests
-import subprocess
-from uuid import uuid4
-import schemas
-import threading
-import sys
-from pathlib import Path
 
 # Импорты своих модулей
-from auth import router as auth_router, authenticate_user, create_access_token, get_current_user, SECRET_KEY, ALGORITHM
-from database import engine, Base
-from models import (
-    Transport as TransportModel,
-    Order as OrderModel,
-    User as UserModel,
-    Rating as RatingModel,
-    Rating, Chat, ChatMessage, ChatParticipant, ChatFile, Bid, BidStatus, Order,
-    NotificationType, OrderMatchView, TransportMatchView, InternalComment,
-    SavedOrder, SavedTransport,
-    OrderDailyView, TransportDailyView
-)
-from schemas import (
-    UserRegister, ChatMessageOut, UserProfile, UserOut, UserUpdate, RatingCreate, Rating as RatingSchema,
-    Token, TransportCreate, Transport, OrderCreate, Order, RatingOut, BidOut, BidCreate, OrderOut
-)
-from schemas import SavedToggleResponse
-from chat_upload import router as chat_upload_router
-from chat_rest import router as chat_rest_router
-from order_comments import router as order_comments_router
-from password_reset_rest import router as password_reset_router
 
-from notification_rest import router as notification_router
-
-from notifications import create_notification, find_and_notify_auto_match_for_order, find_and_notify_auto_match_for_transport, find_matching_orders
-import asyncio
-from math import radians, cos, sin, asin, sqrt
-from notifications import find_matching_orders_for_transport
-import models
-
-from notifications import router as notifications_router
-from models import Notification, NotificationType
-
-from models import Match, Order, Transport, TrackingSession, TrackingShare, TrackingPoint, User as UserModel, Order as OrderModel, Transport as TransportModel  # get_db убран отсюда
-from database import get_db
 
 # --- Unified admin guard
 
 # --- load .env.local / .env for backend (robust) ---
-import os
 try:
     from dotenv import load_dotenv  # опционально
 except ImportError:
     load_dotenv = None
 
 # --- Paywall helpers -------------------------------------------------
-import subprocess
-import resource  # для измерения памяти процесса
+
+try:
+    import resource  # Unix only
+except ModuleNotFoundError:
+    resource = None
+
+
+# --- Paywall helpers -------------------------------------------------
+
+try:
+    # Unix‑only; на Windows модуля нет.
+    import resource
+except ModuleNotFoundError:
+    resource = None
 
 
 def dbg_mem(tag: str) -> None:
@@ -171,13 +164,12 @@ def dbg_mem(tag: str) -> None:
     Логируем использование памяти процесса в mem.log (рядом с main.py)
     и дублируем в stdout.
 
-    Показываем:
-      - текущий RSS (resident set size, MB)
-      - пиковый RSS за всё время работы процесса (peak)
+    На платформах без модуля `resource` (Windows) выходим сразу.
     """
-    try:
-        import resource
+    if resource is None:
+        return
 
+    try:
         # Пиковый RSS с начала жизни процесса
         usage = resource.getrusage(resource.RUSAGE_SELF)
         peak_mb = usage.ru_maxrss / 1024.0  # ru_maxrss в Кб → МБ
@@ -220,12 +212,12 @@ def dbg_mem(tag: str) -> None:
 
     print(line)
 
+
 # Временный флажок: можно полностью отключить тяжёлые пересчёты счётчиков совпадений.
-DISABLE_MATCH_COUNTERS = os.getenv("DISABLE_MATCH_COUNTERS", "0") == "1"    
+DISABLE_MATCH_COUNTERS = os.getenv("DISABLE_MATCH_COUNTERS", "0") == "1"
 
 # Путь до скрипта воркера авто‑матча
 AUTO_MATCH_WORKER_PATH = Path(__file__).with_name("auto_match_worker.py")
-
 
 
 def enqueue_auto_match(kind: str, object_id):
@@ -396,14 +388,17 @@ app = FastAPI()
 
 dbg_mem("startup")
 
+
 @app.get("/healthz")
 def healthz():
     return {"ok": True}
 
 # --- Lightweight health endpoint for LB/monitors (returns 204, no body) ---
+
+
 @app.get("/health", status_code=204)
 def health() -> StarletteResponse:
-    return StarletteResponse(status_code=204)    
+    return StarletteResponse(status_code=204)
 
 
 # ==== РОУТЕР ДЛЯ chat_files (Range-отдача) ====
@@ -599,7 +594,8 @@ HTTP_CACHE_MAX_ITEMS = int(os.getenv("HTTP_CACHE_MAX_ITEMS", "0") or "0")
 HTTP_CACHE_TTL = float(os.getenv("HTTP_CACHE_TTL", "5") or "5")
 
 # За один проход чистки удаляем не более указанного количества записей.
-HTTP_CACHE_CLEANUP_BUDGET = int(os.getenv("HTTP_CACHE_CLEANUP_BUDGET", "100") or "100")
+HTTP_CACHE_CLEANUP_BUDGET = int(
+    os.getenv("HTTP_CACHE_CLEANUP_BUDGET", "100") or "100")
 
 
 # Порог, при котором мы считаем, что кэш раздулся и надо перезапустить сервис.
@@ -607,7 +603,8 @@ HTTP_CACHE_CLEANUP_BUDGET = int(os.getenv("HTTP_CACHE_CLEANUP_BUDGET", "100") or
 HTTP_CACHE_RESTART_AT = int(os.getenv("HTTP_CACHE_RESTART_AT", "0") or "0")
 
 # Минимальный интервал (в секундах) между перезапусками по кэшу.
-HTTP_CACHE_RESTART_COOLDOWN = int(os.getenv("HTTP_CACHE_RESTART_COOLDOWN", "300") or "300")
+HTTP_CACHE_RESTART_COOLDOWN = int(
+    os.getenv("HTTP_CACHE_RESTART_COOLDOWN", "300") or "300")
 
 if DISABLE_HTTP_CACHE:
     HTTP_CACHE_MAX_ITEMS = 0
@@ -616,8 +613,11 @@ if DISABLE_HTTP_CACHE:
 _last_cache_restart_ts: float = 0.0
 
 print(f"[HTTP_CACHE] max items = {HTTP_CACHE_MAX_ITEMS}")
-print(f"[HTTP_CACHE] ttl = {HTTP_CACHE_TTL}s, cleanup_budget = {HTTP_CACHE_CLEANUP_BUDGET}")
-print(f"[HTTP_CACHE] restart_at = {HTTP_CACHE_RESTART_AT}, cooldown = {HTTP_CACHE_RESTART_COOLDOWN}s")
+print(
+    f"[HTTP_CACHE] ttl = {HTTP_CACHE_TTL}s, cleanup_budget = {HTTP_CACHE_CLEANUP_BUDGET}")
+print(
+    f"[HTTP_CACHE] restart_at = {HTTP_CACHE_RESTART_AT}, cooldown = {HTTP_CACHE_RESTART_COOLDOWN}s")
+
 
 def _http_cache_enabled() -> bool:
     return HTTP_CACHE_MAX_ITEMS > 0 and HTTP_CACHE_TTL > 0 and not DISABLE_HTTP_CACHE
@@ -638,7 +638,6 @@ def _http_cache_cleanup(now: Optional[float] = None) -> None:
             removed += 1
             if removed >= HTTP_CACHE_CLEANUP_BUDGET:
                 break
-
 
 
 def _restart_backend_service(reason: str) -> None:
@@ -663,7 +662,8 @@ def _restart_backend_service(reason: str) -> None:
     _last_cache_restart_ts = now
     try:
         size = len(_HTTP_CACHE)
-        print(f"[HTTP_CACHE] size={size}, reason={reason} → restarting transinfo-backend.service")
+        print(
+            f"[HTTP_CACHE] size={size}, reason={reason} → restarting transinfo-backend.service")
 
         # Перезапуск сервиса
         subprocess.run(
@@ -689,7 +689,7 @@ def _http_cache_put(key: str, entry: Tuple[float, bytes, dict, int, str]):
         return
 
     try:
-                # Перед добавлением вычищаем протухшие записи.
+        # Перед добавлением вычищаем протухшие записи.
         _http_cache_cleanup(now=entry[0])
 
         current_size = len(_HTTP_CACHE)
@@ -810,7 +810,6 @@ class ChatCacheMiddleware(BaseHTTPMiddleware):
             headers=headers,
             media_type=response.media_type,
         )
-
 
 
 class ListCacheMiddleware(BaseHTTPMiddleware):
@@ -949,7 +948,7 @@ start_scheduler()
 
 
 # --- BILLING ---
-#app.include_router(billing_router)
+# app.include_router(billing_router)
 
 start_billing_scheduler()
 
@@ -2746,7 +2745,8 @@ def get_matching_orders(
 
             load_date_col = func.to_date(
                 func.nullif(
-                    func.replace(func.coalesce(OrderModel.load_date, ""), ".", "/"),
+                    func.replace(func.coalesce(
+                        OrderModel.load_date, ""), ".", "/"),
                     ""
                 ),
                 "DD/MM/YYYY",
@@ -3534,6 +3534,7 @@ def get_my_transports(
         result.append(tr_out)
     return result
 
+
 @app.get("/transports/account", response_model=List[schemas.Transport])
 def get_account_transports(
     db: Session = Depends(get_db),
@@ -3601,7 +3602,6 @@ def get_account_transports(
         result.append(t)
 
     return result
-
 
 
 @app.post("/ratings", response_model=RatingSchema)
@@ -4500,7 +4500,6 @@ def get_account_orders(
     return out
 
 
-
 @app.post("/orders", response_model=OrderSchema)
 def create_order(
     order: OrderCreate,
@@ -4514,8 +4513,10 @@ def create_order(
     order_data["owner_id"] = current_user.id
 
     # Гарантируем, что координаты всегда массивы
-    order_data["from_locations_coords"] = order_data.get("from_locations_coords") or []
-    order_data["to_locations_coords"] = order_data.get("to_locations_coords") or []
+    order_data["from_locations_coords"] = order_data.get(
+        "from_locations_coords") or []
+    order_data["to_locations_coords"] = order_data.get(
+        "to_locations_coords") or []
     if (
         order_data.get("from_locations")
         and len(order_data["from_locations_coords"]) < len(order_data["from_locations"])
@@ -4536,6 +4537,7 @@ def create_order(
     dbg_mem("create_order: after enqueue_auto_match")
 
     return db_order
+
 
 @app.delete("/orders/{order_id}")
 def delete_order(order_id: int, db: Session = Depends(get_db)):
@@ -5381,7 +5383,8 @@ def get_order_new_matches_count(
     if not order:
         raise HTTPException(
             status_code=404,
-            detail={"code": "error.order.notFound", "message": "Заявка не найдена"},
+            detail={"code": "error.order.notFound",
+                    "message": "Заявка не найдена"},
         )
 
     new_count = (
@@ -5430,11 +5433,13 @@ def get_transport_new_matches_count(
 
     Считаем только непрочитанные AUTO_MATCH-уведомления с related_id = transport_id.
     """
-    tr = db.query(TransportModel).filter(TransportModel.id == transport_id).first()
+    tr = db.query(TransportModel).filter(
+        TransportModel.id == transport_id).first()
     if not tr:
         raise HTTPException(
             status_code=404,
-            detail={"code": "error.transport.notFound", "message": "Транспорт не найден"},
+            detail={"code": "error.transport.notFound",
+                    "message": "Транспорт не найден"},
         )
 
     new_count = (
