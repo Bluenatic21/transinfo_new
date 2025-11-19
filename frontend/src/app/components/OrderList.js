@@ -26,6 +26,7 @@ import ReactCountryFlag from "react-country-flag";
 import { api, abs } from "@/config/env";
 import SaveToggleButton from "./SaveToggleButton";
 import { useMapHover } from "./MapHoverContext";
+import OrderShareButtons from "./OrderShareButtons";
 import IconLabel from "./ui/IconLabel";
 import { FiMap as MapIcon, FiList as ListIcon } from "react-icons/fi";
 
@@ -1960,6 +1961,8 @@ function OrderCard({
                             <FaTelegram />
                         </a>
                     )}
+
+                    <OrderShareButtons order={order} variant="compact" buttonStyle={iconBtnStyle} />
 
                     {/* сохранить (внизу, в одном ряду с остальными действиями) */}
                     <SaveToggleButton type="order" id={order.id} variant="bar" />

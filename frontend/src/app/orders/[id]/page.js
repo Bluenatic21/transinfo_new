@@ -16,6 +16,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { FaFileAlt, FaEye } from "react-icons/fa";
 import SafeBoundary from "@/app/components/SafeBoundary";
 import SaveToggleButton from "@/app/components/SaveToggleButton";
+import OrderShareButtons from "@/app/components/OrderShareButtons";
 import { CURRENCIES, formatPrice } from "@/app/utils/currency";
 import { api, abs } from "@/config/env";
 import { useLang } from "@/app/i18n/LangProvider";
@@ -1158,6 +1159,12 @@ export default function OrderDetailsPage() {
                             <span style={{ display: "inline-flex" }}>
                                 <SaveToggleButton type="order" id={order.id} variant="bar" />
                             </span>
+
+                            <OrderShareButtons
+                                order={order}
+                                variant="pills"
+                                style={{ marginLeft: 2, rowGap: 6 }}
+                            />
                             {!loadingBid && yourBid && (
                                 <span
                                     style={{
