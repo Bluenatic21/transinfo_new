@@ -1151,6 +1151,7 @@ export default function OrderForm({ order = null, onSaved }) {
                 maxWidth: isMobile ? "100%" : 820,
                 width: "100%",
                 margin: "0 auto",
+                padding: isMobile ? "0 10px 70px" : "0",
                 display: "flex",
                 flexDirection: "column",
                 gap: 22
@@ -1181,11 +1182,11 @@ export default function OrderForm({ order = null, onSaved }) {
                 >
                     {t("of.section.route", "Маршрут")}
                 </div>
-                <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 8 }}>
+                <div className="stack-mobile" style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 8 }}>
                     <div style={{ flex: 1, minWidth: 150 }}>
                         <label style={{ color: "#b0bcdc", fontWeight: 500 }}>{t("common.from", "Погрузка")} *</label>
                         {form.from_locations.map((item, idx) => (
-                            <div key={idx} style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 4 }}>
+                            <div key={idx} className="stack-mobile-inline" style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 4 }}>
                                 <LocationAutocomplete
                                     lang={UI_LANG}
                                     scope="settlement"
@@ -1257,7 +1258,7 @@ export default function OrderForm({ order = null, onSaved }) {
                     <div style={{ flex: 1, minWidth: 150 }}>
                         <label style={{ color: "#b0bcdc", fontWeight: 500 }}>{t("common.to", "Выгрузка")} *</label>
                         {form.to_locations.map((item, idx) => (
-                            <div key={idx} style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 4 }}>
+                            <div key={idx} className="stack-mobile-inline" style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 4 }}>
                                 <LocationAutocomplete
                                     lang={UI_LANG}
                                     scope="settlement"
@@ -1327,7 +1328,7 @@ export default function OrderForm({ order = null, onSaved }) {
                     </div>
                 </div>
 
-                <div style={{
+                <div className="stack-mobile" style={{
                     display: "flex",
                     gap: 12,
                     flexWrap: "wrap",
@@ -1409,7 +1410,7 @@ export default function OrderForm({ order = null, onSaved }) {
                 >
                     {t("cargo.singular", "Груз")}
                 </div>
-                <div style={{ display: "flex", gap: 10, marginBottom: 14 }}>
+                <div className="stack-mobile chip-row" style={{ display: "flex", gap: 10, marginBottom: 14 }}>
                     <button
                         type="button"
                         style={{
@@ -1461,7 +1462,7 @@ export default function OrderForm({ order = null, onSaved }) {
                         }}
                     >
                         {/* --- Основные поля --- */}
-                        <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 8 }}>
+                        <div className="stack-mobile" style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 8 }}>
                             <input
                                 ref={el => cargoRefs.current[idx] = el}
                                 name="name"
@@ -1599,7 +1600,7 @@ export default function OrderForm({ order = null, onSaved }) {
                         {/* --- Детальные поля (видны только если showDetails) --- */}
                         {cargo.showDetails && (
                             <div style={{ marginTop: 8 }}>
-                                <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 5 }}>
+                                <div className="stack-mobile" style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 5 }}>
                                     <select
                                         name="packaging"
                                         value={cargo.packaging}
@@ -1783,7 +1784,7 @@ export default function OrderForm({ order = null, onSaved }) {
                 >
                     {t("of.section.transport", "Транспорт")}
                 </div>
-                <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "flex-end" }}>
+                <div className="stack-mobile" style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "flex-end" }}>
                     <div style={{ flex: 2, minWidth: 140 }}>
                         <label style={{ color: "#b0bcdc", fontWeight: 500, marginBottom: 3, display: "block" }}>{t("order.truckBodyType", "Тип кузова")} *</label>
                         <div
@@ -1848,6 +1849,7 @@ export default function OrderForm({ order = null, onSaved }) {
                     </div>
                 </div>
                 <div
+                    className="stack-mobile"
                     style={{
                         display: "flex",
                         gap: 24,
@@ -1856,7 +1858,7 @@ export default function OrderForm({ order = null, onSaved }) {
                         alignItems: "center"
                     }}
                 >
-                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <div className="stack-mobile-inline" style={{ display: "flex", alignItems: "center", gap: 10 }}>
                         <label style={{ color: "#b0bcdc", fontWeight: 500 }}>{t("adr.short", "ADR")}</label>
                         <input
                             type="checkbox"
@@ -1893,7 +1895,7 @@ export default function OrderForm({ order = null, onSaved }) {
                             </>
                         )}
                     </div>
-                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <div className="stack-mobile-inline" style={{ display: "flex", alignItems: "center", gap: 10 }}>
                         <label style={{ color: "#b0bcdc", fontWeight: 500 }}>{t("temp.mode", "Темп. режим")}</label>
                         <input
                             type="checkbox"
@@ -1908,7 +1910,7 @@ export default function OrderForm({ order = null, onSaved }) {
                             }}
                         />
                         {form.temp_mode && (
-                            <div style={{ display: "flex", alignItems: "center", gap: 7, marginLeft: 7 }}>
+                            <div className="stack-mobile-inline" style={{ display: "flex", alignItems: "center", gap: 7, marginLeft: 7 }}>
                                 <input
                                     type="number"
                                     inputMode="decimal"
@@ -1969,7 +1971,7 @@ export default function OrderForm({ order = null, onSaved }) {
                 <div style={{ fontWeight: 700, marginBottom: 10, color: "var(--accent)", fontSize: 17 }}>
                     {t("order.rateSection", "Ставка")}
                 </div>
-                <div style={{ display: "flex", gap: 8, marginBottom: 10, flexWrap: "wrap" }}>
+                <div className="stack-mobile chip-row" style={{ display: "flex", gap: 8, marginBottom: 10, flexWrap: "wrap" }}>
                     {RATE_TYPES.map(opt => (
                         <button
                             key={opt}
@@ -1995,7 +1997,7 @@ export default function OrderForm({ order = null, onSaved }) {
                     ))}
                 </div>
                 {form.rate_type === RATE_TYPES[2] ? (
-                    <div style={{ display: "flex", gap: 9, marginBottom: 8 }}>
+                    <div className="stack-mobile chip-row" style={{ display: "flex", gap: 9, marginBottom: 8 }}>
                         {[
                             ["С НДС, безнал", t("rate.withVat_cashless", "С НДС, безнал")],
                             ["Без НДС, безнал", t("rate.noVat_cashless", "Без НДС, безнал")],
@@ -2042,7 +2044,7 @@ export default function OrderForm({ order = null, onSaved }) {
                     </div>
                 ) : (
                     <div ref={priceRef}>
-                        <div style={{
+                        <div className="stack-mobile" style={{
                             display: 'flex',
                             gap: 10,
                             flexWrap: 'wrap',
@@ -2191,7 +2193,7 @@ export default function OrderForm({ order = null, onSaved }) {
                     }}>
                         {t("payment.terms", "Условия оплаты:")}
                     </div>
-                    <div style={{
+                    <div className="stack-mobile chip-row" style={{
                         display: "flex", gap: 14, flexWrap: "wrap", alignItems: "center", marginBottom: 6
                     }}>
                         {PAYMENT_SCENARIOS.map(opt => (
@@ -2217,7 +2219,7 @@ export default function OrderForm({ order = null, onSaved }) {
 
                     {/* --- Сценарий: Через X дней --- */}
                     {form.payment_scenario === "after_x_days" && (
-                        <div style={{ marginBottom: 6, marginLeft: 2, display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <div className="stack-mobile-inline" style={{ marginBottom: 6, marginLeft: 2, display: 'flex', alignItems: 'center', gap: 8 }}>
                             <span>{t("payment.afterPrefix", "Через")}</span>
                             <CustomSelect
                                 value={form.payment_days}
@@ -2261,7 +2263,7 @@ export default function OrderForm({ order = null, onSaved }) {
                     {/* --- Сценарий: Предоплата --- */}
                     {form.payment_scenario === "prepay" && (
                         <>
-                            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 7 }}>
+                            <div className="stack-mobile-inline" style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 7 }}>
                                 <span>{t("payment.prepayAmount", "Сумма/процент предоплаты:")}</span>
                                 <input
                                     type="text"
@@ -2278,7 +2280,7 @@ export default function OrderForm({ order = null, onSaved }) {
                                     }}
                                 />
                             </div>
-                            <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 7 }}>
+                            <div className="stack-mobile-inline" style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 7 }}>
                                 <span>{t("payment.balanceAfter", "Остаток через")}</span>
                                 <CustomSelect
                                     value={form.postpay_days}
@@ -2440,8 +2442,8 @@ export default function OrderForm({ order = null, onSaved }) {
                 <div style={{ fontWeight: 700, color: "#71bfff", marginBottom: 8 }}>
                     {t("files.imagesAndFiles", "Изображения и файлы")}
                 </div>
-                <div style={{ display: "flex", gap: 12, marginBottom: 13 }}>
-                    <label style={{
+                <div className="chip-row" style={{ display: "flex", gap: 12, marginBottom: 13 }}>
+                    <label className="full-width-mobile" style={{
                         background: "#253857",
                         color: "#88d4ff",
                         padding: "8px 18px",
@@ -2459,7 +2461,7 @@ export default function OrderForm({ order = null, onSaved }) {
                         />
                         {t("files.addImagesLimit", "Добавить изображения (до 12)")}
                     </label>
-                    <label style={{
+                    <label className="full-width-mobile" style={{
                         background: "#253857",
                         color: "#f2c77d",
                         padding: "8px 18px",
