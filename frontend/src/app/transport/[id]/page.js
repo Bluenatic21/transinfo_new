@@ -337,12 +337,22 @@ export default function TransportDetailPage() {
     }, [transport?.id]);
 
     useEffect(() => {
+        if (!transport?.owner_id && !transport?.user) return;
+
+        // Если пользователь пришёл в объекте транспорта, не прячем карточку
+        if (transport?.user) {
+            setOwnerUser(transport.user);
+        }
+
         if (!transport?.owner_id) return;
-        fetch(`/api/users/${transport.owner_id}`)
-            .then(r => r.json())
-            .then(setOwnerUser)
+
+        fetch(api(`/users/${transport.owner_id}`))
+            .then((r) => (r.ok ? r.json() : null))
+            .then((data) => {
+                if (data) setOwnerUser(data);
+            })
             .catch(console.error);
-    }, [transport?.owner_id]);
+    }, [transport?.owner_id, transport?.user]);
 
     useEffect(() => {
         if (transport) {

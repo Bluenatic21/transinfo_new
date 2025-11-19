@@ -433,12 +433,22 @@ export default function OrderDetailsPage() {
     }, [id]);
 
     useEffect(() => {
+        if (!order?.owner_id && !order?.user) return;
+
+        // Показываем карточку сразу, если пользователь уже пришёл вместе с заявкой
+        if (order?.user) {
+            setOwnerUser(order.user);
+        }
+
         if (!order?.owner_id) return;
-        fetch(`/api/users/${order.owner_id}`)
-            .then((r) => r.json())
-            .then(setOwnerUser)
+
+        fetch(api(`/users/${order.owner_id}`))
+            .then((r) => (r.ok ? r.json() : null))
+            .then((data) => {
+                if (data) setOwnerUser(data);
+            })
             .catch(console.error);
-    }, [order?.owner_id]);
+    }, [order?.owner_id, order?.user]);
 
     // Инкремент просмотров при заходе на детальную
     useEffect(() => {
