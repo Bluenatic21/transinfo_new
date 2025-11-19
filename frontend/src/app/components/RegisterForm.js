@@ -138,7 +138,7 @@ export default function RegisterForm({ onSuccess }) {
     const [msg, setMsg] = useState(""); // общие/непривязанные ошибки
     const [agreeTerms, setAgreeTerms] = useState(false);
 
-    // Ошибки по полям␊
+    // Ошибки по полям
     const createEmptyErrors = () => ({
         role: [],
         organization: [],
@@ -151,7 +151,7 @@ export default function RegisterForm({ onSuccess }) {
         password: [],
         password2: [],
         accepted_terms: [],
-        form: [], // для ошибок сервера без конкретного поля␊
+        form: [], // для ошибок сервера без конкретного поля
     });
     const [errors, setErrors] = useState(() => createEmptyErrors());
     const [hoveredRole, setHoveredRole] = useState(null);
@@ -597,7 +597,7 @@ export default function RegisterForm({ onSuccess }) {
             return;
         }
         if (!r.ok) {
-            // Сообщения от бэка: error.verify.codeInvalid | codeExpired | tooManyAttempts | noCode | error.user.notFound␊
+            // Сообщения от бэка: error.verify.codeInvalid | codeExpired | tooManyAttempts | noCode | error.user.notFound
             const d = (j && j.detail) || "Ошибка подтверждения.";
             if (d === "error.verify.codeInvalid") setVerifyMsg(t("register.verify.error.invalidCode", "Неверный код."));
             else if (d === "error.verify.codeExpired") setVerifyMsg(t("register.verify.error.codeExpired", "Срок действия кода истёк."));
@@ -1045,7 +1045,7 @@ export default function RegisterForm({ onSuccess }) {
                         <div style={{ opacity: .85, marginBottom: 14 }}>
                             {renderCodeDestination(codeSentTemplate, pendingRegisterPayload?.phone || form.phone)}
                         </div>
-                        <form onSubmit={handlePhoneVerifySubmit}>␊
+                        <form onSubmit={handlePhoneVerifySubmit}>
                             <input
                                 inputMode="numeric"
                                 autoFocus
