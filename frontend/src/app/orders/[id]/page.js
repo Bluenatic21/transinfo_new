@@ -566,12 +566,33 @@ export default function OrderDetailsPage() {
 
     // Стили для секций
     const sectionTitleStyle = {
-        fontWeight: 700,
-        fontSize: isMobile ? 17 : 19,
-        color: "#43c8ff",
-        marginBottom: isMobile ? 8 : 9,
+        fontWeight: 750,
+        fontSize: isMobile ? 16.5 : 19,
+        color: "#cfe3ff",
+        marginBottom: isMobile ? 10 : 12,
         display: "flex",
         alignItems: "center",
+        gap: 10,
+        letterSpacing: 0.1,
+    };
+
+    const cardStyle = useMemo(
+        () => ({
+            background: "#1f2f48",
+            border: "1px solid #223c62",
+            borderRadius: 16,
+            padding: isMobile ? 14 : 18,
+            display: "flex",
+            flexDirection: "column",
+            gap: isMobile ? 10 : 12,
+            boxShadow: "0 14px 30px rgba(7, 19, 38, 0.32)",
+        }),
+        [isMobile]
+    );
+
+    const sectionTextStyle = {
+        lineHeight: 1.45,
+        fontSize: isMobile ? 14.5 : 16,
     };
 
 
@@ -582,13 +603,8 @@ export default function OrderDetailsPage() {
                 <div
                     key="transport"
                     style={{
-                        background: "#233655",
-                        borderRadius: 16,
-                        padding: isMobile ? 12 : 15,
-                        display: "flex",
-                        flexDirection: "column",
-                        lineHeight: 1.35,
-                        fontSize: isMobile ? 14.5 : 16,
+                        ...cardStyle,
+                        ...sectionTextStyle,
                         minHeight: 180,
                         height: "100%",
                     }}
@@ -636,15 +652,10 @@ export default function OrderDetailsPage() {
         <div
             key="pay"
             style={{
-                background: "#233655",
-                borderRadius: 16,
-                padding: isMobile ? 12 : 15,
-                display: "flex",
-                flexDirection: "column",
+                ...cardStyle,
+                ...sectionTextStyle,
                 minHeight: 180,
                 height: "100%",
-                lineHeight: 1.35,
-                fontSize: isMobile ? 14.5 : 16,
             }}
         >
             <div style={sectionTitleStyle}>{icons.pay}{t("payment.title", "Оплата")}</div>
@@ -677,11 +688,8 @@ export default function OrderDetailsPage() {
             <div
                 key="cargo"
                 style={{
-                    background: "#233655",
-                    borderRadius: 16,
-                    padding: isMobile ? 12 : 15,
-                    display: "flex",
-                    flexDirection: "column",
+                    ...cardStyle,
+                    ...sectionTextStyle,
                 }}
             >
                 <div style={sectionTitleStyle}>
@@ -729,13 +737,8 @@ export default function OrderDetailsPage() {
             <div
                 key="contacts"
                 style={{
-                    background: "#233655",
-                    borderRadius: 16,
-                    padding: isMobile ? 12 : 15,
-                    display: "flex",
-                    flexDirection: "column",
-                    lineHeight: 1.35,
-                    fontSize: isMobile ? 14.5 : 16,
+                    ...cardStyle,
+                    ...sectionTextStyle,
                 }}
             >
                 <div style={sectionTitleStyle}>{icons.contact}{t("order.contacts", "Контакты")}</div>
@@ -755,15 +758,10 @@ export default function OrderDetailsPage() {
             <div
                 key="additional"
                 style={{
-                    background: "#233655",
-                    borderRadius: 16,
-                    padding: isMobile ? 12 : 15,
-                    display: "flex",
-                    flexDirection: "column",
+                    ...cardStyle,
+                    ...sectionTextStyle,
                     minHeight: 120,
                     height: "100%",
-                    lineHeight: 1.35,
-                    fontSize: isMobile ? 14.5 : 16,
                 }}
             >
                 <div style={sectionTitleStyle}>{icons.comment}{t("order.more", "Дополнительно")}</div>
@@ -812,11 +810,8 @@ export default function OrderDetailsPage() {
             <div
                 key="files-summary"
                 style={{
-                    background: "#233655",
-                    borderRadius: 16,
-                    padding: isMobile ? 12 : 15,
-                    display: "flex",
-                    flexDirection: "column",
+                    ...cardStyle,
+                    ...sectionTextStyle,
                     minHeight: 120,
                     height: "100%",
                 }}
@@ -863,7 +858,7 @@ export default function OrderDetailsPage() {
     }
 
     // === Динамический UI ===
-    const PAD = isMobile ? 12 : 40;
+    const PAD = isMobile ? 16 : 40;
     const GAP = isMobile ? 14 : 36;
 
     return (
@@ -1245,16 +1240,10 @@ export default function OrderDetailsPage() {
                             {/* Маршрут и время */}
                             <div
                                 style={{
-                                    background: "#233655",
-                                    border: "1.3px solid #193158",
-                                    borderRadius: 16,
-                                    boxShadow: "0 2px 14px #23416722",
-                                    padding: isMobile ? 12 : 18,
+                                    ...cardStyle,
                                     color: "#e3f2fd",
                                     marginBottom: 0,
                                     minWidth: 220,
-                                    display: "flex",
-                                    flexDirection: "column",
                                     gap: 10,
                                     position: "relative",
                                     minHeight: 120,
@@ -1263,17 +1252,7 @@ export default function OrderDetailsPage() {
                                     boxSizing: "border-box",
                                 }}
                             >
-                                <div
-                                    style={{
-                                        fontSize: isMobile ? 16 : 19,
-                                        fontWeight: 700,
-                                        color: "#43c8ff",
-                                        marginBottom: 8,
-                                        display: "flex",
-                                        alignItems: "center",
-                                        letterSpacing: 0.01,
-                                    }}
-                                >
+                                <div style={sectionTitleStyle}>
                                     {icons.route}
                                     <span style={{ marginLeft: 4 }}>{t("route.title", "Маршрут и дата")}</span>
                                 </div>
@@ -1383,9 +1362,8 @@ export default function OrderDetailsPage() {
                         {(imageItems.length > 0 || docItems.length > 0) && (
                             <div
                                 style={{
-                                    background: "#233655",
-                                    borderRadius: 16,
-                                    padding: isMobile ? 12 : 15,
+                                    ...cardStyle,
+                                    ...sectionTextStyle,
                                     marginBottom: 6,
                                     gridColumn: isMobile ? "auto" : "1 / -1",
                                 }}

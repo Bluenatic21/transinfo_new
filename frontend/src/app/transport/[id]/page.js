@@ -167,20 +167,36 @@ const getAdrClassInfo = (t) => ({
 
 function Section({ title, children, style }) {
     return (
-        <section style={{
-            background: "#233655",
-            borderRadius: 16,
-            padding: 15,
-            marginBottom: 18,
-            height: "100%", // <--- ДОБАВЬ ЭТО
-            ...style,
-        }}>
-            {title && <div style={{
-                color: "#43c8ff",
-                fontWeight: 700,
-                fontSize: 17,
-                marginBottom: 6
-            }}>{title}</div>}
+        <section
+            style={{
+                background: "#1f2f48",
+                border: "1px solid #223c62",
+                borderRadius: 16,
+                padding: "clamp(14px, 4vw, 18px)",
+                marginBottom: "clamp(12px, 3vw, 18px)",
+                height: "100%", // <--- ДОБАВЬ ЭТО
+                boxShadow: "0 14px 30px rgba(7, 19, 38, 0.32)",
+                display: "flex",
+                flexDirection: "column",
+                gap: 10,
+                ...style,
+            }}
+        >
+            {title && (
+                <div
+                    style={{
+                        color: "#cfe3ff",
+                        fontWeight: 750,
+                        fontSize: 17,
+                        marginBottom: 10,
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 10,
+                    }}
+                >
+                    {title}
+                </div>
+            )}
             {children}
         </section>
     );
@@ -488,11 +504,15 @@ export default function TransportDetailPage() {
                     background: "#182337",
                     minHeight: "100vh",
                     color: "#e3f2fd",
-                    padding: "7vw 2vw 24vw 2vw",
-                    maxWidth: 500,
+                    padding: "24px 16px 48px",
+                    maxWidth: 520,
                     margin: "0 auto",
                     fontSize: 16,
-                    position: "relative"
+                    lineHeight: 1.45,
+                    position: "relative",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 12,
                 }}>
                     {/* Просмотры — правый верхний угол */}
                     <span
@@ -882,8 +902,8 @@ export default function TransportDetailPage() {
                 <div
                     style={{
                         display: "grid",
-                        gridTemplateColumns: "1fr 1fr",
-                        gap: 36,
+                        gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+                        gap: isMobile ? 16 : 36,
                         alignItems: "start",
                         maxWidth: 1200,
                         margin: "0 auto"
@@ -923,40 +943,38 @@ export default function TransportDetailPage() {
                     </div>
 
                     <div style={{
-                        gridColumn: "1 / span 2",
+                        gridColumn: isMobile ? "auto" : "1 / span 2",
                         display: "grid",
-                        gridTemplateColumns: "1fr 1fr",
-                        gap: 36,
+                        gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+                        gap: isMobile ? 16 : 36,
                         marginBottom: 0,
                     }}>
-                        <Section title={null} style={{
-                            background: "#233655",
-                            border: "1.3px solid #193158",
-                            borderRadius: 16,
-                            boxShadow: "0 2px 14px #23416722",
-                            padding: "18px 18px 15px 18px",
-                            color: "#e3f2fd",
-                            marginBottom: 0,
-                            marginTop: 0,
-                            minWidth: 220,
-                            display: "flex",
-                            flexDirection: "column",
-                            gap: 10,
-                            position: "relative",
-                            minHeight: 120,
-                            maxHeight: 240,
-                            overflow: "auto", // Внутренний скролл при переполнении
-                            boxSizing: "border-box",
-                        }}>
-                            <div style={{
-                                fontSize: 19,
-                                fontWeight: 700,
-                                color: "#43c8ff",
-                                marginBottom: 10,
-                                display: "flex",
-                                alignItems: "center",
-                                letterSpacing: 0.01
-                            }}>
+                        <Section
+                            title={null}
+                            style={{
+                                color: "#e3f2fd",
+                                marginBottom: 0,
+                                marginTop: 0,
+                                minWidth: 220,
+                                gap: 10,
+                                position: "relative",
+                                minHeight: 120,
+                                maxHeight: 240,
+                                overflow: "auto", // Внутренний скролл при переполнении
+                                boxSizing: "border-box",
+                            }}
+                        >
+                            <div
+                                style={{
+                                    color: "#cfe3ff",
+                                    fontWeight: 750,
+                                    fontSize: 17,
+                                    marginBottom: 10,
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 10,
+                                }}
+                            >
                                 {icons.route}
                                 <span style={{ marginLeft: 4 }}>{t("route.title", "Маршрут и дата")}</span>
                             </div>
@@ -1025,11 +1043,11 @@ export default function TransportDetailPage() {
                                                     </span>
                                                     {radius && (
                                                         <span style={{
-                                                            background: "#233655",
+                                                            background: "#1f2f48",
                                                             color: "#8ecae6",
-                                                            fontWeight: 500,
+                                                            fontWeight: 600,
                                                             fontSize: 13,
-                                                            borderRadius: 6,
+                                                            borderRadius: 8,
                                                             padding: "2px 7px",
                                                             marginLeft: 6
                                                         }}>
