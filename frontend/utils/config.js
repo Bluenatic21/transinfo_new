@@ -8,5 +8,4 @@ ORDER_FIELDS = [
     { "name": "date_to", "label": "Дата доставки", "type": "date", "required": False },
     { "name": "contact", "label": "Контактное лицо", "type": "text", "required": True },
     { "name": "phone", "label": "Телефон", "type": "text", "required": True },
-    # ...добавлять новые поля просто сюда
 ]

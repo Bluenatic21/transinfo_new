@@ -102,19 +102,6 @@ def prune_expired_cache(current_time: Optional[float] = None) -> int:
             expired.append(key)
 
     for key in expired:
-<<<<<<< HEAD
-=======
-        _CACHE.pop(key, None)
-
-    return len(expired)
-
-def _cache_get(key):
-    rec = _CACHE.get(key)
-    if not rec:
-        return None
-    ts, data = rec
-    if time.time() - ts > CACHE_TTL:
->>>>>>> 079ad89ca93d100fb39ef229da87d088028674ce
         _CACHE.pop(key, None)
 
     return len(expired)

@@ -4,7 +4,11 @@ from typing import List, Dict, Any
 from database import get_db
 from models import Place
 from sqlalchemy import text
-from sqlalchemy.dialects.postgresql import insert as pg_insert
+import logging
+import os
+
+log = logging.getLogger("places_upsert")
+DEBUG_UPSERT = os.getenv("PLACES_UPSERT_DEBUG", "0").lower() in ("1", "true", "yes")
 
 router = APIRouter(prefix="/places", tags=["places"])
 
@@ -32,26 +36,52 @@ def upsert_place(payload: Dict[str, Any] = Body(...), db: Session = Depends(get_
     except Exception:
         raise HTTPException(status_code=400, detail="error.externalId.notInt")
 
-    stmt = pg_insert(Place.__table__).values(
-        source=str(payload["source"]),
-        external_id=ext_id,
-        osm_type=payload.get("osm_type"),
-        lat=float(payload["lat"]),
-        lon=float(payload["lon"]),
-        country_iso2=(payload.get("country_iso2") or "").upper(),
-        translations=payload.get("translations") or {},
-    ).on_conflict_do_update(
-        index_elements=[Place.source, Place.external_id],
-        set_={
-            "lat": float(payload["lat"]),
-            "lon": float(payload["lon"]),
-            "country_iso2": (payload.get("country_iso2") or "").upper(),
-            "translations": _merge_translations(Place.translations, payload.get("translations") or {})
-        }
-    ).returning(Place.id)
-    res = db.execute(stmt).first()
+    translations = payload.get("translations") or {}
+
+    existing = (
+        db.query(Place)
+        .filter(Place.source == str(payload["source"]))
+        .filter(Place.external_id == ext_id)
+        .with_for_update(of=Place)
+        .first()
+    )
+
+    if existing:
+        before = existing.translations or {}
+        merged = _merge_translations(before, translations)
+        existing.lat = float(payload["lat"])
+        existing.lon = float(payload["lon"])
+        existing.country_iso2 = (payload.get("country_iso2") or "").upper()
+        existing.osm_type = payload.get("osm_type")
+        existing.translations = merged
+        db.flush()
+        place_id = existing.id
+        if DEBUG_UPSERT:
+            log.info(
+                "[places_upsert] update id=%s langs_before=%d langs_after=%d",
+                place_id, len(before or {}), len(merged or {}),
+            )
+    else:
+        new_place = Place(
+            source=str(payload["source"]),
+            external_id=ext_id,
+            osm_type=payload.get("osm_type"),
+            lat=float(payload["lat"]),
+            lon=float(payload["lon"]),
+            country_iso2=(payload.get("country_iso2") or "").upper(),
+            translations=translations,
+        )
+        db.add(new_place)
+        db.flush()
+        place_id = new_place.id
+        if DEBUG_UPSERT:
+            log.info(
+                "[places_upsert] insert id=%s langs_after=%d",
+                place_id, len(translations or {}),
+            )
+
     db.commit()
-    return {"id": res[0]}
+    return {"id": place_id}
 
 
 @router.get("/suggest")
