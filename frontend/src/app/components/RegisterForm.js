@@ -1,7 +1,7 @@
 "use client";
 // Terms consent
 const TERMS_VERSION = "2025-09-17-ru-v1";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Fragment } from "react";
 import { FaTruck, FaUser, FaClipboardCheck, FaEye, FaEyeSlash } from "react-icons/fa6";
 import { useRouter } from "next/navigation";
 import { API_BASE } from "@/app/lib/apiBase";
@@ -74,6 +74,28 @@ const withErrorStyles = (hasError) =>
         : { transition: "border-color .2s, box-shadow .2s" };
 
 
+function renderCodeDestination(template, target) {
+    const safeTemplate = template || "";
+    const safeTarget = target || "";
+
+    if (!safeTemplate.includes("{target}")) {
+        return (
+            <>
+                {safeTemplate} <b>{safeTarget}</b>
+            </>
+        );
+    }
+
+    const parts = safeTemplate.split("{target}");
+    return parts.map((part, idx) => (
+        <Fragment key={`codepart-${idx}`}>
+            {part}
+            {idx < parts.length - 1 && <b>{safeTarget}</b>}
+        </Fragment>
+    ));
+}
+
+
 export default function RegisterForm({ onSuccess }) {
     const { t, lang } = useLang?.() || { t: (_k, f) => f, lang: "ru" };
     // Точный язык UI для бэкенда
@@ -141,6 +163,14 @@ export default function RegisterForm({ onSuccess }) {
     const [verifyCode, setVerifyCode] = useState("");
     const [verifyMsg, setVerifyMsg] = useState("");
     const [resendLeft, setResendLeft] = useState(0);
+
+    const codeSentTemplate = t("register.verify.codeSent", "Мы отправили 6-значный код на {target}.");
+    const codeInputPlaceholder = t("register.verify.codeInputPlaceholder", "Введите 6-значный код");
+    const verifySubmitLabel = t("register.verify.submit", "Подтвердить");
+    const verifyResendLabel = t("register.verify.resend", "Отправить ещё раз");
+    const verifyCancelLabel = t("register.verify.cancel", "Отмена");
+    const phoneModalTitle = t("register.verify.phoneTitle", "Подтверждение телефона");
+    const emailModalTitle = t("register.verify.emailTitle", "Подтверждение e-mail");
 
     useEffect(() => {
         if (!showVerify || resendLeft <= 0) return;
@@ -320,7 +350,8 @@ export default function RegisterForm({ onSuccess }) {
 
     async function startPhoneVerificationFlow(payload) {
         if (!payload?.phone) {
-            setErrors((prev) => ({ ...prev, phone: ["Укажите номер телефона."] }));
+            const phoneRequiredMsg = t("register.verify.error.phoneRequired", "Укажите номер телефона.");
+            setErrors((prev) => ({ ...prev, phone: [phoneRequiredMsg] }));
             return;
         }
         setIsPhoneCodeSending(true);
@@ -364,17 +395,18 @@ export default function RegisterForm({ onSuccess }) {
     }
 
     function mapPhoneError(detail) {
-        if (!detail) return "Не удалось отправить код. Попробуйте ещё раз.";
-        if (detail.includes("cooldown")) return "Код уже отправлен. Попробуйте позже.";
-        if (detail.includes("sms_failed")) return "Не удалось отправить SMS. Попробуйте позже.";
-        if (detail.includes("phone_required")) return "Укажите номер телефона.";
-        return "Не удалось отправить код. Попробуйте ещё раз.";
+        const generic = t("register.verify.error.codeSendFailed", "Не удалось отправить код. Попробуйте ещё раз.");
+        if (!detail) return generic;
+        if (detail.includes("cooldown")) return t("register.verify.error.cooldown", "Код уже отправлен. Попробуйте позже.");
+        if (detail.includes("sms_failed")) return t("register.verify.error.smsFailed", "Не удалось отправить SMS. Попробуйте позже.");
+        if (detail.includes("phone_required")) return t("register.verify.error.phoneRequired", "Укажите номер телефона.");
+        return generic;
     }
 
     const handlePhoneVerifySubmit = async (e) => {
         e.preventDefault();
         if (phoneCode.replace(/\D/g, "").length !== 6) {
-            setPhoneVerifyMsg("Введите 6-значный код.");
+            setPhoneVerifyMsg(t("register.verify.error.enterCode", "Введите 6-значный код."));
             return;
         }
 
@@ -426,12 +458,12 @@ export default function RegisterForm({ onSuccess }) {
     };
 
     function mapPhoneVerifyError(detail) {
-        if (!detail) return "Неверный код.";
-        if (detail === "code_expired") return "Срок действия кода истёк. Запросите новый.";
-        if (detail === "code_invalid") return "Неверный код.";
-        if (detail === "too_many_attempts") return "Слишком много попыток. Попробуйте позже.";
-        if (detail === "code_not_requested") return "Сначала запросите код.";
-        return "Не удалось подтвердить код.";
+        if (!detail) return t("register.verify.error.invalidCode", "Неверный код.");
+        if (detail === "code_expired") return t("register.verify.error.phoneCodeExpired", "Срок действия кода истёк. Запросите новый.");
+        if (detail === "code_invalid") return t("register.verify.error.invalidCode", "Неверный код.");
+        if (detail === "too_many_attempts") return t("register.verify.error.tooManyAttempts", "Слишком много попыток. Попробуйте позже.");
+        if (detail === "code_not_requested") return t("register.verify.error.codeNotRequested", "Сначала запросите код.");
+        return t("register.verify.error.verifyFailed", "Не удалось подтвердить код.");
     }
 
     async function handlePhoneResend() {
@@ -544,11 +576,11 @@ export default function RegisterForm({ onSuccess }) {
         e.preventDefault();
         setVerifyMsg("");
         if (!emailForVerify) {
-            setVerifyMsg("Неизвестный e-mail для подтверждения.");
+            setVerifyMsg(t("register.verify.error.unknownEmail", "Неизвестный e-mail для подтверждения."));
             return;
         }
         if (verifyCode.replace(/\D/g, "").length !== 6) {
-            setVerifyMsg("Введите 6-значный код.");
+            setVerifyMsg(t("register.verify.error.enterCode", "Введите 6-значный код."));
             return;
         }
         let r, j;
@@ -561,18 +593,18 @@ export default function RegisterForm({ onSuccess }) {
             });
             j = await r.json().catch(() => ({}));
         } catch {
-            setVerifyMsg("Сеть недоступна. Попробуйте ещё раз.");
+            setVerifyMsg(t("register.verify.error.network", "Сеть недоступна. Попробуйте ещё раз."));
             return;
         }
         if (!r.ok) {
-            // Сообщения от бэка: error.verify.codeInvalid | codeExpired | tooManyAttempts | noCode | error.user.notFound
+            // Сообщения от бэка: error.verify.codeInvalid | codeExpired | tooManyAttempts | noCode | error.user.notFound␊
             const d = (j && j.detail) || "Ошибка подтверждения.";
-            if (d === "error.verify.codeInvalid") setVerifyMsg("Неверный код.");
-            else if (d === "error.verify.codeExpired") setVerifyMsg("Срок действия кода истёк.");
-            else if (d === "error.verify.tooManyAttempts") setVerifyMsg("Слишком много попыток. Запросите новый код позже.");
-            else if (d === "error.verify.noCode") setVerifyMsg("Код не запрошен. Повторите регистрацию или запросите код.");
-            else if (d === "error.user.notFound") setVerifyMsg("Пользователь не найден.");
-            else setVerifyMsg(typeof d === "string" ? d : "Ошибка подтверждения.");
+            if (d === "error.verify.codeInvalid") setVerifyMsg(t("register.verify.error.invalidCode", "Неверный код."));
+            else if (d === "error.verify.codeExpired") setVerifyMsg(t("register.verify.error.codeExpired", "Срок действия кода истёк."));
+            else if (d === "error.verify.tooManyAttempts") setVerifyMsg(t("register.verify.error.tooManyAttemptsLong", "Слишком много попыток. Запросите новый код позже."));
+            else if (d === "error.verify.noCode") setVerifyMsg(t("register.verify.error.noCode", "Код не запрошен. Повторите регистрацию или запросите код."));
+            else if (d === "error.user.notFound") setVerifyMsg(t("register.verify.error.userNotFound", "Пользователь не найден."));
+            else setVerifyMsg(typeof d === "string" ? d : t("register.verify.error.generic", "Ошибка подтверждения."));
             return;
         }
 
@@ -1009,15 +1041,15 @@ export default function RegisterForm({ onSuccess }) {
                             boxShadow: "0 8px 40px rgba(0,0,0,.3)",
                         }}
                     >
-                        <h3 style={{ margin: 0, marginBottom: 8, fontSize: 20 }}>Подтверждение телефона</h3>
+                        <h3 style={{ margin: 0, marginBottom: 8, fontSize: 20 }}>{phoneModalTitle}</h3>
                         <div style={{ opacity: .85, marginBottom: 14 }}>
-                            Мы отправили 6-значный код на <b>{pendingRegisterPayload?.phone || form.phone}</b>.
+                            {renderCodeDestination(codeSentTemplate, pendingRegisterPayload?.phone || form.phone)}
                         </div>
-                        <form onSubmit={handlePhoneVerifySubmit}>
+                        <form onSubmit={handlePhoneVerifySubmit}>␊
                             <input
                                 inputMode="numeric"
                                 autoFocus
-                                placeholder="Введите 6-значный код"
+                                placeholder={codeInputPlaceholder}
                                 value={phoneCode}
                                 onChange={(e) => setPhoneCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
                                 style={{
@@ -1044,7 +1076,7 @@ export default function RegisterForm({ onSuccess }) {
                                     className="register-submit-btn"
                                     style={{ flex: 1 }}
                                 >
-                                    Подтвердить
+                                    {verifySubmitLabel}
                                 </button>
                                 <button
                                     type="button"
@@ -1053,7 +1085,8 @@ export default function RegisterForm({ onSuccess }) {
                                     className="register-cancel-btn"
                                     style={{ flex: 1 }}
                                 >
-                                    Отправить ещё раз{phoneResendLeft > 0 ? ` (${phoneResendLeft})` : ''}
+                                    {verifyResendLabel}
+                                    {phoneResendLeft > 0 ? ` (${phoneResendLeft})` : ''}
                                 </button>
                             </div>
                             <button
@@ -1062,7 +1095,7 @@ export default function RegisterForm({ onSuccess }) {
                                 className="register-cancel-btn"
                                 style={{ marginTop: 10, width: "100%" }}
                             >
-                                Отмена
+                                {verifyCancelLabel}
                             </button>
                         </form>
                     </div>
@@ -1099,15 +1132,15 @@ export default function RegisterForm({ onSuccess }) {
                             boxShadow: "0 8px 40px rgba(0,0,0,.3)",
                         }}
                     >
-                        <h3 style={{ margin: 0, marginBottom: 8, fontSize: 20 }}>Подтверждение e-mail</h3>
+                        <h3 style={{ margin: 0, marginBottom: 8, fontSize: 20 }}>{emailModalTitle}</h3>
                         <div style={{ opacity: .85, marginBottom: 14 }}>
-                            Мы отправили 6-значный код на <b>{emailForVerify}</b>.
+                            {renderCodeDestination(codeSentTemplate, emailForVerify)}
                         </div>
                         <form onSubmit={handleVerifySubmit}>
                             <input
                                 inputMode="numeric"
                                 autoFocus
-                                placeholder="Введите 6-значный код"
+                                placeholder={codeInputPlaceholder}
                                 value={verifyCode}
                                 onChange={(e) => setVerifyCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
                                 style={{
@@ -1133,7 +1166,7 @@ export default function RegisterForm({ onSuccess }) {
                                     className="register-submit-btn"
                                     style={{ flex: 1 }}
                                 >
-                                    Подтвердить
+                                    {verifySubmitLabel}
                                 </button>
                                 <button
                                     type="button"
@@ -1142,7 +1175,8 @@ export default function RegisterForm({ onSuccess }) {
                                     className="register-cancel-btn"
                                     style={{ flex: 1 }}
                                 >
-                                    Отправить ещё раз{resendLeft > 0 ? ` (${resendLeft})` : ''}
+                                    {verifyResendLabel}
+                                    {resendLeft > 0 ? ` (${resendLeft})` : ''}
                                 </button>
                             </div>
                         </form>
@@ -1181,15 +1215,15 @@ export default function RegisterForm({ onSuccess }) {
                             boxShadow: "0 8px 40px rgba(0,0,0,.3)",
                         }}
                     >
-                        <h3 style={{ margin: 0, marginBottom: 8, fontSize: 20 }}>Подтверждение e-mail</h3>
+                        <h3 style={{ margin: 0, marginBottom: 8, fontSize: 20 }}>{emailModalTitle}</h3>
                         <div style={{ opacity: .85, marginBottom: 14 }}>
-                            Мы отправили 6-значный код на <b>{emailForVerify}</b>.
+                            {renderCodeDestination(codeSentTemplate, emailForVerify)}
                         </div>
                         <form onSubmit={handleVerifySubmit}>
                             <input
                                 inputMode="numeric"
                                 autoFocus
-                                placeholder="Введите 6-значный код"
+                                placeholder={codeInputPlaceholder}
                                 value={verifyCode}
                                 onChange={(e) => setVerifyCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
                                 style={{
@@ -1201,10 +1235,11 @@ export default function RegisterForm({ onSuccess }) {
                             {verifyMsg && <div style={{ color: "#ff7b7b", marginTop: 8 }}>{verifyMsg}</div>}
                             <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
                                 <button type="submit" disabled={verifyCode.replace(/\D/g, "").length !== 6} className="register-submit-btn" style={{ flex: 1 }}>
-                                    Подтвердить
+                                    {verifySubmitLabel}
                                 </button>
                                 <button type="button" onClick={handleResend} disabled={resendLeft > 0} className="register-cancel-btn" style={{ flex: 1 }}>
-                                    Отправить ещё раз{resendLeft > 0 ? ` (${resendLeft})` : ""}
+                                    {verifyResendLabel}
+                                    {resendLeft > 0 ? ` (${resendLeft})` : ""}
                                 </button>
                             </div>
                         </form>
