@@ -13,6 +13,7 @@ import "i18n-iso-countries/langs/tr.json";
 import "i18n-iso-countries/langs/ka.json";
 import MiniUserCard from "@/app/components/MiniUserCard";
 import SaveToggleButton from "@/app/components/SaveToggleButton";
+import TransportShareButtons from "@/app/components/TransportShareButtons";
 import { useLang } from "../../i18n/LangProvider";
 import {
     LOADING_TYPES,
@@ -539,8 +540,13 @@ export default function TransportDetailPage() {
                         </div>
                     )}
                     {/* Сохранить — в мобильном хедере, сразу под датой */}
-                    <div style={{ display: "flex", gap: 10, margin: "6px 0 12px" }}>
+                    <div style={{ display: "flex", gap: 10, margin: "6px 0 12px", flexWrap: "wrap" }}>
                         <SaveToggleButton type="transport" id={transport.id} variant="bar" />
+                        <TransportShareButtons
+                            transport={transport}
+                            variant="pills"
+                            style={{ rowGap: 6 }}
+                        />
                     </div>
                     <Section title={<>{icons.route}{t("route.title", "Маршрут и дата")}</>}>
                         <div style={{ marginBottom: 5, display: "flex", alignItems: "center" }}>
@@ -888,9 +894,14 @@ export default function TransportDetailPage() {
                             })}</>}
                         </div>
                     </div>
-                    <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "flex-start", gap: 12 }}>
+                    <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "flex-start", gap: 12, flexWrap: "wrap" }}>
                         {/* Сохранить — единый стиль нижней панели */}
                         <SaveToggleButton type="transport" id={transport.id} variant="bar" />
+                        <TransportShareButtons
+                            transport={transport}
+                            variant="pills"
+                            style={{ rowGap: 6 }}
+                        />
                         {ownerUser && (
                             <MiniUserCard user={ownerUser} transport={transport} />
                         )}

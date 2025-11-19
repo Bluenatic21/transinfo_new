@@ -3,20 +3,19 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { FaFacebookF, FaLink, FaShareAlt, FaTelegramPlane, FaWhatsapp } from "react-icons/fa";
 import { useLang } from "@/app/i18n/LangProvider";
-import { buildOrderSharePayload } from "@/app/utils/orderShare";
 
 const FALLBACK_T = { t: (key, fallback) => fallback || key };
 
-export default function OrderShareButtons({ order, variant = "compact", buttonStyle, style }) {
-    const langCtx = useLang?.() || FALLBACK_T;
-    const { t } = langCtx;
+export default function ShareButtons({ share, variant = "compact", buttonStyle, style, t: tProp }) {
+    const langCtx = useLang?.();
+    const t = tProp || langCtx?.t || FALLBACK_T.t;
     const [copied, setCopied] = useState(false);
     const [menuOpen, setMenuOpen] = useState(false);
     const wrapperRef = useRef(null);
 
-    const share = useMemo(() => (order ? buildOrderSharePayload(order, { t }) : null), [order, t]);
+    const sharePayload = useMemo(() => (share ? { ...share } : null), [share]);
 
-    if (!share) return null;
+    if (!sharePayload) return null;
 
     const baseCompactStyle = {
         width: 34,
@@ -54,10 +53,10 @@ export default function OrderShareButtons({ order, variant = "compact", buttonSt
         ...(buttonStyle || {}),
     };
 
-    const shareMessage = [share.message, share.url].filter(Boolean).join(" \n").trim();
+    const shareMessage = [sharePayload.message, sharePayload.url].filter(Boolean).join(" \n").trim();
 
     const encodedMessage = encodeURIComponent(shareMessage);
-    const encodedUrl = encodeURIComponent(share.url);
+    const encodedUrl = encodeURIComponent(sharePayload.url);
 
     const buttons = [
         {
@@ -68,10 +67,10 @@ export default function OrderShareButtons({ order, variant = "compact", buttonSt
             onClick: async () => {
                 try {
                     if (navigator.clipboard && window.isSecureContext) {
-                        await navigator.clipboard.writeText(share.copyText);
+                        await navigator.clipboard.writeText(sharePayload.copyText);
                     } else {
                         const el = document.createElement("textarea");
-                        el.value = share.copyText;
+                        el.value = sharePayload.copyText;
                         el.style.position = "fixed";
                         el.style.top = "-1000px";
                         document.body.appendChild(el);
@@ -124,9 +123,9 @@ export default function OrderShareButtons({ order, variant = "compact", buttonSt
             onClick: async () => {
                 try {
                     await navigator.share({
-                        title: share.title,
-                        text: share.text || share.description,
-                        url: share.url,
+                        title: sharePayload.title,
+                        text: sharePayload.text || sharePayload.description,
+                        url: sharePayload.url,
                     });
                 } catch (err) {
                     if (err?.name !== "AbortError") {
@@ -217,7 +216,7 @@ export default function OrderShareButtons({ order, variant = "compact", buttonSt
 
     useEffect(() => {
         setMenuOpen(false);
-    }, [order?.id]);
+    }, [sharePayload?.url]);
 
     return (
         <div ref={wrapperRef} style={wrapperStyle}>

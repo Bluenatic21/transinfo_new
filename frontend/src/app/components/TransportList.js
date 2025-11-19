@@ -26,7 +26,9 @@ import { api, abs } from "@/config/env";
 import IconLabel from "./ui/IconLabel";
 import { FiMap as MapIcon, FiList as ListIcon } from "react-icons/fi";
 import { useLang } from "../i18n/LangProvider";
+import { useLang } from "../i18n/LangProvider";
 import { LOADING_TYPES, getTruckBodyTypes, getLoadingTypes, localizeRegularity as mapRegularity } from "./truckOptions";
+import TransportShareButtons from "./TransportShareButtons";
 
 // Цвет рейтинга 0→красный, 10→зелёный
 function ratingToColor(value) {
@@ -80,9 +82,9 @@ const iconBtnStyle = {
     color: "#43c8ff",
     border: "none",
     borderRadius: "50%",
-    width: 36,
-    height: 36,
-    fontSize: 18,
+    width: 32,
+    height: 32,
+    fontSize: 16,
     cursor: "pointer",
     marginLeft: 3,
     boxShadow: "0 1px 8px #23416722",
@@ -2000,6 +2002,12 @@ function TransportCard({ transport, expanded, onToggle }) {
                                 <FaTelegram />
                             </a>
                         )}
+
+                        <TransportShareButtons
+                            transport={transport}
+                            variant="compact"
+                            buttonStyle={iconBtnStyle}
+                        />
 
                         {/* сохранить (рядом с действиями внизу) */}
                         <SaveToggleButton type="transport" id={transport.id} variant="bar" />
