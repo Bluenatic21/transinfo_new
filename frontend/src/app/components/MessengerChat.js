@@ -23,7 +23,7 @@ const fmtRemain = (iso, t) => !iso ? "" : (() => {
 })();
 import Lightbox from "yet-another-react-lightbox";
 import "yet-another-react-lightbox/styles.css";
-import { FaPaperPlane, FaGavel, FaSmile, FaPaperclip, FaEye, FaCheck, FaThumbsUp, FaHeart, FaThumbtack, FaTrash } from "react-icons/fa";
+import { FaPaperPlane, FaGavel, FaSmile, FaPaperclip, FaEye, FaCheck, FaThumbsUp, FaHeart, FaThumbtack, FaTrash, FaLanguage } from "react-icons/fa";
 import { useMessenger } from "./MessengerContext";
 import { useUser } from "../UserContext";
 import { useRouter } from "next/navigation";
