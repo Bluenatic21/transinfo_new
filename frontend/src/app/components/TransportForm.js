@@ -979,15 +979,29 @@ export default function TransportForm({ onCreated, initialData, mode = "create",
     const col2 = { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 20px" };
 
     return (
-        <form onSubmit={handleSubmit} style={{ maxWidth: 760, margin: "0 auto" }}>
+        <form
+            id="transportform"
+            className="form-root mobile-form"
+            data-mobile={isMobile ? "1" : undefined}
+            onSubmit={handleSubmit}
+            style={{
+                maxWidth: isMobile ? "100%" : 760,
+                width: "100%",
+                margin: "0 auto",
+                padding: isMobile ? "0 10px 70px" : "0",
+                display: "flex",
+                flexDirection: "column",
+                gap: 22
+            }}
+        >
             {renderBillingHint()}
             {/* --- Даты и маршрут --- */}
-            <div style={section}>
-                <div style={{ fontSize: 19, fontWeight: 700, marginBottom: 9, color: "#71bfff" }}>
+            <div style={section} className="form-section">
+                <div className="section-title" style={{ fontSize: 19, fontWeight: 700, marginBottom: 9, color: "#71bfff" }}>
                     {t("tf.section.datesRoute", "Даты и маршрут")}
                 </div>
 
-                <div style={{
+                <div className="stack-mobile" style={{
                     display: "flex",
                     gap: 24,
                     alignItems: "flex-start",
@@ -1344,11 +1358,11 @@ export default function TransportForm({ onCreated, initialData, mode = "create",
 
 
             {/* --- Тип кузова и детали --- */}
-            <div style={section}>
-                <div style={{ fontSize: 19, fontWeight: 700, marginBottom: 9, color: "#71bfff" }}>
+            <div style={section} className="form-section">
+                <div className="section-title" style={{ fontSize: 19, fontWeight: 700, marginBottom: 9, color: "#71bfff" }}>
                     {t("tf.section.typeAndDetails", "Тип и детали транспорта")}
                 </div>
-                <div style={col2}>
+                <div style={col2} className="split-grid">
                     <div>
                         <label style={label}>{t("transport.bodyType", "Тип кузова")} *</label>
                         <div
@@ -1423,7 +1437,7 @@ export default function TransportForm({ onCreated, initialData, mode = "create",
                         options={LOADING_TYPES_I18N}
                     />
                 </div>
-                <div style={col2}>
+                <div style={col2} className="split-grid">
                     <div>
                         <label style={label}>{t("transport.capacityTons", "Грузоподъёмность (т)")}</label>
                         <input type="number"
@@ -1669,8 +1683,8 @@ export default function TransportForm({ onCreated, initialData, mode = "create",
 
 
             {/* --- Ставка и контакты --- */}
-            <div style={section}>
-                <div style={{ fontSize: 19, fontWeight: 700, marginBottom: 9, color: "#71bfff" }}>
+            <div style={section} className="form-section">
+                <div className="section-title" style={{ fontSize: 19, fontWeight: 700, marginBottom: 9, color: "#71bfff" }}>
                     {t("tf.section.rateAndContacts", "Ставка и контакты")}
                 </div>
 
@@ -1683,6 +1697,7 @@ export default function TransportForm({ onCreated, initialData, mode = "create",
 
                 {form.rate_mode === "есть" && (
                     <div
+                        className="stack-mobile"
                         style={{
                             display: "flex",
                             gap: 10,
@@ -1795,7 +1810,7 @@ export default function TransportForm({ onCreated, initialData, mode = "create",
                         {t("rate.noBargain", "Без торга")}
                     </label>
                 </div>
-                <div style={col2}>
+                <div style={col2} className="split-grid">
                     <div>
                         <label style={label}>{t("contact.person", "Контактное лицо")} *</label>
                         <input name="contact_name" value={form.contact_name} onChange={handleChange} style={input} required />
@@ -1812,14 +1827,14 @@ export default function TransportForm({ onCreated, initialData, mode = "create",
             </div>
 
             {/* --- Примечание и файлы --- */}
-            <div style={section}>
-                <div style={{ fontSize: 19, fontWeight: 700, marginBottom: 9, color: "#71bfff" }}>
+            <div style={section} className="form-section">
+                <div className="section-title" style={{ fontSize: 19, fontWeight: 700, marginBottom: 9, color: "#71bfff" }}>
                     {t("tf.section.noteAndFiles", "Примечание и файлы")}
                 </div>
                 <label style={label}>{t("common.note", "Примечание")}</label>
                 <textarea name="comment" value={form.comment} onChange={handleChange} style={{ ...input, minHeight: 64 }} />
                 <label style={label}>{t("common.attachments", "Вложения")}</label>
-                <div style={{ display: "flex", gap: 12, marginBottom: 13 }}>
+                <div className="stack-mobile" style={{ display: "flex", gap: 12, marginBottom: 13 }}>
                     <label style={{
                         background: "#253857",
                         color: "#88d4ff",

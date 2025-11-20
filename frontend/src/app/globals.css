@@ -196,6 +196,72 @@ html[data-theme="light"] {
   cursor: not-allowed
 }
 
+/* === Mobile layout helpers (order & transport forms) === */
+.mobile-form {
+  width: 100%;
+}
+
+@media (max-width: 900px) {
+  .mobile-form {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .mobile-form .form-section,
+  .mobile-form .order-card {
+    padding: 16px 14px !important;
+    border-radius: 14px !important;
+    margin-bottom: 16px !important;
+  }
+
+  .mobile-form .section-title,
+  .mobile-form .order-title {
+    font-size: 16px !important;
+    line-height: 1.35;
+  }
+
+  .mobile-form .stack-mobile {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  .mobile-form .stack-mobile>* {
+    width: 100% !important;
+  }
+
+  .mobile-form .stack-mobile-inline {
+    flex-wrap: wrap !important;
+    align-items: flex-start !important;
+  }
+
+  .mobile-form .chip-row {
+    flex-wrap: wrap !important;
+  }
+
+  .mobile-form .split-grid {
+    display: grid;
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  .mobile-form .full-width-mobile {
+    width: 100% !important;
+  }
+
+  .mobile-form button,
+  .mobile-form .btn-cta {
+    width: 100%;
+  }
+}
+
+@media (max-width: 540px) {
+
+  .mobile-form .form-section,
+  .mobile-form .order-card {
+    padding: 14px 12px !important;
+  }
+}
+
 /* === Paywall blur helpers === */
 .pw-blur {
   position: relative;
