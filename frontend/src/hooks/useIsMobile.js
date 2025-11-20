@@ -9,7 +9,13 @@ import { useEffect, useState } from "react";
  *  - Следит за resize + change
  */
 function useIsMobile(breakpoint = 768) {
-    const [isMobile, setIsMobile] = useState(false); // важно: начально false и на сервере, и на клиенте
+    // Пытаемся определить состояние сразу на клиенте, чтобы не было мигания
+    const initial =
+        typeof window !== "undefined"
+            ? !!window.matchMedia(`(max-width: ${breakpoint}px)`).matches
+            : false;
+
+    const [isMobile, setIsMobile] = useState(initial);
 
     useEffect(() => {
         if (typeof window === "undefined") return;

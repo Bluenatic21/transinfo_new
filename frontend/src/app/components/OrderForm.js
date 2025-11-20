@@ -2144,17 +2144,22 @@ export default function OrderForm({ order = null, onSaved }) {
                                     placeholder={t("common.currency", "Валюта")}
                                     style={{
                                         background: form.rate_currency ? "var(--accent)" : "#1e2746",
-                                        color: form.rate_currency ? "#161616" : "#b0bcdc",
-                                        border: "1.5px solid var(--accent)",
-                                        borderRadius: 7,
+                                        color: form.rate_currency ? "#161616" : "#e3f2fd",
+                                        border: form.rate_currency ? "2px solid var(--accent)" : "1.5px solid #294c7a",
+                                        borderRadius: 8,
                                         fontWeight: 700,
                                         fontSize: 15,
-                                        height: 38,
+                                        height: 40,
+                                        minHeight: 40,
+                                        minWidth: 110,
+                                        padding: "9px 14px",
                                         cursor: "pointer",
-                                        minWidth: 75,
-                                        boxShadow: "none",
+                                        boxShadow: "0 2px 8px #0f162980",
                                         outline: "none",
-                                        transition: "background .17s"
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        transition: "background .17s, color .17s, border .17s"
                                     }}
                                     menuStyle={{
                                         background: "#242b33",
