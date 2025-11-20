@@ -383,13 +383,30 @@ export default function TransportList({ transports: propTransports }) {
                     headers: t ? { Authorization: `Bearer ${t}` } : undefined,
                 }
             );
-            const data = await resp.json();
+
+            const rawText = await resp.text();
+            let data = null;
+            try {
+                data = rawText ? JSON.parse(rawText) : null;
+            } catch (err) {
+                console.warn("[transport] Failed to parse transports response", err, rawText?.slice?.(0, 200));
+                data = null;
+            }
+
+            if (!resp.ok) {
+                console.warn("[transport] Transport fetch failed", resp.status, rawText?.slice?.(0, 200));
+                throw new Error(`Failed to load transports: ${resp.status}`);
+            }
             const totalHeader = resp.headers.get("X-Total-Count") || resp.headers.get("x-total-count");
             if (totalHeader) setTotal(parseInt(totalHeader, 10) || 0);
             let items = data;
             if (!Array.isArray(items) && data && Array.isArray(data.items)) {
                 setTotal(parseInt(data.total || data.count || 0, 10) || 0);
                 items = data.items;
+            } else if (!Array.isArray(items)) {
+                console.warn("[transport] Unexpected transports payload", data);
+                items = [];
+                if (!totalHeader) setTotal(0);
             } else if (!totalHeader) {
                 setTotal(Array.isArray(data) ? data.length : 0);
             }

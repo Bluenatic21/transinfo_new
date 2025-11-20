@@ -2838,7 +2838,7 @@ async def notifications_ws(
                     data = await websocket.receive_text()
                     print(
                         f"[WS DEBUG] RECEIVED ON NOTIFICATIONS user_id={user_id}: {data}")
-                        
+
                     # --- keep-alive: отвечаем на {"type":"ping"} так же, как и в
                     # notifications.py, чтобы соединение не считалось «мертвым»
                     try:
@@ -3833,7 +3833,12 @@ def get_transports(
         print('from_radius:', repr(from_radius))
         print('---')
 
-    query = db.query(TransportModel).filter(TransportModel.is_active == True)
+    # Исторические записи могли иметь NULL в is_active, поэтому считаем их активными,
+    # иначе выборка может вернуться пустой, даже если транспорт в базе есть.
+    query = db.query(TransportModel).filter(
+        or_(TransportModel.is_active == True,
+            TransportModel.is_active.is_(None))
+    )
 
     # Применяем фильтр блокировок только для авторизованного пользователя.
     if current_user is not None:
