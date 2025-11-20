@@ -4,17 +4,29 @@ import { useEffect, useState } from "react";
 
 /**
  * useIsMobile — SSR-safe:
- *  - На сервере и на первом клиентском кадре всегда возвращает false
- *  - В useEffect выставляет реальное значение (matchMedia)
- *  - Следит за resize + change
+ *  - Пока <html data-booting="1"> (первичная гидратация) всегда возвращает false
+ *  - После снятия data-booting можно инициализировать реальным значением через matchMedia
+ *  - В useEffect следим за resize / change и обновляем значение
  */
 function useIsMobile(breakpoint = 768) {
-    // Всегда стартуем с false, чтобы сервер и клиент совпадали во время гидратации.
-    // Реальное значение выставляем после маунта через matchMedia.
-    // Инициализируем реальным значением, если уже на клиенте, чтобы избежать
-    // первой отрисовки десктопной версии на мобилке (мигание на входе).
     const [isMobile, setIsMobile] = useState(() => {
-        if (typeof window === "undefined" || !window.matchMedia) return false;
+        // На сервере window/document нет → всегда false
+        if (typeof window === "undefined") return false;
+
+        try {
+            // Пока html[data-booting="1"] — идёт первичная гидратация.
+            // Чтобы разметка сервера и первый рендер клиента совпали,
+            // принудительно возвращаем false и НЕ смотрим matchMedia.
+            const root = document.documentElement;
+            if (root && root.getAttribute("data-booting") === "1") {
+                return false;
+            }
+        } catch {
+            return false;
+        }
+
+        if (!window.matchMedia) return false;
+
         try {
             return !!window.matchMedia(`(max-width: ${breakpoint}px)`).matches;
         } catch {
@@ -28,7 +40,7 @@ function useIsMobile(breakpoint = 768) {
         const mql = window.matchMedia(`(max-width: ${breakpoint}px)`);
         const update = () => setIsMobile(!!mql.matches);
 
-        update(); // установить реальное значение после маунта
+        update(); // после маунта выставляем реальное значение
         if (mql.addEventListener) mql.addEventListener("change", update);
         else if (mql.addListener) mql.addListener(update);
         window.addEventListener("resize", update, { passive: true });

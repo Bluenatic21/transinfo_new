@@ -343,9 +343,10 @@ export default function TransportList({ transports: propTransports }) {
     const [initialLoaded, setInitialLoaded] = useState(!!propTransports);
 
     // --- Получение транспорта с фильтрацией (только если нет пропса)
+    const lastQueryKeyRef = useRef("");
+
     const fetchTransports = useCallback(async () => {
         if (propTransports) return;
-        setLoading(true);
         const thisRequest = ++lastRequestId.current;
         try {
             // ВАЖНО: нормализуем даты в ISO перед сборкой query
@@ -368,6 +369,12 @@ export default function TransportList({ transports: propTransports }) {
                 .join("&");
 
             const pageQuery = `page=${page}&page_size=${pageSize}`;
+            const queryKey = `${query}|${pageQuery}`;
+            if (!appendModeRef.current && lastQueryKeyRef.current === queryKey) {
+                return;
+            }
+            lastQueryKeyRef.current = queryKey;
+            setLoading(true);
             const t = (typeof window !== "undefined" && localStorage.getItem("token")) || null;
             const resp = await fetch(
                 `/api/transports${query ? "?" + query + "&" + pageQuery : "?" + pageQuery}`,
