@@ -157,11 +157,18 @@ export default function TransportListMobile({
     const rows = useMemo(() => {
         const arr = Array.isArray(transports) ? transports : [];
         const normalized = arr.map((t) => normalizeTransport(t));
-        if (Array.isArray(visibleIds)) {
+
+        const radiusActive =
+            Number(filters?.map_radius) > 0 &&
+            Array.isArray(filters?.map_center) &&
+            filters.map_center.length === 2;
+
+        if (radiusActive && Array.isArray(visibleIds)) {
             return normalized.filter((t) => visibleIds.includes(t.id || t.uid));
         }
+
         return normalized;
-    }, [transports, visibleIds]);
+    }, [transports, visibleIds, filters?.map_radius, filters?.map_center]);
 
     if (loading && rows.length === 0) {
         return (

@@ -11,7 +11,16 @@ import { useEffect, useState } from "react";
 function useIsMobile(breakpoint = 768) {
     // Всегда стартуем с false, чтобы сервер и клиент совпадали во время гидратации.
     // Реальное значение выставляем после маунта через matchMedia.
-    const [isMobile, setIsMobile] = useState(false);
+    // Инициализируем реальным значением, если уже на клиенте, чтобы избежать
+    // первой отрисовки десктопной версии на мобилке (мигание на входе).
+    const [isMobile, setIsMobile] = useState(() => {
+        if (typeof window === "undefined" || !window.matchMedia) return false;
+        try {
+            return !!window.matchMedia(`(max-width: ${breakpoint}px)`).matches;
+        } catch {
+            return false;
+        }
+    });
 
     useEffect(() => {
         if (typeof window === "undefined") return;

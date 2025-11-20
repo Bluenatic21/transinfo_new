@@ -1027,8 +1027,14 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
     const [lightboxOpen, setLightboxOpen] = useState(false);
     const [lightboxIndex, setLightboxIndex] = useState(0);
     const [sending, setSending] = useState(false);
-    const [translating, setTranslating] = useState(false);
+    const [autoTranslate, setAutoTranslate] = useState(false);
+    const [translatingMessages, setTranslatingMessages] = useState(false);
+    const [translationCache, setTranslationCache] = useState({});
+    const translationCacheRef = useRef({});
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+    const [showTranslateHint, setShowTranslateHint] = useState(false);
+    const translateHintTimerRef = useRef(null);
+    const targetLang = useMemo(() => (lang || "en").split("-")[0], [lang]);
     const messagesEndRef = useRef(null);
     // Первый скролл при входе в чат — без анимации
     const didInitialScrollRef = useRef(false);
@@ -1037,8 +1043,48 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
         didInitialScrollRef.current = false;
         try { initialJumpDoneRef.current = false; } catch { }
     }, [chatId]);
-    const textareaRef = useRef(null);
+     const textareaRef = useRef(null);
     const [messagesLimit, setMessagesLimit] = useState(30);
+
+    useEffect(() => {
+        translationCacheRef.current = translationCache;
+    }, [translationCache]);
+
+    useEffect(() => {
+        if (typeof window === "undefined") return;
+        try {
+            const saved = localStorage.getItem("ti-auto-translate-enabled");
+            if (saved === "1") setAutoTranslate(true);
+        } catch { }
+    }, []);
+
+    useEffect(() => {
+        if (typeof window === "undefined") return;
+        try {
+            localStorage.setItem("ti-auto-translate-enabled", autoTranslate ? "1" : "0");
+        } catch { }
+    }, [autoTranslate]);
+
+    useEffect(() => {
+        if (typeof window === "undefined") return () => { };
+        let timer = null;
+        try {
+            const shown = localStorage.getItem("ti-translate-hint-shown");
+            if (!shown) {
+                setShowTranslateHint(true);
+                localStorage.setItem("ti-translate-hint-shown", "1");
+                if (translateHintTimerRef.current) clearTimeout(translateHintTimerRef.current);
+                timer = setTimeout(() => setShowTranslateHint(false), 8000);
+                translateHintTimerRef.current = timer;
+            } else {
+                setShowTranslateHint(false);
+            }
+        } catch { }
+        return () => {
+            if (translateHintTimerRef.current) clearTimeout(translateHintTimerRef.current);
+            if (timer) clearTimeout(timer);
+        };
+    }, [chatId]);
 
     // --- Дедупликация GPS-запросов: оставляем самый свежий на каждое направление
     const dedupedMessages = useMemo(() => {
@@ -1105,38 +1151,7 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
         }
     }, [API, authFetchWithRefresh, peerUser?.id, user?.id, showToast]);
 
-            const translateInput = useCallback(async (e) => {
-        // Проверяем только наличие текста и флаг translating.
-        // Блокировка ввода уже обеспечивается disabled={inputLocked} на кнопке.
-        if (!input || translating) return;
-        const target = (lang || "en").split("-")[0];
-        const payload = input.trim();
-        if (!payload) return;
-        if (payload.length > 2000) {
-            showToast(e, t("chat.translateTooLong", "Текст слишком длинный для перевода"), "warn");
-            return;
-        }
-        setTranslating(true);
-        try {
-            const resp = await fetch(
-                `https://api.mymemory.translated.net/get?q=${encodeURIComponent(payload)}&langpair=auto|${encodeURIComponent(target)}`
-            );
-            if (!resp.ok) throw new Error("translate_failed");
-            const data = await resp.json();
-            const translated = data?.responseData?.translatedText;
-            if (translated) {
-                setInput(translated);
-                showToast(e, t("chat.translateSuccess", "Текст переведён."), "ok");
-            } else {
-                throw new Error("empty_translation");
-            }
-        } catch (err) {
-            console.error("translate error", err);
-            showToast(e, t("chat.translateError", "Не удалось перевести сообщение"), "warn");
-         } finally {
-            setTranslating(false);
-        }
-    }, [input, lang, translating, showToast, t]);
+           
 
     // Быстрый прыжок в самый низ перед первой отрисовкой, без "прокрутки" длинного списка
     const initialJumpDoneRef = useRef(false);
@@ -1275,10 +1290,90 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
     const matchRefs = useRef([]);
     // Сброс refs при каждом новом поиске или изменении списка найденных
     useEffect(() => { matchRefs.current = []; }, [filteredMessages]);
-
-    // Показываем весь уже загруженный список.
+ // Показываем весь уже загруженный список.
     // Лимитированная выдача контролируется бэкендом и ленивой подгрузкой "вверх".
     const displayedMessages = filteredMessages;
+
+    const buildTranslationKey = useCallback((msg, target) => {
+        const base = buildMsgKeyBase(msg)
+            || msg?.id
+            || msg?.client_nonce
+            || msg?.localId
+            || msg?.idx
+            || msg?.sent_at
+            || msg?.created_at
+            || msg?.ts
+            || msg?.time
+            || (msg?.content ? String(msg.content).slice(0, 24) : "");
+        return [chatId, base, target].filter(Boolean).join("::");
+    }, [chatId]);
+
+    const translateText = useCallback(async (payload, target) => {
+        const resp = await fetch(
+            `https://api.mymemory.translated.net/get?q=${encodeURIComponent(payload)}&langpair=auto|${encodeURIComponent(target)}`
+        );
+        if (!resp.ok) throw new Error("translate_failed");
+        const data = await resp.json();
+        return data?.responseData?.translatedText || null;
+    }, []);
+
+    useEffect(() => {
+        if (!autoTranslate) return;
+        const target = targetLang;
+        const recent = (displayedMessages || [])
+            .filter(m => !m?.message_type || m.message_type === "text" || m.message_type === "message")
+            .slice(-20);
+
+        const missing = recent.filter(m => {
+            if (typeof m?.content !== "string" || !m.content.trim()) return false;
+            const key = buildTranslationKey(m, target);
+            return key && !translationCacheRef.current[key];
+        });
+
+        if (missing.length === 0) return;
+
+        let cancelled = false;
+        setTranslatingMessages(true);
+
+        (async () => {
+            for (const msg of missing) {
+                if (cancelled) break;
+                const payload = (msg?.content || "").trim();
+                if (!payload || payload.length > 2000) {
+                    const skipKey = buildTranslationKey(msg, target);
+                    if (skipKey && !translationCacheRef.current[skipKey]) {
+                        setTranslationCache(prev => {
+                            if (prev[skipKey]) return prev;
+                            const next = { ...prev, [skipKey]: payload || msg?.content || "" };
+                            translationCacheRef.current = next;
+                            return next;
+                        });
+                    }
+                    continue;
+                }
+                try {
+                    const translated = await translateText(payload, target);
+                    if (translated && !cancelled) {
+                        const key = buildTranslationKey(msg, target);
+                        setTranslationCache(prev => {
+                            if (prev[key]) return prev;
+                            const next = { ...prev, [key]: translated };
+                            translationCacheRef.current = next;
+                            return next;
+                        });
+                    }
+                } catch (err) {
+                    console.error("translate error", err);
+                }
+            }
+            if (!cancelled) setTranslatingMessages(false);
+        })();
+
+        return () => {
+            cancelled = true;
+            setTranslatingMessages(false);
+        };
+    }, [autoTranslate, targetLang, displayedMessages, translateText, buildTranslationKey]);
 
     // ВАЖНО: берём из контекста до использования ниже, чтобы не поймать TDZ
     const { chatList = [], fetchOlderMessages, getAutoclose } = useMessenger();
@@ -2004,9 +2099,13 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
     }
 
     function renderMessage(msg, idx, arr) {
-        const isMine = user?.id === msg.sender_id;
+       const isMine = user?.id === msg.sender_id;
         const __baseKey = buildMsgKeyBase(msg);
         const mkey = makeUniqueKey(__baseKey, idx);
+        const translationKey = autoTranslate ? buildTranslationKey(msg, targetLang) : null;
+        const translatedText = translationKey ? translationCache[translationKey] : null;
+        const hasTranslation = translatedText && translatedText !== msg.content;
+        const displayContent = hasTranslation ? translatedText : msg.content;
 
 
         // ---- CALL (карточка звонка) ----
@@ -2371,7 +2470,25 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                         wordBreak: "break-word"
                     }}
                 >
-                    {searchMsg ? highlightText(msg.content, searchMsg) : msg.content}
+                     {searchMsg ? highlightText(displayContent, searchMsg) : displayContent}
+                    {hasTranslation && msg.content && (
+                        <div style={{
+                            marginTop: 8,
+                            padding: "6px 8px",
+                            borderRadius: 8,
+                            background: "rgba(0,0,0,0.12)",
+                            color: "#d7e8ff",
+                            fontSize: 13.5,
+                            lineHeight: 1.35,
+                        }}>
+                            <div style={{ fontWeight: 700, marginBottom: 4, opacity: 0.9 }}>
+                                {t("chat.autoTranslatedLabel", "Переведено автоматически")}
+                            </div>
+                            <div style={{ fontSize: 12.5, opacity: 0.85 }}>
+                                {t("chat.originalText", "Оригинал")}: {msg.content}
+                            </div>
+                        </div>
+                    )}
 
                     {/* --- РЕАКЦИИ НА БАЛЛОНЕ --- */}
                     {(msg.reactions && msg.reactions.length > 0) && (
@@ -2594,7 +2711,7 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                     </button>
                 )}
                 {/* LIVE баннер очереди (эфемерный), только для клиента */}
-                {((chat?.support || chatMeta?.support) &&
+                   {((chat?.support || chatMeta?.support) &&
                     String((user?.role || "")).toUpperCase() !== "SUPPORT" &&
                     queueInfo) && (
                         <div style={{
@@ -2612,9 +2729,50 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                                 t("support.queueBody", "ваша позиция #{position}, ориентировочно {eta} мин.")
                                     .replace("#{position}", String((queueInfo.position ?? 0) + 1))
                                     .replace("{eta}", String(queueInfo.eta_minutes ?? "—"))
-                            }
+                              }
                         </div>
                     )}
+
+                {showTranslateHint && (
+                    <div
+                        style={{
+                            background: "linear-gradient(180deg, #1f2e4a 0%, #1a2640 100%)",
+                            border: "1px solid #29446b",
+                            color: "#dbeafe",
+                            borderRadius: 12,
+                            padding: "10px 12px",
+                            marginBottom: 10,
+                            fontSize: 14,
+                            display: "flex",
+                            alignItems: "flex-start",
+                            gap: 10,
+                        }}
+                    >
+                        <div style={{ flex: 1 }}>
+                            {t(
+                                "chat.autoTranslateHint",
+                                "Подсказка: включите автоперевод, чтобы видеть последние 20 сообщений на языке интерфейса."
+                            )}
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => setShowTranslateHint(false)}
+                            style={{
+                                background: "transparent",
+                                border: "none",
+                                color: "#9fb8da",
+                                cursor: "pointer",
+                                fontWeight: 700,
+                                fontSize: 16,
+                                lineHeight: 1,
+                                padding: "2px 6px",
+                            }}
+                            aria-label={t("common.close", "Закрыть")}
+                        >
+                            ×
+                        </button>
+                    </div>
+                )}
 
                 {/* Если локально перевалили ETA — покажем явное уведомление о закрытии */}
                 {((chat?.support || chatMeta?.support) && (supportStatus === "CLOSED" || forceClosed)) && (
@@ -2781,14 +2939,16 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                         </button>
                     )}
 
-                    <button
+                     <button
                         type="button"
-                        onClick={(e) => translateInput(e)}
-                        className={`action-btn ${translating ? "opacity-80" : ""}`}
-                        title={t("chat.translateToInterface", "Перевести в язык интерфейса")}
-                        disabled={inputLocked || translating || !input.trim()}
+                        onClick={() => setAutoTranslate(v => !v)}
+                        className={`action-btn ${autoTranslate ? "action-btn--accent" : ""} ${translatingMessages ? "opacity-80" : ""}`}
+                        title={autoTranslate
+                            ? t("chat.autoTranslateToggleOn", "Автоперевод включён (последние 20 сообщений)")
+                            : t("chat.autoTranslateToggleOff", "Включить автоперевод последних 20 сообщений")}
+                        aria-pressed={autoTranslate}
                     >
-                        {translating ? <span style={{ fontSize: 12, fontWeight: 700 }}>…</span> : <FaLanguage />}
+                        {translatingMessages ? <span style={{ fontSize: 12, fontWeight: 700 }}>…</span> : <FaLanguage />}
                     </button>
 
                     {/* Микрофон — кастомная иконка */}
