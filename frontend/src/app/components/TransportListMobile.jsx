@@ -25,6 +25,8 @@ export default function TransportListMobile({
     setFiltersFromMap,
     onFilteredIdsChange,
     estimatedCount, // используем как стартовое значение, дальше считаем превью внутри
+    onLoadMore,
+    hasMore,
 }) {
     const { t } = useLang();
     // синхронизация «карта ↔ список»: по клику на пин прокручиваем к карточке и подсвечиваем
@@ -79,6 +81,22 @@ export default function TransportListMobile({
     useEffect(() => {
         if (Number.isFinite(estimatedCount)) setPreviewCount(estimatedCount);
     }, [estimatedCount]);
+
+    const loadMoreRef = useRef(null);
+    useEffect(() => {
+        const node = loadMoreRef.current;
+        if (!node || typeof IntersectionObserver === "undefined") return;
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                if (entry?.isIntersecting && hasMore && !loading) {
+                    try { onLoadMore?.(); } catch { }
+                }
+            },
+            { rootMargin: "280px 0px 320px 0px", threshold: 0 },
+        );
+        observer.observe(node);
+        return () => observer.disconnect();
+    }, [hasMore, loading, onLoadMore]);
 
     // базовый URL берём из @/config/env через api()
 
@@ -168,7 +186,7 @@ export default function TransportListMobile({
     }
 
     return (
-        <div style={{ background: "#182337" }}>
+        <div style={{ background: "#182337", minHeight: "100vh", paddingBottom: 64 }}>
             {/* липкая шапка */}
             <div
                 style={{
@@ -207,6 +225,25 @@ export default function TransportListMobile({
                     <TransportCardMobile transport={t.raw || t} />
                 </div>
             ))}
+
+            <div
+                ref={loadMoreRef}
+                style={{
+                    minHeight: 48,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "#8fb3d9",
+                    fontWeight: 700,
+                    letterSpacing: 0.2,
+                }}
+            >
+                {loading
+                    ? t("common.loading", "Загружаем...")
+                    : hasMore
+                        ? t("transport.more", "Прокрутите ниже, чтобы загрузить ещё")
+                        : t("transport.noMore", "Больше транспорта нет")}
+            </div>
 
             {/* шторка фильтра */}
             <MobileFilterSheet

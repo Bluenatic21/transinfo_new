@@ -201,6 +201,7 @@ export default function TransportList({ transports: propTransports }) {
     const isManagerAccount = ["manager", "employee"].includes((me?.role || "").toLowerCase());
 
     const [transports, setTransports] = useState(propTransports || []);
+    const transportsRef = useRef(propTransports || []);
     const [placeLabels, setPlaceLabels] = useState(null);
     const [displayedTransports, setDisplayedTransports] = useState(propTransports || []);
     const [filters, setFilters] = useState({});
@@ -227,6 +228,12 @@ export default function TransportList({ transports: propTransports }) {
     const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
     const [total, setTotal] = useState(0);
     const totalPages = Math.max(1, Math.ceil((total || 0) / pageSize));
+    const hasMoreMobile = useMemo(() => {
+        if (total) return transports.length < total;
+        if (!transports.length) return false;
+        const expected = page * pageSize;
+        return transports.length >= expected;
+    }, [page, pageSize, total, transports.length]);
     const [expandedId, setExpandedId] = useState(null);
     const [activeTab, setActiveTab] = useState("list");
     const [visibleIds, setVisibleIds] = useState(null);
@@ -326,6 +333,7 @@ export default function TransportList({ transports: propTransports }) {
 
     // Защита от race condition
     const lastRequestId = useRef(0);
+    const appendModeRef = useRef(false);
 
     const hasActiveFilter = Object.entries(filters).some(
         ([, v]) => v !== "" && v !== undefined && !(typeof v === "boolean" && v === false),
@@ -379,9 +387,26 @@ export default function TransportList({ transports: propTransports }) {
                 setTotal(Array.isArray(data) ? data.length : 0);
             }
             if (thisRequest === lastRequestId.current) {
-                setTransports(Array.isArray(items) ? items : []);
+                const incoming = Array.isArray(items) ? items : [];
+                const shouldAppend = Boolean(isMobile && appendModeRef.current && page > 1);
+                const merged = shouldAppend
+                    ? (() => {
+                        const prev = Array.isArray(transportsRef.current) ? transportsRef.current : [];
+                        const seen = new Set(prev.map((it) => it?.id ?? it?.uid));
+                        const next = [...prev];
+                        for (const it of incoming) {
+                            const key = it?.id ?? it?.uid;
+                            if (key != null && seen.has(key)) continue;
+                            if (key != null) seen.add(key);
+                            next.push(it);
+                        }
+                        return next;
+                    })()
+                    : incoming;
+                transportsRef.current = merged;
+                setTransports(merged);
                 setTimeout(() => {
-                    const arr = Array.isArray(items) ? items : [];
+                    const arr = Array.isArray(merged) ? merged : [];
                     setDisplayedTransports(arr.filter(t => !isBlocked(t?.owner_id || t?.user_id)));
                 }, 100);
                 setInitialLoaded(true);
@@ -391,8 +416,9 @@ export default function TransportList({ transports: propTransports }) {
             setTimeout(() => setDisplayedTransports([]), 80);
         } finally {
             setLoading(false);
+            appendModeRef.current = false;
         }
-    }, [filters, page, pageSize, propTransports]);
+    }, [filters, isMobile, page, pageSize, propTransports]);
 
     const handleResetFilters = () => setFilters({});
 
@@ -400,11 +426,22 @@ export default function TransportList({ transports: propTransports }) {
         if (propTransports) {
             const arr = Array.isArray(propTransports) ? propTransports : [];
             setTransports(arr);
+            transportsRef.current = arr;
             setDisplayedTransports(arr.filter(t => !isBlocked(t?.owner_id || t?.user_id)));
         } else {
             fetchTransports();
         }
     }, [fetchTransports, propTransports]);
+
+    useEffect(() => {
+        transportsRef.current = transports;
+    }, [transports]);
+
+    const loadMoreMobile = useCallback(() => {
+        if (loading || !hasMoreMobile || appendModeRef.current) return;
+        appendModeRef.current = true;
+        setPage((p) => p + 1);
+    }, [hasMoreMobile, loading]);
 
     // --- Фильтрация транспорта по радиусу и дате ---
     function intervalsIntersect(a_from, a_to, b_from, b_to) {
@@ -693,6 +730,8 @@ export default function TransportList({ transports: propTransports }) {
                     setFiltersFromMap={setFiltersFromMap}
                     onFilteredIdsChange={setVisibleIdsStable}
                     estimatedCount={loading ? undefined : (Array.isArray(visibleIds) ? filteredTransports.length : (total || filteredTransports.length))}
+                    onLoadMore={loadMoreMobile}
+                    hasMore={hasMoreMobile}
                 />
             ) : (
                 activeTab === "list" ? (
