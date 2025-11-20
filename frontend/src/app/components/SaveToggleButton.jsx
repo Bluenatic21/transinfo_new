@@ -99,7 +99,9 @@ export default function SaveToggleButton({
 
     // Нижняя панель карточки (компактная)
     if (variant === "bar") {
-        const color = effectiveSaved ? "#ffd600" : "#43c8ff";
+        const color = effectiveSaved ? "#ffd600" : "#e0f1ff";
+        const borderColor = effectiveSaved ? "#ffd60066" : "#213759";
+
         return (
             <button
                 aria-pressed={effectiveSaved}
@@ -110,19 +112,18 @@ export default function SaveToggleButton({
                 style={{
                     display: "inline-flex",
                     alignItems: "center",
-                    gap: 6,
-                    background: "none",
+                    gap: 8,
+                    padding: "7px 14px",
+                    borderRadius: 999,
+                    border: `1px solid ${borderColor}`,
+                    background: "#132642",
                     color,
-                    border: 0,
-                    cursor: busy ? "default" : "pointer",
+                    fontWeight: 600,
                     fontSize: 14,
-                    fontWeight: 700,
-                    padding: "0 9px",
-                    borderRadius: 7,
-                    borderBottom: `2px solid ${color}`,
-                    minHeight: "22px",
+                    cursor: busy ? "default" : "pointer",
                     opacity: busy ? 0.6 : 1,
-                    transition: "opacity .15s ease, color .15s ease, border-color .15s ease"
+                    transition: "opacity .15s ease, color .15s ease, border-color .15s ease, box-shadow .15s ease",
+                    boxShadow: effectiveSaved ? "0 0 0 1px rgba(255, 214, 0, 0.18)" : "none",
                 }}
             >
                 {effectiveSaved ? <FaBookmark size={size} /> : <FaRegBookmark size={size} />}

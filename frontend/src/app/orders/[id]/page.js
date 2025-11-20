@@ -319,6 +319,21 @@ export default function OrderDetailsPage() {
     const bidPanelRef = useRef();
     const mapRef = useRef(null);
 
+    const actionPillStyle = useMemo(() => ({
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 8,
+        padding: isMobile ? "7px 12px" : "7px 14px",
+        borderRadius: 999,
+        border: "1px solid #213759",
+        background: "#132642",
+        color: "#e0f1ff",
+        fontWeight: 600,
+        fontSize: isMobile ? 14 : 15,
+        cursor: "pointer",
+        transition: "border-color .15s ease, box-shadow .15s ease, opacity .15s ease, transform .12s ease",
+    }), [isMobile]);
+
     // Для edge-swipe назад
     const dragStartX = useRef(0);
 
@@ -969,22 +984,13 @@ export default function OrderDetailsPage() {
                                     <button
                                         onClick={() => setShowBidPanel((v) => !v)}
                                         style={{
-                                            display: "inline-flex",
-                                            alignItems: "center",
-                                            gap: 6,
-                                            background: "#193158",
-                                            color: "#43c8ff",
-                                            border: "none",
-                                            borderRadius: 9,
-                                            padding: isMobile ? "7px 14px" : "7px 22px",
-                                            fontWeight: 700,
-                                            fontSize: isMobile ? 15 : 17,
-                                            cursor: "pointer",
-                                            borderBottom: "2.2px solid #43c8ff",
+                                            ...actionPillStyle,
+                                            border: showBidPanel ? "1px solid #43c8ff" : actionPillStyle.border,
+                                            boxShadow: showBidPanel ? "0 0 0 1px rgba(67, 200, 255, 0.25)" : "none",
                                         }}
                                         title={t("bids.make", "Сделать ставку")}
                                     >
-                                        <FaGavel style={{ fontSize: isMobile ? 17 : 19 }} />
+                                        <FaGavel style={{ fontSize: isMobile ? 17 : 19, color: "#43c8ff" }} />
                                         {t("bids.title", "Ставки")}
                                     </button>
 

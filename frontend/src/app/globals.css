@@ -99,6 +99,24 @@
   color-scheme: dark;
 }
 
+/* Локализация: немного уменьшенные базовые размеры для грузинского языка */
+html:lang(ka) {
+  --ka-font-scale: 0.95;
+  font-size: 15px;
+}
+
+html:lang(ka) body,
+html:lang(ka) h1,
+html:lang(ka) h2,
+html:lang(ka) h3,
+html:lang(ka) h4,
+html:lang(ka) h5,
+html:lang(ka) h6,
+html:lang(ka) p {
+  font-size: calc(var(--ka-font-scale) * 1em);
+  line-height: 1.2;
+}
+
 /* Пока React/Next не «гидратировался», возможна вспышка белого. Страхуемся. */
 html:not(.dark) {
   background-color: #0b0f19 !important;
