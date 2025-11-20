@@ -55,6 +55,7 @@ export default function AdminUsersPage() {
     },
     [isActive, page, q, role, token]
   );
+
   const loadAgents = React.useCallback(() => {
     setAgentsLoading(true);
     fetch(api(`/support/agents`), {

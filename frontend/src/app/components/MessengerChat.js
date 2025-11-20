@@ -808,9 +808,8 @@ function GpsShareCard({ msg, user, API, authFetchWithRefresh, router, showToast 
 }
 
 export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack }) {
-    // ---- суффиксатор коллизий ключей на один рендер ----
-    const { t } = useLang();
-
+    // ---- суффиксатор коллизий ключей на один рендер ----␊
+    const { t, lang } = useLang();
     // Локализованные типы кузова + хелпер лейбла для использования ниже (tr.truck_type)
     // Используем общий источник правды из truckOptions.js
     const BODY_TYPES_FLAT = useMemo(() => {
@@ -1028,6 +1027,7 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
     const [lightboxOpen, setLightboxOpen] = useState(false);
     const [lightboxIndex, setLightboxIndex] = useState(0);
     const [sending, setSending] = useState(false);
+    const [translating, setTranslating] = useState(false);
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
     const messagesEndRef = useRef(null);
     // Первый скролл при входе в чат — без анимации
@@ -1104,6 +1104,37 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
             await quickRequestGps(e); // на всякий случай не блокируем
         }
     }, [API, authFetchWithRefresh, peerUser?.id, user?.id, showToast]);
+
+    const translateInput = useCallback(async (e) => {
+        if (!input || translating || inputLocked) return;
+        const target = (lang || "en").split("-")[0];
+        const payload = input.trim();
+        if (!payload) return;
+        if (payload.length > 2000) {
+            showToast(e, t("chat.translateTooLong", "Текст слишком длинный для перевода"), "warn");
+            return;
+        }
+        setTranslating(true);
+        try {
+            const resp = await fetch(
+                `https://api.mymemory.translated.net/get?q=${encodeURIComponent(payload)}&langpair=auto|${encodeURIComponent(target)}`
+            );
+            if (!resp.ok) throw new Error("translate_failed");
+            const data = await resp.json();
+            const translated = data?.responseData?.translatedText;
+            if (translated) {
+                setInput(translated);
+                showToast(e, t("chat.translateSuccess", "Текст переведён."), "ok");
+            } else {
+                throw new Error("empty_translation");
+            }
+        } catch (err) {
+            console.error("translate error", err);
+            showToast(e, t("chat.translateError", "Не удалось перевести сообщение"), "warn");
+        } finally {
+            setTranslating(false);
+        }
+    }, [input, lang, translating, inputLocked, showToast, t]);
 
     // Быстрый прыжок в самый низ перед первой отрисовкой, без "прокрутки" длинного списка
     const initialJumpDoneRef = useRef(false);
@@ -2666,27 +2697,12 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                     <button
                         type="button"
                         title={t("chat.attachFile", "Прикрепить файл")}
-                        style={{
-                            background: "linear-gradient(135deg, #242c3b 80%, #4b607c 100%)",
-                            border: "none",
-                            borderRadius: "50%",
-                            width: 36,
-                            height: 36,
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            cursor: "pointer",
-                            userSelect: "none",
-                            boxShadow: "0 1px 7px #2b335522",
-                            transition: "background 0.18s",
-                        }}
+                        className="action-btn"
                         onClick={() => !inputLocked && fileInputRef.current && fileInputRef.current.click()}
                         disabled={inputLocked}
+                        aria-label={t("chat.attachFile", "Прикрепить файл")}
                     >
-                        {/* Paperclip SVG */}
-                        <svg width={21} height={21} viewBox="0 0 24 24" fill="none" stroke="#8ecae6" strokeWidth={2.1} strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M21.44 11.05l-9.19 9.19a5 5 0 01-7.07-7.07l9.19-9.19a3.5 3.5 0 014.95 4.95l-9.2 9.19" />
-                        </svg>
+                        <FaPaperclip />
                     </button>
                     <input
                         type="file"
@@ -2709,15 +2725,8 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                                 title="GPS"
                                 aria-haspopup="menu"
                                 aria-expanded={gpsMenuOpen ? "true" : "false"}
-                                style={{
-                                    marginLeft: 8,
-                                    padding: 8,
-                                    borderRadius: 12,
-                                    border: "1px solid rgba(255,255,255,0.08)",
-                                    background: "#22324d",
-                                    color: "#bbf7d0",
-                                    boxShadow: "0 1px 7px #2b335522",
-                                }}
+                                className={`action-btn ${gpsMenuOpen ? "action-btn--accent" : ""}`}
+                                style={{ color: "#bbf7d0" }}
                             >
                                 <FaMapMarkerAlt />
                             </button>
@@ -2761,34 +2770,24 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                         <button
                             type="button"
                             onClick={e => { e.preventDefault(); if (!inputLocked) setShowEmojiPicker(v => !v); }}
-                            className="emoji-picker-button"
-                            style={{
-                                background: "linear-gradient(135deg, #242c3b 80%, #ffc74e 100%)",
-                                border: "none",
-                                borderRadius: "50%",
-                                width: 36,
-                                height: 36,
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                cursor: "pointer",
-                                userSelect: "none",
-                                boxShadow: "0 1px 7px #2b335544",
-                                transition: "background 0.18s",
-
-                            }}
+                            className={`action-btn ${showEmojiPicker ? "action-btn--accent" : ""}`}
                             title={t("chat.insertEmoji", "Вставить эмодзи")}
                             disabled={inputLocked}
+                            aria-label={t("chat.insertEmoji", "Вставить эмодзи")}
                         >
-                            {/* Emoji SVG */}
-                            <svg width={21} height={21} viewBox="0 0 24 24" fill="none" stroke="#ffc74e" strokeWidth={2.1} strokeLinecap="round" strokeLinejoin="round">
-                                <circle cx="12" cy="12" r="10" />
-                                <path d="M8 15s1.5 2 4 2 4-2 4-2" />
-                                <path d="M9 9h.01" />
-                                <path d="M15 9h.01" />
-                            </svg>
+                            <FaSmile />
                         </button>
                     )}
+
+                    <button
+                        type="button"
+                        onClick={(e) => translateInput(e)}
+                        className={`action-btn ${translating ? "opacity-80" : ""}`}
+                        title={t("chat.translateToInterface", "Перевести в язык интерфейса")}
+                        disabled={inputLocked || translating || !input.trim()}
+                    >
+                        {translating ? <span style={{ fontSize: 12, fontWeight: 700 }}>…</span> : <FaLanguage />}
+                    </button>
 
                     {/* Микрофон — кастомная иконка */}
                     <div style={{ display: "flex", alignItems: "center" }}>
@@ -2834,15 +2833,8 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                 <button
                     type="submit"
                     disabled={inputLocked || sending || (!input.trim() && !pendingAttachment && !pendingVoice)}
-                    style={{
-                        background: "none",
-                        border: "none",
-                        color: "#42c2ff",
-                        fontSize: 20,
-                        cursor: "pointer",
-                        padding: 0,
-                        marginLeft: 10,
-                    }}
+                    className="action-btn action-btn--accent"
+                    style={{ marginLeft: 6 }}
                     title={t("common.send", "Отправить")}
                 >
                     <FaPaperPlane />

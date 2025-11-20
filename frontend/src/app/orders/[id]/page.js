@@ -1033,14 +1033,29 @@ export default function OrderDetailsPage() {
                                     <AnimatePresence>
                                         {showBidPanel && (
                                             <div
-                                                style={{
-                                                    position: "absolute",
-                                                    top: "calc(100% + 8px)",
-                                                    right: 0,
-                                                    zIndex: 40,
-                                                    width: isMobile ? "94vw" : 720,
-                                                    maxHeight: isMobile ? "68vh" : "70vh",
-                                                }}
+                                                style={
+                                                    isMobile
+                                                        ? {
+                                                            position: "fixed",
+                                                            inset: 0,
+                                                            zIndex: 200,
+                                                            padding: "16px 14px 18px",
+                                                            background: "linear-gradient(135deg, #0a1628cc, #0f203acc)",
+                                                            backdropFilter: "blur(6px)",
+                                                            display: "flex",
+                                                            alignItems: "flex-start",
+                                                            justifyContent: "center",
+                                                            overflowY: "auto",
+                                                        }
+                                                        : {
+                                                            position: "absolute",
+                                                            top: "calc(100% + 8px)",
+                                                            right: 0,
+                                                            zIndex: 40,
+                                                            width: 720,
+                                                            maxHeight: "70vh",
+                                                        }
+                                                }
                                             >
                                                 <motion.div
                                                     ref={bidPanelRef}
@@ -1052,21 +1067,49 @@ export default function OrderDetailsPage() {
                                                         background: "#222e44",
                                                         borderRadius: 14,
                                                         boxShadow: "0 8px 40px #43c8ff44",
-                                                        padding: isMobile ? "16px" : "22px",
+                                                        padding: isMobile ? "18px 16px 20px" : "22px",
                                                         width: "100%",
+                                                        maxWidth: isMobile ? 520 : "100%",
                                                         boxSizing: "border-box",
                                                     }}
                                                 >
-                                                    <div style={{ fontWeight: 700, color: "#43c8ff", marginBottom: 7, fontSize: 15 }}>
-                                                        {t("bids.title", "Ставки")} ({loadingBids ? "..." : allBids.length})
+                                                    <div
+                                                        style={{
+                                                            display: "flex",
+                                                            alignItems: "center",
+                                                            justifyContent: "space-between",
+                                                            gap: 12,
+                                                            marginBottom: 10,
+                                                        }}
+                                                    >
+                                                        <div style={{ fontWeight: 800, color: "#43c8ff", fontSize: 16 }}>
+                                                            {t("bids.title", "Ставки")} ({loadingBids ? "..." : allBids.length})
+                                                        </div>
+                                                        {isMobile && (
+                                                            <button
+                                                                onClick={() => setShowBidPanel(false)}
+                                                                style={{
+                                                                    background: "#1a2a44",
+                                                                    border: "1px solid #2a4470",
+                                                                    color: "#d7e9ff",
+                                                                    borderRadius: 10,
+                                                                    padding: "8px 12px",
+                                                                    fontWeight: 700,
+                                                                    fontSize: 14,
+                                                                    minWidth: 86,
+                                                                }}
+                                                            >
+                                                                {t("common.close", "Закрыть")}
+                                                            </button>
+                                                        )}
                                                     </div>
 
                                                     {/* список ставок — делаем выше */}
                                                     <div
                                                         style={{
-                                                            maxHeight: 360, /* было 150 */
+                                                            maxHeight: isMobile ? "46vh" : 360, /* было 150 */
                                                             overflowY: "auto",
-                                                            marginBottom: 9,
+                                                            marginBottom: 12,
                                                             borderRadius: 8,
                                                             background: "#182234",
                                                             padding: 6,
@@ -1117,10 +1160,11 @@ export default function OrderDetailsPage() {
                                                     <div
                                                         style={{
                                                             display: "flex",
-                                                            alignItems: "center",
-                                                            gap: 9,
-                                                            marginTop: 7,
-                                                            flexWrap: "wrap",
+                                                            alignItems: isMobile ? "stretch" : "center",
+                                                            gap: isMobile ? 10 : 9,
+                                                            marginTop: isMobile ? 12 : 7,
+                                                            flexWrap: isMobile ? "nowrap" : "wrap",
+                                                            flexDirection: isMobile ? "column" : "row",
                                                         }}
                                                     >
                                                         <input
@@ -1133,9 +1177,10 @@ export default function OrderDetailsPage() {
                                                                 color: "#fff",
                                                                 border: "1.2px solid #2e415f",
                                                                 borderRadius: 8,
-                                                                padding: "7px 12px",
+                                                                padding: "9px 12px",
                                                                 fontSize: 16,
-                                                                width: 95,
+                                                                width: isMobile ? "100%" : 95,
+                                                                boxSizing: "border-box",
                                                             }}
                                                             min={0}
                                                             disabled={sending}
@@ -1148,9 +1193,10 @@ export default function OrderDetailsPage() {
                                                                 color: "#fff",
                                                                 border: "1.2px solid #2e415f",
                                                                 borderRadius: 8,
-                                                                padding: "7px 10px",
+                                                                padding: "9px 10px",
                                                                 fontSize: 16,
-                                                                width: 96,
+                                                                width: isMobile ? "100%" : 96,
+                                                                boxSizing: "border-box",
                                                             }}
                                                             disabled={sending}
                                                         >
@@ -1170,10 +1216,11 @@ export default function OrderDetailsPage() {
                                                                 color: "#fff",
                                                                 border: "1.2px solid #2e415f",
                                                                 borderRadius: 8,
-                                                                padding: "7px 12px",
+                                                                padding: "9px 12px",
                                                                 fontSize: 16,
                                                                 flex: 1,
                                                                 minWidth: isMobile ? "100%" : 180,
+                                                                boxSizing: "border-box",
                                                             }}
                                                             disabled={sending}
                                                         />
@@ -1183,13 +1230,13 @@ export default function OrderDetailsPage() {
                                                                 background: "#43c8ff",
                                                                 color: "#0b1a2f",
                                                                 border: "none",
-                                                                borderRadius: 9,
-                                                                padding: "8px 18px",
-                                                                fontWeight: 700,
+                                                                borderRadius: 10,
+                                                                padding: isMobile ? "10px 14px" : "8px 18px",
+                                                                fontWeight: 800,
                                                                 fontSize: 16,
                                                                 cursor: "pointer",
-                                                                minWidth: 120,
-                                                                maxWidth: 170,
+                                                                minWidth: isMobile ? "100%" : 120,
+                                                                maxWidth: isMobile ? "100%" : 170,
                                                                 boxSizing: "border-box",
                                                                 whiteSpace: "nowrap",
                                                             }}
