@@ -1105,8 +1105,10 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
         }
     }, [API, authFetchWithRefresh, peerUser?.id, user?.id, showToast]);
 
-    const translateInput = useCallback(async (e) => {
-        if (!input || translating || inputLocked) return;
+            const translateInput = useCallback(async (e) => {
+        // Проверяем только наличие текста и флаг translating.
+        // Блокировка ввода уже обеспечивается disabled={inputLocked} на кнопке.
+        if (!input || translating) return;
         const target = (lang || "en").split("-")[0];
         const payload = input.trim();
         if (!payload) return;
@@ -1131,10 +1133,10 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
         } catch (err) {
             console.error("translate error", err);
             showToast(e, t("chat.translateError", "Не удалось перевести сообщение"), "warn");
-        } finally {
+         } finally {
             setTranslating(false);
         }
-    }, [input, lang, translating, inputLocked, showToast, t]);
+    }, [input, lang, translating, showToast, t]);
 
     // Быстрый прыжок в самый низ перед первой отрисовкой, без "прокрутки" длинного списка
     const initialJumpDoneRef = useRef(false);

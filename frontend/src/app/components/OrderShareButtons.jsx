@@ -78,7 +78,9 @@ export default function OrderShareButtons({ order, variant = "compact", buttonSt
                         el.focus();
                         el.select();
                         document.execCommand("copy");
-                        document.body.removeChild(el);
+                         if (el.parentNode === document.body) {
+                            document.body.removeChild(el);
+                        }
                     }
                     setCopied(true);
                     setTimeout(() => setCopied(false), 2000);

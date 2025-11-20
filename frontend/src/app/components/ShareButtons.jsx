@@ -77,7 +77,10 @@ export default function ShareButtons({ share, variant = "compact", buttonStyle, 
                         el.focus();
                         el.select();
                         document.execCommand("copy");
-                        document.body.removeChild(el);
+                         // Remove only if it's still attached to avoid "not a child" DOMException
+                        if (el.parentNode === document.body) {
+                            document.body.removeChild(el);
+                        }
                     }
                     setCopied(true);
                     setTimeout(() => setCopied(false), 2000);

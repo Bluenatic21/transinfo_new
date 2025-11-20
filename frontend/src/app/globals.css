@@ -201,6 +201,18 @@ html[data-theme="light"] {
   width: 100%;
 }
 
+.mobile-form input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent, #5fd8ff);
+  border-radius: 5px;
+}
+
+.mobile-form input[type="checkbox"]:focus-visible {
+  outline: 2px solid rgba(95, 216, 255, .45);
+  outline-offset: 2px;
+}
+
 @media (max-width: 900px) {
   .mobile-form {
     padding-left: 10px;
@@ -252,6 +264,44 @@ html[data-theme="light"] {
   .mobile-form .btn-cta {
     width: 100%;
   }
+}
+
+/* --- Checkbox tiles (ADR grid etc.) --- */
+.choice-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 10px 14px;
+}
+
+@media (max-width: 640px) {
+  .choice-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  }
+}
+
+.choice-tile {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 12px;
+  border-radius: 12px;
+  background: #1a243d;
+  border: 1.5px solid #2c3f62;
+  color: #c8d7ef;
+  box-shadow: 0 3px 16px rgba(12, 19, 35, .32);
+}
+
+.choice-tile input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent, #5fd8ff);
+  flex-shrink: 0;
+}
+
+.choice-tile .choice-label {
+  color: #c9def6;
+  border-bottom: 1px dotted #71bfff;
 }
 
 @media (max-width: 540px) {

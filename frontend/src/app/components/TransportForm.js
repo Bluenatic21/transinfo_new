@@ -1605,18 +1605,13 @@ export default function TransportForm({ onCreated, initialData, mode = "create",
                     </div>
                     {/* ВЫВОД СПИСКА ADR */}
                     {form.adr && (
-                        <div
-                            style={{
-                                display: "grid",
-                                gridTemplateColumns: "1fr 1fr 1fr",
-                                gap: "8px 16px",
-                                marginTop: 7,
-                                color: "#a5d6fa",
-                                fontSize: 15,
-                            }}
-                        >
+                        <div className="choice-grid" style={{ marginTop: 9, fontSize: 15 }}>
                             {ADR_CLASSES.map(({ value, label }) => (
-                                <label key={value} style={{ fontWeight: 400, position: "relative", cursor: "pointer" }}>
+                                <label
+                                    key={value}
+                                    className="choice-tile"
+                                    style={{ fontWeight: 500, cursor: "pointer" }}
+                                >
                                     <input
                                         type="checkbox"
                                         name="adr_classes"
@@ -1630,10 +1625,9 @@ export default function TransportForm({ onCreated, initialData, mode = "create",
                                                 return { ...f, adr_classes: Array.from(arr) };
                                             });
                                         }}
-                                        style={{ marginRight: 7 }}
                                     />
                                     <span
-                                        style={{ color: "#99bbdf", marginLeft: 4, borderBottom: "1px dotted #71bfff" }}
+                                        className="choice-label"
                                         tabIndex={0}
                                         onMouseEnter={e => {
                                             const tooltip = document.createElement("div");
@@ -1641,7 +1635,7 @@ export default function TransportForm({ onCreated, initialData, mode = "create",
                                             tooltip.innerText = t(`adr.info.${value}`, ADR_CLASS_FALLBACKS[value]);
                                             Object.assign(tooltip.style, {
                                                 position: "absolute",
-                                                left: 0, top: "120%",
+                                                left: 12, top: "110%",
                                                 background: "#233d5a",
                                                 color: "#fff",
                                                 padding: "10px 14px",

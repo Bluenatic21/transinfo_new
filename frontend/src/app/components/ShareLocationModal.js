@@ -179,7 +179,9 @@ export default function ShareLocationModal({
             ta.focus();
             ta.select();
             const ok = document.execCommand("copy");
-            document.body.removeChild(ta);
+            if (ta.parentNode === document.body) {
+                document.body.removeChild(ta);
+            }
             return ok;
         } catch {
             return false;
