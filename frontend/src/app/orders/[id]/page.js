@@ -570,12 +570,12 @@ export default function OrderDetailsPage() {
     const rateCash = order.rate_cash || "";
     const currency = order.rate_currency || order.currency || "₾";
     const rateToCard = order.rate_to_card ? t("common.yes", "Да") : "";
-    const prominentPrice = useMemo(() => {
+    const prominentPrice = (() => {
         const amount = rateWithVat || rateNoVat || rateCash || order?.price || "";
         const curr = currency || "";
         if (!amount) return "";
         return `${amount} ${curr}`.trim();
-    }, [currency, order?.price, rateCash, rateNoVat, rateWithVat]);
+    })();
     const comment = order.comment || "";
     const description = order.description || "";
     const phone = order.phone || "";

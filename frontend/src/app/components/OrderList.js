@@ -2019,18 +2019,19 @@ function OrderCard({
                             guard(() => router.push("/orders/" + order.id))(e);
                         }}
                         style={{
-                            background: "none",
-                            color: "#43c8ff",
-                            border: 0,
-                            cursor: "pointer",
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: 8,
+                            padding: "7px 14px",
+                            borderRadius: 999,
+                            border: "1px solid #213759",
+                            background: "#132642",
+                            color: "#e0f1ff",
+                            fontWeight: 600,
                             fontSize: 14,
-                            fontWeight: 700,
-                            padding: "0 10px",
-                            borderRadius: 7,
-                            borderBottom: "2px solid #43c8ff",
-                            minHeight: "22px",
-                            minWidth: "100px",
-                            boxShadow: "0 2px 8px #43c8ff11",
+                            cursor: "pointer",
+                            boxShadow: "none",
+                            transition: "opacity .15s ease, color .15s ease, border-color .15s ease, box-shadow .15s ease",
                         }}
                         title={expanded ? t("common.hideDetails", "Скрыть детали") : t("common.showDetails", "Показать детали")}
                         tabIndex={0}

@@ -2019,20 +2019,20 @@ function TransportCard({ transport, expanded, onToggle }) {
                                 router.push("/transport/" + transport.id);
                             }}
                             style={{
-                                marginLeft: 30,
-                                background: "none",
-                                color: "#43c8ff",
-                                border: 0,
+                                marginLeft: 16,
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: 8,
+                                padding: "7px 14px",
+                                borderRadius: 999,
+                                border: "1px solid #213759",
+                                background: "#132642",
+                                color: "#e0f1ff",
+                                fontWeight: 600,
+                                fontSize: 14,
                                 cursor: "pointer",
-                                fontSize: 15,
-                                fontWeight: 700,
-                                padding: "9px 14px",
-                                borderRadius: 7,
-                                borderBottom: "2.2px solid #43c8ff",
-                                lineHeight: "22px",
-                                minHeight: "22px",
-                                minWidth: "116px",
-                                boxShadow: "0 2px 8px #43c8ff17",
+                                boxShadow: "none",
+                                transition: "opacity .15s ease, color .15s ease, border-color .15s ease, box-shadow .15s ease",
                                 zIndex: 24,
                             }}
                             title={t("common.showDetails", "Показать детали")}
