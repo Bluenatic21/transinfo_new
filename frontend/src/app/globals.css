@@ -18,6 +18,24 @@
   box-shadow: none !important;
 }
 
+/* Базовый стиль для всех текстовых инпутов и textarea в orderform */
+#orderform input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="color"]):not([type="button"]):not([type="submit"]):not([type="reset"]),
+#orderform textarea {
+  background-color: #1e2746 !important;
+  color: #e3f2fd !important;
+  border: 1.5px solid #294c7a !important;
+  border-radius: 7px !important;
+  box-shadow: 0 1px 6px #1b334d22 !important;
+  outline: none !important;
+  transition: border .2s, box-shadow .22s;
+}
+
+#orderform input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="color"]):not([type="button"]):not([type="submit"]):not([type="reset"]):focus,
+#orderform textarea:focus {
+  border: 2px solid #5fd8ff !important;
+  box-shadow: 0 0 0 2px #4fd4fd33 !important;
+}
+
 /* Состояние disabled — чтобы тоже было читаемо */
 #orderform select:disabled,
 #orderform .ant-select-disabled .ant-select-selector,

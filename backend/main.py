@@ -2838,6 +2838,19 @@ async def notifications_ws(
                     data = await websocket.receive_text()
                     print(
                         f"[WS DEBUG] RECEIVED ON NOTIFICATIONS user_id={user_id}: {data}")
+                        
+                    # --- keep-alive: отвечаем на {"type":"ping"} так же, как и в
+                    # notifications.py, чтобы соединение не считалось «мертвым»
+                    try:
+                        parsed = json.loads(data)
+                        if isinstance(parsed, dict) and parsed.get("type") == "ping":
+                            try:
+                                await websocket.send_json({"type": "pong"})
+                            except Exception:
+                                pass
+                    except Exception:
+                        # Если это не JSON — просто игнорируем
+                        pass
                 except Exception as e:
                     print(
                         f"[WS DEBUG] notifications_ws receive_text exception: {e}")
