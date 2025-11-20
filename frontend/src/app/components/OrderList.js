@@ -1975,19 +1975,19 @@ function OrderCard({
                                 setShowBidPanel((v) => !v);
                             }}
                             style={{
-                                display: "flex",
+                                display: "inline-flex",
                                 alignItems: "center",
-                                gap: 6,
-                                background: "none",
-                                color: "#43c8ff",
-                                border: 0,
-                                cursor: "pointer",
+                                gap: 8,
+                                padding: "7px 14px",
+                                borderRadius: 999,
+                                border: "1px solid #213759",
+                                background: "#132642",
+                                color: "#e0f1ff",
+                                fontWeight: 600,
                                 fontSize: 14,
-                                fontWeight: 700,
-                                padding: "0 9px",
-                                borderRadius: 7,
-                                borderBottom: "2px solid #43c8ff",
-                                minHeight: "22px",
+                                cursor: "pointer",
+                                boxShadow: "none",
+                                transition: "opacity .15s ease, color .15s ease, border-color .15s ease, box-shadow .15s ease",
                             }}
                             title={t("bids.title", "Ставки")}
                             tabIndex={0}

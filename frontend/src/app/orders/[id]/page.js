@@ -570,6 +570,12 @@ export default function OrderDetailsPage() {
     const rateCash = order.rate_cash || "";
     const currency = order.rate_currency || order.currency || "₾";
     const rateToCard = order.rate_to_card ? t("common.yes", "Да") : "";
+    const prominentPrice = useMemo(() => {
+        const amount = rateWithVat || rateNoVat || rateCash || order?.price || "";
+        const curr = currency || "";
+        if (!amount) return "";
+        return `${amount} ${curr}`.trim();
+    }, [currency, order?.price, rateCash, rateNoVat, rateWithVat]);
     const comment = order.comment || "";
     const description = order.description || "";
     const phone = order.phone || "";
@@ -677,6 +683,35 @@ export default function OrderDetailsPage() {
             }}
         >
             <div style={sectionTitleStyle}>{icons.pay}{t("payment.title", "Оплата")}</div>
+            {prominentPrice && (
+                <div
+                    style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 10,
+                        background: "linear-gradient(135deg, #2b1f09 0%, #3a2a10 50%, #1e1405 100%)",
+                        border: "1px solid #f7c948",
+                        borderRadius: 12,
+                        padding: isMobile ? "8px 12px" : "10px 14px",
+                        boxShadow: "0 6px 22px #f7c94825",
+                        margin: "6px 0 12px",
+                    }}
+                >
+                    <span style={{ color: "#ffe8a3", fontWeight: 700, letterSpacing: 0.02 }}>
+                        {t("info.price", "Цена")}:
+                    </span>
+                    <span
+                        style={{
+                            color: "#ffd166",
+                            fontWeight: 900,
+                            fontSize: isMobile ? 20 : 22,
+                            letterSpacing: 0.03,
+                        }}
+                    >
+                        {prominentPrice}
+                    </span>
+                </div>
+            )}
             {rateType && (<div><b>{t("rate.type", "Тип ставки")}:</b> {localizeRateType(rateType)}</div>)}
             {rateWithVat && (<div><b>{t("rate.withVat", "С НДС")}:</b> {`${rateWithVat} ${currency || ""}`}</div>)}
             {rateNoVat && (<div><b>{t("rate.withoutVat", "Без НДС")}:</b> {`${rateNoVat} ${currency || ""}`}</div>)}
