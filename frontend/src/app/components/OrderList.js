@@ -152,6 +152,7 @@ export default function OrderList() {
     const authFetchWithRefresh = ctx.authFetchWithRefresh;
     const isManagerAccount = ["manager", "employee"].includes((user?.role || "").toLowerCase());
     const [orders, setOrders] = useState([]);
+    const ordersRef = useRef([]);
     const [placeLabels, setPlaceLabels] = useState(null); // { [id]: {label,country_iso2} }
     const [displayedOrders, setDisplayedOrders] = useState([]);
     const { t } = useLang?.() || { t: (k, f) => f || k };
@@ -192,6 +193,12 @@ export default function OrderList() {
     const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
     const [total, setTotal] = useState(0);
     const totalPages = Math.max(1, Math.ceil((total || 0) / pageSize));
+    const hasMoreMobile = useMemo(() => {
+        if (total) return orders.length < total;
+        if (!orders.length) return false;
+        const expected = page * pageSize;
+        return orders.length >= expected;
+    }, [orders.length, page, pageSize, total]);
     const [activeTab, setActiveTab] = useState("list");
     const [expandedId, setExpandedId] = useState(null);
     const [visibleIds, setVisibleIds] = useState(null);
@@ -249,6 +256,7 @@ export default function OrderList() {
     const pageVisibleRef = useRef(true);
     const nextAllowedAtRef = useRef(0);
     const REQUEST_MIN_GAP_MS = 2000;
+    const appendModeRef = useRef(false);
     // кеш валидаторов, чтобы получать 304 без тела
     const etagRef = useRef(null);
     const lastModifiedRef = useRef(null);
@@ -297,6 +305,8 @@ export default function OrderList() {
             return `${item.label}${cn ? `, ${cn}` : ""}`;
         } catch { return item.label; }
     }
+
+    const isMobile = useIsMobile();
 
     const fetchOrders = useCallback(async (opts = {}) => {
         if (!pageVisibleRef.current && !opts.force) return;
@@ -404,9 +414,27 @@ export default function OrderList() {
                 setTotal(Array.isArray(items) ? items.length : (Array.isArray(data) ? data.length : 0));
             }
             if (thisRequest === lastRequestId.current) {
-                setOrders(Array.isArray(items) ? items : []);
+                const incoming = Array.isArray(items) ? items : [];
+                const shouldAppend = Boolean(isMobile && appendModeRef.current && page > 1);
+                const merged = shouldAppend
+                    ? (() => {
+                        const prev = Array.isArray(ordersRef.current) ? ordersRef.current : [];
+                        const seen = new Set(prev.map((it) => it?.id ?? it?.uid));
+                        const withNew = [...prev];
+                        for (const it of incoming) {
+                            const key = it?.id ?? it?.uid;
+                            if (key != null && seen.has(key)) continue;
+                            if (key != null) seen.add(key);
+                            withNew.push(it);
+                        }
+                        return withNew;
+                    })()
+                    : incoming;
+
+                ordersRef.current = merged;
+                setOrders(merged);
                 setTimeout(() => {
-                    const arr = Array.isArray(items) ? items : [];
+                    const arr = Array.isArray(merged) ? merged : [];
                     const nextDisplayed = arr.filter(o => !isBlocked(o?.owner_id));
                     // обновляем только при реальном изменении списка
                     setDisplayedOrders(prev => {
@@ -443,8 +471,9 @@ export default function OrderList() {
             // гасим лоадер и чистим abort только если это последний активный запрос
             if (thisRequest === lastRequestId.current) setLoading(false);
             if (abortRef.current === controller) abortRef.current = null;
+            appendModeRef.current = false;
         }
-    }, [filters, page, pageSize]);
+    }, [filters, isMobile, page, pageSize]);
 
     async function loadInternalComments(orderId) {
         if (!isManagerAccount) return;
@@ -475,6 +504,17 @@ export default function OrderList() {
         fetchOrders();
     }, [fetchOrders]); // эффект будет вызываться только при смене filters/page/pageSize
 
+    useEffect(() => {
+        ordersRef.current = orders;
+    }, [orders]);
+
+    const loadMoreMobile = useCallback(() => {
+        if (loading || !hasMoreMobile || appendModeRef.current) return;
+        appendModeRef.current = true;
+        setPage((p) => p + 1);
+    }, [hasMoreMobile, loading]);
+
+
     // корректно отменяем фетч на размонтировании
     useEffect(() => () => {
         try { abortRef.current?.abort("component-unmount"); } catch { }
@@ -497,8 +537,6 @@ export default function OrderList() {
         }
     }, [isManagerAccount, displayedOrders, orders]);
 
-    const isMobile = useIsMobile();
-
     if (isMobile) {
         return (
             <OrderListMobile
@@ -511,6 +549,9 @@ export default function OrderList() {
                 onFilteredIdsChange={setVisibleIdsStable}
                 setFiltersFromMap={setFilters}
                 estimatedCount={loading ? undefined : (Array.isArray(visibleIds) ? filteredOrders.length : (total || filteredOrders.length))}
+                onLoadMore={loadMoreMobile}
+                loading={loading}
+                hasMore={hasMoreMobile}
             />
         );
     }

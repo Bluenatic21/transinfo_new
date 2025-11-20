@@ -19,6 +19,9 @@ export default function OrderListMobile({
     onFilteredIdsChange,
     setFiltersFromMap,
     estimatedCount, // initial from parent (текущее применённое)
+    onLoadMore,
+    loading,
+    hasMore,
 }) {
     const { t } = useLang();
     // синхронизируем «карта → список»: прокрутка к карточке после клика по пину
@@ -88,6 +91,22 @@ export default function OrderListMobile({
     useEffect(() => {
         if (Number.isFinite(estimatedCount)) setPreviewCount(estimatedCount);
     }, [estimatedCount]);
+
+    const loadMoreRef = useRef(null);
+    useEffect(() => {
+        const node = loadMoreRef.current;
+        if (!node || typeof IntersectionObserver === "undefined") return;
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                if (entry?.isIntersecting && hasMore && !loading) {
+                    try { onLoadMore?.(); } catch { }
+                }
+            },
+            { rootMargin: "280px 0px 320px 0px", threshold: 0 },
+        );
+        observer.observe(node);
+        return () => observer.disconnect();
+    }, [hasMore, loading, onLoadMore]);
 
     // NEW: стабильное превью количества (без «миганий»)
     const handlePreview = async (norm) => {
@@ -180,6 +199,25 @@ export default function OrderListMobile({
                         );
                     })
                 )}
+            </div>
+
+            <div
+                ref={loadMoreRef}
+                style={{
+                    minHeight: 48,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "#8fb3d9",
+                    fontWeight: 700,
+                    letterSpacing: 0.2,
+                }}
+            >
+                {loading
+                    ? t("common.loading", "Загружаем...")
+                    : hasMore
+                        ? t("orders.more", "Прокрутите ниже, чтобы загрузить ещё")
+                        : t("orders.noMore", "Больше заявок нет")}
             </div>
 
             {/* Фильтр именно для заявок */}

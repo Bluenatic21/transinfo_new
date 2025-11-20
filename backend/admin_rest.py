@@ -2,6 +2,7 @@
 from pydantic import BaseModel
 from datetime import datetime, timedelta
 from typing import Optional, List, Union
+import secrets
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
@@ -295,7 +296,7 @@ def patch_user(
     user_id: int,
     body: UserPatch,
     db: Session = Depends(get_db),
-    admin: UserModel = Depends(admin_required),
+    admin: UserModel = Depends(admin_required)
 ):
     obj = db.query(UserModel).get(user_id)
     if not obj:
@@ -339,6 +340,64 @@ def patch_user(
         db.rollback()
 
     return obj
+
+
+@router.delete("/users/{user_id}")
+def delete_user(
+    user_id: int,
+    db: Session = Depends(get_db),
+    admin: UserModel = Depends(admin_required),
+):
+    obj = db.query(UserModel).get(user_id)
+    if not obj:
+        raise HTTPException(404, "User not found")
+    if admin.id == obj.id:
+        raise HTTPException(400, "error.admin.cannotDeleteSelf")
+
+    before = {
+        "email": obj.email,
+        "role": getattr(obj.role, "value", obj.role),
+        "is_active": obj.is_active,
+    }
+
+    # Обезличиваем данные, чтобы освободить e-mail и предотвратить логин
+    timestamp = int(datetime.utcnow().timestamp())
+    obj.email = f"deleted-{obj.id}-{timestamp}@deleted.local"
+    obj.hashed_password = f"deleted-{secrets.token_hex(16)}"
+    obj.is_active = False
+    obj.manager_id = None
+    obj.session_uuid = None
+    obj.session_updated_at = datetime.utcnow()
+
+    try:
+        from models import UserSession
+
+        db.query(UserSession).filter(UserSession.user_id == obj.id).delete()
+    except Exception:
+        pass
+
+    db.add(obj)
+    db.commit()
+    db.refresh(obj)
+
+    try:
+        from models import AdminAction
+
+        db.add(
+            AdminAction(
+                admin_user_id=admin.id,
+                action="USER_DELETE",
+                target_type="user",
+                target_id=obj.id,
+                payload_before=str(before),
+                payload_after=str({"email": obj.email, "is_active": obj.is_active}),
+            )
+        )
+        db.commit()
+    except Exception:
+        db.rollback()
+
+    return {"ok": True}
 
 # ----- VERIFY USER
 
