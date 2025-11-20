@@ -138,6 +138,24 @@ export default function RegisterForm({ onSuccess }) {
     const [msg, setMsg] = useState(""); // общие/непривязанные ошибки
     const [agreeTerms, setAgreeTerms] = useState(false);
 
+    const registerErrorFallbacks = {
+        "error.register.roleRequired": "Выберите роль для регистрации",
+        "error.register.organizationRequired": "Укажите организацию",
+        "error.register.contactRequired": "Укажите контактное лицо",
+        "error.register.countryRequired": "Укажите страну",
+        "error.register.cityRequired": "Укажите город",
+        "error.register.phoneRequired": "Укажите телефон",
+        "error.register.emailRequired": "Укажите email",
+        "error.register.emailInvalid": "Email указан некорректно",
+        "error.register.personTypeRequired": "Выберите юридический статус (ЮЛ/ИП/ФЛ)",
+        "error.register.termsRequired": "Необходимо согласие с пользовательским соглашением",
+        "error.register.passwordRequired": "Введите пароль",
+        "error.register.passwordConfirmRequired": "Подтвердите пароль",
+        "error.register.generic": "Ошибка регистрации",
+        "register.passwordMismatch": "Пароли не совпадают",
+    };
+    const translateError = (key, fallback) => t(key, fallback ?? registerErrorFallbacks[key] ?? key);
+
     // Ошибки по полям
     const createEmptyErrors = () => ({
         role: [],
@@ -221,6 +239,41 @@ export default function RegisterForm({ onSuccess }) {
         }
     }
 
+    const fieldErrorKeys = {
+        email: "error.register.emailRequired",
+        organization: "error.register.organizationRequired",
+        contact_person: "error.register.contactRequired",
+        country: "error.register.countryRequired",
+        city: "error.register.cityRequired",
+        phone: "error.register.phoneRequired",
+        person_type: "error.register.personTypeRequired",
+        accepted_terms: "error.register.termsRequired",
+        role: "error.register.roleRequired",
+        password: "error.register.passwordRequired",
+        password2: "error.register.passwordConfirmRequired",
+    };
+
+    function mapServerErrorMessage(rawMsg, loc, msgRu) {
+        const fieldKey = fieldErrorKeys[loc];
+        const fromField = fieldKey ? translateError(fieldKey) : null;
+
+        if (!rawMsg && fromField) return fromField;
+
+        if (typeof rawMsg === "string" && rawMsg.startsWith("error.")) {
+            return translateError(rawMsg, msgRu);
+        }
+
+        if (typeof rawMsg === "string") {
+            const normalized = rawMsg.toLowerCase();
+            if (normalized.includes("field required")) return fromField || translateError("error.register.generic");
+            if (normalized.includes("valid email")) return translateError("error.register.emailInvalid");
+            if (normalized.includes("at least 1 character")) return fromField || translateError("error.register.generic");
+            return translateError("error.register.generic", rawMsg);
+        }
+
+        return translateError("error.register.generic");
+    }
+
     // Приземление ошибок сервера по полям
     function mapServerErrors(detailArray) {
         const next = createEmptyErrors();
@@ -240,7 +293,8 @@ export default function RegisterForm({ onSuccess }) {
         for (const e of detailArray) {
             const loc = Array.isArray(e.loc) ? e.loc[e.loc.length - 1] : null;
             const key = known[loc] || "form";
-            next[key].push(e.msg || (typeof e === "string" ? e : JSON.stringify(e)));
+            const message = mapServerErrorMessage(e?.msg || (typeof e === "string" ? e : ""), loc, e?.msg_ru);
+            next[key].push(message);
         }
         setErrors(next);
         scrollToFirstError(next);
@@ -288,24 +342,24 @@ export default function RegisterForm({ onSuccess }) {
         }
     }
 
-    // Клиентская валидация -> раскладка по полям
+    // Клиентская валидация -> раскладка по полям␊
     function validateFormAndSetErrors() {
         const next = createEmptyErrors();
         const empty = (v) => !v || (typeof v === "string" && !v.trim());
-        if (!role) next.role.push("Выберите роль.");
-        if (empty(form.organization)) next.organization.push("Укажите название организации.");
-        if (empty(form.contact_person)) next.contact_person.push("Укажите контактное лицо.");
-        if (empty(form.country)) next.country.push("Укажите страну.");
-        if (empty(form.city)) next.city.push("Укажите город.");
-        if (empty(form.phone)) next.phone.push("Укажите телефон.");
-        if (empty(form.email)) next.email.push("Укажите email.");
-        if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) next.email.push("Email указан некорректно.");
-        if (empty(form.password)) next.password.push("Введите пароль.");
-        if (empty(password2)) next.password2.push("Подтвердите пароль.");
-        if (form.password && password2 && form.password !== password2) next.password2.push("Пароли не совпадают.");
+        if (!role) next.role.push(translateError("error.register.roleRequired"));
+        if (empty(form.organization)) next.organization.push(translateError("error.register.organizationRequired"));
+        if (empty(form.contact_person)) next.contact_person.push(translateError("error.register.contactRequired"));
+        if (empty(form.country)) next.country.push(translateError("error.register.countryRequired"));
+        if (empty(form.city)) next.city.push(translateError("error.register.cityRequired"));
+        if (empty(form.phone)) next.phone.push(translateError("error.register.phoneRequired"));
+        if (empty(form.email)) next.email.push(translateError("error.register.emailRequired"));
+        if (form.email && !/^\S+@\S+\.\S+$/.test(form.email)) next.email.push(translateError("error.register.emailInvalid"));
+        if (empty(form.password)) next.password.push(translateError("error.register.passwordRequired"));
+        if (empty(password2)) next.password2.push(translateError("error.register.passwordConfirmRequired"));
+        if (form.password && password2 && form.password !== password2) next.password2.push(t("register.passwordMismatch", registerErrorFallbacks["register.passwordMismatch"]));
         if ((role === "TRANSPORT" || role === "OWNER") && empty(personType))
-            next.person_type.push("Выберите юридический статус (ЮЛ/ИП/ФЛ).");
-        if (!agreeTerms) next.accepted_terms.push("Необходимо согласие с пользовательским соглашением.");
+            next.person_type.push(translateError("error.register.personTypeRequired"));
+        if (!agreeTerms) next.accepted_terms.push(translateError("error.register.termsRequired"));
 
         setErrors(next);
         const hasErrors = Object.values(next).some((arr) => Array.isArray(arr) && arr.length > 0);
@@ -496,7 +550,7 @@ export default function RegisterForm({ onSuccess }) {
                 body: JSON.stringify(payload),
             });
         } catch (_) {
-            setMsg("Сеть недоступна. Проверьте подключение.");
+            setMsg(t("error.network", "Сеть недоступна. Проверьте подключение."));
             return;
         }
 
@@ -546,10 +600,10 @@ export default function RegisterForm({ onSuccess }) {
                         removeTokenEverywhere();
                     }
                 } else {
-                    setMsg("Регистрация прошла, но вход не выполнен: " + (loginData?.detail || ""));
+                    setMsg(t("error.register.generic", "Регистрация прошла, но вход не выполнен: ") + (loginData?.detail || ""));
                 }
             } catch (_) {
-                setMsg("Регистрация прошла, но вход не выполнен (ошибка сети).");
+                setMsg(t("error.register.generic", "Регистрация прошла, но вход не выполнен (ошибка сети)."));
             }
 
             setShowSuccess(true);
@@ -559,14 +613,14 @@ export default function RegisterForm({ onSuccess }) {
             }, 1800);
             return;
         } else {
-            // Ошибки от FastAPI
+            // Ошибки от FastAPI␊
             if (resp && Array.isArray(resp.detail)) {
                 mapServerErrors(resp.detail);
                 setMsg("");
             } else if (resp && typeof resp.detail === "string") {
-                setMsg(resp.detail || "Ошибка регистрации");
+                setMsg(mapServerErrorMessage(resp.detail));
             } else {
-                setMsg("Ошибка регистрации");
+                setMsg(translateError("error.register.generic"));
             }
         }
     }
