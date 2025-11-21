@@ -1308,13 +1308,16 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
         return [chatId, base, target].filter(Boolean).join("::");
     }, [chatId]);
 
-    const translateText = useCallback(async (payload, target) => {
+        const translateText = useCallback(async (payload, target) => {
+        const normalizedTarget = (target || "en").toLowerCase();
         const resp = await fetch(
-            `https://api.mymemory.translated.net/get?q=${encodeURIComponent(payload)}&langpair=auto|${encodeURIComponent(target)}`
+            `https://api.mymemory.translated.net/get?q=${encodeURIComponent(payload)}&langpair=auto|${encodeURIComponent(normalizedTarget)}`
         );
         if (!resp.ok) throw new Error("translate_failed");
         const data = await resp.json();
-        return data?.responseData?.translatedText || null;
+        if (data?.responseStatus !== 200) return null;
+        const translated = data?.responseData?.translatedText;
+        return translated && String(translated).trim() ? translated : null;
     }, []);
 
     useEffect(() => {
@@ -2108,6 +2111,7 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
         const displayContent = msg.content;
 
 
+
         // ---- CALL (карточка звонка) ----
         if (msg.message_type === "call") {
             // content прилетает JSON-ом: {status, direction, duration?}
@@ -2469,7 +2473,7 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                         minHeight: 40,
                         wordBreak: "break-word"
                     }}
-                >  {searchMsg ? highlightText(displayContent, searchMsg) : displayContent}
+               {searchMsg ? highlightText(displayContent, searchMsg) : displayContent}
                     {hasTranslation && (
                         <div style={{
                             marginTop: 8,
@@ -2479,7 +2483,7 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                             color: "#d7e8ff",
                             fontSize: 13.5,
                             lineHeight: 1.35,
-                        }}>
+                        }}>␊
                             <div style={{ fontWeight: 700, marginBottom: 4, opacity: 0.9 }}>
                                 {t("chat.autoTranslatedLabel", "Переведено автоматически")}
                             </div>
@@ -2488,7 +2492,7 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                             </div>
                         </div>
                     )}
-
+                    
                     {/* --- РЕАКЦИИ НА БАЛЛОНЕ --- */}
                     {(msg.reactions && msg.reactions.length > 0) && (
                         <div
