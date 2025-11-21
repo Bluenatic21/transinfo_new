@@ -132,19 +132,18 @@ html:lang(ka) p {
 
 /* Пока React/Next не «гидратировался», возможна вспышка белого. Страхуемся. */
 html:not(.dark) {
-  background-color: #0b0f19 !important;
+  background-color: var(--bg-body, #0b0f19) !important;
 }
 
-/* На всякий случай гасим возможный data-theme="light" от старого кода */
+/* Унифицированная поддержка светлой темы */
 html[data-theme="light"] {
-  /* снимаем влияние светлой темы */
-  color-scheme: dark !important;
+  color-scheme: light;
 }
 
-/* Даже если кто-то поставит data-theme="light", оставляем тёмный фон */
 [data-theme="light"] body {
-  background: var(--background) !important;
-  background-image: none !important;
+  background: var(--bg-body);
+  background-image: none;
+  color: var(--text-primary);
 }
 
 /* Portal root НЕ должен сам перекрывать страницу.
@@ -2404,6 +2403,10 @@ body {
     text-align: center;
     margin-bottom: 30px;
     font-weight: 400;
+  }
+
+  [data-theme="light"] .mobile-hero-desc {
+    color: var(--text-secondary);
   }
 
   .mobile-role-btns {
