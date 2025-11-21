@@ -9,7 +9,8 @@ export default async function handler(req, res) {
         process.env.NEXT_PUBLIC_API_URL?.trim?.() ||
         process.env.NEXT_PUBLIC_API_BASE_URL?.trim?.() ||
         process.env.NEXT_PUBLIC_DEV_API_URL?.trim?.() ||
-        "http://127.0.0.1:8004";
+        // По умолчанию шлём запросы туда же, куда смотрит клиентский код
+        API_BASE;
 
     const url = new URL(`${upstream.replace(/\/$/, "")}/transports`);
 

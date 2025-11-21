@@ -1043,7 +1043,7 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
         didInitialScrollRef.current = false;
         try { initialJumpDoneRef.current = false; } catch { }
     }, [chatId]);
-     const textareaRef = useRef(null);
+    const textareaRef = useRef(null);
     const [messagesLimit, setMessagesLimit] = useState(30);
 
     useEffect(() => {
@@ -1151,7 +1151,7 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
         }
     }, [API, authFetchWithRefresh, peerUser?.id, user?.id, showToast]);
 
-           
+
 
     // Быстрый прыжок в самый низ перед первой отрисовкой, без "прокрутки" длинного списка
     const initialJumpDoneRef = useRef(false);
@@ -1290,7 +1290,7 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
     const matchRefs = useRef([]);
     // Сброс refs при каждом новом поиске или изменении списка найденных
     useEffect(() => { matchRefs.current = []; }, [filteredMessages]);
- // Показываем весь уже загруженный список.
+    // Показываем весь уже загруженный список.
     // Лимитированная выдача контролируется бэкендом и ленивой подгрузкой "вверх".
     const displayedMessages = filteredMessages;
 
@@ -1308,10 +1308,15 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
         return [chatId, base, target].filter(Boolean).join("::");
     }, [chatId]);
 
-        const translateText = useCallback(async (payload, target) => {
+    const translateText = useCallback(async (payload, target) => {
         const normalizedTarget = (target || "en").toLowerCase();
+        const text = typeof payload === "string"
+            ? payload
+            : (payload == null ? "" : String(payload));
+        const safePayload = text.trim();
+        if (!safePayload) return null;
         const resp = await fetch(
-            `https://api.mymemory.translated.net/get?q=${encodeURIComponent(payload)}&langpair=auto|${encodeURIComponent(normalizedTarget)}`
+            `https://api.mymemory.translated.net/get?q=${encodeURIComponent(safePayload)}&langpair=auto|${encodeURIComponent(normalizedTarget)}`
         );
         if (!resp.ok) throw new Error("translate_failed");
         const data = await resp.json();
@@ -1319,7 +1324,6 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
         const translated = data?.responseData?.translatedText;
         return translated && String(translated).trim() ? translated : null;
     }, []);
-
     useEffect(() => {
         if (!autoTranslate) return;
         const target = targetLang;
@@ -2102,13 +2106,15 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
     }
 
     function renderMessage(msg, idx, arr) {
-       const isMine = user?.id === msg.sender_id;
+        const isMine = user?.id === msg.sender_id;
         const __baseKey = buildMsgKeyBase(msg);
         const mkey = makeUniqueKey(__baseKey, idx);
         const translationKey = autoTranslate ? buildTranslationKey(msg, targetLang) : null;
         const translatedText = translationKey ? translationCache[translationKey] : null;
         const hasTranslation = !!translatedText;
-        const displayContent = msg.content;
+        const displayContent = typeof msg.content === "string"
+            ? msg.content
+            : (msg.content == null ? "" : String(msg.content));
 
 
 
@@ -2473,7 +2479,8 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                         minHeight: 40,
                         wordBreak: "break-word"
                     }}
-               {searchMsg ? highlightText(displayContent, searchMsg) : displayContent}
+                >
+                    {searchMsg ? highlightText(displayContent, searchMsg) : displayContent}
                     {hasTranslation && (
                         <div style={{
                             marginTop: 8,
@@ -2483,7 +2490,7 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                             color: "#d7e8ff",
                             fontSize: 13.5,
                             lineHeight: 1.35,
-                        }}>␊
+                        }}>
                             <div style={{ fontWeight: 700, marginBottom: 4, opacity: 0.9 }}>
                                 {t("chat.autoTranslatedLabel", "Переведено автоматически")}
                             </div>
@@ -2492,7 +2499,7 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                             </div>
                         </div>
                     )}
-                    
+
                     {/* --- РЕАКЦИИ НА БАЛЛОНЕ --- */}
                     {(msg.reactions && msg.reactions.length > 0) && (
                         <div
@@ -2550,82 +2557,84 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                 </div>
 
                 {/* --- Кнопка добавления реакции сбоку баллона, появляется при наведении --- */}
-                {(hoveredMsgId === msg.id) && (
-                    <div
-                        className="msg-reaction-btn"
-                        style={{
-                            position: "relative",
-                            display: "flex",
-                            alignItems: "center",
-                            height: "100%",
-                            marginLeft: isMine ? 0 : 8,
-                            marginRight: isMine ? 8 : 0,
-                            minWidth: 40, // Увеличили невидимую область вокруг иконки!
-                            minHeight: 44,
-                            padding: "0 6px",
-                            zIndex: 12,
-                        }}
-                        onMouseEnter={() => setHoveredMsgId(msg.id)}
-                        onMouseLeave={e => {
-                            if (!e.relatedTarget || !e.currentTarget.contains(e.relatedTarget)) {
-                                setHoveredMsgId(null);
-                            }
-                        }}
-                    >
-                        <button
+                {
+                    (hoveredMsgId === msg.id) && (
+                        <div
+                            className="msg-reaction-btn"
                             style={{
-                                background: "none",
-                                border: "none",
-                                cursor: "pointer",
-                                opacity: 0.97,
-                                padding: "7px 6px",     // Сделали больше hit-area, не только сама иконка!
-                                margin: 0,
-                                pointerEvents: "auto",
+                                position: "relative",
                                 display: "flex",
                                 alignItems: "center",
-                                justifyContent: "center",
-                                borderRadius: 16, // Чтобы был мягче
+                                height: "100%",
+                                marginLeft: isMine ? 0 : 8,
+                                marginRight: isMine ? 8 : 0,
+                                minWidth: 40, // Увеличили невидимую область вокруг иконки!
+                                minHeight: 44,
+                                padding: "0 6px",
+                                zIndex: 12,
                             }}
-                            onClick={e => { e.stopPropagation(); setOpenReactionFor(msg.id); }}
-                            title={t("chat.addReaction", "Поставить реакцию")}
-                            tabIndex={-1}
-                            type="button"
+                            onMouseEnter={() => setHoveredMsgId(msg.id)}
+                            onMouseLeave={e => {
+                                if (!e.relatedTarget || !e.currentTarget.contains(e.relatedTarget)) {
+                                    setHoveredMsgId(null);
+                                }
+                            }}
                         >
-                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffb140" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M22 11v1a10 10 0 1 1-9-10" />
-                                <path d="M8 14s1.5 2 4 2 4-2 4-2" />
-                                <line x1="9" x2="9.01" y1="9" y2="9" />
-                                <line x1="15" x2="15.01" y1="9" y2="9" />
-                                <path d="M16 5h6" />
-                                <path d="M19 2v6" />
-                            </svg>
-                        </button>
-                        {openReactionFor === msg.id && (
-                            <div
-                                className="emoji-picker-popup"
+                            <button
                                 style={{
-                                    position: "absolute",
-                                    top: "50%",
-                                    left: !isMine ? "30px" : "auto",
-                                    right: isMine ? "30px" : "auto",
-                                    transform: "translateY(-50%)",
-                                    zIndex: 150
+                                    background: "none",
+                                    border: "none",
+                                    cursor: "pointer",
+                                    opacity: 0.97,
+                                    padding: "7px 6px",     // Сделали больше hit-area, не только сама иконка!
+                                    margin: 0,
+                                    pointerEvents: "auto",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    borderRadius: 16, // Чтобы был мягче
                                 }}
-                                onClick={(e) => e.stopPropagation()}
+                                onClick={e => { e.stopPropagation(); setOpenReactionFor(msg.id); }}
+                                title={t("chat.addReaction", "Поставить реакцию")}
+                                tabIndex={-1}
+                                type="button"
                             >
-                                <EmojiPicker
-                                    onEmojiClick={(emojiObject) => {
-                                        const ch = emojiObject?.emoji || emojiObject?.native || emojiObject?.unicode || "";
-                                        if (ch) handleReact(ch);
-                                        setOpenReactionFor(null);
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffb140" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M22 11v1a10 10 0 1 1-9-10" />
+                                    <path d="M8 14s1.5 2 4 2 4-2 4-2" />
+                                    <line x1="9" x2="9.01" y1="9" y2="9" />
+                                    <line x1="15" x2="15.01" y1="9" y2="9" />
+                                    <path d="M16 5h6" />
+                                    <path d="M19 2v6" />
+                                </svg>
+                            </button>
+                            {openReactionFor === msg.id && (
+                                <div
+                                    className="emoji-picker-popup"
+                                    style={{
+                                        position: "absolute",
+                                        top: "50%",
+                                        left: !isMine ? "30px" : "auto",
+                                        right: isMine ? "30px" : "auto",
+                                        transform: "translateY(-50%)",
+                                        zIndex: 150
                                     }}
-                                    skinTonePickerProps={{ skinTone: false }}
-                                />
-                            </div>
-                        )}
-                    </div>
-                )}
-            </div>
+                                    onClick={(e) => e.stopPropagation()}
+                                >
+                                    <EmojiPicker
+                                        onEmojiClick={(emojiObject) => {
+                                            const ch = emojiObject?.emoji || emojiObject?.native || emojiObject?.unicode || "";
+                                            if (ch) handleReact(ch);
+                                            setOpenReactionFor(null);
+                                        }}
+                                        skinTonePickerProps={{ skinTone: false }}
+                                    />
+                                </div>
+                            )}
+                        </div>
+                    )
+                }
+            </div >
         );
     }
 
@@ -2714,7 +2723,7 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                     </button>
                 )}
                 {/* LIVE баннер очереди (эфемерный), только для клиента */}
-                   {((chat?.support || chatMeta?.support) &&
+                {((chat?.support || chatMeta?.support) &&
                     String((user?.role || "")).toUpperCase() !== "SUPPORT" &&
                     queueInfo) && (
                         <div style={{
@@ -2732,7 +2741,7 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                                 t("support.queueBody", "ваша позиция #{position}, ориентировочно {eta} мин.")
                                     .replace("#{position}", String((queueInfo.position ?? 0) + 1))
                                     .replace("{eta}", String(queueInfo.eta_minutes ?? "—"))
-                              }
+                            }
                         </div>
                     )}
 
@@ -2942,7 +2951,7 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                         </button>
                     )}
 
-                     <button
+                    <button
                         type="button"
                         onClick={() => setAutoTranslate(v => !v)}
                         className={`action-btn ${autoTranslate ? "action-btn--accent" : ""} ${translatingMessages ? "opacity-80" : ""}`}

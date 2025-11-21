@@ -43,11 +43,13 @@ def _ensure_schema():
     with engine.begin() as conn:
         for stmt in filter(None, [s.strip() for s in ddl.split(";")]):
             conn.execute(sql_text(stmt))
-    try:
-        _ensure_schema()
-    except Exception as e:
-        # В лог напишем, но приложение не уроним
-        print("[PASSWORD-RESET] Ошибка инициализации схемы password_resets:", e)
+    
+# Инициализируем схему при загрузке модуля, но не падаем при ошибке
+try:
+    _ensure_schema()
+except Exception as e:
+    # В лог напишем, но приложение не уроним
+    print("[PASSWORD-RESET] Ошибка инициализации схемы password_resets:", e)
 
 # ===== Локализации писем =====
 DEFAULT_LANG = "ka"
