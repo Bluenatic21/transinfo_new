@@ -675,23 +675,35 @@ export default function Header({ setShowRegisterModal }) {
         );
     }
 
+    const headerPadding = isCompact
+        ? { top: 18, right: 22, bottom: 12, left: 18 }
+        : { top: 20, right: 30, bottom: 12, left: 24 };
+
     return (
         <div
             ref={headerRef}
-            className="header-root"
             style={{
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "stretch",
                 gap: isCompact ? 8 : 10,
-                ["--header-h"]: `${headerHeight}px`,
-                background: "rgb(var(--header-bg))",
-                padding: isCompact ? "18px 22px 12px 18px" : "20px 30px 12px 24px",
-                boxShadow: "var(--header-shadow)",
-                zIndex: 100
+                ["--header-h"]: `${headerHeight}px`
             }}
         >
-            <header className="header-top" style={{ display: "flex", alignItems: "center", gap: isCompact ? 14 : 18 }}>
+            <header
+                className="header-root header-top"
+                style={{
+                    display: "flex",
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: isCompact ? 14 : 18,
+                    background: "rgb(var(--header-bg))",
+                    padding: `${headerPadding.top}px ${headerPadding.right}px ${headerPadding.bottom}px ${headerPadding.left}px`,
+                    boxShadow: "var(--header-shadow)",
+                    borderBottom: "1px solid var(--border-strong)",
+                    zIndex: 100
+                }}
+            >
                 <Link
                     href="/"
                     className="header-logo"
@@ -1049,7 +1061,13 @@ export default function Header({ setShowRegisterModal }) {
 
             <div
                 className="header-nav-row"
-                style={{ display: "flex", alignItems: "center", gap: isCompact ? 10 : 14, width: "100%" }}
+                style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: isCompact ? 10 : 14,
+                    width: "100%",
+                    padding: `0 ${headerPadding.right}px 0 ${headerPadding.left}px`
+                }}
             >
                 <div
                     className="header-nav-shell"

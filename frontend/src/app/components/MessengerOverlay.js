@@ -165,10 +165,14 @@ export default function MessengerOverlay() {
             <div
                 id="chat-root"
                 className="relative w-full max-w-5xl h-[100svh] rounded-2xl shadow-2xl overflow-hidden flex"
-                style={{ background: "#1c2330" }}
+                style={{
+                    background: "var(--bg-card)",
+                    border: "1px solid var(--border-subtle)",
+                    color: "var(--text-primary)",
+                }}
                 onClick={e => e.stopPropagation()}
             >
-               <button
+                <button
                     // Малая кнопка закрытия внутри хэдера — на десктопе «сливаем» с фоном,␊
                     // чтобы она не была видна (есть большой белый X справа).␊
                     className="␊
@@ -179,7 +183,7 @@ export default function MessengerOverlay() {
                     onClick={handleCloseMessenger}
                     title={t("bottomSheet.close", "Закрыть чат")}
                 >
-                    
+
                 </button>
                 <div className="flex h-full w-full">
                     <div className="w-[340px] border-r border-[#e7eaf1] dark:border-[#232c39] h-full overflow-y-auto">

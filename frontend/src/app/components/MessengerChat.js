@@ -259,8 +259,8 @@ function ChatHeader({
             style={{
                 position: isMobile ? "sticky" : "relative",
                 top: 0,
-                background: isMobile ? "#1c2231" : undefined,
-                borderBottom: isMobile ? "1px solid #232c39" : undefined,
+                background: isMobile ? "var(--bg-card)" : undefined,
+                borderBottom: isMobile ? "1px solid var(--border-subtle)" : undefined,
                 zIndex: 25
             }}
         >
@@ -268,7 +268,7 @@ function ChatHeader({
             {isMobile && typeof onBack === "function" && (
                 <button
                     onClick={onBack}
-                    className="-ml-1 mr-1 md:hidden flex items-center justify-center rounded-xl px-2 py-2 text-white/85 hover:text-white hover:bg-white/10 active:bg-white/20 transition"
+                    className="-ml-1 mr-1 md:hidden flex items-center justify-center rounded-xl px-2 py-2 text-[var(--text-primary)] hover:bg-[var(--control-bg-hover)] active:bg-[var(--control-bg-hover)] transition"
                     aria-label={t("chat.backToList", "Назад к списку")}
                     title={t("chat.back", "Назад")}
                     style={{ minWidth: 36, minHeight: 36 }}
@@ -404,7 +404,11 @@ function ChatHeader({
                             e.stopPropagation();
                             try { window.dispatchEvent(new CustomEvent("call_start", { detail: { chatId } })); } catch { }
                         }}
-                        className="w-9 h-9 grid place-items-center rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/20 active:scale-[0.98] transition"
+                        className="w-9 h-9 grid place-items-center rounded-xl border bg-[var(--control-bg)] hover:bg-[var(--control-bg-hover)] focus:outline-none focus:ring-2 focus:ring-[var(--border-subtle)] active:scale-[0.98] transition"
+                        style={{
+                            borderColor: "var(--border-subtle)",
+                            color: "var(--text-primary)",
+                        }}
                         title={t("chat.call", "Позвонить")}
                         aria-label={t("chat.call", "Позвонить")}
                     >
@@ -877,7 +881,7 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
 
     const { toast, show: showToast } = useCursorToast();
 
-// Управление GPS-модалками+    const [showRequestGps, setShowRequestGps] = useState(false);+    const [showShareGps, setShowShareGps] = useState(false);
+    // Управление GPS-модалками+    const [showRequestGps, setShowRequestGps] = useState(false);+    const [showShareGps, setShowShareGps] = useState(false);
     const GPS_DISABLED = true;
     const [gpsMenuOpen, setGpsMenuOpen] = useState(false);
     const gpsMenuRef = useRef(null);
@@ -2743,9 +2747,10 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
             maxHeight: "100%",    // ← было 100dvh
             minHeight: 0,         // важно для корректного скролла во flex
             width: "100%",
-            background: "#1a2946",
+            background: "var(--surface)",
             borderRadius: "inherit", // чтобы совпадали скругления
-            overflow: "hidden"       // чтобы ничего не «выпирало» за рамки
+            overflow: "hidden",      // чтобы ничего не «выпирало» за рамки
+            color: "var(--text-primary)",
         }}>
             {/* --- ШАПКА ЧАТА --- */}
             <ChatHeader
@@ -2931,7 +2936,7 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                 <div ref={messagesEndRef} />
             </div>
             {preview}
-           <form
+            <form
                 onSubmit={handleSend}
                 style={{
                     background: "#203154",
@@ -2953,19 +2958,19 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                     </div>
                 )}
 
-                
 
-                    className="chat-input-actions"
-                    style={{
-                        display: "flex",
-                        gap: 7,
-                        alignItems: "center",
-                        marginRight: 10,
-                        position: "relative",
-                    }}
-                
-                    {/* Плюсик с дополнительными действиями (вложения, перевод) */}
-                    <div ref={attachmentMenuRef} style={{ position: "relative", display: "inline-block" }}>
+
+                className="chat-input-actions"
+                style={{
+                    display: "flex",
+                    gap: 7,
+                    alignItems: "center",
+                    marginRight: 10,
+                    position: "relative",
+                }}
+
+                {/* Плюсик с дополнительными действиями (вложения, перевод) */}
+                <div ref={attachmentMenuRef} style={{ position: "relative", display: "inline-block" }}>
                     <button
                         type="button"
                         title={t("chat.moreActions", "Дополнительно")}
@@ -3272,15 +3277,15 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                         disabled={inputLocked}
                         style={{
                             flexGrow: 1,
-                            minHeight: 44,            // удобнее палец
+                            minHeight: 44,            // удобнее палец␊
                             maxHeight: 120,
                             resize: "none",
                             padding: "10px 12px",
                             fontSize: 16,             // убирает авто-зум на iOS
                             borderRadius: 7,
-                            border: "1.5px solid var(--border)",
-                            background: "var(--background)",
-                            color: "#e3f2fd",
+                            border: "1.5px solid var(--border-subtle)",
+                            background: "var(--control-bg)",
+                            color: "var(--text-primary)",
                             outline: "none",
                             boxShadow: "none",
                         }}

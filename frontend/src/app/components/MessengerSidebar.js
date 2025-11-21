@@ -213,7 +213,14 @@ export default function MessengerSidebar({ onSelectChat, selectedChat }) {
     return (
         <div key={forceUpdate}>
             {/* Кнопка "Создать группу" */}
-            <div className="sticky top-0 z-20 bg-[#0b1220]/90 backdrop-blur supports-[backdrop-filter]:bg-[#0b1220]/70 border-b border-[#1e2a3f] flex justify-between items-center px-3 pt-2 pb-2">
+            <div
+                className="sticky top-0 z-20 backdrop-blur supports-[backdrop-filter]:bg-opacity-90 flex justify-between items-center px-3 pt-2 pb-2 border-b"
+                style={{
+                    background: "var(--bg-card)",
+                    borderColor: "var(--border-subtle)",
+                    boxShadow: "var(--shadow-soft)",
+                }}
+            >
                 <input
                     type="text"
                     inputMode="search"
@@ -223,16 +230,16 @@ export default function MessengerSidebar({ onSelectChat, selectedChat }) {
                     className="w-full p-2 rounded-lg mr-2"
                     style={{
                         fontSize: 16,                 // ← убираем авто-зум на iOS
-                        background: "#212c42",
-                        color: "#e7f6ff",
-                        border: "1px solid #364869",
+                        background: "var(--control-bg)",
+                        color: "var(--text-primary)",
+                        border: "1px solid var(--border-subtle)",
                         borderRadius: 8,
                         marginBottom: 0,
                         outline: "none",
                         transition: "border 0.2s"
                     }}
-                    onFocus={e => e.target.style.border = "1.5px solid #38bcf8"}
-                    onBlur={e => e.target.style.border = "1px solid #364869"}
+                    onFocus={e => e.target.style.border = "1.5px solid var(--border-strong)"}
+                    onBlur={e => e.target.style.border = "1px solid var(--border-subtle)"}
                 />
                 <button
                     className="ml-2 px-3 py-1 bg-[#38bcf8] text-white rounded-lg text-sm font-semibold shadow tap"
@@ -455,18 +462,19 @@ export default function MessengerSidebar({ onSelectChat, selectedChat }) {
                         top: contextMenu.y,
                         left: contextMenu.x,
                         zIndex: 9999,
-                        background: "#232c39",
-                        color: "#fff",
-                        boxShadow: "0 8px 32px #0008",
+                        background: "var(--bg-card)",
+                        color: "var(--text-primary)",
+                        boxShadow: "var(--shadow-soft)",
                         borderRadius: 10,
                         minWidth: 140,
                         padding: "7px 0",
-                        userSelect: "none"
+                        userSelect: "none",
+                        border: "1px solid var(--border-subtle)",
                     }}
                     onContextMenu={e => e.preventDefault()}
                 >
                     <button
-                        className="w-full text-left px-5 py-2 hover:bg-[#31415b] transition"
+                        className="w-full text-left px-5 py-2 hover:bg-[var(--control-bg-hover)] transition"
                         style={{ background: "none", border: "none", color: "#f76a6a", fontWeight: 500, cursor: "pointer" }}
                         onClick={async (e) => {
                             e.stopPropagation();
