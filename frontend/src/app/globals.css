@@ -2253,8 +2253,6 @@ body {
   box-shadow: none;
   border: none;
   cursor: pointer;
-  min-width: 108px;
-  /* чтобы не прыгали */
 }
 
 
@@ -2278,6 +2276,16 @@ body {
 
 .header-nav .nav-link:hover .nav-icon {
   color: var(--brand-blue);
+}
+
+.header-nav-row .nav-link {
+  color: #0b67a9;
+  min-width: auto;
+}
+
+.header-nav-row .nav-icon,
+.header-nav-row .nav-link:hover .nav-icon {
+  color: #0b67a9;
 }
 
 .header-profile-link {

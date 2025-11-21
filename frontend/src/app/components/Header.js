@@ -686,7 +686,7 @@ export default function Header({ setShowRegisterModal }) {
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "stretch",
-                gap: isCompact ? 8 : 10,
+                gap: 0,
                 ["--header-h"]: `${headerHeight}px`
             }}
         >
@@ -1066,7 +1066,7 @@ export default function Header({ setShowRegisterModal }) {
                     alignItems: "center",
                     gap: isCompact ? 10 : 14,
                     width: "100%",
-                    padding: `0 ${headerPadding.right}px 0 ${headerPadding.left}px`
+                    padding: `0 ${headerPadding.right}px 0 0`
                 }}
             >
                 <div
@@ -1080,7 +1080,7 @@ export default function Header({ setShowRegisterModal }) {
                         boxShadow: "var(--header-shadow)",
                         padding: isCompact ? "8px 12px" : "9px 14px",
                         gap: NAV_GAP,
-                        maxWidth: "min(860px, 100%)"
+                        marginTop: isCompact ? -2 : -4
                     }}
                 >
                     <nav
@@ -1093,7 +1093,7 @@ export default function Header({ setShowRegisterModal }) {
                         {!isTransportRole && (
                             <Link className="nav-link" href="/transport"
                                 onClick={() => { try { sessionStorage.setItem("openMobileFilterOnEntry", "1"); } catch { } }}
-                                style={{ fontSize: NAV_FONT, fontWeight: 700, padding: NAV_PAD, minWidth: isTight ? 0 : isCompact ? 86 : 108 }}>
+                                style={{ fontSize: NAV_FONT, fontWeight: 700, padding: NAV_PAD }}>
                                 <FaTruck className="nav-icon" style={{ fontSize: isTight ? 18 : 20 }} />
                                 {!isTight && <span className="nav-text">{t("nav.transport", "Транспорт")}</span>}
                             </Link>
@@ -1101,7 +1101,7 @@ export default function Header({ setShowRegisterModal }) {
                         {!isOwnerRole && (
                             <Link className="nav-link" href="/orders"
                                 onClick={() => { try { sessionStorage.setItem("openMobileFilterOnEntry", "1"); } catch { } }}
-                                style={{ fontSize: NAV_FONT, fontWeight: 700, padding: NAV_PAD, minWidth: isTight ? 0 : isCompact ? 86 : 108 }}>
+                                style={{ fontSize: NAV_FONT, fontWeight: 700, padding: NAV_PAD }}>
                                 <FaBox className="nav-icon" style={{ fontSize: isTight ? 18 : 20 }} />
                                 {!isTight && <span className="nav-text">{t("nav.cargo", "Груз")}</span>}
                             </Link>
@@ -1115,7 +1115,6 @@ export default function Header({ setShowRegisterModal }) {
                                 }}
                                 style={{
                                     fontSize: NAV_FONT, fontWeight: 700, padding: NAV_PAD,
-                                    minWidth: isTight ? 0 : isCompact ? 86 : 108,
                                     opacity: isActive ? 1 : .5, cursor: "pointer", background: "none", border: "none"
                                 }}
                             >
@@ -1132,7 +1131,6 @@ export default function Header({ setShowRegisterModal }) {
                                 }}
                                 style={{
                                     fontSize: NAV_FONT, fontWeight: 700, padding: NAV_PAD,
-                                    minWidth: isTight ? 0 : isCompact ? 86 : 108,
                                     opacity: isActive ? 1 : .5, cursor: "pointer", background: "none", border: "none"
                                 }}
                             >
@@ -1141,7 +1139,7 @@ export default function Header({ setShowRegisterModal }) {
                             </button>
                         )}
                         <Link className="nav-link" href="/#service"
-                            style={{ fontSize: NAV_FONT, fontWeight: 700, padding: NAV_PAD, minWidth: isTight ? 0 : isCompact ? 86 : 108 }}>
+                            style={{ fontSize: NAV_FONT, fontWeight: 700, padding: NAV_PAD }}>
                             <FaInfoCircle className="nav-icon" style={{ fontSize: isTight ? 18 : 20 }} />
                             {!isTight && <span className="nav-text">{t("nav.about", "О Сервисе")}</span>}
                         </Link>
