@@ -88,7 +88,7 @@ function MiniProfile({ user, onClick, mode = "full" }) {
         const frac = v - full;
         const hue = (v / 10) * 120;            // 0..120  (0=красный, 120=зелёный)
         const color = `hsl(${hue}, 90%, 45%)`;
-        const emptyColor = "#273040";
+        const emptyColor = "var(--border-strong, #273040)";
 
         return (
             <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
@@ -228,10 +228,10 @@ function MiniProfile({ user, onClick, mode = "full" }) {
                 background: "rgb(var(--surface) / 0.94)",
                 border: "1px solid var(--border-strong)",
                 boxShadow: "var(--header-shadow, var(--shadow-soft))",
-                gap: 10,
+                gap: 8,
                 minWidth: 220,
                 maxWidth: 340,
-                padding: "8px 10px",
+                padding: "6px 9px",
                 cursor: "pointer",
                 transition: "box-shadow 0.2s ease",
             }}
@@ -240,8 +240,8 @@ function MiniProfile({ user, onClick, mode = "full" }) {
             onMouseOut={e => e.currentTarget.style.boxShadow = "var(--header-shadow, var(--shadow-soft))"}
         >
             <div style={{
-                width: 36,
-                height: 36,
+                width: 32,
+                height: 32,
                 borderRadius: "50%",
                 overflow: "hidden",
                 background: "rgb(var(--surface))",
@@ -262,7 +262,7 @@ function MiniProfile({ user, onClick, mode = "full" }) {
             <div style={{ display: "flex", flexDirection: "column", minWidth: 0, width: "100%", textAlign: "left" }}>
                 {/* Первая строка: организация/компания/имя (крупнее) */}
                 <div style={{
-                    fontSize: 14, fontWeight: 800, color: "var(--text-primary)", textAlign: "left",
+                    fontSize: 13.5, fontWeight: 800, color: "var(--text-primary)", textAlign: "left",
                     lineHeight: 1.1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis"
                 }}>
                     {(() => {
@@ -273,7 +273,7 @@ function MiniProfile({ user, onClick, mode = "full" }) {
                 {/* Вторая строка: слева имя+фамилия, справа — дни на сайте */}
                 <div style={{
                     display: "flex", alignItems: "center", justifyContent: "space-between",
-                    gap: 8, marginTop: 2
+                    gap: 8, marginTop: 0
                 }}>
                     {(() => {
                         const title = getDisplayName(user);
@@ -295,8 +295,8 @@ function MiniProfile({ user, onClick, mode = "full" }) {
                 </div>
                 {/* Третья строка — компактный рейтинг */}
                 <div className="chip-rating" style={{
-                    marginTop: 4,
-                    paddingTop: 4,
+                    marginTop: 2,
+                    paddingTop: 2,
                     borderTop: "1px solid rgba(var(--border), 0.35)",
                     display: "flex",
                     justifyContent: "flex-end"
@@ -456,9 +456,9 @@ export default function Header({ setShowRegisterModal }) {
     }, [profileMenuOpen]);
 
     // ---- Управляемые размеры логотипа/надписи/шапки
-    const LOGO = isTight ? 72 : isCompact ? 96 : 120;   // размер иконки
-    const WORD = isTight ? 20 : isCompact ? 24 : 30;    // размер надписи Transinfo.ge
-    const HEADER_H = isTight ? 84 : isCompact ? 96 : 112;
+    const LOGO = isTight ? 64 : isCompact ? 80 : 96;   // размер иконки (меньше, чтобы шапка была компактнее)
+    const WORD = isTight ? 18 : isCompact ? 21 : 24;   // размер надписи Transinfo.ge
+    const HEADER_H = isTight ? 74 : isCompact ? 86 : 96;
     const LOGO_OVERSCAN = 1.18;       // «дозум» > 1.0, чтобы отсечь невидимые поля PNG
 
     const NAV_GAP = isTight ? 12 : isCompact ? 18 : 28;
@@ -676,8 +676,8 @@ export default function Header({ setShowRegisterModal }) {
     }
 
     const headerPadding = isCompact
-        ? { top: 18, right: 22, bottom: 12, left: 18 }
-        : { top: 20, right: 30, bottom: 12, left: 24 };
+        ? { top: 14, right: 22, bottom: 10, left: 16 }
+        : { top: 16, right: 26, bottom: 10, left: 20 };
 
     return (
         <div

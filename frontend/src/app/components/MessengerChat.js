@@ -3,24 +3,34 @@
 // Берём несколько признаков (id, client_nonce, event_id, timestamp), а в крайнем случае индекс
 // БАЗОВАЯ сигнатура сообщения (без индекса): может совпасть для двух call-ивентов.
 const buildMsgKeyBase = (m) => {
-    const id = m?.id ?? null;                                   // серверный id
+    const id = m?.id ?? null; // серверный id
     const loc = m?.client_nonce ?? m?.client_id ?? m?.localId ?? null; // локальный id, если есть
-    const ev = m?.event_id ?? m?.call_event_id ?? null;         // id события звонка
+    const ev = m?.event_id ?? m?.call_event_id ?? null; // id события звонка
     const ts = m?.ts ?? m?.sent_at ?? m?.created_at ?? m?.time ?? null; // метка времени
     return ["m", id, loc, ev, ts].filter(Boolean).join("-");
 };
 // FIX: используем React.use* => нужен явный импорт React
 import * as React from "react";
 import { api, abs } from "@/config/env";
-import { useState, useEffect, useRef, useCallback, useLayoutEffect, useMemo } from "react";
-const fmtRemain = (iso, t) => !iso ? "" : (() => {
-    const ms = new Date(iso) - Date.now();
-    if (ms <= 0) return t("time.fewSeconds", "несколько секунд");
-    const m = Math.floor(ms / 60000);
-    if (m < 60) return `${m} ${t("unit.min", "мин")}`;
-    const h = Math.floor(m / 60);
-    return `${h} ${t("unit.h", "ч")} ${m % 60} ${t("unit.min", "мин")}`;
-})();
+import {
+    useState,
+    useEffect,
+    useRef,
+    useCallback,
+    useLayoutEffect,
+    useMemo,
+} from "react";
+const fmtRemain = (iso, t) =>
+    !iso
+        ? ""
+        : (() => {
+            const ms = new Date(iso) - Date.now();
+            if (ms <= 0) return t("time.fewSeconds", "несколько секунд");
+            const m = Math.floor(ms / 60000);
+            if (m < 60) return `${m} ${t("unit.min", "мин")}`;
+            const h = Math.floor(m / 60);
+            return `${h} ${t("unit.h", "ч")} ${m % 60} ${t("unit.min", "мин")}`;
+        })();
 import Lightbox from "yet-another-react-lightbox";
 import "yet-another-react-lightbox/styles.css";
 import {
@@ -41,12 +51,11 @@ import {
     FaFileAlt,
     FaAddressBook,
     FaMapMarkerAlt,
-}
-    from "react-icons/fa";
+} from "react-icons/fa";
 import { useMessenger } from "./MessengerContext";
 import { useUser } from "../UserContext";
 import { useRouter } from "next/navigation";
-import EmojiPicker from 'emoji-picker-react';
+import EmojiPicker from "emoji-picker-react";
 import VoiceRecorder from "./VoiceRecorder";
 import AudioMessageBubble from "./AudioMessageBubble";
 // Нормализуем URL чат‑файлов: всегда ходим через /api/static/chat_files/...
@@ -65,7 +74,15 @@ function resolveChatFileUrl(raw = "") {
 import CallCard from "./messages/CallCard";
 import GroupMembersModal from "./GroupMembersModal";
 import { Users2, Phone as PhoneIcon } from "lucide-react";
-import { FaUserPlus, FaUserMinus, FaShieldAlt, FaEdit, FaInfoCircle, FaBell, FaBellSlash } from "react-icons/fa";
+import {
+    FaUserPlus,
+    FaUserMinus,
+    FaShieldAlt,
+    FaEdit,
+    FaInfoCircle,
+    FaBell,
+    FaBellSlash,
+} from "react-icons/fa";
 import { useAvatarFly } from "../../hooks/useAvatarFly";
 import { useIsMobile } from "../../hooks/useIsMobile";
 import { useLang } from "../i18n/LangProvider"; // скорректируй путь
@@ -93,7 +110,9 @@ function SupportRatingPrompt({ ticketId, onSubmitted }) {
     const typeLabel = (raw) => {
         if (!raw) return "";
         const v = String(raw).trim().toLowerCase();
-        const hit = BODY_TYPES.find(o => String(o.value || "").toLowerCase() === v);
+        const hit = BODY_TYPES.find(
+            (o) => String(o.value || "").toLowerCase() === v
+        );
         return hit ? hit.label : raw;
     };
 
@@ -107,8 +126,11 @@ function SupportRatingPrompt({ ticketId, onSubmitted }) {
         try {
             await fetch(api(`/support/tickets/${ticketId}/rate`), {
                 method: "POST",
-                headers: { "Content-Type": "application/json", "Authorization": `Bearer ${localStorage.getItem("token")}` },
-                body: JSON.stringify({ score, comment })
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
+                body: JSON.stringify({ score, comment }),
             });
             onSubmitted?.();
         } finally {
@@ -117,17 +139,49 @@ function SupportRatingPrompt({ ticketId, onSubmitted }) {
     };
 
     return (
-        <div style={{ padding: 12, border: "1px solid #444", borderRadius: 10, marginTop: 10 }}>
+        <div
+            style={{
+                padding: 12,
+                border: "1px solid #444",
+                borderRadius: 10,
+                marginTop: 10,
+            }}
+        >
             <div>{t("support.ratePrompt", "Оцените качество поддержки:")}</div>
-            {[1, 2, 3, 4, 5].map(i => (
-                <span key={i} style={{ cursor: "pointer", color: i <= score ? "gold" : "#aaa", fontSize: 22 }}
-                    onClick={() => setScore(i)}>★</span>
+            {[1, 2, 3, 4, 5].map((i) => (
+                <span
+                    key={i}
+                    style={{
+                        cursor: "pointer",
+                        color: i <= score ? "gold" : "#aaa",
+                        fontSize: 22,
+                    }}
+                    onClick={() => setScore(i)}
+                >
+                    ★
+                </span>
             ))}
-            <textarea value={comment} onChange={e => setComment(e.target.value)} placeholder={t("support.commentPlaceholder", "Комментарий...")} rows={2}
-                style={{ width: "100%", marginTop: 8, padding: 6 }} />
-            <button onClick={submit} disabled={busy || !score}
-                style={{ marginTop: 6, padding: "6px 12px", borderRadius: 6, background: "#0ea5e9", color: "#fff" }}>
-                {busy ? t("common.sending", "Отправка...") : t("common.send", "Отправить")}
+            <textarea
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                placeholder={t("support.commentPlaceholder", "Комментарий...")}
+                rows={2}
+                style={{ width: "100%", marginTop: 8, padding: 6 }}
+            />
+            <button
+                onClick={submit}
+                disabled={busy || !score}
+                style={{
+                    marginTop: 6,
+                    padding: "6px 12px",
+                    borderRadius: 6,
+                    background: "#0ea5e9",
+                    color: "#fff",
+                }}
+            >
+                {busy
+                    ? t("common.sending", "Отправка...")
+                    : t("common.send", "Отправить")}
             </button>
         </div>
     );
@@ -135,19 +189,32 @@ function SupportRatingPrompt({ ticketId, onSubmitted }) {
 
 // Абсолютные URL для статики/аватаров берём из централизованного abs()
 
-
 function ChatHeader({
-    chat, peerUser, chatId, onGroupClick,
-    showSearch, setShowSearch,
-    searchMsg, setSearchMsg,
+    chat,
+    peerUser,
+    chatId,
+    onGroupClick,
+    showSearch,
+    setShowSearch,
+    searchMsg,
+    setSearchMsg,
     forceUpdate,
     matchRefs,
     onClose,
-    onBack
+    onBack,
 }) {
     const { t } = useLang?.() || { t: (_k, f) => f };
     const searchInputRef = useRef(null);
-    const { fetchMessages, messages, pinChat, pinnedChats, unpinChat, getSupportTyping, getSupportQueue, wsRef } = useMessenger();
+    const {
+        fetchMessages,
+        messages,
+        pinChat,
+        pinnedChats,
+        unpinChat,
+        getSupportTyping,
+        getSupportQueue,
+        wsRef,
+    } = useMessenger();
     // Берём функцию с рефрешем токена из контекста
     const { user, authFetchWithRefresh } = useUser();
     const [participants, setParticipants] = useState([]);
@@ -157,7 +224,9 @@ function ChatHeader({
         if (isSupport && showSearch) setShowSearch(false);
     }, [isSupport, showSearch, setShowSearch]);
     const isSupportAgent = ((user?.role || "") + "").toUpperCase() === "SUPPORT";
-    const supportStatus = (chat?.support_status || "").toString().replace("TicketStatus.", "");
+    const supportStatus = (chat?.support_status || "")
+        .toString()
+        .replace("TicketStatus.", "");
     const eta = chat?.autoclose_eta_iso || null;
     const isGroup = isSupport ? false : !!chat?.is_group; // саппорт НЕ отображаем как группу
     // --- ephemeral support state ---
@@ -168,22 +237,22 @@ function ChatHeader({
     // Берём того, у кого реально есть аватар (приоритет — peerUser, т.к. он приходит полнее после запроса)
     const hasAvatar = (u) => !!(u && (u.avatar || u.avatar_url || u.photo));
     const peer = !isGroup
-        ? (hasAvatar(peerUser) ? { ...(chat?.peer || {}), ...peerUser } : (chat?.peer || peerUser || null))
+        ? hasAvatar(peerUser)
+            ? { ...(chat?.peer || {}), ...peerUser }
+            : chat?.peer || peerUser || null
         : null;
 
     // Теперь можно безопасно вычислить заголовок
     const titleText = isSupport
         ? t("support.title", chat?.display_title || "Поддержка")
-        : (isGroup
-            ? (chat?.group_name || t("chat.groupFallback", "Группа"))
-            : (
-                peer?.organization
-                || peer?.contact_person
-                || peer?.full_name
-                || peer?.name
-                || peer?.email
-                || (peer?.id ? `ID:${peer.id}` : t("chat.userFallback", "Пользователь"))
-            ));
+        : isGroup
+            ? chat?.group_name || t("chat.groupFallback", "Группа")
+            : peer?.organization ||
+            peer?.contact_person ||
+            peer?.full_name ||
+            peer?.name ||
+            peer?.email ||
+            (peer?.id ? `ID:${peer.id}` : t("chat.userFallback", "Пользователь"));
 
     const isMobile = useIsMobile(800);
 
@@ -205,16 +274,22 @@ function ChatHeader({
     }
 
     const avatarUrl = isSupport
-        ? abs(chat?.support_logo_url || chat?.group_avatar || "/static/support-logo.svg")
-        : (isGroup
-            ? (chat?.group_avatar || "/group-default.png")
-            : (resolveAvatar(peer) || "/default-avatar.png"));
+        ? abs(
+            chat?.support_logo_url ||
+            chat?.group_avatar ||
+            "/static/support-logo.svg"
+        )
+        : isGroup
+            ? chat?.group_avatar || "/group-default.png"
+            : resolveAvatar(peer) || "/default-avatar.png";
     const { mutedGroups, muteGroup, unmuteGroup } = useMessenger();
     const isMuted = isGroup && mutedGroups.includes(chat.chat_id);
     const avatarRef = useRef(null);
 
     const [isClient, setIsClient] = useState(false);
-    useEffect(() => { setIsClient(true); }, []);
+    useEffect(() => {
+        setIsClient(true);
+    }, []);
 
     useEffect(() => {
         if (showSearch && searchInputRef.current) {
@@ -225,7 +300,7 @@ function ChatHeader({
     useEffect(() => {
         if (isGroup && chat?.chat_id) {
             authFetchWithRefresh(api(`/chat/${chat.chat_id}/participants`))
-                .then(r => r.json())
+                .then((r) => r.json())
                 .then(setParticipants)
                 .catch(() => setParticipants([]));
         }
@@ -255,13 +330,14 @@ function ChatHeader({
 
     return (
         <div
-            className={`${isMobile ? "sticky top-0" : "relative"} z-20 flex items-center gap-4 px-5 py-3 border-b border-[#e7eaf1] dark:border-[#232c39] bg-[#f7fafe] dark:bg-[#1c2231]`}
+            className={`${isMobile ? "sticky top-0" : "relative"
+                } z-20 flex items-center gap-4 px-5 py-3 border-b border-[#e7eaf1] dark:border-[#232c39] bg-[#f7fafe] dark:bg-[#1c2231]`}
             style={{
                 position: isMobile ? "sticky" : "relative",
                 top: 0,
                 background: isMobile ? "var(--bg-card)" : undefined,
                 borderBottom: isMobile ? "1px solid var(--border-subtle)" : undefined,
-                zIndex: 25
+                zIndex: 25,
             }}
         >
             {/* Кнопка "назад" (только мобилка), слева от аватарки */}
@@ -274,8 +350,20 @@ function ChatHeader({
                     style={{ minWidth: 36, minHeight: 36 }}
                 >
                     {/* chevron-left */}
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                        <path d="M15 19L8 12l7-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    <svg
+                        width="22"
+                        height="22"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        aria-hidden="true"
+                    >
+                        <path
+                            d="M15 19L8 12l7-7"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                        />
                     </svg>
                 </button>
             )}
@@ -290,7 +378,11 @@ function ChatHeader({
                         src={withCacheBust(avatarUrl)}
                         alt="support"
                         className="w-11 h-11 rounded-full object-cover"
-                        onError={e => { e.currentTarget.src = withCacheBust(abs("/static/support-logo.svg")); }}
+                        onError={(e) => {
+                            e.currentTarget.src = withCacheBust(
+                                abs("/static/support-logo.svg")
+                            );
+                        }}
                     />
                 ) : isGroup ? (
                     avatarUrl && avatarUrl !== "/group-default.png" ? (
@@ -311,19 +403,28 @@ function ChatHeader({
                         alt="avatar"
                         className="w-11 h-11 rounded-full object-cover"
                         style={{ background: "#202c44" }}
-                        onError={e => { if (e.currentTarget.src !== window.location.origin + "/default-avatar.png") e.currentTarget.src = "/default-avatar.png"; }}
+                        onError={(e) => {
+                            if (
+                                e.currentTarget.src !==
+                                window.location.origin + "/default-avatar.png"
+                            )
+                                e.currentTarget.src = "/default-avatar.png";
+                        }}
                     />
                 )}
             </div>
             {/* Инфо: имя + колокольчик */}
-            <div className="flex-1 min-w-0 flex flex-col" style={{ position: "relative" }}>
+            <div
+                className="flex-1 min-w-0 flex flex-col"
+                style={{ position: "relative" }}
+            >
                 <div className="flex items-center gap-2">
                     <span
                         className="font-semibold text-lg text-[#232a36] dark:text-white truncate"
                         /* На мобилке поверх тёмного хедера цвет уходит в тёмный — форсим светлый */
                         style={{
-                            cursor: (!isGroup && !isSupport) ? "pointer" : "default",
-                            color: isMobile ? "#e6f0ff" : undefined
+                            cursor: !isGroup && !isSupport ? "pointer" : "default",
+                            color: isMobile ? "#e6f0ff" : undefined,
                         }}
                         onClick={(e) => {
                             if (!isGroup && !isSupport && peer?.id) {
@@ -337,72 +438,129 @@ function ChatHeader({
                     {isGroup && !isSupport && (
                         <button
                             style={{
-                                background: "none", border: "none", cursor: "pointer", marginLeft: 4,
-                                padding: 2, display: "flex", alignItems: "center", justifyContent: "center"
+                                background: "none",
+                                border: "none",
+                                cursor: "pointer",
+                                marginLeft: 4,
+                                padding: 2,
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
                             }}
-                            title={isMuted ? t("chat.unmute", "Включить уведомления") : t("chat.mute", "Отключить уведомления")}
-                            onClick={e => {
+                            title={
+                                isMuted
+                                    ? t("chat.unmute", "Включить уведомления")
+                                    : t("chat.mute", "Отключить уведомления")
+                            }
+                            onClick={(e) => {
                                 e.stopPropagation();
                                 if (isMuted) unmuteGroup(chat.chat_id);
                                 else muteGroup(chat.chat_id);
                             }}
                         >
-                            {isMuted
-                                ? <FaBellSlash style={{ color: "#38bcf8", fontSize: 19, verticalAlign: "middle" }} />
-                                : <FaBell style={{ color: "#38bcf8", fontSize: 19, verticalAlign: "middle" }} />}
+                            {isMuted ? (
+                                <FaBellSlash
+                                    style={{
+                                        color: "#38bcf8",
+                                        fontSize: 19,
+                                        verticalAlign: "middle",
+                                    }}
+                                />
+                            ) : (
+                                <FaBell
+                                    style={{
+                                        color: "#38bcf8",
+                                        fontSize: 19,
+                                        verticalAlign: "middle",
+                                    }}
+                                />
+                            )}
                         </button>
                     )}
                 </div>
                 <span className="text-xs text-[#7c8ca7] dark:text-[#91a6be] mt-1 truncate">
                     {isSupport
-                        ? (
-                            chat?.display_subtitle
-                                ? t(chat.display_subtitle, chat.display_subtitle)
-                                : (chat?.support_status
-                                    ? `${t("support.status", "Статус")}: ${localizeTicketStatus(String(chat.support_status).replace("TicketStatus.", ""), t)}`
-                                    : "")
-                        )
-                        : (isGroup
-                            ? `${t("chat.members", "Участников")}: ${participants.length || "—"}`
-                            : (peer?.organization ? peer?.contact_person : peer?.email || "")
-                        )
-                    }
+                        ? chat?.display_subtitle
+                            ? t(chat.display_subtitle, chat.display_subtitle)
+                            : chat?.support_status
+                                ? `${t("support.status", "Статус")}: ${localizeTicketStatus(
+                                    String(chat.support_status).replace("TicketStatus.", ""),
+                                    t
+                                )}`
+                                : ""
+                        : isGroup
+                            ? `${t("chat.members", "Участников")}: ${participants.length || "—"
+                            }`
+                            : peer?.organization
+                                ? peer?.contact_person
+                                : peer?.email || ""}
                 </span>
             </div>
             {/* ПОИСК и КНОПКА "закрыть" */}
             <div className="flex items-center ml-auto gap-1">
                 {/* Кнопки для агента поддержки */}
-                {isSupport && isSupportAgent && chat?.support_ticket_id && supportStatus !== "CLOSED" && (
-                    <div className="hidden md:flex items-center gap-2 mr-2">
-                        {supportStatus === "RESOLVED" && eta && (
-                            <span className="px-2 py-1 text-xs rounded bg-emerald-600/20 border border-emerald-500/40">
-                                {t("support.resolvedAutoClose", "Решено • автозакрытие через")} {fmtRemain(eta, t)}
-                            </span>
-                        )}
-                        <button
-                            className="px-2 py-1 rounded bg-blue-600/80 hover:bg-blue-600 text-white text-xs"
-                            onClick={async () => {
-                                await authFetchWithRefresh(api(`/support/tickets/${chat.support_ticket_id}/resolve`), {
-                                    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ hours: 24 })
-                                });
-                                window.dispatchEvent(new CustomEvent("support_meta_changed", { detail: { chatId } }));
-                            }}
-                        >{t("support.markResolved", "Отметить решённым")}</button>
-                        <button
-                            className="px-2 py-1 rounded bg-rose-600/80 hover:bg-rose-600 text-white text-xs"
-                            onClick={async () => {
-                                await authFetchWithRefresh(api(`/support/tickets/${chat.support_ticket_id}/close`), { method: "POST" });
-                                window.dispatchEvent(new CustomEvent("support_meta_changed", { detail: { chatId } }));
-                            }}
-                        >{t("support.closeTicket", "Закрыть")}</button>
-                    </div>
-                )}
+                {isSupport &&
+                    isSupportAgent &&
+                    chat?.support_ticket_id &&
+                    supportStatus !== "CLOSED" && (
+                        <div className="hidden md:flex items-center gap-2 mr-2">
+                            {supportStatus === "RESOLVED" && eta && (
+                                <span className="px-2 py-1 text-xs rounded bg-emerald-600/20 border border-emerald-500/40">
+                                    {t(
+                                        "support.resolvedAutoClose",
+                                        "Решено • автозакрытие через"
+                                    )}{" "}
+                                    {fmtRemain(eta, t)}
+                                </span>
+                            )}
+                            <button
+                                className="px-2 py-1 rounded bg-blue-600/80 hover:bg-blue-600 text-white text-xs"
+                                onClick={async () => {
+                                    await authFetchWithRefresh(
+                                        api(`/support/tickets/${chat.support_ticket_id}/resolve`),
+                                        {
+                                            method: "POST",
+                                            headers: { "Content-Type": "application/json" },
+                                            body: JSON.stringify({ hours: 24 }),
+                                        }
+                                    );
+                                    window.dispatchEvent(
+                                        new CustomEvent("support_meta_changed", {
+                                            detail: { chatId },
+                                        })
+                                    );
+                                }}
+                            >
+                                {t("support.markResolved", "Отметить решённым")}
+                            </button>
+                            <button
+                                className="px-2 py-1 rounded bg-rose-600/80 hover:bg-rose-600 text-white text-xs"
+                                onClick={async () => {
+                                    await authFetchWithRefresh(
+                                        api(`/support/tickets/${chat.support_ticket_id}/close`),
+                                        { method: "POST" }
+                                    );
+                                    window.dispatchEvent(
+                                        new CustomEvent("support_meta_changed", {
+                                            detail: { chatId },
+                                        })
+                                    );
+                                }}
+                            >
+                                {t("support.closeTicket", "Закрыть")}
+                            </button>
+                        </div>
+                    )}
                 {/* Телефон (WebRTC) — скрыт для саппорт-чата */}
                 {!isSupport && (
                     <button
                         onClick={(e) => {
                             e.stopPropagation();
-                            try { window.dispatchEvent(new CustomEvent("call_start", { detail: { chatId } })); } catch { }
+                            try {
+                                window.dispatchEvent(
+                                    new CustomEvent("call_start", { detail: { chatId } })
+                                );
+                            } catch { }
                         }}
                         className="w-9 h-9 grid place-items-center rounded-xl border bg-[var(--control-bg)] hover:bg-[var(--control-bg-hover)] focus:outline-none focus:ring-2 focus:ring-[var(--border-subtle)] active:scale-[0.98] transition"
                         style={{
@@ -418,42 +576,65 @@ function ChatHeader({
                 {/* Лупа + поиск */}
                 {!isSupport && !showSearch && (
                     <button
-                        onClick={e => { e.stopPropagation(); setShowSearch(true); }}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setShowSearch(true);
+                        }}
                         style={{
                             background: "none",
                             border: "none",
                             color: "#38bcf8",
                             fontSize: 20,
                             cursor: "pointer",
-                            padding: 4
+                            padding: 4,
                         }}
                         title={t("chat.searchInMessages", "Поиск по сообщениям")}
                     >
-                        <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <svg
+                            width="22"
+                            height="22"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                        >
                             <circle cx="11" cy="11" r="8" />
                             <line x1="21" y1="21" x2="16.65" y2="16.65" />
                         </svg>
                     </button>
                 )}
                 {!isSupport && showSearch && (
-                    <div style={{
-                        position: "relative",
-                        width: 220,
-                        display: "flex",
-                        alignItems: "center"
-                    }}>
+                    <div
+                        style={{
+                            position: "relative",
+                            width: 220,
+                            display: "flex",
+                            alignItems: "center",
+                        }}
+                    >
                         {/* Лупа слева ВНУТРИ поля */}
-                        <span style={{
-                            position: "absolute",
-                            left: 10,
-                            top: "50%",
-                            transform: "translateY(-50%)",
-                            pointerEvents: "none",
-                            color: "#38bcf8",
-                            fontSize: 18,
-                            opacity: 0.8
-                        }}>
-                            <svg width="17" height="17" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <span
+                            style={{
+                                position: "absolute",
+                                left: 10,
+                                top: "50%",
+                                transform: "translateY(-50%)",
+                                pointerEvents: "none",
+                                color: "#38bcf8",
+                                fontSize: 18,
+                                opacity: 0.8,
+                            }}
+                        >
+                            <svg
+                                width="17"
+                                height="17"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                            >
                                 <circle cx="8" cy="8" r="7" />
                                 <line x1="16" y1="16" x2="12.5" y2="12.5" />
                             </svg>
@@ -461,17 +642,25 @@ function ChatHeader({
                         <input
                             ref={searchInputRef}
                             type="text"
-                            placeholder={t("chat.searchPlaceholder", "Поиск по сообщениям...")}
+                            placeholder={t(
+                                "chat.searchPlaceholder",
+                                "Поиск по сообщениям..."
+                            )}
                             value={searchMsg}
-                            onChange={e => setSearchMsg(e.target.value)}
-                            onBlur={() => { if (!searchMsg) setShowSearch(false); }}
-                            onKeyDown={e => {
+                            onChange={(e) => setSearchMsg(e.target.value)}
+                            onBlur={() => {
+                                if (!searchMsg) setShowSearch(false);
+                            }}
+                            onKeyDown={(e) => {
                                 if (e.key === "Escape") {
                                     setShowSearch(false);
                                     setSearchMsg("");
                                 }
                                 if (e.key === "Enter" && matchRefs && matchRefs.current[0]) {
-                                    matchRefs.current[0].scrollIntoView({ behavior: "smooth", block: "center" });
+                                    matchRefs.current[0].scrollIntoView({
+                                        behavior: "smooth",
+                                        block: "center",
+                                    });
                                 }
                             }}
                             style={{
@@ -481,10 +670,9 @@ function ChatHeader({
                                 border: "1.5px solid #364869",
                                 background: "#232b3c",
                                 color: "#e8f1ff",
-                                fontSize: 15
+                                fontSize: 15,
                             }}
                         />
-
                     </div>
                 )}
                 {/* Кнопка "закрепить чат" — скрыта для саппорт-чата; на мобилке скрываем полностью */}
@@ -492,7 +680,9 @@ function ChatHeader({
                     <button
                         onClick={(e) => {
                             e.stopPropagation();
-                            const isPinned = Array.isArray(pinnedChats) && pinnedChats.some(c => c.chat_id === chat?.chat_id);
+                            const isPinned =
+                                Array.isArray(pinnedChats) &&
+                                pinnedChats.some((c) => c.chat_id === chat?.chat_id);
                             if (isPinned) {
                                 if (typeof unpinChat === "function") unpinChat(chat.chat_id);
                             } else {
@@ -505,17 +695,35 @@ function ChatHeader({
                             color: "#38bcf8",
                             fontSize: 22,
                             cursor: "pointer",
-                            margin: "0 6px"
+                            margin: "0 6px",
                         }}
-                        title={(Array.isArray(pinnedChats) && pinnedChats.some(c => c.chat_id === chat?.chat_id)) ? t("chat.unpin", "Открепить чат") : t("chat.pin", "Закрепить чат")}
-                        aria-label={(Array.isArray(pinnedChats) && pinnedChats.some(c => c.chat_id === chat?.chat_id)) ? t("chat.unpin", "Открепить чат") : t("chat.pin", "Закрепить чат")}
+                        title={
+                            Array.isArray(pinnedChats) &&
+                                pinnedChats.some((c) => c.chat_id === chat?.chat_id)
+                                ? t("chat.unpin", "Открепить чат")
+                                : t("chat.pin", "Закрепить чат")
+                        }
+                        aria-label={
+                            Array.isArray(pinnedChats) &&
+                                pinnedChats.some((c) => c.chat_id === chat?.chat_id)
+                                ? t("chat.unpin", "Открепить чат")
+                                : t("chat.pin", "Закрепить чат")
+                        }
                     >
                         <FaThumbtack
                             style={{
                                 display: "inline-block",
-                                transform: (Array.isArray(pinnedChats) && pinnedChats.some(c => c.chat_id === chat?.chat_id)) ? "rotate(0deg)" : "rotate(-25deg)",
-                                filter: (Array.isArray(pinnedChats) && pinnedChats.some(c => c.chat_id === chat?.chat_id)) ? "none" : "brightness(1.1)",
-                                opacity: 0.95
+                                transform:
+                                    Array.isArray(pinnedChats) &&
+                                        pinnedChats.some((c) => c.chat_id === chat?.chat_id)
+                                        ? "rotate(0deg)"
+                                        : "rotate(-25deg)",
+                                filter:
+                                    Array.isArray(pinnedChats) &&
+                                        pinnedChats.some((c) => c.chat_id === chat?.chat_id)
+                                        ? "none"
+                                        : "brightness(1.1)",
+                                opacity: 0.95,
                             }}
                             size={18}
                         />
@@ -553,25 +761,40 @@ function CursorToast({ item }) {
     if (!item) return null;
     const { x, y, text, variant } = item;
     const bg =
-        variant === "warn" ? "#8b1d2c" :
-            variant === "ok" ? "#0f634a" :
-                "#334155";
+        variant === "warn" ? "#8b1d2c" : variant === "ok" ? "#0f634a" : "#334155";
     return (
-        <div style={{
-            position: "fixed", left: x, top: y,
-            transform: "translate(-50%, -100%)",
-            background: bg, color: "#fff",
-            padding: "8px 12px", borderRadius: 12,
-            boxShadow: "0 10px 30px rgba(0,0,0,.35)",
-            fontWeight: 700, zIndex: 9999, pointerEvents: "none",
-            animation: "ti-cursor-toast .9s ease-out forwards"
-        }}>
+        <div
+            style={{
+                position: "fixed",
+                left: x,
+                top: y,
+                transform: "translate(-50%, -100%)",
+                background: bg,
+                color: "#fff",
+                padding: "8px 12px",
+                borderRadius: 12,
+                boxShadow: "0 10px 30px rgba(0,0,0,.35)",
+                fontWeight: 700,
+                zIndex: 9999,
+                pointerEvents: "none",
+                animation: "ti-cursor-toast .9s ease-out forwards",
+            }}
+        >
             {text}
             <style jsx>{`
         @keyframes ti-cursor-toast {
-          0% { opacity: 0; transform: translate(-50%, -40%); }
-          15% { opacity: 1; transform: translate(-50%, -100%); }
-          100% { opacity: 0; transform: translate(-50%, -160%); }
+          0% {
+            opacity: 0;
+            transform: translate(-50%, -40%);
+          }
+          15% {
+            opacity: 1;
+            transform: translate(-50%, -100%);
+          }
+          100% {
+            opacity: 0;
+            transform: translate(-50%, -160%);
+          }
         }
       `}</style>
         </div>
@@ -581,9 +804,10 @@ function CursorToast({ item }) {
 function useCursorToast() {
     const [toast, setToast] = useState(null);
     const show = useCallback((eOrPos, text, variant = "info") => {
-        const pos = (eOrPos && typeof eOrPos.clientX === "number")
-            ? { x: eOrPos.clientX, y: eOrPos.clientY }
-            : (eOrPos || { x: window.innerWidth - 40, y: window.innerHeight - 40 });
+        const pos =
+            eOrPos && typeof eOrPos.clientX === "number"
+                ? { x: eOrPos.clientX, y: eOrPos.clientY }
+                : eOrPos || { x: window.innerWidth - 40, y: window.innerHeight - 40 };
         setToast({ ...pos, text, variant });
         setTimeout(() => setToast(null), 1000);
     }, []);
@@ -591,12 +815,28 @@ function useCursorToast() {
 }
 
 // === GPS helper cards (status-aware) ===
-function GpsRequestCard({ msg, user, chatId, API, authFetchWithRefresh, fetchMessages, router, showToast }) {
+function GpsRequestCard({
+    msg,
+    user,
+    chatId,
+    API,
+    authFetchWithRefresh,
+    fetchMessages,
+    router,
+    showToast,
+}) {
     const { t } = useLang();
     let payload = null;
-    try { payload = JSON.parse(msg.content || "{}"); } catch { payload = {}; }
-    const rId = Array.isArray(payload?.request_ids) ? payload.request_ids[0] : null;
-    const isTarget = payload?.target_user_id && payload.target_user_id === user?.id;
+    try {
+        payload = JSON.parse(msg.content || "{}");
+    } catch {
+        payload = {};
+    }
+    const rId = Array.isArray(payload?.request_ids)
+        ? payload.request_ids[0]
+        : null;
+    const isTarget =
+        payload?.target_user_id && payload.target_user_id === user?.id;
     const [status, setStatus] = useState("PENDING"); // PENDING | ACCEPTED | DECLINED | ENDED
     const [sessionId, setSessionId] = useState(null);
     const [loading, setLoading] = useState(false);
@@ -614,7 +854,7 @@ function GpsRequestCard({ msg, user, chatId, API, authFetchWithRefresh, fetchMes
                 const data = await resp.json();
                 const arr = Array.isArray(data) ? data : [];
                 const found = arr.find((it) => (it?.request?.id || it?.id) === rId);
-                return found ? (found.request || found) : null;
+                return found ? found.request || found : null;
             };
             let item = await pick(rIn);
             if (!item) item = await pick(rOut);
@@ -627,7 +867,9 @@ function GpsRequestCard({ msg, user, chatId, API, authFetchWithRefresh, fetchMes
         }
     }, [rId, authFetchWithRefresh]);
 
-    useEffect(() => { load(); }, [load]);
+    useEffect(() => {
+        load();
+    }, [load]);
     useEffect(() => {
         if (status !== "PENDING") return;
         const t = setInterval(load, 15000);
@@ -658,7 +900,9 @@ function GpsRequestCard({ msg, user, chatId, API, authFetchWithRefresh, fetchMes
     };
     const stopShare = async (e) => {
         if (!sessionId) return;
-        await authFetchWithRefresh(`${API}/track/sessions/${sessionId}/end`, { method: "POST" });
+        await authFetchWithRefresh(`${API}/track/sessions/${sessionId}/end`, {
+            method: "POST",
+        });
         setStatus("ENDED");
         setSessionId(null);
         showToast?.(e, t("toast.shareStopped", "Шеринг остановлен"), "warn");
@@ -677,20 +921,53 @@ function GpsRequestCard({ msg, user, chatId, API, authFetchWithRefresh, fetchMes
                 alignSelf: msg.sender_id === user?.id ? "flex-end" : "flex-start",
             }}
         >
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-                <div style={{ fontWeight: 800, color: "#86efac" }}>{t("gps.requestTitle", "Запрос GPS-мониторинга")}</div>
+            <div
+                style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    marginBottom: 6,
+                }}
+            >
+                <div style={{ fontWeight: 800, color: "#86efac" }}>
+                    {t("gps.requestTitle", "Запрос GPS-мониторинга")}
+                </div>
                 {status === "ACCEPTED" && sessionId && (
-                    <span style={{ fontSize: 11, color: "#22d3ee", background: "#0b3a55", borderRadius: 999, padding: "2px 8px" }}>
+                    <span
+                        style={{
+                            fontSize: 11,
+                            color: "#22d3ee",
+                            background: "#0b3a55",
+                            borderRadius: 999,
+                            padding: "2px 8px",
+                        }}
+                    >
                         {t("gps.active", "АКТИВНО")}
                     </span>
                 )}
                 {status === "ENDED" && (
-                    <span style={{ fontSize: 11, color: "#fbbf24", background: "#3a2a0b", borderRadius: 999, padding: "2px 8px" }}>
+                    <span
+                        style={{
+                            fontSize: 11,
+                            color: "#fbbf24",
+                            background: "#3a2a0b",
+                            borderRadius: 999,
+                            padding: "2px 8px",
+                        }}
+                    >
                         {t("gps.stopped", "ОСТАНОВЛЕНО")}
                     </span>
                 )}
                 {status === "DECLINED" && (
-                    <span style={{ fontSize: 11, color: "#fca5a5", background: "#3a0b0b", borderRadius: 999, padding: "2px 8px" }}>
+                    <span
+                        style={{
+                            fontSize: 11,
+                            color: "#fca5a5",
+                            background: "#3a0b0b",
+                            borderRadius: 999,
+                            padding: "2px 8px",
+                        }}
+                    >
                         {t("gps.declined", "ОТКЛОНЕНО")}
                     </span>
                 )}
@@ -698,25 +975,51 @@ function GpsRequestCard({ msg, user, chatId, API, authFetchWithRefresh, fetchMes
 
             {status === "PENDING" && (
                 <div style={{ fontSize: 13, opacity: 0.8, marginBottom: 8 }}>
-                    {isTarget ? t("gps.pendingTarget", "С вами хотят поделиться геолокацией. Принять запрос?") : t("gps.pendingOut", "Запрос отправлен. Ожидаем ответа.")}
+                    {isTarget
+                        ? t(
+                            "gps.pendingTarget",
+                            "С вами хотят поделиться геолокацией. Принять запрос?"
+                        )
+                        : t("gps.pendingOut", "Запрос отправлен. Ожидаем ответа.")}
                 </div>
             )}
 
             {status === "ACCEPTED" && (
-                <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+                <div
+                    style={{
+                        display: "flex",
+                        gap: 8,
+                        alignItems: "center",
+                        flexWrap: "wrap",
+                    }}
+                >
                     <div style={{ fontSize: 13, opacity: 0.9 }}>
-                        {sessionId ? t("gps.accepted.userShares", "Пользователь делится локацией.") : t("gps.accepted.preparing", "Запрос принят. Сессия готовится…")}
+                        {sessionId
+                            ? t("gps.accepted.userShares", "Пользователь делится локацией.")
+                            : t("gps.accepted.preparing", "Запрос принят. Сессия готовится…")}
                     </div>
                     <button
                         onClick={() => router?.push?.("/profile?monitoring=1")}
-                        style={{ padding: "8px 12px", borderRadius: 10, background: "#2a7bb7", color: "#fff", fontWeight: 800 }}
+                        style={{
+                            padding: "8px 12px",
+                            borderRadius: 10,
+                            background: "#2a7bb7",
+                            color: "#fff",
+                            fontWeight: 800,
+                        }}
                     >
                         {t("gps.openMonitoring", "Открыть мониторинг")}
                     </button>
                     {isTarget && sessionId && (
                         <button
                             onClick={(e) => stopShare(e)}
-                            style={{ padding: "8px 12px", borderRadius: 10, background: "#8b1d2c", color: "#fff", fontWeight: 800 }}
+                            style={{
+                                padding: "8px 12px",
+                                borderRadius: 10,
+                                background: "#8b1d2c",
+                                color: "#fff",
+                                fontWeight: 800,
+                            }}
                         >
                             {t("gps.stopShare", "Остановить шеринг")}
                         </button>
@@ -729,28 +1032,66 @@ function GpsRequestCard({ msg, user, chatId, API, authFetchWithRefresh, fetchMes
                     <button
                         onClick={(e) => accept(e)}
                         disabled={loading}
-                        style={{ padding: "8px 12px", borderRadius: 10, background: "#0f634a", color: "#e9fffa", fontWeight: 800 }}
-                    >{t("common.accept", "Принять")}</button>
+                        style={{
+                            padding: "8px 12px",
+                            borderRadius: 10,
+                            background: "#0f634a",
+                            color: "#e9fffa",
+                            fontWeight: 800,
+                        }}
+                    >
+                        {t("common.accept", "Принять")}
+                    </button>
                     <button
                         onClick={(e) => decline(e)}
                         disabled={loading}
-                        style={{ padding: "8px 12px", borderRadius: 10, background: "#3b4257", color: "#fff" }}
-                    >{t("common.decline", "Отклонить")}</button>
+                        style={{
+                            padding: "8px 12px",
+                            borderRadius: 10,
+                            background: "#3b4257",
+                            color: "#fff",
+                        }}
+                    >
+                        {t("common.decline", "Отклонить")}
+                    </button>
                 </div>
             )}
 
-            {status === "DECLINED" && <div style={{ opacity: 0.75 }}>{t("toast.requestDeclined", "Запрос отклонён")}</div>}
-            {status === "ENDED" && <div style={{ opacity: 0.75 }}>{t("toast.shareStopped", "Шеринг остановлен")}</div>}
+            {status === "DECLINED" && (
+                <div style={{ opacity: 0.75 }}>
+                    {t("toast.requestDeclined", "Запрос отклонён")}
+                </div>
+            )}
+            {status === "ENDED" && (
+                <div style={{ opacity: 0.75 }}>
+                    {t("toast.shareStopped", "Шеринг остановлен")}
+                </div>
+            )}
         </div>
     );
 }
 
-function GpsShareCard({ msg, user, API, authFetchWithRefresh, router, showToast }) {
+function GpsShareCard({
+    msg,
+    user,
+    API,
+    authFetchWithRefresh,
+    router,
+    showToast,
+}) {
     // локализатор для подписи кнопок/бейджей и текстов
     const { t } = useLang();
     let payload = null;
-    try { payload = JSON.parse(msg.content || "{}"); } catch { payload = {}; }
-    const url = payload?.link || (payload?.token ? `${window.location.origin}/track/link/${payload.token}` : null);
+    try {
+        payload = JSON.parse(msg.content || "{}");
+    } catch {
+        payload = {};
+    }
+    const url =
+        payload?.link ||
+        (payload?.token
+            ? `${window.location.origin}/track/link/${payload.token}`
+            : null);
     const isMine = msg.sender_id === user?.id;
     const [sessionId, setSessionId] = useState(payload?.session_id || null);
     const [active, setActive] = useState(true);
@@ -761,14 +1102,18 @@ function GpsShareCard({ msg, user, API, authFetchWithRefresh, router, showToast 
         const orderId = payload?.order_id;
         if (!sessionId && orderId) {
             authFetchWithRefresh(`${API}/track/for_order/${orderId}`)
-                .then(r => r.ok ? r.json() : null)
-                .then(s => { if (s?.id) setSessionId(s.id); });
+                .then((r) => (r.ok ? r.json() : null))
+                .then((s) => {
+                    if (s?.id) setSessionId(s.id);
+                });
         }
     }, [sessionId, payload?.order_id, API, authFetchWithRefresh]);
 
     const stopShare = async (e) => {
         if (!sessionId) return;
-        await authFetchWithRefresh(`${API}/track/sessions/${sessionId}/end`, { method: "POST" });
+        await authFetchWithRefresh(`${API}/track/sessions/${sessionId}/end`, {
+            method: "POST",
+        });
         setActive(false);
         setSessionId(null);
         showToast?.(e, t("toast.shareStopped", "Шеринг остановлен"), "warn");
@@ -779,7 +1124,11 @@ function GpsShareCard({ msg, user, API, authFetchWithRefresh, router, showToast 
         if (seenOnce.current) return;
         if (!isMine && active && rootRef.current) {
             const r = rootRef.current.getBoundingClientRect();
-            showToast?.({ x: r.right - 10, y: r.top + 10 }, t("toast.userSharesHint", "Пользователь делится локацией"), "ok");
+            showToast?.(
+                { x: r.right - 10, y: r.top + 10 },
+                t("toast.userSharesHint", "Пользователь делится локацией"),
+                "ok"
+            );
             seenOnce.current = true;
         }
     }, [isMine, active, showToast]);
@@ -790,61 +1139,120 @@ function GpsShareCard({ msg, user, API, authFetchWithRefresh, router, showToast 
             style={{
                 background: "#20314f",
                 border: "1px solid rgba(66,194,255,.22)",
-                borderRadius: 12, padding: "10px 14px",
-                color: "#dff6ff", marginBottom: 9, maxWidth: 520,
-                alignSelf: isMine ? "flex-end" : "flex-start"
-            }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-                <div style={{ fontWeight: 800, color: "#42c2ff" }}>{t("gps.sharedTitle", "Поделились GPS-локацией")}</div>
+                borderRadius: 12,
+                padding: "10px 14px",
+                color: "#dff6ff",
+                marginBottom: 9,
+                maxWidth: 520,
+                alignSelf: isMine ? "flex-end" : "flex-start",
+            }}
+        >
+            <div
+                style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    marginBottom: 6,
+                }}
+            >
+                <div style={{ fontWeight: 800, color: "#42c2ff" }}>
+                    {t("gps.sharedTitle", "Поделились GPS-локацией")}
+                </div>
                 {!active && (
-                    <span style={{ fontSize: 11, color: "#fbbf24", background: "#3a2a0b", borderRadius: 999, padding: "2px 8px" }}>
+                    <span
+                        style={{
+                            fontSize: 11,
+                            color: "#fbbf24",
+                            background: "#3a2a0b",
+                            borderRadius: 999,
+                            padding: "2px 8px",
+                        }}
+                    >
                         {t("gps.stopped", "ОСТАНОВЛЕНО")}
                     </span>
                 )}
             </div>
-            <div style={{ fontSize: 13, opacity: .85, marginBottom: 10 }}>
-                {t("gps.sharedHint", "Используйте ссылку, чтобы посмотреть перемещение на карте.")}
+            <div style={{ fontSize: 13, opacity: 0.85, marginBottom: 10 }}>
+                {t(
+                    "gps.sharedHint",
+                    "Используйте ссылку, чтобы посмотреть перемещение на карте."
+                )}
             </div>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                 {url ? (
                     <button
                         onClick={() => window.open(url, "_blank")}
-                        style={{ padding: "8px 12px", borderRadius: 10, background: "#2a7bb7", color: "#fff", fontWeight: 800 }}
-                    >{t("common.open", "Открыть")}</button>
+                        style={{
+                            padding: "8px 12px",
+                            borderRadius: 10,
+                            background: "#2a7bb7",
+                            color: "#fff",
+                            fontWeight: 800,
+                        }}
+                    >
+                        {t("common.open", "Открыть")}
+                    </button>
                 ) : (
-                    <div style={{ opacity: .7 }}>{t("gps.linkLater", "Ссылка будет доступна позже")}</div>
+                    <div style={{ opacity: 0.7 }}>
+                        {t("gps.linkLater", "Ссылка будет доступна позже")}
+                    </div>
                 )}
                 {isMine && sessionId && active && (
                     <button
                         onClick={(e) => stopShare(e)}
-                        style={{ padding: "8px 12px", borderRadius: 10, background: "#8b1d2c", color: "#fff", fontWeight: 800 }}
-                    >{t("gps.stopShare", "Остановить шеринг")}</button>
+                        style={{
+                            padding: "8px 12px",
+                            borderRadius: 10,
+                            background: "#8b1d2c",
+                            color: "#fff",
+                            fontWeight: 800,
+                        }}
+                    >
+                        {t("gps.stopShare", "Остановить шеринг")}
+                    </button>
                 )}
                 <button
                     onClick={() => router?.push?.("/profile?monitoring=1")}
-                    style={{ padding: "8px 12px", borderRadius: 10, background: "#3b4257", color: "#fff" }}
-                >{t("gps.monitoring", "Мониторинг")}</button>
+                    style={{
+                        padding: "8px 12px",
+                        borderRadius: 10,
+                        background: "#3b4257",
+                        color: "#fff",
+                    }}
+                >
+                    {t("gps.monitoring", "Мониторинг")}
+                </button>
             </div>
         </div>
     );
 }
 
-export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack }) {
+export default function MessengerChat({
+    chatId,
+    peerUser,
+    closeMessenger,
+    goBack,
+}) {
     // ---- суффиксатор коллизий ключей на один рендер ----␊
     const { t, lang } = useLang();
     // Локализованные типы кузова + хелпер лейбла для использования ниже (tr.truck_type)
     // Используем общий источник правды из truckOptions.js
     const BODY_TYPES_FLAT = useMemo(() => {
         const base = getTruckBodyTypes(t) || [];
-        return base.flatMap(o => Array.isArray(o?.children) ? o.children : [o]);
+        return base.flatMap((o) => (Array.isArray(o?.children) ? o.children : [o]));
     }, [t]);
 
-    const typeLabel = useCallback((raw) => {
-        if (!raw) return "";
-        const v = String(raw).trim().toLowerCase();
-        const hit = BODY_TYPES_FLAT.find(o => String(o.value || "").toLowerCase() === v);
-        return hit ? hit.label : raw;
-    }, [BODY_TYPES_FLAT]);
+    const typeLabel = useCallback(
+        (raw) => {
+            if (!raw) return "";
+            const v = String(raw).trim().toLowerCase();
+            const hit = BODY_TYPES_FLAT.find(
+                (o) => String(o.value || "").toLowerCase() === v
+            );
+            return hit ? hit.label : raw;
+        },
+        [BODY_TYPES_FLAT]
+    );
     const __seenBases = new Map();
     const makeUniqueKey = (base, idx) => {
         const b = base || `m-idx-${idx}`;
@@ -870,18 +1278,20 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
         setChatId,
         connectWS,
         getSupportQueue,
-        getSupportTyping,      // ← добавлено: селектор «саппорт печатает»
-        fetchChatList,         // ← добавлено: нужно обновлять список чатов/сайдбар
+        getSupportTyping, // ← добавлено: селектор «саппорт печатает»
+        fetchChatList, // ← добавлено: нужно обновлять список чатов/сайдбар
         wsRef,
-        deleteChatForMe,    // ← добавили
-        clearLocalChat      // ← добавили
+        deleteChatForMe, // ← добавили
+        clearLocalChat, // ← добавили
     } = useMessenger();
 
     const [openReactionFor, setOpenReactionFor] = useState(null);
 
     const { toast, show: showToast } = useCursorToast();
 
-    // Управление GPS-модалками+    const [showRequestGps, setShowRequestGps] = useState(false);+    const [showShareGps, setShowShareGps] = useState(false);
+    // Управление GPS-модалками    
+    // const [showRequestGps, setShowRequestGps] = useState(false);    
+    // const [showShareGps, setShowShareGps] = useState(false);
     const GPS_DISABLED = true;
     const [gpsMenuOpen, setGpsMenuOpen] = useState(false);
     const gpsMenuRef = useRef(null);
@@ -891,55 +1301,73 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
     // Не читаем chat?.support напрямую в коллбэках (TDZ). Держим флаг в ref:
     const isSupportChatRef = useRef(false);
     // Коллбэки из модалок → создаём спец-сообщения в чат
-    const handleGpsRequested = useCallback(async (createdList = []) => {
-        // В саппорт-чате запрещаем создание запросов локации
-        if (!!chat?.support) { setShowRequestGps(false); return; }
-        try {
-            const ids = (Array.isArray(createdList) ? createdList : [])
-                .map(x => x?.id ?? x?.request?.id)
-                .filter(Boolean);
-            await sendMessage({
-                message_type: "gps_request",
-                content: JSON.stringify({
-                    request_ids: ids,
-                    order_id: null,
-                    target_user_id: peerUser?.id ?? null,
-                }),
-            });
-        } finally {
-            setShowRequestGps(false);
-        }
-    }, [sendMessage, authFetchWithRefresh, API, peerUser]);
-
-    const handleGpsShared = useCallback(async (session, recipientId) => {
-        // В саппорт-чате запрещаем делиться геолокацией
-        if (isSupportChatRef.current) { setShowShareGps(false); return; }
-        try {
-            // Делаем (или продлеваем) публичную ссылку, чтобы в чате была кликабельная
-            let link = null, token = null;
+    const handleGpsRequested = useCallback(
+        async (createdList = []) => {
+            // В саппорт-чате запрещаем создание запросов локации
+            if (!!chat?.support) {
+                setShowRequestGps(false);
+                return;
+            }
             try {
-                const res = await authFetchWithRefresh(`${API}/track/sessions/${session?.id}/share_link`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ expires_in_hours: 24 * 7 }),
+                const ids = (Array.isArray(createdList) ? createdList : [])
+                    .map((x) => x?.id ?? x?.request?.id)
+                    .filter(Boolean);
+                await sendMessage({
+                    message_type: "gps_request",
+                    content: JSON.stringify({
+                        request_ids: ids,
+                        order_id: null,
+                        target_user_id: peerUser?.id ?? null,
+                    }),
                 });
-                const data = await res.json().catch(() => null);
-                token = data?.token ?? null;
-                link = data?.url || (token ? `${window.location.origin}/track/link/${token}` : null);
-            } catch (_) { }
-            await sendMessage({
-                message_type: "gps_share",
-                content: JSON.stringify({
-                    session_id: session?.id,
-                    token,
-                    link,
-                    to_user_id: recipientId ?? peerUser?.id ?? null,
-                }),
-            });
-        } finally {
-            setShowShareGps(false);
-        }
-    }, [sendMessage, authFetchWithRefresh, API, peerUser]);
+            } finally {
+                setShowRequestGps(false);
+            }
+        },
+        [sendMessage, authFetchWithRefresh, API, peerUser]
+    );
+
+    const handleGpsShared = useCallback(
+        async (session, recipientId) => {
+            // В саппорт-чате запрещаем делиться геолокацией
+            if (isSupportChatRef.current) {
+                setShowShareGps(false);
+                return;
+            }
+            try {
+                // Делаем (или продлеваем) публичную ссылку, чтобы в чате была кликабельная
+                let link = null,
+                    token = null;
+                try {
+                    const res = await authFetchWithRefresh(
+                        `${API}/track/sessions/${session?.id}/share_link`,
+                        {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ expires_in_hours: 24 * 7 }),
+                        }
+                    );
+                    const data = await res.json().catch(() => null);
+                    token = data?.token ?? null;
+                    link =
+                        data?.url ||
+                        (token ? `${window.location.origin}/track/link/${token}` : null);
+                } catch (_) { }
+                await sendMessage({
+                    message_type: "gps_share",
+                    content: JSON.stringify({
+                        session_id: session?.id,
+                        token,
+                        link,
+                        to_user_id: recipientId ?? peerUser?.id ?? null,
+                    }),
+                });
+            } finally {
+                setShowShareGps(false);
+            }
+        },
+        [sendMessage, authFetchWithRefresh, API, peerUser]
+    );
     // === Быстрые действия GPS без модалок ===
     // Создаём (если нужно) сессию трекинга без привязки к заявке/транспорту
     const ensureChatTrackSession = useCallback(async () => {
@@ -948,7 +1376,11 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
             const res = await authFetchWithRefresh(`${API}/track/sessions`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ order_id: null, transport_id: null, visibility: "link" }),
+                body: JSON.stringify({
+                    order_id: null,
+                    transport_id: null,
+                    visibility: "link",
+                }),
             });
             if (!res?.ok) return null;
             const data = await res.json().catch(() => null);
@@ -959,79 +1391,164 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
     }, [API, authFetchWithRefresh]);
 
     // Поделиться геолокацией мгновенно адресату этого чата
-    const quickShareGps = useCallback(async (e) => {
-        e?.preventDefault?.();
-        if (GPS_DISABLED) { showToast(e, t("gps.soon.short", "Скоро: GPS-мониторинг"), "info"); return; }
-        if (!!chat?.support) return; // в саппорте запрещено
-        const recipientId = peerUser?.id;
-        if (!recipientId) { showToast(e, t("toast.noRecipient", "Нет адресата"), "error"); return; }
-        // создаём/гарантируем сессию -> share -> сообщение в чат
-        const s = await ensureChatTrackSession();
-        if (!s?.id) { showToast(e, t("toast.sessionCreateError", "Не удалось создать GPS-сессию"), "error"); return; }
-        try {
-            const resp = await authFetchWithRefresh(
-                `${API}/track/sessions/${s.id}/share`,
-                {
-                    method: "POST", headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ recipient_ids: [recipientId] })
+    const quickShareGps = useCallback(
+        async (e) => {
+            e?.preventDefault?.();
+            if (GPS_DISABLED) {
+                showToast(e, t("gps.soon.short", "Скоро: GPS-мониторинг"), "info");
+                return;
+            }
+            if (!!chat?.support) return; // в саппорте запрещено
+            const recipientId = peerUser?.id;
+            if (!recipientId) {
+                showToast(e, t("toast.noRecipient", "Нет адресата"), "error");
+                return;
+            }
+            // создаём/гарантируем сессию -> share -> сообщение в чат
+            const s = await ensureChatTrackSession();
+            if (!s?.id) {
+                showToast(
+                    e,
+                    t("toast.sessionCreateError", "Не удалось создать GPS-сессию"),
+                    "error"
+                );
+                return;
+            }
+            try {
+                const resp = await authFetchWithRefresh(
+                    `${API}/track/sessions/${s.id}/share`,
+                    {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ recipient_ids: [recipientId] }),
+                    }
+                );
+                if (!resp?.ok) {
+                    showToast(e, t("toast.shareError", "Не удалось поделиться"), "error");
+                    return;
                 }
-            );
-            if (!resp?.ok) { showToast(e, t("toast.shareError", "Не удалось поделиться"), "error"); return; }
-            await handleGpsShared(s, recipientId);
-            showToast(e, t("toast.locationSent", "Локация отправлена"), "ok");
-        } catch {
-            showToast(e, t("toast.locationSendError", "Ошибка при отправке локации"), "error");
-        } finally {
-            setAttachmentMenuOpen(false);
-        }
-    }, [API, authFetchWithRefresh, ensureChatTrackSession, peerUser?.id, handleGpsShared, showToast]);
-
+                await handleGpsShared(s, recipientId);
+                showToast(e, t("toast.locationSent", "Локация отправлена"), "ok");
+            } catch {
+                showToast(
+                    e,
+                    t("toast.locationSendError", "Ошибка при отправке локации"),
+                    "error"
+                );
+            } finally {
+                setAttachmentMenuOpen(false);
+            }
+        },
+        [
+            API,
+            authFetchWithRefresh,
+            ensureChatTrackSession,
+            peerUser?.id,
+            handleGpsShared,
+            showToast,
+        ]
+    );
 
     // Запросить геолокацию у адресата этого чата
-    const quickRequestGps = useCallback(async (e) => {
-        e?.preventDefault?.();
-        if (GPS_DISABLED) { showToast(e, t("gps.soon.short", "Скоро: GPS-мониторинг"), "info"); return; }
-        if (!!chat?.support) return; // в саппорте запрещено
-        const targetId = peerUser?.id;
-        if (!targetId) { showToast(e, t("toast.noRecipient", "Нет адресата"), "error"); return; }
+    const quickRequestGps = useCallback(
+        async (e) => {
+            e?.preventDefault?.();
+            if (GPS_DISABLED) {
+                showToast(e, t("gps.soon.short", "Скоро: GPS-мониторинг"), "info");
+                return;
+            }
+            if (!!chat?.support) return; // в саппорте запрещено
+            const targetId = peerUser?.id;
+            if (!targetId) {
+                showToast(e, t("toast.noRecipient", "Нет адресата"), "error");
+                return;
+            }
 
-        // проверяем активные запросы, чтобы не дублировать
-        try {
-            const [rIn, rOut] = await Promise.all([
-                authFetchWithRefresh(`${API}/track/requests/incoming`),
-                authFetchWithRefresh(`${API}/track/requests/outgoing`),
-            ]);
-            const pick = async (resp) => {
-                if (!resp?.ok) return [];
-                const data = await resp.json();
-                return Array.isArray(data) ? data.map(x => (x.request || x)) : [];
-            };
-            const incoming = await pick(rIn);
-            const outgoing = await pick(rOut);
-            const activeLike = (s) => s === "PENDING" || s === "ACCEPTED";
-            const outToPeer = outgoing.find(it => it?.target_user_id === targetId && activeLike(it?.status));
-            const inFromPeer = incoming.find(it => it?.user_id === targetId && activeLike(it?.status));
-            if (outToPeer?.status === "ACCEPTED") { showToast(e, t("toast.alreadySharing", "Вы уже делитесь с этим пользователем"), "ok"); setAttachmentMenuOpen(false); return; }
-            if (outToPeer?.status === "PENDING") { showToast(e, t("toast.requestAlreadySent", "Запрос уже отправлен — ждём ответа"), "info"); setAttachmentMenuOpen(false); return; }
-            if (inFromPeer?.status === "ACCEPTED") { showToast(e, t("toast.userAlreadyShares", "Пользователь уже делится с вами"), "ok"); setAttachmentMenuOpen(false); return; }
-            if (inFromPeer?.status === "PENDING") { showToast(e, t("toast.incomingExists", "Есть входящий запрос — проверьте чат"), "info"); setAttachmentMenuOpen(false); return; }
-        } catch { /* не блокируем */ }
+            // проверяем активные запросы, чтобы не дублировать
+            try {
+                const [rIn, rOut] = await Promise.all([
+                    authFetchWithRefresh(`${API}/track/requests/incoming`),
+                    authFetchWithRefresh(`${API}/track/requests/outgoing`),
+                ]);
+                const pick = async (resp) => {
+                    if (!resp?.ok) return [];
+                    const data = await resp.json();
+                    return Array.isArray(data) ? data.map((x) => x.request || x) : [];
+                };
+                const incoming = await pick(rIn);
+                const outgoing = await pick(rOut);
+                const activeLike = (s) => s === "PENDING" || s === "ACCEPTED";
+                const outToPeer = outgoing.find(
+                    (it) => it?.target_user_id === targetId && activeLike(it?.status)
+                );
+                const inFromPeer = incoming.find(
+                    (it) => it?.user_id === targetId && activeLike(it?.status)
+                );
+                if (outToPeer?.status === "ACCEPTED") {
+                    showToast(
+                        e,
+                        t("toast.alreadySharing", "Вы уже делитесь с этим пользователем"),
+                        "ok"
+                    );
+                    setAttachmentMenuOpen(false);
+                    return;
+                }
+                if (outToPeer?.status === "PENDING") {
+                    showToast(
+                        e,
+                        t("toast.requestAlreadySent", "Запрос уже отправлен — ждём ответа"),
+                        "info"
+                    );
+                    setAttachmentMenuOpen(false);
+                    return;
+                }
+                if (inFromPeer?.status === "ACCEPTED") {
+                    showToast(
+                        e,
+                        t("toast.userAlreadyShares", "Пользователь уже делится с вами"),
+                        "ok"
+                    );
+                    setAttachmentMenuOpen(false);
+                    return;
+                }
+                if (inFromPeer?.status === "PENDING") {
+                    showToast(
+                        e,
+                        t("toast.incomingExists", "Есть входящий запрос — проверьте чат"),
+                        "info"
+                    );
+                    setAttachmentMenuOpen(false);
+                    return;
+                }
+            } catch {
+                /* не блокируем */
+            }
 
-        try {
-            const res = await authFetchWithRefresh(`${API}/track/requests`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ order_id: null, target_ids: [targetId], message: null }),
-            });
-            const data = await res.json().catch(() => []);
-            await handleGpsRequested(data);
-            showToast(e, t("toast.requestSent", "Запрос отправлен"), "ok");
-        } catch {
-            showToast(e, t("toast.requestSendError", "Не удалось отправить запрос"), "error");
-        } finally {
-            setAttachmentMenuOpen(false);
-        }
-    }, [authFetchWithRefresh, peerUser?.id, handleGpsRequested, showToast]);
+            try {
+                const res = await authFetchWithRefresh(`${API}/track/requests`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        order_id: null,
+                        target_ids: [targetId],
+                        message: null,
+                    }),
+                });
+                const data = await res.json().catch(() => []);
+                await handleGpsRequested(data);
+                showToast(e, t("toast.requestSent", "Запрос отправлен"), "ok");
+            } catch {
+                showToast(
+                    e,
+                    t("toast.requestSendError", "Не удалось отправить запрос"),
+                    "error"
+                );
+            } finally {
+                setAttachmentMenuOpen(false);
+            }
+        },
+        [authFetchWithRefresh, peerUser?.id, handleGpsRequested, showToast]
+    );
 
     useEffect(() => {
         if (!chatId) return;
@@ -1065,7 +1582,9 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
     // ⬇️ Сбрасываем флаг при смене чата, чтобы первый скролл был без анимации
     useEffect(() => {
         didInitialScrollRef.current = false;
-        try { initialJumpDoneRef.current = false; } catch { }
+        try {
+            initialJumpDoneRef.current = false;
+        } catch { }
     }, [chatId]);
     const textareaRef = useRef(null);
     const [messagesLimit, setMessagesLimit] = useState(30);
@@ -1085,7 +1604,10 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
     useEffect(() => {
         if (typeof window === "undefined") return;
         try {
-            localStorage.setItem("ti-auto-translate-enabled", autoTranslate ? "1" : "0");
+            localStorage.setItem(
+                "ti-auto-translate-enabled",
+                autoTranslate ? "1" : "0"
+            );
         } catch { }
     }, [autoTranslate]);
 
@@ -1097,7 +1619,8 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
             if (!shown) {
                 setShowTranslateHint(true);
                 localStorage.setItem("ti-translate-hint-shown", "1");
-                if (translateHintTimerRef.current) clearTimeout(translateHintTimerRef.current);
+                if (translateHintTimerRef.current)
+                    clearTimeout(translateHintTimerRef.current);
                 timer = setTimeout(() => setShowTranslateHint(false), 8000);
                 translateHintTimerRef.current = timer;
             } else {
@@ -1105,7 +1628,8 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
             }
         } catch { }
         return () => {
-            if (translateHintTimerRef.current) clearTimeout(translateHintTimerRef.current);
+            if (translateHintTimerRef.current)
+                clearTimeout(translateHintTimerRef.current);
             if (timer) clearTimeout(timer);
         };
     }, [chatId]);
@@ -1119,7 +1643,9 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
             const m = messages[i];
             if (m?.message_type === "gps_request") {
                 let payload = {};
-                try { payload = JSON.parse(m.content || "{}"); } catch { }
+                try {
+                    payload = JSON.parse(m.content || "{}");
+                } catch { }
                 const to = payload?.target_user_id || m?.target_user_id;
                 const from = m?.sender_id;
                 const key = `rq:${from}->${to}`;
@@ -1131,51 +1657,75 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
         return res.reverse();
     }, [messages]);
 
-    const guardOpenGps = React.useCallback(async (e) => {
-        e?.preventDefault?.();
-        try {
-            const [rIn, rOut] = await Promise.all([
-                authFetchWithRefresh(api(`/track/requests/incoming`)),
-                authFetchWithRefresh(api(`/track/requests/outgoing`)),
-            ]);
-            const pick = async (resp) => {
-                if (!resp?.ok) return [];
-                const data = await resp.json();
-                return Array.isArray(data) ? data.map(x => (x.request || x)) : [];
-            };
-            const incoming = await pick(rIn);
-            const outgoing = await pick(rOut);
-            const peerId = peerUser?.id; // у тебя уже есть peerUser в чате
-            const meId = user?.id;
-            const activeLike = (s) => s === "PENDING" || s === "ACCEPTED";
+    const guardOpenGps = React.useCallback(
+        async (e) => {
+            e?.preventDefault?.();
+            try {
+                const [rIn, rOut] = await Promise.all([
+                    authFetchWithRefresh(api(`/track/requests/incoming`)),
+                    authFetchWithRefresh(api(`/track/requests/outgoing`)),
+                ]);
+                const pick = async (resp) => {
+                    if (!resp?.ok) return [];
+                    const data = await resp.json();
+                    return Array.isArray(data) ? data.map((x) => x.request || x) : [];
+                };
+                const incoming = await pick(rIn);
+                const outgoing = await pick(rOut);
+                const peerId = peerUser?.id; // у тебя уже есть peerUser в чате
+                const meId = user?.id;
+                const activeLike = (s) => s === "PENDING" || s === "ACCEPTED";
 
-            const outToPeer = outgoing.find(it => it?.target_user_id === peerId && activeLike(it?.status));
-            const inFromPeer = incoming.find(it => it?.user_id === peerId && activeLike(it?.status));
+                const outToPeer = outgoing.find(
+                    (it) => it?.target_user_id === peerId && activeLike(it?.status)
+                );
+                const inFromPeer = incoming.find(
+                    (it) => it?.user_id === peerId && activeLike(it?.status)
+                );
 
-            if (outToPeer?.status === "ACCEPTED") {
-                showToast(e, t("toast.alreadySharing", "Вы уже делитесь с этим пользователем"), "ok");
-                return;
+                if (outToPeer?.status === "ACCEPTED") {
+                    showToast(
+                        e,
+                        t("toast.alreadySharing", "Вы уже делитесь с этим пользователем"),
+                        "ok"
+                    );
+                    return;
+                }
+                if (outToPeer?.status === "PENDING") {
+                    showToast(
+                        e,
+                        t("toast.requestAlreadySent", "Запрос уже отправлен — ждём ответа"),
+                        "info"
+                    );
+                    return;
+                }
+                if (inFromPeer?.status === "ACCEPTED") {
+                    showToast(
+                        e,
+                        t("toast.userAlreadyShares", "Пользователь уже делится с вами"),
+                        "ok"
+                    );
+                    return;
+                }
+                if (inFromPeer?.status === "PENDING") {
+                    showToast(
+                        e,
+                        t(
+                            "toast.incomingExists",
+                            "Есть входящий запрос — посмотрите в чате"
+                        ),
+                        "info"
+                    );
+                    return;
+                }
+                // ничего активного нет — можно открывать модалку
+                await quickRequestGps(e);
+            } catch {
+                await quickRequestGps(e); // на всякий случай не блокируем
             }
-            if (outToPeer?.status === "PENDING") {
-                showToast(e, t("toast.requestAlreadySent", "Запрос уже отправлен — ждём ответа"), "info");
-                return;
-            }
-            if (inFromPeer?.status === "ACCEPTED") {
-                showToast(e, t("toast.userAlreadyShares", "Пользователь уже делится с вами"), "ok");
-                return;
-            }
-            if (inFromPeer?.status === "PENDING") {
-                showToast(e, t("toast.incomingExists", "Есть входящий запрос — посмотрите в чате"), "info");
-                return;
-            }
-            // ничего активного нет — можно открывать модалку
-            await quickRequestGps(e);
-        } catch {
-            await quickRequestGps(e); // на всякий случай не блокируем
-        }
-    }, [API, authFetchWithRefresh, peerUser?.id, user?.id, showToast]);
-
-
+        },
+        [API, authFetchWithRefresh, peerUser?.id, user?.id, showToast]
+    );
 
     // Быстрый прыжок в самый низ перед первой отрисовкой, без "прокрутки" длинного списка
     const initialJumpDoneRef = useRef(false);
@@ -1186,21 +1736,28 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
         if (!Array.isArray(messages) || messages.length === 0) return;
         // временно отключаем плавный скролл, чтобы исключить анимацию
         const prev = c.style.scrollBehavior;
-        c.style.scrollBehavior = 'auto';
+        c.style.scrollBehavior = "auto";
         c.scrollTop = c.scrollHeight; // мгновенно в самый низ
         initialJumpDoneRef.current = true;
         // на всякий случай "дергаем" якорь внизу без анимации
-        try { messagesEndRef.current?.scrollIntoView({ behavior: 'auto' }); } catch { }
+        try {
+            messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
+        } catch { }
         // возвращаем поведение назад после кадра
-        requestAnimationFrame(() => { c.style.scrollBehavior = prev || ''; });
+        requestAnimationFrame(() => {
+            c.style.scrollBehavior = prev || "";
+        });
         // помечаем что стартовый скролл уже выполнен
         didInitialScrollRef.current = true;
         // после стартового прыжка считаем, что находимся внизу
-        try { stickToBottomRef.current = true; setIsNearBottom(true); } catch { }
+        try {
+            stickToBottomRef.current = true;
+            setIsNearBottom(true);
+        } catch { }
     }, [chatId, messages?.length]);
     const messagesContainerRef = useRef(null);
     // --- автофиксация к низу и отключение автоскролла, когда читаем историю ---
-    const stickToBottomRef = useRef(true);              // по умолчанию прилипать к низу
+    const stickToBottomRef = useRef(true); // по умолчанию прилипать к низу
     const [isNearBottom, setIsNearBottom] = useState(true); // для UI «К последним»
     const SCROLL_EPS = 40; // px — насколько близко к низу считаем «внизу»
     const handleScroll = useCallback(() => {
@@ -1222,9 +1779,13 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
         if (!stickToBottomRef.current) return;
         const prev = c.style.scrollBehavior;
         if (behavior === "auto") c.style.scrollBehavior = "auto";
-        try { messagesEndRef.current.scrollIntoView({ behavior }); }
-        finally {
-            if (behavior === "auto") requestAnimationFrame(() => { c.style.scrollBehavior = prev || ""; });
+        try {
+            messagesEndRef.current.scrollIntoView({ behavior });
+        } finally {
+            if (behavior === "auto")
+                requestAnimationFrame(() => {
+                    c.style.scrollBehavior = prev || "";
+                });
         }
     }, []);
     // ↑ подгрузка старых сообщений
@@ -1242,12 +1803,17 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
         const container = messagesContainerRef.current;
         if (!container) return;
         // Берём самый "старый" среди уже загруженных сообщений
-        const first = Array.isArray(messages) && messages.length > 0 ? messages[0]?.id : null;
+        const first =
+            Array.isArray(messages) && messages.length > 0 ? messages[0]?.id : null;
         if (!first || !chatId) return;
         setLoadingOlder(true);
         const prevScrollHeight = container.scrollHeight;
         const prevScrollTop = container.scrollTop;
-        const older = await fetchOlderMessagesRef.current?.(chatId, first, PAGE_SIZE_DEBUG);
+        const older = await fetchOlderMessagesRef.current?.(
+            chatId,
+            first,
+            PAGE_SIZE_DEBUG
+        );
         if (Array.isArray(older) && older.length > 0) {
             // Сохраняем позицию скролла, чтобы не было "прыжка"
             requestAnimationFrame(() => {
@@ -1285,15 +1851,22 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
     const handleShowMore = () => {
         // Найдём id самого первого (верхнего) отображаемого сообщения
         const firstMsg = displayedMessages[0];
-        const firstMsgEl = firstMsg ? document.getElementById(`msg-${firstMsg.id || firstMsg.idx}`) : null;
+        const firstMsgEl = firstMsg
+            ? document.getElementById(`msg-${firstMsg.id || firstMsg.idx}`)
+            : null;
         const prevTop = firstMsgEl?.getBoundingClientRect().top;
 
-        setMessagesLimit(l => l + 30);
+        setMessagesLimit((l) => l + 30);
 
         setTimeout(() => {
             // После увеличения лимита, найдём этот же элемент (он сдвинется вниз)
-            if (firstMsg && document.getElementById(`msg-${firstMsg.id || firstMsg.idx}`)) {
-                const newEl = document.getElementById(`msg-${firstMsg.id || firstMsg.idx}`);
+            if (
+                firstMsg &&
+                document.getElementById(`msg-${firstMsg.id || firstMsg.idx}`)
+            ) {
+                const newEl = document.getElementById(
+                    `msg-${firstMsg.id || firstMsg.idx}`
+                );
                 if (newEl && prevTop !== undefined) {
                     const delta = newEl.getBoundingClientRect().top - prevTop;
                     messagesContainerRef.current.scrollTop += delta;
@@ -1302,45 +1875,55 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
         }, 100); // чуть задержим, чтобы рендер прошёл
     };
 
-
     // ===== ВАЖНО: filteredMessages объявляем ДО matchRefs и useEffect =====
     const base = dedupedMessages;
     const filteredMessages = searchMsg.trim()
-        ? base.filter(
-            m => (m.content || "").toLowerCase().includes(searchMsg.trim().toLowerCase())
+        ? base.filter((m) =>
+            (m.content || "").toLowerCase().includes(searchMsg.trim().toLowerCase())
         )
         : base;
 
     const matchRefs = useRef([]);
     // Сброс refs при каждом новом поиске или изменении списка найденных
-    useEffect(() => { matchRefs.current = []; }, [filteredMessages]);
+    useEffect(() => {
+        matchRefs.current = [];
+    }, [filteredMessages]);
     // Показываем весь уже загруженный список.
     // Лимитированная выдача контролируется бэкендом и ленивой подгрузкой "вверх".
     const displayedMessages = filteredMessages;
 
-    const buildTranslationKey = useCallback((msg, target) => {
-        const base = buildMsgKeyBase(msg)
-            || msg?.id
-            || msg?.client_nonce
-            || msg?.localId
-            || msg?.idx
-            || msg?.sent_at
-            || msg?.created_at
-            || msg?.ts
-            || msg?.time
-            || (msg?.content ? String(msg.content).slice(0, 24) : "");
-        return [chatId, base, target].filter(Boolean).join("::");
-    }, [chatId]);
+    const buildTranslationKey = useCallback(
+        (msg, target) => {
+            const base =
+                buildMsgKeyBase(msg) ||
+                msg?.id ||
+                msg?.client_nonce ||
+                msg?.localId ||
+                msg?.idx ||
+                msg?.sent_at ||
+                msg?.created_at ||
+                msg?.ts ||
+                msg?.time ||
+                (msg?.content ? String(msg.content).slice(0, 24) : "");
+            return [chatId, base, target].filter(Boolean).join("::");
+        },
+        [chatId]
+    );
 
     const translateText = useCallback(async (payload, target) => {
         const normalizedTarget = (target || "en").toLowerCase();
-        const text = typeof payload === "string"
-            ? payload
-            : (payload == null ? "" : String(payload));
+        const text =
+            typeof payload === "string"
+                ? payload
+                : payload == null
+                    ? ""
+                    : String(payload);
         const safePayload = text.trim();
         if (!safePayload) return null;
         const resp = await fetch(
-            `https://api.mymemory.translated.net/get?q=${encodeURIComponent(safePayload)}&langpair=auto|${encodeURIComponent(normalizedTarget)}`
+            `https://api.mymemory.translated.net/get?q=${encodeURIComponent(
+                safePayload
+            )}&langpair=auto|${encodeURIComponent(normalizedTarget)}`
         );
         if (!resp.ok) throw new Error("translate_failed");
         const data = await resp.json();
@@ -1352,10 +1935,15 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
         if (!autoTranslate) return;
         const target = targetLang;
         const recent = (displayedMessages || [])
-            .filter(m => !m?.message_type || m.message_type === "text" || m.message_type === "message")
+            .filter(
+                (m) =>
+                    !m?.message_type ||
+                    m.message_type === "text" ||
+                    m.message_type === "message"
+            )
             .slice(-20);
 
-        const missing = recent.filter(m => {
+        const missing = recent.filter((m) => {
             if (typeof m?.content !== "string" || !m.content.trim()) return false;
             const key = buildTranslationKey(m, target);
             return key && !translationCacheRef.current[key];
@@ -1373,9 +1961,12 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                 if (!payload || payload.length > 2000) {
                     const skipKey = buildTranslationKey(msg, target);
                     if (skipKey && !translationCacheRef.current[skipKey]) {
-                        setTranslationCache(prev => {
+                        setTranslationCache((prev) => {
                             if (prev[skipKey]) return prev;
-                            const next = { ...prev, [skipKey]: payload || msg?.content || "" };
+                            const next = {
+                                ...prev,
+                                [skipKey]: payload || msg?.content || "",
+                            };
                             translationCacheRef.current = next;
                             return next;
                         });
@@ -1386,7 +1977,7 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                     const translated = await translateText(payload, target);
                     if (translated && !cancelled) {
                         const key = buildTranslationKey(msg, target);
-                        setTranslationCache(prev => {
+                        setTranslationCache((prev) => {
                             if (prev[key]) return prev;
                             const next = { ...prev, [key]: translated };
                             translationCacheRef.current = next;
@@ -1404,22 +1995,34 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
             cancelled = true;
             setTranslatingMessages(false);
         };
-    }, [autoTranslate, targetLang, displayedMessages, translateText, buildTranslationKey]);
+    }, [
+        autoTranslate,
+        targetLang,
+        displayedMessages,
+        translateText,
+        buildTranslationKey,
+    ]);
 
     // ВАЖНО: берём из контекста до использования ниже, чтобы не поймать TDZ
     const { chatList = [], fetchOlderMessages, getAutoclose } = useMessenger();
     // Стабильная ссылка на функцию из контекста (без зависимости от порядка объявления)
     const fetchOlderMessagesRef = useRef(fetchOlderMessages);
-    useEffect(() => { fetchOlderMessagesRef.current = fetchOlderMessages; }, [fetchOlderMessages]);
-    let chat = chatList.find(c => c.chat_id === chatId) || {};
+    useEffect(() => {
+        fetchOlderMessagesRef.current = fetchOlderMessages;
+    }, [fetchOlderMessages]);
+    let chat = chatList.find((c) => c.chat_id === chatId) || {};
     // Если peer прилетел отдельно, аккуратно подольём его в chat
-    if (!chat.peer && peerUser) { chat = { ...chat, peer: peerUser }; }
+    if (!chat.peer && peerUser) {
+        chat = { ...chat, peer: peerUser };
+    }
 
     // Локальная мета по конкретному чату (support, display_title и пр.)
     const [chatMeta, setChatMeta] = useState(null);
     // ВАЖНО: при переключении чата сбрасываем прошлую мету,
     // чтобы флаг support не "утекал" в другой чат
-    useEffect(() => { setChatMeta(null); }, [chatId]);
+    useEffect(() => {
+        setChatMeta(null);
+    }, [chatId]);
     useEffect(() => {
         let aborted = false;
         async function loadMeta() {
@@ -1434,7 +2037,9 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
         }
         // Если в локальном chat нет support-инфы — подгружаем метаданные
         if (!chat?.support) loadMeta();
-        return () => { aborted = true; };
+        return () => {
+            aborted = true;
+        };
     }, [chatId, chat?.support, authFetchWithRefresh]);
     // Слушатель, чтобы после "решить/закрыть" сразу обновить мету
     useEffect(() => {
@@ -1442,14 +2047,19 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
             if (e.detail?.chatId === chatId) {
                 (async () => {
                     try {
-                        const res = await authFetchWithRefresh(`${API}/chat/${chatId}/meta`);
-                        if (res.ok) { setChatMeta(await res.json()); }
+                        const res = await authFetchWithRefresh(
+                            `${API}/chat/${chatId}/meta`
+                        );
+                        if (res.ok) {
+                            setChatMeta(await res.json());
+                        }
                     } catch { }
                 })();
             }
         }
         window.addEventListener("support_meta_changed", onMetaChanged);
-        return () => window.removeEventListener("support_meta_changed", onMetaChanged);
+        return () =>
+            window.removeEventListener("support_meta_changed", onMetaChanged);
     }, [chatId, authFetchWithRefresh]);
 
     // Если мета пришла и относится К ЭТОМУ чату — объединяем
@@ -1463,17 +2073,25 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
     // но учитываем её только если она для текущего chatId
     const isSupport = !!(
         chat?.support ||
-        (chatMeta?.support && (chatMeta?.chat_id === chatId || chatMeta?.id === chatId))
+        (chatMeta?.support &&
+            (chatMeta?.chat_id === chatId || chatMeta?.id === chatId))
     );
-    useEffect(() => { isSupportChatRef.current = isSupport; }, [isSupport]);
-    const supportStatus = (chat?.support_status || "").toString().replace("TicketStatus.", "");
+    useEffect(() => {
+        isSupportChatRef.current = isSupport;
+    }, [isSupport]);
+    const supportStatus = (chat?.support_status || "")
+        .toString()
+        .replace("TicketStatus.", "");
     const eta = chat?.autoclose_eta_iso || null;
     // Если сервер прислал эфемерный отсчёт — он приоритетнее (содержит until_iso)
     const auto = getAutoclose?.(chatId);
-    const countdownUntilIso = (auto?.until_iso || eta || null);
+    const countdownUntilIso = auto?.until_iso || eta || null;
     const [secLeft, setSecLeft] = useState(null);
     useEffect(() => {
-        if (!countdownUntilIso) { setSecLeft(null); return; }
+        if (!countdownUntilIso) {
+            setSecLeft(null);
+            return;
+        }
         const deadline = new Date(countdownUntilIso).getTime();
         const tick = () => {
             const s = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
@@ -1485,13 +2103,14 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
     }, [countdownUntilIso]);
     const isSupportAgent = ((user?.role || "") + "").toUpperCase() === "SUPPORT";
 
-
     // --- NEW: эфемерная информация об очереди/наборе (обновляется по WS) ---
     // Баннер «В очереди поддержки ...» и индикатор «Поддержка печатает…»
     const queueInfo = getSupportQueue?.(chatId);
     const isTyping = getSupportTyping?.(chatId);
 
-    const lastSystem = [...messages].reverse().find(m => m.meta?.rating_request);
+    const lastSystem = [...messages]
+        .reverse()
+        .find((m) => m.meta?.rating_request);
     const showRating = !!lastSystem?.meta?.rating_request;
     const ratingTicketId = lastSystem?.meta?.ticket_id;
     const [rated, setRated] = useState(false);
@@ -1506,7 +2125,9 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                 if (Date.now() >= Date.parse(eta)) {
                     setForceClosed(true);
                     // подтянем свежую мету с бэка
-                    window.dispatchEvent(new CustomEvent("support_meta_changed", { detail: { chatId } }));
+                    window.dispatchEvent(
+                        new CustomEvent("support_meta_changed", { detail: { chatId } })
+                    );
                 }
             };
             tick();
@@ -1516,7 +2137,8 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
     }, [supportStatus, eta, chatId]);
 
     // Блокировка ввода: только для сотрудников поддержки, пользователю писать всегда можно
-    const inputLocked = (isSupportAgent && (supportStatus === "CLOSED" || forceClosed));
+    const inputLocked =
+        isSupportAgent && (supportStatus === "CLOSED" || forceClosed);
 
     const attachmentActions = useMemo(() => {
         const actions = [
@@ -1550,19 +2172,27 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
         ];
 
         if (!chat?.support) {
-            actions.splice(2, 0,
+            actions.splice(
+                2,
+                0,
                 {
                     key: "location",
                     label: t("chat.menu.location", "Местоположение"),
                     icon: <FaMapMarkerAlt />,
-                    onClick: (e) => { quickShareGps(e); setAttachmentMenuOpen(false); },
+                    onClick: (e) => {
+                        quickShareGps(e);
+                        setAttachmentMenuOpen(false);
+                    },
                     disabled: GPS_DISABLED,
                 },
                 {
                     key: "request",
                     label: t("chat.menu.requestLocation", "Запросить GPS"),
                     icon: <PhoneIcon />,
-                    onClick: (e) => { quickRequestGps(e); setAttachmentMenuOpen(false); },
+                    onClick: (e) => {
+                        quickRequestGps(e);
+                        setAttachmentMenuOpen(false);
+                    },
                     disabled: GPS_DISABLED,
                 }
             );
@@ -1574,12 +2204,24 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
             icon: <FaAddressBook />,
             onClick: (e) => {
                 setAttachmentMenuOpen(false);
-                showToast(e, t("chat.menu.contactSoon", "Скоро: отправка контактов"), "info");
+                showToast(
+                    e,
+                    t("chat.menu.contactSoon", "Скоро: отправка контактов"),
+                    "info"
+                );
             },
         });
 
         return actions;
-    }, [GPS_DISABLED, chat?.support, inputLocked, quickRequestGps, quickShareGps, showToast, t]);
+    }, [
+        GPS_DISABLED,
+        chat?.support,
+        inputLocked,
+        quickRequestGps,
+        quickShareGps,
+        showToast,
+        t,
+    ]);
 
     const [showGroupInfo, setShowGroupInfo] = useState(false);
     const [groupForceUpdate, setGroupForceUpdate] = useState(0); // счетчик для форс-апдейта участников
@@ -1588,11 +2230,12 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
     useEffect(() => {
         function onMembersUpdate(e) {
             if (e.detail?.chat_id == chatId) {
-                setGroupForceUpdate(x => x + 1);
+                setGroupForceUpdate((x) => x + 1);
             }
         }
         window.addEventListener("group_members_updated", onMembersUpdate);
-        return () => window.removeEventListener("group_members_updated", onMembersUpdate);
+        return () =>
+            window.removeEventListener("group_members_updated", onMembersUpdate);
     }, [chatId]);
 
     useEffect(() => {
@@ -1606,17 +2249,15 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
         if (!showEmojiPicker) return;
         function handleClickOutside(e) {
             if (
-                !e.target.closest('.emoji-picker-popup') &&
-                !e.target.closest('.emoji-picker-button')
+                !e.target.closest(".emoji-picker-popup") &&
+                !e.target.closest(".emoji-picker-button")
             ) {
                 setShowEmojiPicker(false);
             }
         }
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
     }, [showEmojiPicker]);
-
-
 
     // Закрытие мини-меню GPS по клику вне
     useEffect(() => {
@@ -1625,37 +2266,38 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
             if (!gpsMenuRef.current) return;
             if (!gpsMenuRef.current.contains(e.target)) setGpsMenuOpen(false);
         }
-        document.addEventListener('mousedown', onDocClick);
-        return () => document.removeEventListener('mousedown', onDocClick);
+        document.addEventListener("mousedown", onDocClick);
+        return () => document.removeEventListener("mousedown", onDocClick);
     }, [gpsMenuOpen]);
-
-
 
     // Закрытие меню вложений по клику вне
     useEffect(() => {
         if (!attachmentMenuOpen) return;
         function onDocClick(e) {
             if (!attachmentMenuRef.current) return;
-            if (!attachmentMenuRef.current.contains(e.target)) setAttachmentMenuOpen(false);
+            if (!attachmentMenuRef.current.contains(e.target))
+                setAttachmentMenuOpen(false);
         }
-        document.addEventListener('mousedown', onDocClick);
-        return () => document.removeEventListener('mousedown', onDocClick);
+        document.addEventListener("mousedown", onDocClick);
+        return () => document.removeEventListener("mousedown", onDocClick);
     }, [attachmentMenuOpen]);
-
 
     const [isMobile, setIsMobile] = useState(false);
     useEffect(() => {
-        try { setIsMobile(/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)); } catch { }
+        try {
+            setIsMobile(/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent));
+        } catch { }
     }, []);
 
     // === ВСТАВИТЬ СЮДА! ===
     // Собираем все картинки (image type) из сообщений для Lightbox
-    const images = messages
-        ?.filter(m => m.message_type === "image" && m.file?.file_url)
-        .map(m => ({
-            src: abs(m.file.file_url),
-            key: m.id
-        })) || [];
+    const images =
+        messages
+            ?.filter((m) => m.message_type === "image" && m.file?.file_url)
+            .map((m) => ({
+                src: abs(m.file.file_url),
+                key: m.id,
+            })) || [];
     // === КОНЕЦ ВСТАВКИ ===
 
     useEffect(() => {
@@ -1683,7 +2325,12 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
         // Ограничение размера файла 50 МБ
         const MAX_SIZE_MB = 50;
         if (file.size > MAX_SIZE_MB * 1024 * 1024) {
-            alert(`${t("upload.tooLarge", "Файл слишком большой! Максимальный размер файла:")} ${MAX_SIZE_MB} ${t("unit.mb", "МБ")}`);
+            alert(
+                `${t(
+                    "upload.tooLarge",
+                    "Файл слишком большой! Максимальный размер файла:"
+                )} ${MAX_SIZE_MB} ${t("unit.mb", "МБ")}`
+            );
             e.target.value = "";
             return;
         }
@@ -1701,7 +2348,7 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
         const res = await fetch(`${API}/chat/${chatTarget}/upload`, {
             method: "POST",
             headers: {
-                "Authorization": `Bearer ${localStorage.getItem("token")}`,
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
             body: fd,
         });
@@ -1725,7 +2372,10 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
         if (!peerUser?.id) return null;
 
         // Создаём/получаем личный чат с пользователем
-        const res = await authFetchWithRefresh(`${API}/chat/by_user/${peerUser.id}`, { method: "POST" });
+        const res = await authFetchWithRefresh(
+            `${API}/chat/by_user/${peerUser.id}`,
+            { method: "POST" }
+        );
         if (!res.ok) return null;
 
         const data = await res.json(); // { chat_id: number }
@@ -1736,8 +2386,12 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
         connectWS(newId);
         // не блокируем UI ожиданием истории и сайдбара
         Promise.resolve(fetchMessages(newId)).catch(() => { });
-        try { fetchChatList(); } catch { }
-        try { window.dispatchEvent(new CustomEvent("inbox_update")); } catch { }
+        try {
+            fetchChatList();
+        } catch { }
+        try {
+            window.dispatchEvent(new CustomEvent("inbox_update"));
+        } catch { }
         return newId;
     }, [chatId, peerUser, setChatId, connectWS, fetchMessages]);
 
@@ -1756,7 +2410,7 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                 const create = await authFetchWithRefresh(`${API}/support/tickets`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ subject: (chat?.subject || "Support request") }),
+                    body: JSON.stringify({ subject: chat?.subject || "Support request" }),
                 });
                 if (create.ok) {
                     const d = await create.json();
@@ -1791,11 +2445,14 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
         }
         if (!res.ok) throw new Error("send_failed");
         // успешная отправка — форсируем обновление боковой панели и счётчиков
-        try { fetchChatList(); } catch { }
-        try { window.dispatchEvent(new CustomEvent("inbox_update")); } catch { }
+        try {
+            fetchChatList();
+        } catch { }
+        try {
+            window.dispatchEvent(new CustomEvent("inbox_update"));
+        } catch { }
         return cid;
     }
-
 
     const handleSend = useCallback(
         async (e) => {
@@ -1809,13 +2466,19 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
             // если чата ещё нет (режим предпросмотра) — создаём
             let effectiveChatId = chatId;
             // Если это саппорт-чат, текущий тикет закрыт, и мы НЕ агент поддержки — создаём новый тикет
-            if (isSupport && !isSupportAgent && (supportStatus === "CLOSED" || forceClosed)) {
+            if (
+                isSupport &&
+                !isSupportAgent &&
+                (supportStatus === "CLOSED" || forceClosed)
+            ) {
                 try {
                     const res = await authFetchWithRefresh(api(`/support/tickets`), {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         // subject берём из чата или дефолтный локализованный
-                        body: JSON.stringify({ subject: chat?.subject || t("support.subject", "Support request") })
+                        body: JSON.stringify({
+                            subject: chat?.subject || t("support.subject", "Support request"),
+                        }),
                     });
                     if (res.ok) {
                         const data = await res.json(); // ожидаем { id, chat_id, ... }
@@ -1825,8 +2488,12 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                             setChatId(effectiveChatId);
                             connectWS(effectiveChatId);
                             Promise.resolve(fetchMessages(effectiveChatId)).catch(() => { });
-                            try { fetchChatList(); } catch { }
-                            try { window.dispatchEvent(new CustomEvent("inbox_update")); } catch { }
+                            try {
+                                fetchChatList();
+                            } catch { }
+                            try {
+                                window.dispatchEvent(new CustomEvent("inbox_update"));
+                            } catch { }
                         }
                     } else {
                         // Если создать новый тикет не вышло — лучше не пытаться слать в закрытый
@@ -1850,14 +2517,19 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
             if (pendingVoice) {
                 try {
                     const fd = new FormData();
-                    const ext = pendingVoice.blob.type.includes("webm") ? "webm"
-                        : pendingVoice.blob.type.includes("ogg") ? "ogg"
-                            : pendingVoice.blob.type.includes("mp4") ? "m4a"
+                    const ext = pendingVoice.blob.type.includes("webm")
+                        ? "webm"
+                        : pendingVoice.blob.type.includes("ogg")
+                            ? "ogg"
+                            : pendingVoice.blob.type.includes("mp4")
+                                ? "m4a"
                                 : "webm";
                     fd.append("file", pendingVoice.blob, `voice.${ext}`);
                     const res = await fetch(api(`/chat/${effectiveChatId}/upload`), {
                         method: "POST",
-                        headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` },
+                        headers: {
+                            Authorization: `Bearer ${localStorage.getItem("token")}`,
+                        },
                         body: fd,
                     });
                     if (res.ok) {
@@ -1908,39 +2580,64 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                     message_type = "bid_info";
                     orderId = b.order_id;
                     content =
-                        `${t("msg.yourBidOnOrder", "Ваша ставка на заявку")} #${b.order_id}\n` +
-                        `${t("msg.route", "Маршрут")}: ${(o.from_locations && o.from_locations.length ? o.from_locations[0] : o.from_location || "-")} → ` +
-                        `${(o.to_locations && o.to_locations.length ? o.to_locations[0] : o.to_location || "-")}\n` +
-                        `${t("msg.cargo", "Груз")}: ${o.cargo_items && o.cargo_items.length ? o.cargo_items[0].name : "-"}, ` +
-                        `${t("msg.weight", "Вес")}: ${o.cargo_items && o.cargo_items.length ? o.cargo_items[0].tons : "-"} ${t("unit.t", "т")}\n` +
-                        `${t("msg.price", "Цена")}: ${o.rate_with_vat || o.price || "-"} ${o.rate_currency || ""}\n` +
+                        `${t("msg.yourBidOnOrder", "Ваша ставка на заявку")} #${b.order_id
+                        }\n` +
+                        `${t("msg.route", "Маршрут")}: ${o.from_locations && o.from_locations.length
+                            ? o.from_locations[0]
+                            : o.from_location || "-"
+                        } → ` +
+                        `${o.to_locations && o.to_locations.length
+                            ? o.to_locations[0]
+                            : o.to_location || "-"
+                        }\n` +
+                        `${t("msg.cargo", "Груз")}: ${o.cargo_items && o.cargo_items.length
+                            ? o.cargo_items[0].name
+                            : "-"
+                        }, ` +
+                        `${t("msg.weight", "Вес")}: ${o.cargo_items && o.cargo_items.length
+                            ? o.cargo_items[0].tons
+                            : "-"
+                        } ${t("unit.t", "т")}\n` +
+                        `${t("msg.price", "Цена")}: ${o.rate_with_vat || o.price || "-"} ${o.rate_currency || ""
+                        }\n` +
                         `${t("msg.loadDate", "Дата загрузки")}: ${o.load_date || "-"}\n` +
                         `${t("info.bidAmount", "Сумма ставки")}: ${b.amount}\n` +
                         `${t("info.comment", "Комментарий")}: ${b.comment || "-"}`;
-                }
-                else if (pendingAttachment.order) {
+                } else if (pendingAttachment.order) {
                     const o = pendingAttachment.order;
                     message_type = "order_info";
                     orderId = o.id;
                     content =
                         `📦 ${t("msg.order", "Заявка")} #${o.id}\n` +
-                        `${t("msg.route", "Маршрут")}: ${(o.from_locations && o.from_locations.length ? o.from_locations[0] : o.from_location || "-")} → ` +
-                        `${(o.to_locations && o.to_locations.length ? o.to_locations[0] : o.to_location || "-")}\n` +
-                        `${t("msg.cargo", "Груз")}: ${o.cargo_items && o.cargo_items.length ? o.cargo_items[0].name : "-"}, ` +
-                        `${t("msg.weight", "Вес")}: ${o.cargo_items && o.cargo_items.length ? o.cargo_items[0].tons : "-"} ${t("unit.t", "т")}\n` +
+                        `${t("msg.route", "Маршрут")}: ${o.from_locations && o.from_locations.length
+                            ? o.from_locations[0]
+                            : o.from_location || "-"
+                        } → ` +
+                        `${o.to_locations && o.to_locations.length
+                            ? o.to_locations[0]
+                            : o.to_location || "-"
+                        }\n` +
+                        `${t("msg.cargo", "Груз")}: ${o.cargo_items && o.cargo_items.length
+                            ? o.cargo_items[0].name
+                            : "-"
+                        }, ` +
+                        `${t("msg.weight", "Вес")}: ${o.cargo_items && o.cargo_items.length
+                            ? o.cargo_items[0].tons
+                            : "-"
+                        } ${t("unit.t", "т")}\n` +
                         `${t("msg.loadDate", "Дата загрузки")}: ${o.load_date || "-"}\n` +
-                        `${t("msg.price", "Цена")}: ${o.rate_with_vat || o.price || "-"} ${o.rate_currency || ""}`;
-                }
-                else if (pendingAttachment.bid) {
+                        `${t("msg.price", "Цена")}: ${o.rate_with_vat || o.price || "-"} ${o.rate_currency || ""
+                        }`;
+                } else if (pendingAttachment.bid) {
                     const b = pendingAttachment.bid;
                     message_type = "bid_info";
                     orderId = b.order_id;
                     content =
-                        `${t("info.yourBidOnOrder", "Ваша ставка на заявку")} #${b.order_id}\n` +
+                        `${t("info.yourBidOnOrder", "Ваша ставка на заявку")} #${b.order_id
+                        }\n` +
                         `${t("info.sum", "Сумма")}: ${b.amount}\n` +
                         `${t("info.comment", "Комментарий")}: ${b.comment || "-"}`;
-                }
-                else if (pendingAttachment.transport) {
+                } else if (pendingAttachment.transport) {
                     const tr = pendingAttachment.transport;
                     message_type = "transport_info";
                     transportId = tr.id;
@@ -1948,12 +2645,26 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                         `🚚 ${t("info.transportLabel", "Транспорт")} #${tr.id}\n` +
                         `${t("info.type", "Тип")}: ${typeLabel(tr.truck_type) || "-"}\n` +
                         `${t("info.route", "Маршрут")}: ${tr.from_location || "-"} → ${Array.isArray(tr.to_locations)
-                            ? tr.to_locations.map((l) => (typeof l === "string" ? l : l.location)).join(", ")
+                            ? tr.to_locations
+                                .map((l) => (typeof l === "string" ? l : l.location))
+                                .join(", ")
                             : tr.to_location || "-"
                         }` +
-                        (tr.ready_date ? `\n${t("info.readyToLoad", "Готов к загрузке")}: ${new Date(tr.ready_date).toLocaleDateString()}` : "") +
-                        (tr.weight ? `\n${t("transport.capacity", "Грузоподъемность")}: ${tr.weight} ${t("unit.t", "т")}` : "") +
-                        (tr.volume ? `\n${t("transport.volume", "Объем")}: ${tr.volume} ${t("unit.m3", "м³")}` : "");
+                        (tr.ready_date
+                            ? `\n${t("info.readyToLoad", "Готов к загрузке")}: ${new Date(
+                                tr.ready_date
+                            ).toLocaleDateString()}`
+                            : "") +
+                        (tr.weight
+                            ? `\n${t("transport.capacity", "Грузоподъемность")}: ${tr.weight
+                            } ${t("unit.t", "т")}`
+                            : "") +
+                        (tr.volume
+                            ? `\n${t("transport.volume", "Объем")}: ${tr.volume} ${t(
+                                "unit.m3",
+                                "м³"
+                            )}`
+                            : "");
                 }
 
                 await apiSendWith409(effectiveChatId, {
@@ -1980,21 +2691,38 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                 setSending(false);
             }
         },
-        [input, pendingAttachment, sendMessage, pendingVoice, setPendingAttachment, sending]
+        [
+            input,
+            pendingAttachment,
+            sendMessage,
+            pendingVoice,
+            setPendingAttachment,
+            sending,
+        ]
     );
 
     const handleKeyDown = (e) => {
-        if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
+        if (e.target !== textareaRef.current) return;
+        if (
+            e.key === "Enter" &&
+            !e.shiftKey &&
+            !e.ctrlKey &&
+            !e.altKey &&
+            !e.metaKey &&
+            !e.nativeEvent?.isComposing
+        ) {
             e.preventDefault();
             handleSend(e);
         }
     };
+
     const addEmoji = (emojiObject) => {
         if (!textareaRef.current) return;
         const cursorPos = textareaRef.current.selectionStart ?? input.length;
-        const emojiChar = emojiObject.emoji || emojiObject.native || emojiObject.unicode || "";
+        const emojiChar =
+            emojiObject.emoji || emojiObject.native || emojiObject.unicode || "";
         if (!emojiChar) return;
-        setInput(prev => {
+        setInput((prev) => {
             const before = prev.slice(0, cursorPos);
             const after = prev.slice(cursorPos);
             setTimeout(() => {
@@ -2011,18 +2739,20 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
         const file = pendingAttachment.file;
         const isImage = file.type.startsWith("image/");
         preview = (
-            <div style={{
-                background: "#e9f4ff",
-                borderRadius: 13,
-                padding: "10px 15px",
-                color: "#163d56",
-                marginBottom: 10,
-                boxShadow: "0 1px 7px #22535b16",
-                fontSize: 15,
-                display: "flex",
-                alignItems: "center",
-                gap: 15,
-            }}>
+            <div
+                style={{
+                    background: "#e9f4ff",
+                    borderRadius: 13,
+                    padding: "10px 15px",
+                    color: "#163d56",
+                    marginBottom: 10,
+                    boxShadow: "0 1px 7px #22535b16",
+                    fontSize: 15,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 15,
+                }}
+            >
                 {isImage ? (
                     <img
                         src={URL.createObjectURL(file)}
@@ -2032,22 +2762,47 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                 ) : (
                     <FaPaperclip size={32} color="#4262cc" />
                 )}
-                <span style={{ fontWeight: 600, fontSize: 15, maxWidth: 160, overflow: "hidden", textOverflow: "ellipsis" }}>
+                <span
+                    style={{
+                        fontWeight: 600,
+                        fontSize: 15,
+                        maxWidth: 160,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                    }}
+                >
                     {file.name}
                 </span>
                 <button
                     onClick={() => setPendingAttachment(null)}
                     aria-label={t("common.remove", "Убрать")}
                     style={{
-                        background: "#fff", color: "#ff4d4d", border: "none", borderRadius: 7, padding: "0 13px", fontWeight: 700, cursor: "pointer", marginLeft: 8
+                        background: "#fff",
+                        color: "#ff4d4d",
+                        border: "none",
+                        borderRadius: 7,
+                        padding: "0 13px",
+                        fontWeight: 700,
+                        cursor: "pointer",
+                        marginLeft: 8,
                     }}
-                >✖</button>
+                >
+                    ✖
+                </button>
                 <button
                     onClick={sendAttachment}
                     style={{
-                        background: "#32d474", color: "#fff", border: "none", borderRadius: 7, padding: "0 13px", fontWeight: 700, cursor: "pointer"
+                        background: "#32d474",
+                        color: "#fff",
+                        border: "none",
+                        borderRadius: 7,
+                        padding: "0 13px",
+                        fontWeight: 700,
+                        cursor: "pointer",
                     }}
-                >{t("common.send", "Отправить")}</button>
+                >
+                    {t("common.send", "Отправить")}
+                </button>
             </div>
         );
     } else if (pendingAttachment) {
@@ -2055,24 +2810,40 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
             const o = pendingAttachment.order;
             const b = pendingAttachment.bid;
             preview = (
-                <div style={{
-                    background: "#18325a",
-                    borderRadius: 13,
-                    padding: "12px 14px",
-                    color: "#caf7e4",
-                    marginBottom: 10,
-                    boxShadow: "0 1px 7px #22535b16",
-                    fontSize: 15,
-                }}>
-                    <b>{t("info.yourBidOnOrder", "Ваша ставка на заявку")} #{b.order_id}</b>
+                <div
+                    style={{
+                        background: "#18325a",
+                        borderRadius: 13,
+                        padding: "12px 14px",
+                        color: "#caf7e4",
+                        marginBottom: 10,
+                        boxShadow: "0 1px 7px #22535b16",
+                        fontSize: 15,
+                    }}
+                >
+                    <b>
+                        {t("info.yourBidOnOrder", "Ваша ставка на заявку")} #{b.order_id}
+                    </b>
                     <div>
-                        <b>{t("info.route", "Маршрут")}:</b> {(o.from_locations && o.from_locations.length ? o.from_locations[0] : o.from_location || "-")} → {(o.to_locations && o.to_locations.length ? o.to_locations[0] : o.to_location || "-")}
+                        <b>{t("info.route", "Маршрут")}:</b>{" "}
+                        {o.from_locations && o.from_locations.length
+                            ? o.from_locations[0]
+                            : o.from_location || "-"}{" "}
+                        →{" "}
+                        {o.to_locations && o.to_locations.length
+                            ? o.to_locations[0]
+                            : o.to_location || "-"}
                     </div>
                     <div>
-                        <b>{t("info.cargo", "Груз")}:</b> {o.cargo_items && o.cargo_items.length ? o.cargo_items[0].name : "-"} — {o.cargo_items && o.cargo_items.length ? o.cargo_items[0].tons : "-"} {t("unit.t", "т")}
+                        <b>{t("info.cargo", "Груз")}:</b>{" "}
+                        {o.cargo_items && o.cargo_items.length ? o.cargo_items[0].name : "-"}{" "}
+                        —{" "}
+                        {o.cargo_items && o.cargo_items.length ? o.cargo_items[0].tons : "-"}{" "}
+                        {t("unit.t", "т")}
                     </div>
                     <div>
-                        <b>{t("info.price", "Цена")}:</b> {o.rate_with_vat || o.price || "-"} {o.rate_currency || ""}
+                        <b>{t("info.price", "Цена")}:</b> {o.rate_with_vat || o.price || "-"}{" "}
+                        {o.rate_currency || ""}
                     </div>
                     <div>
                         <b>{t("info.loadDate", "Дата загрузки")}:</b> {o.load_date || "-"}
@@ -2086,32 +2857,56 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                     <button
                         onClick={() => setPendingAttachment(null)}
                         style={{
-                            marginTop: 7, background: "#295acb", border: 0, color: "#fff", borderRadius: 7, padding: "2px 12px", fontWeight: 700, cursor: "pointer"
+                            marginTop: 7,
+                            background: "#295acb",
+                            border: 0,
+                            color: "#fff",
+                            borderRadius: 7,
+                            padding: "2px 12px",
+                            fontWeight: 700,
+                            cursor: "pointer",
                         }}
-                    >{t("common.remove", "Убрать")}</button>
+                    >
+                        {t("common.remove", "Убрать")}
+                    </button>
                 </div>
             );
         } else if (pendingAttachment.order) {
             const o = pendingAttachment.order;
             preview = (
-                <div style={{
-                    background: "#18325a",
-                    borderRadius: 13,
-                    padding: "12px 14px",
-                    color: "#caf7e4",
-                    marginBottom: 10,
-                    boxShadow: "0 1px 7px #22535b16",
-                    fontSize: 15,
-                }}>
-                    <b>📦 {t("info.orderLabel", "Заявка")} #{o.id}</b>
+                <div
+                    style={{
+                        background: "#18325a",
+                        borderRadius: 13,
+                        padding: "12px 14px",
+                        color: "#caf7e4",
+                        marginBottom: 10,
+                        boxShadow: "0 1px 7px #22535b16",
+                        fontSize: 15,
+                    }}
+                >
+                    <b>
+                        📦 {t("info.orderLabel", "Заявка")} #{o.id}
+                    </b>
                     <div>
-                        <b>{t("info.route", "Маршрут")}:</b> {(o.from_locations && o.from_locations.length ? o.from_locations[0] : o.from_location || "-")} → {(o.to_locations && o.to_locations.length ? o.to_locations[0] : o.to_location || "-")}
+                        <b>{t("info.route", "Маршрут")}:</b>{" "}
+                        {o.from_locations && o.from_locations.length
+                            ? o.from_locations[0]
+                            : o.from_location || "-"}{" "}
+                        →{" "}
+                        {o.to_locations && o.to_locations.length
+                            ? o.to_locations[0]
+                            : o.to_location || "-"}
                     </div>
                     <div>
-                        <b>{t("info.cargo", "Груз")}:</b> {o.cargo_items && o.cargo_items.length ? o.cargo_items[0].name : "-"}, {o.cargo_items && o.cargo_items.length ? o.cargo_items[0].tons : "-"} {t("unit.t", "т")}
+                        <b>{t("info.cargo", "Груз")}:</b>{" "}
+                        {o.cargo_items && o.cargo_items.length ? o.cargo_items[0].name : "-"},{" "}
+                        {o.cargo_items && o.cargo_items.length ? o.cargo_items[0].tons : "-"}{" "}
+                        {t("unit.t", "т")}
                     </div>
                     <div>
-                        <b>{t("info.price", "Цена")}:</b> {o.rate_with_vat || o.price || "-"} {o.rate_currency || ""}
+                        <b>{t("info.price", "Цена")}:</b> {o.rate_with_vat || o.price || "-"}{" "}
+                        {o.rate_currency || ""}
                     </div>
                     <div>
                         <b>{t("info.loadDate", "Дата загрузки")}:</b> {o.load_date || "-"}
@@ -2119,24 +2914,37 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                     <button
                         onClick={() => setPendingAttachment(null)}
                         style={{
-                            marginTop: 7, background: "#295acb", border: 0, color: "#fff", borderRadius: 7, padding: "2px 12px", fontWeight: 700, cursor: "pointer"
+                            marginTop: 7,
+                            background: "#295acb",
+                            border: 0,
+                            color: "#fff",
+                            borderRadius: 7,
+                            padding: "2px 12px",
+                            fontWeight: 700,
+                            cursor: "pointer",
                         }}
-                    >{t("common.remove", "Убрать")}</button>
+                    >
+                        {t("common.remove", "Убрать")}
+                    </button>
                 </div>
             );
         } else if (pendingAttachment.bid) {
             const b = pendingAttachment.bid;
             preview = (
-                <div style={{
-                    background: "#18325a",
-                    borderRadius: 13,
-                    padding: "12px 14px",
-                    color: "#caf7e4",
-                    marginBottom: 10,
-                    boxShadow: "0 1px 7px #22535b16",
-                    fontSize: 15,
-                }}>
-                    <b>{t("info.yourBidOnOrder", "Ваша ставка на заявку")} #{b.order_id}</b>
+                <div
+                    style={{
+                        background: "#18325a",
+                        borderRadius: 13,
+                        padding: "12px 14px",
+                        color: "#caf7e4",
+                        marginBottom: 10,
+                        boxShadow: "0 1px 7px #22535b16",
+                        fontSize: 15,
+                    }}
+                >
+                    <b>
+                        {t("info.yourBidOnOrder", "Ваша ставка на заявку")} #{b.order_id}
+                    </b>
                     <div>
                         <b>{t("info.sum", "Сумма")}:</b> {b.amount}
                     </div>
@@ -2146,43 +2954,75 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                     <button
                         onClick={() => setPendingAttachment(null)}
                         style={{
-                            marginTop: 7, background: "#295acb", border: 0, color: "#fff", borderRadius: 7, padding: "2px 12px", fontWeight: 700, cursor: "pointer"
+                            marginTop: 7,
+                            background: "#295acb",
+                            border: 0,
+                            color: "#fff",
+                            borderRadius: 7,
+                            padding: "2px 12px",
+                            fontWeight: 700,
+                            cursor: "pointer",
                         }}
-                    >{t("common.remove", "Убрать")}</button>
+                    >
+                        {t("common.remove", "Убрать")}
+                    </button>
                 </div>
             );
         } else if (pendingAttachment.transport) {
             const tr = pendingAttachment.transport; // не перекрываем i18n t()
             preview = (
-                <div style={{
-                    background: "#18325a",
-                    borderRadius: 13,
-                    padding: "12px 14px",
-                    color: "#caf7e4",
-                    marginBottom: 10,
-                    boxShadow: "0 1px 7px #22535b16",
-                    fontSize: 15,
-                }}>
-                    <b>🚚 {t("info.transportLabel", "Транспорт")} #{tr.id}</b>
-                    <div><b>{t("info.type", "Тип")}:</b> {typeLabel(tr.truck_type) || "-"}</div>
-                    <div><b>{t("info.route", "Маршрут")}:</b> {tr.from_location || "-"} → {Array.isArray(tr.to_locations)
-                        ? tr.to_locations.map(l => (typeof l === "string" ? l : l.location)).join(", ")
-                        : tr.to_location || "-"}</div>
+                <div
+                    style={{
+                        background: "#18325a",
+                        borderRadius: 13,
+                        padding: "12px 14px",
+                        color: "#caf7e4",
+                        marginBottom: 10,
+                        boxShadow: "0 1px 7px #22535b16",
+                        fontSize: 15,
+                    }}
+                >
+                    <b>
+                        🚚 {t("info.transportLabel", "Транспорт")} #{tr.id}
+                    </b>
                     <div>
-                        <b>{t("info.readyToLoad", "Готов к загрузке")}:</b> {tr.ready_date ? new Date(tr.ready_date).toLocaleDateString() : "-"}
+                        <b>{t("info.type", "Тип")}:</b> {typeLabel(tr.truck_type) || "-"}
                     </div>
                     <div>
-                        <b>{t("transport.capacity", "Грузоподъемность")}:</b> {tr.weight ? `${tr.weight} ${t("unit.t", "т")}` : "-"}
+                        <b>{t("info.route", "Маршрут")}:</b> {tr.from_location || "-"} →{" "}
+                        {Array.isArray(tr.to_locations)
+                            ? tr.to_locations
+                                .map((l) => (typeof l === "string" ? l : l.location))
+                                .join(", ")
+                            : tr.to_location || "-"}
                     </div>
                     <div>
-                        <b>{t("transport.volume", "Объем")}:</b> {tr.volume ? `${tr.volume} ${t("unit.m3", "м³")}` : "-"}
+                        <b>{t("info.readyToLoad", "Готов к загрузке")}:</b>{" "}
+                        {tr.ready_date ? new Date(tr.ready_date).toLocaleDateString() : "-"}
+                    </div>
+                    <div>
+                        <b>{t("transport.capacity", "Грузоподъемность")}:</b>{" "}
+                        {tr.weight ? `${tr.weight} ${t("unit.t", "т")}` : "-"}
+                    </div>
+                    <div>
+                        <b>{t("transport.volume", "Объем")}:</b>{" "}
+                        {tr.volume ? `${tr.volume} ${t("unit.m3", "м³")}` : "-"}
                     </div>
                     <button
                         onClick={() => setPendingAttachment(null)}
                         style={{
-                            marginTop: 7, background: "#295acb", border: 0, color: "#fff", borderRadius: 7, padding: "2px 12px", fontWeight: 700, cursor: "pointer"
+                            marginTop: 7,
+                            background: "#295acb",
+                            border: 0,
+                            color: "#fff",
+                            borderRadius: 7,
+                            padding: "2px 12px",
+                            fontWeight: 700,
+                            cursor: "pointer",
                         }}
-                    >{t("common.remove", "Убрать")}</button>
+                    >
+                        {t("common.remove", "Убрать")}
+                    </button>
                 </div>
             );
         }
@@ -2190,19 +3030,35 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
 
     // Найти последнее своё сообщение
     const lastMyMsgIdx = messages
-        ? [...messages].reverse().findIndex(m => m.sender_id === user?.id)
+        ? [...messages].reverse().findIndex((m) => m.sender_id === user?.id)
         : -1;
-    const lastMyMsgId = lastMyMsgIdx !== -1 && messages.length > 0
-        ? messages[messages.length - 1 - lastMyMsgIdx]?.id
-        : null;
+    const lastMyMsgId =
+        lastMyMsgIdx !== -1 && messages.length > 0
+            ? messages[messages.length - 1 - lastMyMsgIdx]?.id
+            : null;
 
     function highlightText(text, highlight) {
         if (!highlight) return text;
-        const regex = new RegExp(`(${highlight.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`, "gi");
+        const regex = new RegExp(
+            `(${highlight.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`,
+            "gi"
+        );
         return text.split(regex).map((part, i) =>
-            part.toLowerCase() === highlight.toLowerCase()
-                ? <span key={i} style={{ background: "#38bcf8", color: "#fff", borderRadius: 4, padding: "1px 2px" }}>{part}</span>
-                : part
+            part.toLowerCase() === highlight.toLowerCase() ? (
+                <span
+                    key={i}
+                    style={{
+                        background: "#38bcf8",
+                        color: "#fff",
+                        borderRadius: 4,
+                        padding: "1px 2px",
+                    }}
+                >
+                    {part}
+                </span>
+            ) : (
+                part
+            )
         );
     }
 
@@ -2210,30 +3066,43 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
         const isMine = user?.id === msg.sender_id;
         const __baseKey = buildMsgKeyBase(msg);
         const mkey = makeUniqueKey(__baseKey, idx);
-        const translationKey = autoTranslate ? buildTranslationKey(msg, targetLang) : null;
-        const translatedText = translationKey ? translationCache[translationKey] : null;
+        const translationKey = autoTranslate
+            ? buildTranslationKey(msg, targetLang)
+            : null;
+        const translatedText = translationKey
+            ? translationCache[translationKey]
+            : null;
         const hasTranslation = !!translatedText;
-        const displayContent = typeof msg.content === "string"
-            ? msg.content
-            : (msg.content == null ? "" : String(msg.content));
-
-
+        const displayContent =
+            typeof msg.content === "string"
+                ? msg.content
+                : msg.content == null
+                    ? ""
+                    : String(msg.content);
 
         // ---- CALL (карточка звонка) ----
         if (msg.message_type === "call") {
             // content прилетает JSON-ом: {status, direction, duration?}
             let payload = {};
-            try { payload = JSON.parse(msg.content || "{}"); } catch { payload = {}; }
+            try {
+                payload = JSON.parse(msg.content || "{}");
+            } catch {
+                payload = {};
+            }
             const pretty = msg.sent_at ? new Date(msg.sent_at).toLocaleString() : "";
             return (
                 <CallCard
                     key={mkey}
                     isOwn={isMine}
-                    msg={{ ...msg, payload, pretty_time: pretty, chat_id: msg.chat_id || chatId }}
+                    msg={{
+                        ...msg,
+                        payload,
+                        pretty_time: pretty,
+                        chat_id: msg.chat_id || chatId,
+                    }}
                 />
             );
         }
-
 
         // === ДОБАВЛЕНО: системные сообщения группы ===
         if (msg.message_type === "system" || msg.message_type === "group_event") {
@@ -2242,14 +3111,16 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
             if (msg.content.includes("добавлен")) Icon = FaUserPlus;
             else if (msg.content.includes("удалён")) Icon = FaUserMinus;
             else if (msg.content.includes("стал администратором")) Icon = FaShieldAlt;
-            else if (msg.content.includes("больше не администратор")) Icon = FaShieldAlt;
+            else if (msg.content.includes("больше не администратор"))
+                Icon = FaShieldAlt;
             else if (msg.content.includes("изменено")) Icon = FaEdit;
 
             // Если content похож на ключ i18n (a.b.c), пробуем перевести.
             // Fallback — показать исходный content.
-            const looksLikeKey = typeof msg.content === "string" && /^[a-z0-9_]+(\.[a-z0-9_]+)+$/i.test(msg.content);
+            const looksLikeKey =
+                typeof msg.content === "string" &&
+                /^[a-z0-9_]+(\.[a-z0-9_]+)+$/i.test(msg.content);
             const text = looksLikeKey ? t(msg.content, msg.content) : msg.content;
-
 
             return (
                 <div
@@ -2258,7 +3129,7 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                         display: "flex",
                         justifyContent: "center",
                         margin: "16px 0",
-                        userSelect: "none"
+                        userSelect: "none",
                     }}
                 >
                     <div
@@ -2272,7 +3143,7 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                             boxShadow: "0 1px 2px rgba(0,0,0,0.06)",
                             display: "flex",
                             alignItems: "center",
-                            gap: 6
+                            gap: 6,
                         }}
                         className="dark:bg-[#2a3546] dark:text-[#b7c9dd]"
                     >
@@ -2289,7 +3160,7 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                 grouped[r.reaction].push(r);
             }
         }
-        const myReaction = msg.reactions?.find(r => r.user_id === user?.id);
+        const myReaction = msg.reactions?.find((r) => r.user_id === user?.id);
         const handleReact = async (emoji) => {
             if (!msg.id) return;
 
@@ -2298,14 +3169,20 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
             if (!wsOpen) {
                 try {
                     if (myReaction?.reaction === emoji) {
-                        const res = await authFetchWithRefresh(`${API}/chat/${chatId}/messages/${msg.id}/reactions`, { method: "DELETE" });
+                        const res = await authFetchWithRefresh(
+                            `${API}/chat/${chatId}/messages/${msg.id}/reactions`,
+                            { method: "DELETE" }
+                        );
                         if (!res.ok) throw new Error("DELETE reaction failed");
                     } else {
-                        const res = await authFetchWithRefresh(`${API}/chat/${chatId}/messages/${msg.id}/reactions`, {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({ reaction: emoji })
-                        });
+                        const res = await authFetchWithRefresh(
+                            `${API}/chat/${chatId}/messages/${msg.id}/reactions`,
+                            {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({ reaction: emoji }),
+                            }
+                        );
                         if (!res.ok) throw new Error("POST reaction failed");
                     }
                     // Обновим список, чтобы подтянуть актуальные reactions
@@ -2321,28 +3198,38 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
             // WS-вариант
             try {
                 if (myReaction?.reaction === emoji) {
-                    wsRef.current.send(JSON.stringify({
-                        action: "remove_reaction",
-                        message_id: msg.id
-                    }));
+                    wsRef.current.send(
+                        JSON.stringify({
+                            action: "remove_reaction",
+                            message_id: msg.id,
+                        })
+                    );
                 } else {
-                    wsRef.current.send(JSON.stringify({
-                        action: "add_reaction",
-                        message_id: msg.id,
-                        reaction: emoji
-                    }));
+                    wsRef.current.send(
+                        JSON.stringify({
+                            action: "add_reaction",
+                            message_id: msg.id,
+                            reaction: emoji,
+                        })
+                    );
                 }
             } catch (e) {
                 console.warn("[FRONT] wsRef.send failed, trying HTTP fallback:", e);
                 try {
                     if (myReaction?.reaction === emoji) {
-                        await authFetchWithRefresh(`${API}/chat/${chatId}/messages/${msg.id}/reactions`, { method: "DELETE" });
+                        await authFetchWithRefresh(
+                            `${API}/chat/${chatId}/messages/${msg.id}/reactions`,
+                            { method: "DELETE" }
+                        );
                     } else {
-                        await authFetchWithRefresh(`${API}/chat/${chatId}/messages/${msg.id}/reactions`, {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({ reaction: emoji })
-                        });
+                        await authFetchWithRefresh(
+                            `${API}/chat/${chatId}/messages/${msg.id}/reactions`,
+                            {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({ reaction: emoji }),
+                            }
+                        );
                     }
                     fetchMessages(chatId);
                 } catch (e2) {
@@ -2432,21 +3319,34 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                         fontSize: 16,
                         alignSelf: isMine ? "flex-end" : "flex-start",
                         position: "relative",
-                        cursor: "pointer"
+                        cursor: "pointer",
                     }}
                     onClick={(e) => {
                         e.stopPropagation();
                         let url = "#";
                         if (msg.message_type === "transport_info" && msg.transport_id)
                             url = `/transport/${msg.transport_id}`;
-                        else if ((msg.message_type === "order_info" || msg.message_type === "bid_info") && msg.order_id)
+                        else if (
+                            (msg.message_type === "order_info" ||
+                                msg.message_type === "bid_info") &&
+                            msg.order_id
+                        )
                             url = `/orders/${msg.order_id}`;
                         if (url !== "#") {
                             window.location.href = url;
                         }
                     }}
                 >
-                    <div style={{ fontWeight: 700, color: "#43c8ff", fontSize: 16, marginBottom: 4, display: "flex", alignItems: "center" }}>
+                    <div
+                        style={{
+                            fontWeight: 700,
+                            color: "#43c8ff",
+                            fontSize: 16,
+                            marginBottom: 4,
+                            display: "flex",
+                            alignItems: "center",
+                        }}
+                    >
                         <FaGavel style={{ marginRight: 8 }} />
                         {msg.message_type === "transport_info"
                             ? t("info.transport", "Инфо о транспорте")
@@ -2460,7 +3360,6 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                 </div>
             );
         }
-
 
         // ---- GPS REQUEST (карточка с действиями / статусом) ----
         if (msg.message_type === "gps_request") {
@@ -2513,31 +3412,42 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                         src={resolveChatFileUrl(msg.file?.file_url ?? "")}
                         accent={isMine ? "#2e5c8a" : "#264267"}
                     />
-                    <div style={{
-                        fontSize: 11,
-                        color: "#a6bde6",
-                        textAlign: "right",
-                        marginTop: 5,
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 8,
-                        justifyContent: "flex-end"
-                    }}>
+                    <div
+                        style={{
+                            fontSize: 11,
+                            color: "#a6bde6",
+                            textAlign: "right",
+                            marginTop: 5,
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 8,
+                            justifyContent: "flex-end",
+                        }}
+                    >
                         {msg.sent_at ? new Date(msg.sent_at).toLocaleString() : ""}
                         {/* Индикатор "seen" только для последнего своего сообщения */}
                         {isMine && msg.id === lastMyMsgId && (
-                            <span style={{
-                                marginLeft: 8,
-                                fontSize: 15,
-                                color: msg.is_read ? "#48ff78" : "#95b0d2",
-                                verticalAlign: "middle",
-                                display: "inline-flex",
-                                alignItems: "center",
-                                gap: 3
-                            }}>
-                                {msg.is_read
-                                    ? <><FaEye title={t("chat.read", "Прочитано")} /> <span style={{ fontSize: 12 }}>{t("chat.seen", "Просмотрено")}</span></>
-                                    : <FaCheck title={t("chat.delivered", "Доставлено")} />}
+                            <span
+                                style={{
+                                    marginLeft: 8,
+                                    fontSize: 15,
+                                    color: msg.is_read ? "#48ff78" : "#95b0d2",
+                                    verticalAlign: "middle",
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    gap: 3,
+                                }}
+                            >
+                                {msg.is_read ? (
+                                    <>
+                                        <FaEye title={t("chat.read", "Прочитано")} />{" "}
+                                        <span style={{ fontSize: 12 }}>
+                                            {t("chat.seen", "Просмотрено")}
+                                        </span>
+                                    </>
+                                ) : (
+                                    <FaCheck title={t("chat.delivered", "Доставлено")} />
+                                )}
                             </span>
                         )}
                     </div>
@@ -2549,7 +3459,9 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                 key={mkey}
                 className="msg-container"
                 id={`msg-${mkey}`}
-                ref={el => { if (el && searchMsg) matchRefs.current[idx] = el; }}
+                ref={(el) => {
+                    if (el && searchMsg) matchRefs.current[idx] = el;
+                }}
                 style={{
                     alignSelf: isMine ? "flex-end" : "flex-start",
                     marginBottom: 18,
@@ -2560,13 +3472,14 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                     alignItems: "flex-start",
                 }}
                 onMouseEnter={() => setHoveredMsgId(msg.id)}
-                onMouseLeave={e => {
+                onMouseLeave={(e) => {
                     // Если уходим не на popover или кнопку — скрываем
                     if (
                         e.relatedTarget &&
                         (e.relatedTarget.classList?.contains("msg-reaction-btn") ||
                             e.relatedTarget.classList?.contains("msg-reactions-block"))
-                    ) return;
+                    )
+                        return;
                     setHoveredMsgId(null);
                 }}
             >
@@ -2578,20 +3491,22 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                         color: isMine ? "#dff5fa" : "#e4eaf5",
                         position: "relative",
                         minHeight: 40,
-                        wordBreak: "break-word"
+                        wordBreak: "break-word",
                     }}
                 >
                     {searchMsg ? highlightText(displayContent, searchMsg) : displayContent}
                     {hasTranslation && (
-                        <div style={{
-                            marginTop: 8,
-                            padding: "6px 8px",
-                            borderRadius: 8,
-                            background: "rgba(0,0,0,0.12)",
-                            color: "#d7e8ff",
-                            fontSize: 13.5,
-                            lineHeight: 1.35,
-                        }}>
+                        <div
+                            style={{
+                                marginTop: 8,
+                                padding: "6px 8px",
+                                borderRadius: 8,
+                                background: "rgba(0,0,0,0.12)",
+                                color: "#d7e8ff",
+                                fontSize: 13.5,
+                                lineHeight: 1.35,
+                            }}
+                        >
                             <div style={{ fontWeight: 700, marginBottom: 4, opacity: 0.9 }}>
                                 {t("chat.autoTranslatedLabel", "Переведено автоматически")}
                             </div>
@@ -2602,7 +3517,7 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                     )}
 
                     {/* --- РЕАКЦИИ НА БАЛЛОНЕ --- */}
-                    {(msg.reactions && msg.reactions.length > 0) && (
+                    {msg.reactions && msg.reactions.length > 0 && (
                         <div
                             className="msg-reactions-placed"
                             style={{
@@ -2610,7 +3525,7 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                                 bottom: -14, // "прилипает" к краю, чуть ниже облака
                                 zIndex: 5,
                                 // --- МЕНЯЕМ сторону! ---
-                                left: isMine ? -14 : "auto",   // теперь свои реакции слева!
+                                left: isMine ? -14 : "auto", // теперь свои реакции слева!
                                 right: !isMine ? -14 : "auto", // чужие реакции справа!
                                 display: "flex",
                                 alignItems: "center",
@@ -2624,7 +3539,7 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                                 boxShadow: "0 2px 12px #0002",
                             }}
                         >
-                            {Object.keys(grouped).map(emoji => (
+                            {Object.keys(grouped).map((emoji) => (
                                 <span
                                     key={emoji}
                                     style={{
@@ -2639,119 +3554,147 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                                         boxShadow: "none",
                                     }}
                                     onClick={() => handleReact(emoji)}
-                                    title={grouped[emoji].map(r => r.user_id === user?.id ? "Вы" : r.user_id).join(", ")}
+                                    title={grouped[emoji]
+                                        .map((r) => (r.user_id === user?.id ? "Вы" : r.user_id))
+                                        .join(", ")}
                                 >
-                                    {emoji} {grouped[emoji].length > 1 && <b style={{ fontSize: 15, marginLeft: 2 }}>{grouped[emoji].length}</b>}
+                                    {emoji}{" "}
+                                    {grouped[emoji].length > 1 && (
+                                        <b style={{ fontSize: 15, marginLeft: 2 }}>
+                                            {grouped[emoji].length}
+                                        </b>
+                                    )}
                                 </span>
                             ))}
                         </div>
                     )}
                     {/* ВРЕМЯ сообщения всегда под текстом */}
-                    <div style={{
-                        fontSize: 11,
-                        color: "#a6bde6",
-                        marginTop: 7,
-                        textAlign: isMine ? "right" : "left"
-                    }}>
+                    <div
+                        style={{
+                            fontSize: 11,
+                            color: "#a6bde6",
+                            marginTop: 7,
+                            textAlign: isMine ? "right" : "left",
+                        }}
+                    >
                         {msg.sent_at ? new Date(msg.sent_at).toLocaleString() : ""}
                     </div>
                 </div>
 
                 {/* --- Кнопка добавления реакции сбоку баллона, появляется при наведении --- */}
-                {
-                    (hoveredMsgId === msg.id) && (
-                        <div
-                            className="msg-reaction-btn"
+                {hoveredMsgId === msg.id && (
+                    <div
+                        className="msg-reaction-btn"
+                        style={{
+                            position: "relative",
+                            display: "flex",
+                            alignItems: "center",
+                            height: "100%",
+                            marginLeft: isMine ? 0 : 8,
+                            marginRight: isMine ? 8 : 0,
+                            minWidth: 40, // Увеличили невидимую область вокруг иконки!
+                            minHeight: 44,
+                            padding: "0 6px",
+                            zIndex: 12,
+                        }}
+                        onMouseEnter={() => setHoveredMsgId(msg.id)}
+                        onMouseLeave={(e) => {
+                            if (
+                                !e.relatedTarget ||
+                                !e.currentTarget.contains(e.relatedTarget)
+                            ) {
+                                setHoveredMsgId(null);
+                            }
+                        }}
+                    >
+                        <button
                             style={{
-                                position: "relative",
+                                background: "none",
+                                border: "none",
+                                cursor: "pointer",
+                                opacity: 0.97,
+                                padding: "7px 6px", // Сделали больше hit-area, не только сама иконка!
+                                margin: 0,
+                                pointerEvents: "auto",
                                 display: "flex",
                                 alignItems: "center",
-                                height: "100%",
-                                marginLeft: isMine ? 0 : 8,
-                                marginRight: isMine ? 8 : 0,
-                                minWidth: 40, // Увеличили невидимую область вокруг иконки!
-                                minHeight: 44,
-                                padding: "0 6px",
-                                zIndex: 12,
+                                justifyContent: "center",
+                                borderRadius: 16, // Чтобы был мягче
                             }}
-                            onMouseEnter={() => setHoveredMsgId(msg.id)}
-                            onMouseLeave={e => {
-                                if (!e.relatedTarget || !e.currentTarget.contains(e.relatedTarget)) {
-                                    setHoveredMsgId(null);
-                                }
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setOpenReactionFor(msg.id);
                             }}
+                            title={t("chat.addReaction", "Поставить реакцию")}
+                            tabIndex={-1}
+                            type="button"
                         >
-                            <button
-                                style={{
-                                    background: "none",
-                                    border: "none",
-                                    cursor: "pointer",
-                                    opacity: 0.97,
-                                    padding: "7px 6px",     // Сделали больше hit-area, не только сама иконка!
-                                    margin: 0,
-                                    pointerEvents: "auto",
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                    borderRadius: 16, // Чтобы был мягче
-                                }}
-                                onClick={e => { e.stopPropagation(); setOpenReactionFor(msg.id); }}
-                                title={t("chat.addReaction", "Поставить реакцию")}
-                                tabIndex={-1}
-                                type="button"
+                            <svg
+                                width="22"
+                                height="22"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="#ffb140"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
                             >
-                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffb140" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="M22 11v1a10 10 0 1 1-9-10" />
-                                    <path d="M8 14s1.5 2 4 2 4-2 4-2" />
-                                    <line x1="9" x2="9.01" y1="9" y2="9" />
-                                    <line x1="15" x2="15.01" y1="9" y2="9" />
-                                    <path d="M16 5h6" />
-                                    <path d="M19 2v6" />
-                                </svg>
-                            </button>
-                            {openReactionFor === msg.id && (
-                                <div
-                                    className="emoji-picker-popup"
-                                    style={{
-                                        position: "absolute",
-                                        top: "50%",
-                                        left: !isMine ? "30px" : "auto",
-                                        right: isMine ? "30px" : "auto",
-                                        transform: "translateY(-50%)",
-                                        zIndex: 150
+                                <path d="M22 11v1a10 10 0 1 1-9-10" />
+                                <path d="M8 14s1.5 2 4 2 4-2 4-2" />
+                                <line x1="9" x2="9.01" y1="9" y2="9" />
+                                <line x1="15" x2="15.01" y1="9" y2="9" />
+                                <path d="M16 5h6" />
+                                <path d="M19 2v6" />
+                            </svg>
+                        </button>
+                        {openReactionFor === msg.id && (
+                            <div
+                                className="emoji-picker-popup"
+                                style={{
+                                    position: "absolute",
+                                    top: "50%",
+                                    left: !isMine ? "30px" : "auto",
+                                    right: isMine ? "30px" : "auto",
+                                    transform: "translateY(-50%)",
+                                    zIndex: 150,
+                                }}
+                                onClick={(e) => e.stopPropagation()}
+                            >
+                                <EmojiPicker
+                                    onEmojiClick={(emojiObject) => {
+                                        const ch =
+                                            emojiObject?.emoji ||
+                                            emojiObject?.native ||
+                                            emojiObject?.unicode ||
+                                            "";
+                                        if (ch) handleReact(ch);
+                                        setOpenReactionFor(null);
                                     }}
-                                    onClick={(e) => e.stopPropagation()}
-                                >
-                                    <EmojiPicker
-                                        onEmojiClick={(emojiObject) => {
-                                            const ch = emojiObject?.emoji || emojiObject?.native || emojiObject?.unicode || "";
-                                            if (ch) handleReact(ch);
-                                            setOpenReactionFor(null);
-                                        }}
-                                        skinTonePickerProps={{ skinTone: false }}
-                                    />
-                                </div>
-                            )}
-                        </div>
-                    )
-                }
-            </div >
+                                    skinTonePickerProps={{ skinTone: false }}
+                                />
+                            </div>
+                        )}
+                    </div>
+                )}
+            </div>
         );
     }
 
     return (
-        <div style={{
-            display: "flex",
-            flexDirection: "column",
-            height: "100%",       // ← было 100dvh
-            maxHeight: "100%",    // ← было 100dvh
-            minHeight: 0,         // важно для корректного скролла во flex
-            width: "100%",
-            background: "var(--surface)",
-            borderRadius: "inherit", // чтобы совпадали скругления
-            overflow: "hidden",      // чтобы ничего не «выпирало» за рамки
-            color: "var(--text-primary)",
-        }}>
+        <div
+            style={{
+                display: "flex",
+                flexDirection: "column",
+                height: "100%", // ← было 100dvh
+                maxHeight: "100%", // ← было 100dvh
+                minHeight: 0, // важно для корректного скролла во flex
+                width: "100%",
+                background: "var(--surface)",
+                borderRadius: "inherit", // чтобы совпадали скругления
+                overflow: "hidden", // чтобы ничего не «выпирало» за рамки
+                color: "var(--text-primary)",
+            }}
+        >
             {/* --- ШАПКА ЧАТА --- */}
             <ChatHeader
                 chat={chat}
@@ -2771,7 +3714,7 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                 <GroupMembersModal
                     chat={chat}
                     onClose={() => setShowGroupInfo(false)}
-                    afterChange={() => setGroupForceUpdate(x => x + 1)}
+                    afterChange={() => setGroupForceUpdate((x) => x + 1)}
                     forceUpdate={groupForceUpdate}
                 />
             )}
@@ -2781,12 +3724,12 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                 onScroll={handleScroll}
                 style={{
                     position: "relative",
-                    flex: "1 1 0%",      // ← вместо просто 1
-                    minHeight: 0,        // ← обязательно для корректного скролла
+                    flex: "1 1 0%", // ← вместо просто 1
+                    minHeight: 0, // ← обязательно для корректного скролла
                     overflowY: "auto",
                     padding: "26px 22px 15px 22px",
                     display: "flex",
-                    flexDirection: "column"
+                    flexDirection: "column",
                 }}
                 className="pb-24 lg:pt-2"
             >
@@ -2796,16 +3739,27 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                 {typeof secLeft === "number" && secLeft > 0 && (
                     <div
                         className="mx-3 my-2 px-3 py-2 rounded-xl border text-sm flex items-center justify-between"
-                        style={{ background: "rgba(255,240,200,0.55)", borderColor: "rgba(255,200,120,0.6)" }}>
+                        style={{
+                            background: "rgba(255,240,200,0.55)",
+                            borderColor: "rgba(255,200,120,0.6)",
+                        }}
+                    >
                         <span>
-                            {t("chat.autoclose.inactivity", "Чат закроется из-за бездействия через")} <b>{secLeft}</b> {t("unit.sec", "сек.")}
+                            {t(
+                                "chat.autoclose.inactivity",
+                                "Чат закроется из-за бездействия через"
+                            )}{" "}
+                            <b>{secLeft}</b> {t("unit.sec", "сек.")}
                         </span>
                     </div>
                 )}
                 {/* Кнопка «К последним» — видна, если вы не у конца */}
                 {!isNearBottom && (
                     <button
-                        onClick={() => { stickToBottomRef.current = true; scrollToBottom("smooth"); }}
+                        onClick={() => {
+                            stickToBottomRef.current = true;
+                            scrollToBottom("smooth");
+                        }}
                         style={{
                             position: "sticky",
                             bottom: 10,
@@ -2818,32 +3772,35 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                             background: "#0e1e33",
                             color: "#d6f3ff",
                             boxShadow: "0 2px 10px rgba(0,0,0,0.35)",
-                            fontSize: 13
+                            fontSize: 13,
                         }}
                     >
                         {t("chat.toLatest", "К последним ↓")}
                     </button>
                 )}
                 {/* LIVE баннер очереди (эфемерный), только для клиента */}
-                {((chat?.support || chatMeta?.support) &&
-                    String((user?.role || "")).toUpperCase() !== "SUPPORT" &&
-                    queueInfo) && (
-                        <div style={{
-                            background: "linear-gradient(180deg, #173b5b 0%, #10263a 100%)",
-                            border: "1px solid #264766",
-                            color: "#d6f3ff",
-                            borderRadius: 12,
-                            padding: "10px 12px",
-                            marginBottom: 10,
-                            fontSize: 14.5,
-                            lineHeight: 1.35
-                        }}>
+                {(chat?.support || chatMeta?.support) &&
+                    String(user?.role || "").toUpperCase() !== "SUPPORT" &&
+                    queueInfo && (
+                        <div
+                            style={{
+                                background: "linear-gradient(180deg, #173b5b 0%, #10263a 100%)",
+                                border: "1px solid #264766",
+                                color: "#d6f3ff",
+                                borderRadius: 12,
+                                padding: "10px 12px",
+                                marginBottom: 10,
+                                fontSize: 14.5,
+                                lineHeight: 1.35,
+                            }}
+                        >
                             <b>{t("support.queueTitle", "В очереди поддержки:")}</b>{" "}
-                            {
-                                t("support.queueBody", "ваша позиция #{position}, ориентировочно {eta} мин.")
-                                    .replace("#{position}", String((queueInfo.position ?? 0) + 1))
-                                    .replace("{eta}", String(queueInfo.eta_minutes ?? "—"))
-                            }
+                            {t(
+                                "support.queueBody",
+                                "ваша позиция #{position}, ориентировочно {eta} мин."
+                            )
+                                .replace("#{position}", String((queueInfo.position ?? 0) + 1))
+                                .replace("{eta}", String(queueInfo.eta_minutes ?? "—"))}
                         </div>
                     )}
 
@@ -2889,12 +3846,16 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                 )}
 
                 {/* Если локально перевалили ETA — покажем явное уведомление о закрытии */}
-                {((chat?.support || chatMeta?.support) && (supportStatus === "CLOSED" || forceClosed)) && (
-                    <div className="mb-3 text-sm px-3 py-2 rounded border border-slate-600/50 bg-slate-800/60 text-slate-100">
-                        {t("support.closed", "Диалог закрыт.")}{" "}
-                        {t("support.thanks", "Спасибо за обращение! Если появятся новые вопросы — создайте новую заявку в разделе «Поддержка».")}
-                    </div>
-                )}
+                {(chat?.support || chatMeta?.support) &&
+                    (supportStatus === "CLOSED" || forceClosed) && (
+                        <div className="mb-3 text-sm px-3 py-2 rounded border border-slate-600/50 bg-slate-800/60 text-slate-100">
+                            {t("support.closed", "Диалог закрыт.")}{" "}
+                            {t(
+                                "support.thanks",
+                                "Спасибо за обращение! Если появятся новые вопросы — создайте новую заявку в разделе «Поддержка»."
+                            )}
+                        </div>
+                    )}
                 {/* Доп. кнопка для ручной подгрузки (если нужно), показываем когда не идёт поиск */}
                 {!searchMsg && !olderEOF && !loadingOlder && (
                     <button
@@ -2909,7 +3870,7 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                             fontWeight: 500,
                             cursor: "pointer",
                             fontSize: 14,
-                            opacity: 0.85
+                            opacity: 0.85,
                         }}
                     >
                         {t("chat.loadOlder", "Загрузить старые сообщения")}
@@ -2920,24 +3881,38 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                         {t("chat.loadingOlder", "Загружаем старые сообщения…")}
                     </div>
                 )}
-                {displayedMessages && displayedMessages.length > 0 ? displayedMessages.map(renderMessage) : (
-                    <div style={{ color: "#a7badc", fontStyle: "italic", marginTop: 32, textAlign: "center" }}>
+                {displayedMessages && displayedMessages.length > 0 ? (
+                    displayedMessages.map(renderMessage)
+                ) : (
+                    <div
+                        style={{
+                            color: "#a7badc",
+                            fontStyle: "italic",
+                            marginTop: 32,
+                            textAlign: "center",
+                        }}
+                    >
                         {t("chat.noMessages", "Нет сообщений. Напишите что-нибудь!")}
                     </div>
                 )}
 
-                {((chat?.support || chatMeta?.support) && !isSupportAgent && showRating && !rated && !!ratingTicketId) && (
-                    <SupportRatingPrompt
-                        ticketId={ratingTicketId}
-                        onSubmitted={() => setRated(true)}
-                    />
-                )}
+                {(chat?.support || chatMeta?.support) &&
+                    !isSupportAgent &&
+                    showRating &&
+                    !rated &&
+                    !!ratingTicketId && (
+                        <SupportRatingPrompt
+                            ticketId={ratingTicketId}
+                            onSubmitted={() => setRated(true)}
+                        />
+                    )}
 
                 <div ref={messagesEndRef} />
             </div>
             {preview}
             <form
                 onSubmit={handleSend}
+                onKeyDown={handleKeyDown}
                 style={{
                     background: "#203154",
                     padding: "18px 16px",
@@ -2945,26 +3920,43 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                     borderTop: "1px solid #234",
                     display: "flex",
                     alignItems: "center",
-                    position: "sticky",   // ← фиксируем панель
-                    bottom: 0,            // ← у нижнего края
-                    zIndex: 20,           // ← поверх контента
+                    position: "sticky", // ← фиксируем панель
+                    bottom: 0, // ← у нижнего края
+                    zIndex: 20, // ← поверх контента
                     gap: 10,
                 }}
             >
                 {/* Эфемерный индикатор набора для саппорта */}
-                {((chat?.support || chatMeta?.support) && String((user?.role || "")).toUpperCase() !== "SUPPORT" && isTyping) && (
-                    <div style={{ position: "absolute", top: -22, left: 16, fontSize: 12.5, opacity: 0.85, color: "#a7badc" }}>
-                        {t("chat.supportTyping", "Поддержка печатает…")}
-                    </div>
-                )}
+                {(chat?.support || chatMeta?.support) &&
+                    String(user?.role || "").toUpperCase() !== "SUPPORT" &&
+                    isTyping && (
+                        <div
+                            style={{
+                                position: "absolute",
+                                top: -22,
+                                left: 16,
+                                fontSize: 12.5,
+                                opacity: 0.85,
+                                color: "#a7badc",
+                            }}
+                        >
+                            {t("chat.supportTyping", "Поддержка печатает…")}
+                        </div>
+                    )}
 
                 {/* Плюсик с дополнительными действиями (вложения, перевод) */}
-                    <div ref={attachmentMenuRef} style={{ position: "relative", display: "inline-block" }}>
+                <div
+                    ref={attachmentMenuRef}
+                    style={{ position: "relative", display: "inline-block" }}
+                >
                     <button
                         type="button"
                         title={t("chat.moreActions", "Дополнительно")}
-                        className={`action-btn ${attachmentMenuOpen ? "action-btn--accent" : ""}`}
-                        onClick={() => { if (!inputLocked) setAttachmentMenuOpen(v => !v); }}
+                        className={`action-btn ${attachmentMenuOpen ? "action-btn--accent" : ""
+                            }`}
+                        onClick={() => {
+                            if (!inputLocked) setAttachmentMenuOpen((v) => !v);
+                        }}
                         aria-haspopup="menu"
                         aria-expanded={attachmentMenuOpen ? "true" : "false"}
                         disabled={inputLocked}
@@ -2992,7 +3984,7 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                                 gap: 6,
                             }}
                         >
-                            {attachmentActions.map(action => (
+                            {attachmentActions.map((action) => (
                                 <button
                                     key={action.key}
                                     role="menuitem"
@@ -3008,7 +4000,13 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                                     onClick={action.onClick}
                                 >
                                     {action.icon && (
-                                        <span style={{ display: "inline-flex", alignItems: "center", fontSize: 15 }}>
+                                        <span
+                                            style={{
+                                                display: "inline-flex",
+                                                alignItems: "center",
+                                                fontSize: 15,
+                                            }}
+                                        >
                                             {action.icon}
                                         </span>
                                     )}
@@ -3019,10 +4017,14 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                             {/* Автоперевод */}
                             <button
                                 role="menuitem"
-                                className={`flex items-center gap-2 px-3 py-2 rounded-lg text-left text-sm ${autoTranslate ? "bg-[#27416b]" : "bg-[#223153]"}`}
-                                style={{ color: "#e2f3ff", border: "1px solid rgba(78,114,173,.55)" }}
+                                className={`flex items-center gap-2 px-3 py-2 rounded-lg text-left text-sm ${autoTranslate ? "bg-[#27416b]" : "bg-[#223153]"
+                                    }`}
+                                style={{
+                                    color: "#e2f3ff",
+                                    border: "1px solid rgba(78,114,173,.55)",
+                                }}
                                 onClick={() => {
-                                    setAutoTranslate(v => !v);
+                                    setAutoTranslate((v) => !v);
                                     setAttachmentMenuOpen(false);
                                 }}
                             >
@@ -3031,8 +4033,14 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                                     {translatingMessages
                                         ? t("chat.translating", "Переводим сообщения…")
                                         : autoTranslate
-                                            ? t("chat.autoTranslateToggleOn", "Автоперевод включён (последние 20 сообщений)")
-                                            : t("chat.autoTranslateToggleOff", "Включить автоперевод последних 20 сообщений")}
+                                            ? t(
+                                                "chat.autoTranslateToggleOn",
+                                                "Автоперевод включён (последние 20 сообщений)"
+                                            )
+                                            : t(
+                                                "chat.autoTranslateToggleOff",
+                                                "Включить автоперевод последних 20 сообщений"
+                                            )}
                                 </span>
                             </button>
                         </div>
@@ -3048,12 +4056,18 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                         }}
                     >
                         {/* Кнопка "плюс" (меню вложений) */}
-                        <div ref={attachmentMenuRef} style={{ position: "relative", display: "inline-block" }}>
+                        <div
+                            ref={attachmentMenuRef}
+                            style={{ position: "relative", display: "inline-block" }}
+                        >
                             <button
                                 type="button"
                                 title={t("chat.moreActions", "Дополнительно")}
-                                className={`action-btn ${attachmentMenuOpen ? "action-btn--accent" : ""}`}
-                                onClick={() => { if (!inputLocked) setAttachmentMenuOpen(v => !v); }}
+                                className={`action-btn ${attachmentMenuOpen ? "action-btn--accent" : ""
+                                    }`}
+                                onClick={() => {
+                                    if (!inputLocked) setAttachmentMenuOpen((v) => !v);
+                                }}
                                 aria-haspopup="menu"
                                 aria-expanded={attachmentMenuOpen ? "true" : "false"}
                                 disabled={inputLocked}
@@ -3081,7 +4095,7 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                                         gap: 6,
                                     }}
                                 >
-                                    {attachmentActions.map(action => (
+                                    {attachmentActions.map((action) => (
                                         <button
                                             key={action.key}
                                             role="menuitem"
@@ -3097,7 +4111,13 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                                             onClick={action.onClick}
                                         >
                                             {action.icon && (
-                                                <span style={{ display: "inline-flex", alignItems: "center", fontSize: 15 }}>
+                                                <span
+                                                    style={{
+                                                        display: "inline-flex",
+                                                        alignItems: "center",
+                                                        fontSize: 15,
+                                                    }}
+                                                >
                                                     {action.icon}
                                                 </span>
                                             )}
@@ -3108,10 +4128,14 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                                     {/* Автоперевод */}
                                     <button
                                         role="menuitem"
-                                        className={`flex items-center gap-2 px-3 py-2 rounded-lg text-left text-sm ${autoTranslate ? "bg-[#27416b]" : "bg-[#223153]"}`}
-                                        style={{ color: "#e2f3ff", border: "1px solid rgba(78,114,173,.55)" }}
+                                        className={`flex items-center gap-2 px-3 py-2 rounded-lg text-left text-sm ${autoTranslate ? "bg-[#27416b]" : "bg-[#223153]"
+                                            }`}
+                                        style={{
+                                            color: "#e2f3ff",
+                                            border: "1px solid rgba(78,114,173,.55)",
+                                        }}
                                         onClick={() => {
-                                            setAutoTranslate(v => !v);
+                                            setAutoTranslate((v) => !v);
                                             setAttachmentMenuOpen(false);
                                         }}
                                     >
@@ -3120,8 +4144,14 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                                             {translatingMessages
                                                 ? t("chat.translating", "Переводим сообщения…")
                                                 : autoTranslate
-                                                    ? t("chat.autoTranslateToggleOn", "Автоперевод включён (последние 20 сообщений)")
-                                                    : t("chat.autoTranslateToggleOff", "Включить автоперевод последних 20 сообщений")}
+                                                    ? t(
+                                                        "chat.autoTranslateToggleOn",
+                                                        "Автоперевод включён (последние 20 сообщений)"
+                                                    )
+                                                    : t(
+                                                        "chat.autoTranslateToggleOff",
+                                                        "Включить автоперевод последних 20 сообщений"
+                                                    )}
                                         </span>
                                     </button>
                                 </div>
@@ -3133,7 +4163,11 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                             type="button"
                             title={t("chat.attachFile", "Прикрепить файл")}
                             className="action-btn"
-                            onClick={() => !inputLocked && fileInputRef.current && fileInputRef.current.click()}
+                            onClick={() =>
+                                !inputLocked &&
+                                fileInputRef.current &&
+                                fileInputRef.current.click()
+                            }
                             disabled={inputLocked}
                             aria-label={t("chat.attachFile", "Прикрепить файл")}
                         >
@@ -3149,17 +4183,28 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
 
                         {/* Кнопки и мини-меню GPS — скрыты в саппорт-чате */}
                         {!chat?.support && (
-                            <div ref={gpsMenuRef} style={{ position: "relative", display: "inline-block" }}>
+                            <div
+                                ref={gpsMenuRef}
+                                style={{ position: "relative", display: "inline-block" }}
+                            >
                                 <button
                                     type="button"
                                     onClick={(e) => {
-                                        if (GPS_DISABLED) { showToast(e, t("gps.soon.short", "Скоро: GPS-мониторинг"), "info"); return; }
-                                        setGpsMenuOpen(v => !v);
+                                        if (GPS_DISABLED) {
+                                            showToast(
+                                                e,
+                                                t("gps.soon.short", "Скоро: GPS-мониторинг"),
+                                                "info"
+                                            );
+                                            return;
+                                        }
+                                        setGpsMenuOpen((v) => !v);
                                     }}
                                     title="GPS"
                                     aria-haspopup="menu"
                                     aria-expanded={gpsMenuOpen ? "true" : "false"}
-                                    className={`action-btn ${gpsMenuOpen ? "action-btn--accent" : ""}`}
+                                    className={`action-btn ${gpsMenuOpen ? "action-btn--accent" : ""
+                                        }`}
                                     style={{ color: "#bbf7d0" }}
                                 >
                                     <FaMapMarkerAlt />
@@ -3182,15 +4227,39 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                                     >
                                         <button
                                             role="menuitem"
-                                            onClick={(e) => { quickShareGps(e); }}
-                                            style={{ display: "block", width: "100%", textAlign: "left", padding: "8px 10px", borderRadius: 8, background: "transparent", color: "#e2f3ff", border: "none", cursor: "pointer" }}
+                                            onClick={(e) => {
+                                                quickShareGps(e);
+                                            }}
+                                            style={{
+                                                display: "block",
+                                                width: "100%",
+                                                textAlign: "left",
+                                                padding: "8px 10px",
+                                                borderRadius: 8,
+                                                background: "transparent",
+                                                color: "#e2f3ff",
+                                                border: "none",
+                                                cursor: "pointer",
+                                            }}
                                         >
                                             {t("gps.share", "Поделиться GPS")}
                                         </button>
                                         <button
                                             role="menuitem"
-                                            onClick={(e) => { quickRequestGps(e); }}
-                                            style={{ display: "block", width: "100%", textAlign: "left", padding: "8px 10px", borderRadius: 8, background: "transparent", color: "#e2f3ff", border: "none", cursor: "pointer" }}
+                                            onClick={(e) => {
+                                                quickRequestGps(e);
+                                            }}
+                                            style={{
+                                                display: "block",
+                                                width: "100%",
+                                                textAlign: "left",
+                                                padding: "8px 10px",
+                                                borderRadius: 8,
+                                                background: "transparent",
+                                                color: "#e2f3ff",
+                                                border: "none",
+                                                cursor: "pointer",
+                                            }}
                                         >
                                             {t("gps.request", "Запросить GPS")}
                                         </button>
@@ -3203,8 +4272,12 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                         {!isMobile && (
                             <button
                                 type="button"
-                                onClick={e => { e.preventDefault(); if (!inputLocked) setShowEmojiPicker(v => !v); }}
-                                className={`action-btn ${showEmojiPicker ? "action-btn--accent" : ""}`}
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    if (!inputLocked) setShowEmojiPicker((v) => !v);
+                                }}
+                                className={`action-btn ${showEmojiPicker ? "action-btn--accent" : ""
+                                    }`}
                                 title={t("chat.insertEmoji", "Вставить эмодзи")}
                                 disabled={inputLocked}
                                 aria-label={t("chat.insertEmoji", "Вставить эмодзи")}
@@ -3223,54 +4296,105 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
 
                         <button
                             type="button"
-                            onClick={() => setAutoTranslate(v => !v)}
-                            className={`action-btn ${autoTranslate ? "action-btn--accent" : ""} ${translatingMessages ? "opacity-80" : ""}`}
-                            title={autoTranslate
-                                ? t("chat.autoTranslateToggleOn", "Автоперевод включён (последние 20 сообщений)")
-                                : t("chat.autoTranslateToggleOff", "Включить автоперевод последних 20 сообщений")}
+                            onClick={() => setAutoTranslate((v) => !v)}
+                            className={`action-btn ${autoTranslate ? "action-btn--accent" : ""
+                                } ${translatingMessages ? "opacity-80" : ""}`}
+                            title={
+                                autoTranslate
+                                    ? t(
+                                        "chat.autoTranslateToggleOn",
+                                        "Автоперевод включён (последние 20 сообщений)"
+                                    )
+                                    : t(
+                                        "chat.autoTranslateToggleOff",
+                                        "Включить автоперевод последних 20 сообщений"
+                                    )
+                            }
                             aria-pressed={autoTranslate}
                         >
-                            {translatingMessages ? <span style={{ fontSize: 12, fontWeight: 700 }}>…</span> : <FaLanguage />}
+                            {translatingMessages ? (
+                                <span style={{ fontSize: 12, fontWeight: 700 }}>…</span>
+                            ) : (
+                                <FaLanguage />
+                            )}
                         </button>
                     </div>
 
                     <button
                         type="button"
-                        onClick={() => setAutoTranslate(v => !v)}
-                        className={`action-btn ${autoTranslate ? "action-btn--accent" : ""} ${translatingMessages ? "opacity-80" : ""}`}
-                        title={autoTranslate
-                            ? t("chat.autoTranslateToggleOn", "Автоперевод включён (последние 20 сообщений)")
-                            : t("chat.autoTranslateToggleOff", "Включить автоперевод последних 20 сообщений")}
+                        onClick={() => setAutoTranslate((v) => !v)}
+                        className={`action-btn ${autoTranslate ? "action-btn--accent" : ""} ${translatingMessages ? "opacity-80" : ""
+                            }`}
+                        title={
+                            autoTranslate
+                                ? t(
+                                    "chat.autoTranslateToggleOn",
+                                    "Автоперевод включён (последние 20 сообщений)"
+                                )
+                                : t(
+                                    "chat.autoTranslateToggleOff",
+                                    "Включить автоперевод последних 20 сообщений"
+                                )
+                        }
                         aria-pressed={autoTranslate}
                     >
-                        {translatingMessages ? <span style={{ fontSize: 12, fontWeight: 700 }}>…</span> : <FaLanguage />}
+                        {translatingMessages ? (
+                            <span style={{ fontSize: 12, fontWeight: 700 }}>…</span>
+                        ) : (
+                            <FaLanguage />
+                        )}
                     </button>
                 </div>
 
                 {pendingVoice && (
-                    <div style={{ flexGrow: 1, display: "flex", alignItems: "center", gap: 10, padding: "8px 10px", border: "1.5px solid var(--border)", borderRadius: 7, background: "var(--background)" }}>
+                    <div
+                        style={{
+                            flexGrow: 1,
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 10,
+                            padding: "8px 10px",
+                            border: "1.5px solid var(--border)",
+                            borderRadius: 7,
+                            background: "var(--background)",
+                        }}
+                    >
                         <audio src={pendingVoice.url} controls style={{ flex: 1 }} />
-                        <button type="button" title={t("chat.deleteVoice", "Удалить голосовое")} onClick={() => setPendingVoice(null)}
-                            style={{ background: "#ef4444", color: "#fff", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: "pointer" }}>🗑</button>
+                        <button
+                            type="button"
+                            title={t("chat.deleteVoice", "Удалить голосовое")}
+                            onClick={() => setPendingVoice(null)}
+                            style={{
+                                background: "#ef4444",
+                                color: "#fff",
+                                border: "none",
+                                borderRadius: 8,
+                                padding: "6px 10px",
+                                fontWeight: 700,
+                                cursor: "pointer",
+                            }}
+                        >
+                            🗑
+                        </button>
                     </div>
                 )}
                 {!pendingVoice && (
-
                     <textarea
                         ref={textareaRef}
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
-                        onKeyDown={handleKeyDown}
                         enterKeyHint="send"
-                        placeholder={inputLocked ? "Диалог закрыт..." : "Напишите сообщение..."}
+                        placeholder={
+                            inputLocked ? "Диалог закрыт..." : "Напишите сообщение..."
+                        }
                         disabled={inputLocked}
                         style={{
                             flexGrow: 1,
-                            minHeight: 44,            // удобнее палец␊
+                            minHeight: 44, // удобнее палец␊
                             maxHeight: 120,
                             resize: "none",
                             padding: "10px 12px",
-                            fontSize: 16,             // убирает авто-зум на iOS
+                            fontSize: 16, // убирает авто-зум на iOS
                             borderRadius: 7,
                             border: "1.5px solid var(--border-subtle)",
                             background: "var(--control-bg)",
@@ -3282,7 +4406,11 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                 )}
                 <button
                     type="submit"
-                    disabled={inputLocked || sending || (!input.trim() && !pendingAttachment && !pendingVoice)}
+                    disabled={
+                        inputLocked ||
+                        sending ||
+                        (!input.trim() && !pendingAttachment && !pendingVoice)
+                    }
                     className="action-btn action-btn--accent"
                     style={{ marginLeft: 6 }}
                     title={t("common.send", "Отправить")}
@@ -3290,15 +4418,23 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                     <FaPaperPlane />
                 </button>
                 {inputLocked && (
-                    <div className="text-xs text-slate-300/80 pt-2 pb-1" style={{ marginLeft: 6 }}>
+                    <div
+                        className="text-xs text-slate-300/80 pt-2 pb-1"
+                        style={{ marginLeft: 6 }}
+                    >
                         {t("chat.inputLocked", "Ввод сообщений недоступен: диалог закрыт.")}
                     </div>
                 )}
                 {showEmojiPicker && (
                     <div
                         className="emoji-picker-popup"
-                        style={{ position: "absolute", bottom: "56px", left: "16px", zIndex: 150 }}
-                        onClick={e => e.stopPropagation()}
+                        style={{
+                            position: "absolute",
+                            bottom: "56px",
+                            left: "16px",
+                            zIndex: 150,
+                        }}
+                        onClick={(e) => e.stopPropagation()}
                     >
                         <EmojiPicker
                             onEmojiClick={(emojiObject, event) => addEmoji(emojiObject, event)}

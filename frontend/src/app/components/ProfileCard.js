@@ -89,13 +89,32 @@ function getDisplayName(user, t) {
 }
 
 /* small UI */
+const palette = {
+    card: "var(--bg-card)",
+    cardSoft: "var(--bg-card-soft)",
+    text: "var(--text-primary)",
+    muted: "var(--text-secondary)",
+    border: "var(--border-subtle)",
+    control: "var(--control-bg)",
+    controlHover: "var(--control-bg-hover)",
+    shadow: "var(--shadow-soft)",
+};
+
+const cardContainerStyle = {
+    background: palette.card,
+    borderRadius: 18,
+    boxShadow: palette.shadow,
+    border: `1px solid ${palette.border}`,
+};
+
 const Box = ({ children, style }) => (
     <div
         style={{
-            background: "#0f1626",
+            background: palette.cardSoft,
             borderRadius: 14,
             padding: 12,
-            boxShadow: "0 2px 10px rgba(25,57,105,0.18)",
+            boxShadow: palette.shadow,
+            color: palette.text,
             ...style,
         }}
     >
@@ -111,7 +130,7 @@ const InfoRow = ({ icon, children }) => (
             gap: 10,
             minHeight: 28,
             lineHeight: "22px",
-            color: "#cfe7ff",
+            color: palette.text,
             overflow: "hidden",
         }}
     >
@@ -179,9 +198,7 @@ export default function ProfileCard({ user: initialUser, readOnly, onUserUpdate,
             <div
                 className="profile-block"
                 style={{
-                    background: "#172135",
-                    borderRadius: 18,
-                    boxShadow: "0 2px 8px rgba(60,130,255,0.08)",
+                    ...cardContainerStyle,
                     padding: isMobile ? "18px 14px" : "28px 32px",
                     width: "100%",
                     maxWidth: "100%",
@@ -203,7 +220,7 @@ export default function ProfileCard({ user: initialUser, readOnly, onUserUpdate,
                 background: "#172135",
                 borderRadius: 18,
                 boxShadow: "0 2px 8px rgba(60,130,255,0.08)",
-                padding: isMobile ? "16px 12px" : "24px 28px",
+                padding: isMobile ? "14px 12px" : "18px 20px",
                 width: "100%",
             }}
         >
@@ -211,17 +228,17 @@ export default function ProfileCard({ user: initialUser, readOnly, onUserUpdate,
             <div
                 style={{
                     display: "grid",
-                    gridTemplateColumns: isMobile ? "1fr" : "180px 1fr",
-                    gap: isMobile ? 12 : 24,
+                    gridTemplateColumns: isMobile ? "1fr" : "160px 1fr",
+                    gap: isMobile ? 10 : 18,
                     alignItems: "start",
                 }}
             >
                 {/* left: avatar + verify */}
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
                     <div
                         style={{
-                            width: isMobile ? 96 : 120,
-                            height: isMobile ? 96 : 120,
+                            width: isMobile ? 88 : 108,
+                            height: isMobile ? 88 : 108,
                             borderRadius: "50%",
                             background: "#21304d",
                             boxShadow: "0 0 0 3px #243a62 inset",
@@ -245,7 +262,7 @@ export default function ProfileCard({ user: initialUser, readOnly, onUserUpdate,
                             display: "inline-flex",
                             alignItems: "center",
                             gap: 8,
-                            padding: isMobile ? "5px 9px" : "6px 10px",
+                            padding: isMobile ? "5px 8px" : "6px 9px",
                             background:
                                 status === verifStatus.pending ? "#2b2a1b" : status === verifStatus.rejected ? "#2a2130" : "#12301f",
                             border:
@@ -271,13 +288,13 @@ export default function ProfileCard({ user: initialUser, readOnly, onUserUpdate,
                 </div>
 
                 {/* right: header + details */}
-                <div style={{ display: "flex", flexDirection: "column", gap: isMobile ? 12 : 16, minWidth: 0 }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: isMobile ? 10 : 14, minWidth: 0 }}>
                     {/* header */}
                     {!isMobile ? (
-                        // desktop: name + rating on the right
-                        <div style={{ display: "grid", gridTemplateColumns: "1fr 220px", gap: 16, alignItems: "center" }}>
+                        // desktop: name + rating on the right␊
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 200px", gap: 14, alignItems: "center" }}>
                             <div style={{ minWidth: 0 }}>
-                                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
+                                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
                                     <span
                                         title={roleLabels[roleValue] || user?.role}
                                         style={{
@@ -288,7 +305,7 @@ export default function ProfileCard({ user: initialUser, readOnly, onUserUpdate,
                                             border: "1px solid #254985",
                                             color: "#a7ccff",
                                             borderRadius: 999,
-                                            padding: "4px 10px",
+                                            padding: "4px 9px",
                                             fontSize: 12,
                                             fontWeight: 700,
                                         }}
@@ -300,7 +317,7 @@ export default function ProfileCard({ user: initialUser, readOnly, onUserUpdate,
                                         title={title}
                                         style={{
                                             margin: 0,
-                                            fontSize: 22,
+                                            fontSize: 20,
                                             fontWeight: 800,
                                             color: "#e4f1ff",
                                             letterSpacing: ".01em",
@@ -314,25 +331,6 @@ export default function ProfileCard({ user: initialUser, readOnly, onUserUpdate,
                                     {!readOnly && (
                                         <>
                                             <button
-                                                onClick={() => setEditMode(true)}
-                                                title={t("profile.edit", "Редактировать профиль")}
-                                                style={{
-                                                    marginLeft: 6,
-                                                    display: "inline-flex",
-                                                    alignItems: "center",
-                                                    justifyContent: "center",
-                                                    width: 32,
-                                                    height: 32,
-                                                    borderRadius: 8,
-                                                    background: "#11284e",
-                                                    border: "1px solid #27539a",
-                                                    color: "#acd2ff",
-                                                    cursor: "pointer",
-                                                }}
-                                            >
-                                                <FaRegEdit size={16} />
-                                            </button>
-                                            <button
                                                 onClick={handleOpenChangePassword}
                                                 title={t("profile.changePassword", "Сменить пароль")}
                                                 style={{
@@ -343,9 +341,9 @@ export default function ProfileCard({ user: initialUser, readOnly, onUserUpdate,
                                                     width: 32,
                                                     height: 32,
                                                     borderRadius: 8,
-                                                    background: "#11284e",
-                                                    border: "1px solid #27539a",
-                                                    color: "#acd2ff",
+                                                    background: palette.control,
+                                                    border: `1px solid ${palette.border}`,
+                                                    color: palette.text,
                                                     cursor: "pointer",
                                                 }}
                                             >
@@ -358,11 +356,11 @@ export default function ProfileCard({ user: initialUser, readOnly, onUserUpdate,
                             </div>
 
                             <Box style={{ alignSelf: "start" }}>
-                                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, color: "#d9ebff" }}>
+                                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, color: palette.text }}>
                                     <FaStar />
                                     <span style={{ fontWeight: 700 }}>{t("profile.rating", "Рейтинг")}</span>
                                 </div>
-                                <TenStars value={ratingValue} t={t} theme={resolvedTheme} />
+                                <TenStars value={ratingValue} t={t} />
                             </Box>
                         </div>
                     ) : (
@@ -376,9 +374,9 @@ export default function ProfileCard({ user: initialUser, readOnly, onUserUpdate,
                                             display: "inline-flex",
                                             alignItems: "center",
                                             gap: 8,
-                                            background: "#0f2449",
-                                            border: "1px solid #254985",
-                                            color: "#a7ccff",
+                                            background: palette.control,
+                                            border: `1px solid ${palette.border}`,
+                                            color: palette.text,
                                             borderRadius: 999,
                                             padding: "4px 10px",
                                             fontSize: 12,
@@ -396,7 +394,7 @@ export default function ProfileCard({ user: initialUser, readOnly, onUserUpdate,
                                             fontSize: 18,
                                             lineHeight: "24px",
                                             fontWeight: 900,
-                                            color: "#e4f1ff",
+                                            color: palette.text,
                                             overflow: "hidden",
                                             textOverflow: "ellipsis",
                                             whiteSpace: "nowrap",
@@ -410,7 +408,7 @@ export default function ProfileCard({ user: initialUser, readOnly, onUserUpdate,
                                                 onClick={() => setEditMode(true)}
                                                 title={t("profile.edit", "Редактировать профиль")}
                                                 style={{
-                                                    marginLeft: "auto",
+                                                    marginLeft: 6,
                                                     display: "inline-flex",
                                                     alignItems: "center",
                                                     justifyContent: "center",
@@ -449,7 +447,7 @@ export default function ProfileCard({ user: initialUser, readOnly, onUserUpdate,
                             </div>
 
                             <Box>
-                                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, color: "#d9ebff" }}>
+                                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, color: palette.text }}>
                                     <FaStar />
                                     <span style={{ fontWeight: 700 }}>{t("profile.rating", "Рейтинг")}</span>
                                 </div>
@@ -467,14 +465,14 @@ export default function ProfileCard({ user: initialUser, readOnly, onUserUpdate,
                         }}
                     >
                         <Box>
-                            <div style={{ fontSize: 12, color: "#9fc6ff", fontWeight: 700, marginBottom: 8 }}>{t("profile.contacts", "Контакты")}</div>
+                            <div style={{ fontSize: 12, color: palette.muted, fontWeight: 700, marginBottom: 8 }}>{t("profile.contacts", "Контакты")}</div>
                             {user?.email && <InfoRow icon={<FaEnvelope />}>{user.email}</InfoRow>}
                             {user?.phone && <InfoRow icon={<FaPhoneAlt />}>{user.phone}</InfoRow>}
                             {user?.phone2 && <InfoRow icon={<FaPhoneAlt />}>{user.phone2}</InfoRow>}
                         </Box>
 
                         <Box>
-                            <div style={{ fontSize: 12, color: "#9fc6ff", fontWeight: 700, marginBottom: 8 }}>{t("profile.messengers", "Мессенджеры")}</div>
+                            <div style={{ fontSize: 12, color: palette.muted, fontWeight: 700, marginBottom: 8 }}>{t("profile.messengers", "Мессенджеры")}</div>
                             {user?.whatsapp && <InfoRow icon={<FaWhatsapp />}>{user.whatsapp}</InfoRow>}
                             {user?.viber && <InfoRow icon={<FaViber />}>{user.viber}</InfoRow>}
                             {user?.telegram && <InfoRow icon={<FaTelegramPlane />}>{user.telegram}</InfoRow>}
@@ -518,10 +516,10 @@ export default function ProfileCard({ user: initialUser, readOnly, onUserUpdate,
                                 }}
                                 title={t("chat.open", "Чат")}
                                 style={{
-                                    background: "#223d59",
+                                    background: palette.control,
                                     color: "#43c8ff",
                                     borderRadius: 7,
-                                    border: "none",
+                                    border: `1px solid ${palette.border}`,
                                     padding: "8px 10px",
                                     fontSize: 20,
                                     display: "inline-flex",
@@ -544,10 +542,10 @@ export default function ProfileCard({ user: initialUser, readOnly, onUserUpdate,
                                                 rel="noopener noreferrer"
                                                 title={t("messenger.whatsapp", "WhatsApp")}
                                                 style={{
-                                                    background: "#192b4b",
+                                                    background: palette.control,
                                                     color: "#74e07e",
                                                     borderRadius: 7,
-                                                    border: "none",
+                                                    border: `1px solid ${palette.border}`,
                                                     padding: pad,
                                                     display: "inline-flex",
                                                     alignItems: "center",
@@ -564,10 +562,10 @@ export default function ProfileCard({ user: initialUser, readOnly, onUserUpdate,
                                                 rel="noopener noreferrer"
                                                 title={t("messenger.viber", "Viber")}
                                                 style={{
-                                                    background: "#192b4b",
+                                                    background: palette.control,
                                                     color: "#7954a1",
                                                     borderRadius: 7,
-                                                    border: "none",
+                                                    border: `1px solid ${palette.border}`,
                                                     padding: pad,
                                                     display: "inline-flex",
                                                     alignItems: "center",
@@ -584,10 +582,10 @@ export default function ProfileCard({ user: initialUser, readOnly, onUserUpdate,
                                                 rel="noopener noreferrer"
                                                 title={t("messenger.telegram", "Telegram")}
                                                 style={{
-                                                    background: "#192b4b",
+                                                    background: palette.control,
                                                     color: "#5abdf0",
                                                     borderRadius: 7,
-                                                    border: "none",
+                                                    border: `1px solid ${palette.border}`,
                                                     padding: pad,
                                                     display: "inline-flex",
                                                     alignItems: "center",
@@ -602,10 +600,10 @@ export default function ProfileCard({ user: initialUser, readOnly, onUserUpdate,
                                                 href={links.email}
                                                 title={t("messenger.email", "Эл. почта")}
                                                 style={{
-                                                    background: "#192b4b",
+                                                    background: palette.control,
                                                     color: "#d2e4ff",
                                                     borderRadius: 7,
-                                                    border: "none",
+                                                    border: `1px solid ${palette.border}`,
                                                     padding: pad,
                                                     display: "inline-flex",
                                                     alignItems: "center",
