@@ -100,13 +100,17 @@ export default function HomeMapsSection() {
     }, [authFetchWithRefresh]);
 
     return (
-        <section aria-label={t("home.map.aria", "Карта предложений")} className="relative py-4 md:py-6">
+        <section
+            aria-label={t("home.map.aria", "Карта предложений")}
+            className="relative py-4 md:py-6"
+            style={{ color: "var(--text-primary)" }}
+        >
             <div className="mx-auto max-w-7xl px-6">
                 {/* Общая карта: Грузы + Транспорт */}
                 <div
                     className={`rounded-2xl overflow-hidden backdrop-blur-xl transition-colors duration-200 ${isLight
-                            ? "bg-white border border-slate-200 shadow-[0_10px_30px_rgba(15,23,42,0.12)]"
-                            : "bg-[#0b1528]/60 border border-white/8 shadow-[0_6px_24px_rgba(0,0,0,0.35)]"
+                        ? "bg-white border border-slate-200 shadow-[0_10px_30px_rgba(15,23,42,0.12)]"
+                        : "bg-[#0b1528]/60 border border-white/8 shadow-[0_6px_24px_rgba(0,0,0,0.35)]"
                         }`}
                 >
                     <div className="flex items-center justify-between px-4 md:px-5 pt-3">
@@ -135,8 +139,8 @@ export default function HomeMapsSection() {
                             <button
                                 onClick={() => router.push("/transport")}
                                 className={`group inline-flex items-center gap-1.5 text-[12.5px] md:text-[13px] transition-colors ${isLight
-                                        ? "text-slate-600 hover:text-slate-900"
-                                        : "text-[#9fb0d5] hover:text-white"
+                                    ? "text-slate-600 hover:text-slate-900"
+                                    : "text-[#9fb0d5] hover:text-white"
                                     }`}
                             >
                                 {t("nav.transport", "Транспорт")}
@@ -145,8 +149,8 @@ export default function HomeMapsSection() {
                             <button
                                 onClick={() => router.push("/orders")}
                                 className={`group inline-flex items-center gap-1.5 text-[12.5px] md:text-[13px] transition-colors ${isLight
-                                        ? "text-slate-600 hover:text-slate-900"
-                                        : "text-[#9fb0d5] hover:text-white"
+                                    ? "text-slate-600 hover:text-slate-900"
+                                    : "text-[#9fb0d5] hover:text-white"
                                     }`}
                             >
                                 {t("saved.cargo.title", "Грузы")}
@@ -157,8 +161,8 @@ export default function HomeMapsSection() {
                     <div className="px-4 md:px-5 pb-4 md:pb-5">
                         <div
                             className={`rounded-xl overflow-hidden border h-[320px] md:h-[360px] ${isLight
-                                    ? "bg-white border-slate-200 shadow-[0_6px_20px_rgba(15,23,42,0.08)]"
-                                    : "bg-[#0a1426] border-white/8"
+                                ? "bg-white border-slate-200 shadow-[0_6px_20px_rgba(15,23,42,0.08)]"
+                                : "bg-[#0a1426] border-white/8"
                                 }`}
                         >
                             {Array.isArray(orders) && Array.isArray(transports) ? (

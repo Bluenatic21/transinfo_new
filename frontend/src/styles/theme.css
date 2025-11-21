@@ -102,3 +102,43 @@
     --surface-soft: var(--bg-card-soft);
     --text: var(--text-primary);
 }
+
+/* === Sidebar tokens === */
+:root[data-theme="dark"] {
+    --sidebar-bg: rgba(24, 38, 60, 0.97);
+    --sidebar-border: #24385b;
+    --sidebar-title: #4fc3f7;
+    --sidebar-title-shadow: 0 1px 10px #112b4dcc;
+    --sidebar-link: #e3f2fd;
+    --sidebar-link-hover-bg: rgba(67, 200, 255, 0.12);
+    --sidebar-link-hover: #bde8ff;
+    --sidebar-shadow: 4px 0 32px #0a1c34aa;
+}
+
+:root[data-theme="light"] {
+    --sidebar-bg: #ffffff;
+    --sidebar-border: var(--border-strong);
+    --sidebar-title: var(--brand-navy);
+    --sidebar-title-shadow: none;
+    --sidebar-link: var(--text-primary);
+    --sidebar-link-hover-bg: color-mix(in srgb, var(--brand-blue) 16%, transparent);
+    --sidebar-link-hover: var(--brand-navy);
+    --sidebar-shadow: 4px 0 24px rgba(15, 23, 42, 0.08);
+}
+
+/* === Orders/Transport list shells === */
+:root[data-theme="dark"] {
+    --orders-panel-bg: rgba(23, 38, 60, 0.98);
+    --orders-panel-border: rgba(255, 255, 255, 0.06);
+    --orders-panel-shadow: 0 4px 24px #00184455;
+    --orders-heading: #43c8ff;
+    --orders-muted: #9fb3c8;
+}
+
+:root[data-theme="light"] {
+    --orders-panel-bg: #ffffff;
+    --orders-panel-border: var(--border-subtle);
+    --orders-panel-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+    --orders-heading: var(--brand-navy);
+    --orders-muted: var(--text-secondary);
+}

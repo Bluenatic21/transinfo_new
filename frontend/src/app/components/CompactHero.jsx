@@ -16,7 +16,12 @@ export default function CompactHero({
     const subtitleText = subtitle ?? t("hero.subtitle", "Умный подбор грузов и транспорта по маршруту, дате и геолокации. Всё работает в реальном времени — быстро, удобно и прозрачно.");
 
     return (
-        <section id="hero" className="relative py-6 md:py-5 xl:py-4" aria-label="Hero">
+        <section
+            id="hero"
+            className="relative py-6 md:py-5 xl:py-4"
+            aria-label="Hero"
+            style={{ color: "var(--text-primary)" }}
+        >
             <div className="mx-auto max-w-7xl px-6">
                 {/* Заголовок и подзаголовок — компактно и аккуратно */}
                 <div className="text-center text-slate-900 dark:text-white">
@@ -25,6 +30,7 @@ export default function CompactHero({
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.35, ease: "easeOut" }}
                         className="text-[26px] md:text-[30px] font-extrabold tracking-tight"
+                        style={{ color: "var(--text-primary)" }}
                     >
                         {titleText}
                     </motion.h1>
@@ -36,7 +42,10 @@ export default function CompactHero({
                     />
 
                     {subtitleText && (
-                        <p className="mt-2 text-[14.5px] md:text-[15px] text-slate-600 dark:text-[#b9c7e6] leading-relaxed max-w-3xl mx-auto">
+                        <p
+                            className="mt-2 text-[14.5px] md:text-[15px] leading-relaxed max-w-3xl mx-auto"
+                            style={{ color: "var(--text-secondary)" }}
+                        >
                             {subtitleText}
                         </p>
                     )}

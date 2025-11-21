@@ -25,14 +25,14 @@ export default function Sidebar({ activeTab = "list", onTabChange }) {
             className="app-sidebar"
             style={{
                 width: 232,
-                background: "rgba(24, 38, 60, 0.97)",
-                borderRight: "1.5px solid #24385b",
+                background: "var(--sidebar-bg)",
+                borderRight: "1.5px solid var(--sidebar-border)",
                 padding: "42px 0 0 0",
                 minHeight: "100vh",
                 display: "flex",
                 flexDirection: "column",
                 gap: 18,
-                boxShadow: "4px 0 32px #0a1c34aa",
+                boxShadow: "var(--sidebar-shadow)",
                 backdropFilter: "blur(4px)",
                 position: "sticky",
                 top: 0
@@ -40,12 +40,12 @@ export default function Sidebar({ activeTab = "list", onTabChange }) {
         >
             <div
                 style={{
-                    color: "#4fc3f7",
+                    color: "var(--sidebar-title)",
                     fontWeight: 900,
                     fontSize: 27,
                     letterSpacing: 2,
                     margin: "0 0 30px 32px",
-                    textShadow: "0 1px 10px #112b4dcc",
+                    textShadow: "var(--sidebar-title-shadow)",
                     userSelect: "none",
                 }}
             >
@@ -58,15 +58,13 @@ export default function Sidebar({ activeTab = "list", onTabChange }) {
                         key={item.href}
                         href={item.href}
                         style={{
-                            color: "#e3f2fd",
                             padding: "13px 32px",
                             textDecoration: "none",
                             fontWeight: 700,
                             borderRadius: 8,
                             margin: "0 14px",
                             position: "relative",
-                            background: "none",
-                            transition: "background 0.18s, color 0.16s",
+                            transition: "background var(--transition-normal), color var(--transition-fast)",
                             display: "flex",
                             alignItems: "center",
                             gap: 10,

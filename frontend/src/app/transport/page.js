@@ -79,11 +79,12 @@ export default function TransportPage() {
         maxWidth: isCompact ? "100%" : 1400,
         marginInline: isCompact ? 0 : "auto",
         marginBlockStart: 24,               // то, что было marginTop
-        background: "rgba(23,38,60,0.98)",
+        background: "var(--orders-panel-bg)",
+        border: "1px solid var(--orders-panel-border)",
         borderRadius: isCompact ? 0 : 20,
         paddingInline: isCompact ? 12 : 24,
         paddingBlock: isCompact ? "12px 40px" : "24px 40px",
-        boxShadow: "0 4px 24px #00184455",
+        boxShadow: "var(--orders-panel-shadow)",
         minHeight: 380,
         display: "flex",
         flexDirection: "column",
@@ -119,7 +120,7 @@ export default function TransportPage() {
                             marginBottom: 18,
                             fontSize: 26,
                             fontWeight: 700,
-                            color: "#43c8ff",
+                            color: "var(--orders-heading)",
                             letterSpacing: 0.1,
                             textAlign: "left",
                         }}
@@ -129,7 +130,7 @@ export default function TransportPage() {
                 )}
 
                 {!ready ? (
-                    <div style={{ opacity: 0.7, fontSize: 14, color: "#9fb3c8" }}>{t("common.loading", "Загрузка...")}</div>
+                    <div style={{ opacity: 0.7, fontSize: 14, color: "var(--orders-muted)" }}>{t("common.loading", "Загрузка...")}</div>
                 ) : (
                     <TransportList key="transport-list" />
                 )}

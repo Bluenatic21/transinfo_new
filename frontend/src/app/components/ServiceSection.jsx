@@ -48,8 +48,8 @@ export default function ServiceSection() {
     ];
 
     return (
-        // Наследуем фон страницы, чтобы не было скачков
-        <section id="service" className="relative py-24">
+        // Наследуем фон страницы, чтобы не было скачков␊
+        <section id="service" className="relative py-24" style={{ color: "var(--text-primary)" }}>
             {/* Едва заметные разделители сверху/снизу для мягкого стыка секций */}
             <div
                 aria-hidden
@@ -73,8 +73,16 @@ export default function ServiceSection() {
                     >
                         {/* Текст */}
                         <div className="text-slate-900 dark:text-white">
-                            <h3 className="text-2xl md:text-3xl font-bold mb-3">{it.title}</h3>
-                            <p className="text-[15px] leading-relaxed text-slate-600 dark:text-[#b9c7e6]">
+                            <h3
+                                className="text-2xl md:text-3xl font-bold mb-3"
+                                style={{ color: "var(--text-primary)" }}
+                            >
+                                {it.title}
+                            </h3>
+                            <p
+                                className="text-[15px] leading-relaxed"
+                                style={{ color: "var(--text-secondary)" }}
+                            >
                                 {it.text}
                             </p>
                         </div>

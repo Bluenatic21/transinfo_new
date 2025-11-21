@@ -472,6 +472,9 @@ html[data-theme="light"] {
   /* дублируем критичные параметры, чтобы перебить локальные контейнеры */
   width: 232px;
   flex: 0 0 232px;
+  background: var(--sidebar-bg);
+  border-right: 1.5px solid var(--sidebar-border);
+  box-shadow: var(--sidebar-shadow);
 }
 
 @media (max-width: 768px) {
@@ -479,6 +482,18 @@ html[data-theme="light"] {
     position: static;
     /* на мобилке обычно не липкий */
   }
+}
+
+.sidebar-link {
+  color: var(--sidebar-link);
+  background: var(--sidebar-link-bg, transparent);
+  transition: background var(--transition-normal), color var(--transition-fast), box-shadow var(--transition-normal);
+}
+
+.sidebar-link:hover {
+  background: var(--sidebar-link-hover-bg);
+  color: var(--sidebar-link-hover);
+  box-shadow: 0 10px 22px color-mix(in srgb, var(--sidebar-link-hover-bg) 60%, transparent);
 }
 
 /* === Header: user chip width & subline === */

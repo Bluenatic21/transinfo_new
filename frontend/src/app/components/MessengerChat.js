@@ -881,6 +881,8 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
     const [showRequestGps, setShowRequestGps] = useState(false);
     const [showShareGps, setShowShareGps] = useState(false);
     const GPS_DISABLED = true;
+    const [gpsMenuOpen, setGpsMenuOpen] = useState(false);
+    const gpsMenuRef = useRef(null);
     const [attachmentMenuOpen, setAttachmentMenuOpen] = useState(false);
     const [actionsMenuOpen, setActionsMenuOpen] = useState(false);
     const actionsMenuRef = useRef(null);
@@ -1614,6 +1616,17 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
     }, [showEmojiPicker]);
 
     
+
+    // Закрытие мини-меню GPS по клику вне
+    useEffect(() => {
+        if (!gpsMenuOpen) return;
+        function onDocClick(e) {
+            if (!gpsMenuRef.current) return;
+            if (!gpsMenuRef.current.contains(e.target)) setGpsMenuOpen(false);
+        }
+        document.addEventListener('mousedown', onDocClick);
+        return () => document.removeEventListener('mousedown', onDocClick);
+    }, [gpsMenuOpen]);
 
 
 
