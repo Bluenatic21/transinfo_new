@@ -465,6 +465,24 @@ export default function Header({ setShowRegisterModal }) {
     const NAV_FONT = isTight ? 14 : isCompact ? 15 : 17;
     const NAV_PAD = isTight ? "6px 8px" : isCompact ? "7px 10px" : "7px 11px";
     const ICON_BTN = isTight ? 40 : 44;
+    const heroTitle = t("hero.title", "Интеллектуальная платформа для грузоперевозок");
+
+    const headerRef = useRef(null);
+    const [headerHeight, setHeaderHeight] = useState(HEADER_H + 48);
+
+    useEffect(() => {
+        const updateHeight = () => {
+            if (headerRef.current) {
+                const h = headerRef.current.offsetHeight;
+                setHeaderHeight(h);
+                try { document.documentElement.style.setProperty("--header-h", `${h}px`); } catch { }
+            }
+        };
+
+        updateHeight();
+        window.addEventListener("resize", updateHeight);
+        return () => window.removeEventListener("resize", updateHeight);
+    }, [isCompact, isTight, heroTitle]);
 
     const logoPx = `${LOGO}px`;
     const logoInnerPx = `${Math.round(LOGO * LOGO_OVERSCAN)}px`;
@@ -659,439 +677,457 @@ export default function Header({ setShowRegisterModal }) {
 
     return (
         <header
+            ref={headerRef}
             className="header-root"
             style={{
                 display: "flex",
-                alignItems: "center",
-                height: HEADER_H,
-                ["--header-h"]: `${HEADER_H}px`, // ← добавили, чтобы дети знали высоту
+                flexDirection: "column",
+                alignItems: "stretch",
+                gap: isCompact ? 10 : 14,
+                ["--header-h"]: `${headerHeight}px`,
                 background: "rgb(var(--header-bg))",
-                padding: "0 30px 0 20px",
+                padding: isCompact ? "18px 22px 14px 18px" : "20px 30px 16px 24px",
                 boxShadow: "var(--header-shadow)",
                 zIndex: 100
             }}
         >
-            {/* Логотип слева */}
-            <Link
-                href="/"
-                className="header-logo"
-                aria-label="Transinfo.ge"
-                style={{
-                    marginRight: 26,
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 10,                                  // ближе к надписи
-                    ["--logo-box"]: logoPx,                   // коробка/якорь
-                    ["--logo-inner"]: logoInnerPx             // реальный размер картинки внутри
-                }}
-            >
-                {/* Иконка из /public */}
-                <div className="logo-box">
-                    <img
-                        className="logo-img"
-                        src="/transinfo_logo_icon_v3.png"   // если у тебя v2 — укажи его
-                        alt=""
-                        decoding="async"
-                    />
-                </div>
-
-                <span
+            <div className="header-top" style={{ display: "flex", alignItems: "center", gap: isCompact ? 14 : 18 }}>
+                <Link
+                    href="/"
+                    className="header-logo"
+                    aria-label="Transinfo.ge"
                     style={{
-                        fontWeight: 900,
-                        letterSpacing: ".01em",
-                        fontSize: WORD,
-                        lineHeight: 1,
-                        color: "#7CC3FF",                               // чуть светлее
-                        textShadow: "0 1px 8px rgba(30,160,255,.22)"
+                        marginRight: 10,
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 10,
+                        ["--logo-box"]: logoPx,
+                        ["--logo-inner"]: logoInnerPx
                     }}
                 >
-                    Transinfo.ge
-                </span>
-            </Link>
+                    <div className="logo-box">
+                        <img
+                            className="logo-img"
+                            src="/transinfo_logo_icon_v3.png"
+                            alt=""
+                            decoding="async"
+                        />
+                    </div>
 
-            {/* Spacer для прижатия меню к правому краю */}
-            <div style={{ flex: 1 }} />
-
-            {/* Меню, прижатое к правому краю */}
-            <nav
-                className="header-nav"
-                style={{
-                    display: "flex", alignItems: "center",
-                    gap: NAV_GAP, minWidth: 0
-                }}
-            >
-                {!isTransportRole && (
-                    <Link className="nav-link" href="/transport"
-                        onClick={() => { try { sessionStorage.setItem("openMobileFilterOnEntry", "1"); } catch { } }}
-                        style={{ fontSize: NAV_FONT, fontWeight: 700, padding: NAV_PAD, minWidth: isTight ? 0 : isCompact ? 86 : 108 }}>
-                        <FaTruck className="nav-icon" style={{ fontSize: isTight ? 18 : 20 }} />
-                        {!isTight && <span className="nav-text">{t("nav.transport", "Транспорт")}</span>}
-                    </Link>
-                )}
-                {!isOwnerRole && (
-                    <Link className="nav-link" href="/orders"
-                        onClick={() => { try { sessionStorage.setItem("openMobileFilterOnEntry", "1"); } catch { } }}
-                        style={{ fontSize: NAV_FONT, fontWeight: 700, padding: NAV_PAD, minWidth: isTight ? 0 : isCompact ? 86 : 108 }}>
-                        <FaBox className="nav-icon" style={{ fontSize: isTight ? 18 : 20 }} />
-                        {!isTight && <span className="nav-text">{t("nav.cargo", "Груз")}</span>}
-                    </Link>
-                )}
-                {!isOwnerRole && (
-                    <button
-                        className="nav-link"
-                        onClick={() => {
-                            if (!isActive) { alert(t("error.account.blocked", "Аккаунт заблокирован")); return; }
-                            router.push("/create-transport");
-                        }}
+                    <span
                         style={{
-                            fontSize: NAV_FONT, fontWeight: 700, padding: NAV_PAD,
-                            minWidth: isTight ? 0 : isCompact ? 86 : 108,
-                            opacity: isActive ? 1 : .5, cursor: "pointer", background: "none", border: "none"
+                            fontWeight: 900,
+                            letterSpacing: ".01em",
+                            fontSize: WORD,
+                            lineHeight: 1,
+                            color: "#7CC3FF",
+                            textShadow: "0 1px 8px rgba(30,160,255,.22)"
                         }}
                     >
-                        {/* На tight показываем только иконку грузовика, чтобы не путать две «+» */}
-                        {isTight ? <FaTruck className="nav-icon" style={{ fontSize: 18 }} /> : <FaPlus className="nav-icon" style={{ fontSize: 20 }} />}
-                        {!isTight && <span className="nav-text">{t("nav.addTransport", "Добавить Транспорт")}</span>}
-                    </button>
-                )}
-                {!isTransportRole && (
-                    <button
-                        className="nav-link"
-                        onClick={() => {
-                            if (!isActive) { alert(t("error.account.blocked", "Аккаунт заблокирован")); return; }
-                            router.push("/create");
-                        }}
-                        style={{
-                            fontSize: NAV_FONT, fontWeight: 700, padding: NAV_PAD,
-                            minWidth: isTight ? 0 : isCompact ? 86 : 108,
-                            opacity: isActive ? 1 : .5, cursor: "pointer", background: "none", border: "none"
-                        }}
-                    >
-                        {isTight ? <FaBox className="nav-icon" style={{ fontSize: 18 }} /> : <FaPlus className="nav-icon" style={{ fontSize: 20 }} />}
-                        {!isTight && <span className="nav-text">{t("nav.addCargo", "Добавить Груз")}</span>}
-                    </button>
-                )}
-                {/* Ведём на якорь главной страницы, работает с любой страницы */}
-                <Link className="nav-link" href="/#service"
-                    style={{ fontSize: NAV_FONT, fontWeight: 700, padding: NAV_PAD, minWidth: isTight ? 0 : isCompact ? 86 : 108 }}>
-                    <FaInfoCircle className="nav-icon" style={{ fontSize: isTight ? 18 : 20 }} />
-                    {!isTight && <span className="nav-text">{t("nav.about", "О Сервисе")}</span>}
+                        Transinfo.ge
+                    </span>
                 </Link>
-            </nav>
-            {/* Разделительная линия */}
-            <div
-                style={{
-                    height: 44, width: 2, background: "rgba(60,80,110,0.45)",
-                    borderRadius: 3, margin: isTight ? "0 14px" : isCompact ? "0 18px" : "0 24px"
-                }}
-            />
-            {/* Справа: поиск, чат, профиль */}
-            <div
-                style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: isTight ? 10 : 16,
-                    minWidth: 0,
-                    height: 44,
-                }}
-            >
-                {user && (
-                    <>
-                        {/* Поиск */}
-                        <div ref={userSearchRef} style={{ position: "relative" }}>
-                            <button
-                                onClick={() => setShowUserSearch(v => !v)}
+
+                <div
+                    className="header-tagline"
+                    style={{
+                        color: "var(--text-primary)",
+                        fontWeight: 800,
+                        fontSize: isCompact ? 15.5 : 17,
+                        lineHeight: 1.35,
+                        letterSpacing: 0.1,
+                        maxWidth: 520
+                    }}
+                >
+                    {heroTitle}
+                </div>
+
+                <div style={{ flex: 1 }} />
+
+                <div
+                    className="header-actions"
+                    style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: isTight ? 10 : 16,
+                        minWidth: 0,
+                        height: 44,
+                    }}
+                >
+                    {user && (
+                        <>
+                            <div ref={userSearchRef} style={{ position: "relative" }}>
+                                <button
+                                    onClick={() => setShowUserSearch(v => !v)}
+                                    className="header-icon-btn"
+                                    style={{
+                                        height: ICON_BTN, width: ICON_BTN, fontSize: isTight ? 22 : 24,
+                                        display: "flex", alignItems: "center", justifyContent: "center",
+                                        position: "relative"
+                                    }}
+                                    title={t("search.findUser", "Найти участника")}
+                                    tabIndex={0}
+                                >
+                                    <FaSearch />
+                                </button>
+                                {showUserSearch && (
+                                    <form
+                                        onSubmit={e => {
+                                            e.preventDefault();
+                                            if (results.length > 0) {
+                                                router.push(`/profile/${results[0].id}`);
+                                                setShowUserSearch(false);
+                                                setUserIdInput("");
+                                                setResults([]);
+                                            }
+                                        }}
+                                        style={{
+                                            position: "absolute",
+                                            left: 0, top: "110%",
+                                            zIndex: 100,
+                                            minWidth: 250,
+                                            background: "#22314a",
+                                            padding: 10,
+                                            borderRadius: 12,
+                                            boxShadow: "0 3px 12px #0002"
+                                        }}
+                                    >
+                                        <input
+                                            type="text"
+                                            value={userIdInput}
+                                            onChange={e => setUserIdInput(e.target.value)}
+                                            placeholder={t("search.placeholder.user", "ID, имя или компания")}
+                                            style={{
+                                                padding: "8px 14px",
+                                                borderRadius: 8,
+                                                border: "1px solid #4472c4",
+                                                width: 220,
+                                                fontSize: 15,
+                                                marginBottom: 5,
+                                                background: "#222e46",
+                                                color: "#e3f2fd",
+                                                outline: "none"
+                                            }}
+                                            autoFocus
+                                        />
+                                        {loading && <div style={{ padding: 9, color: "#69e" }}>{t("common.loading", "Загрузка...")}</div>}
+                                        {!loading && userIdInput && (
+                                            <div
+                                                style={{
+                                                    background: "#273550",
+                                                    borderRadius: 9,
+                                                    marginTop: 0,
+                                                    boxShadow: "0 2px 12px #0004",
+                                                    minWidth: 200,
+                                                    maxHeight: 260,
+                                                    overflowY: "auto",
+                                                    zIndex: 120
+                                                }}>
+                                                {notFound
+                                                    ? <div style={{ padding: 13, color: "#888" }}>{t("common.notFound", "Не найдено")}</div>
+                                                    : results.map(u => (
+                                                        <div
+                                                            key={u.id}
+                                                            onClick={() => {
+                                                                router.push(`/profile/${u.id}`);
+                                                                setShowUserSearch(false);
+                                                                setUserIdInput("");
+                                                                setResults([]);
+                                                            }}
+                                                            style={{
+                                                                display: "flex", alignItems: "center", gap: 11,
+                                                                cursor: "pointer", padding: "10px 13px",
+                                                                borderBottom: "1px solid #222e",
+                                                                transition: "background 0.13s",
+                                                            }}
+                                                            onMouseDown={e => e.preventDefault()}
+                                                            onMouseOver={e => e.currentTarget.style.background = "#23303e"}
+                                                            onMouseOut={e => e.currentTarget.style.background = "none"}
+                                                        >
+                                                            <div style={{
+                                                                width: 36, height: 36, borderRadius: 18, background: "#314060",
+                                                                overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center"
+                                                            }}>
+                                                                <img src={u.avatar ? abs(u.avatar) : "/default-avatar.png"}
+                                                                    alt="ava"
+                                                                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                                                                    onError={e => { e.currentTarget.src = "/default-avatar.png"; }} />
+                                                            </div>
+                                                            <div>
+                                                                <div style={{ fontWeight: 700, color: "#fff" }}>
+                                                                    {u.organization || u.name}
+                                                                </div>
+                                                                <div style={{ fontSize: 13, color: "#bfe6fa" }}>{t("common.id", "ID")}: {u.id}</div>
+                                                            </div>
+                                                        </div>
+                                                    ))
+                                                }
+                                            </div>
+                                        )}
+                                    </form>
+                                )}
+                            </div>
+                            <div
                                 className="header-icon-btn"
                                 style={{
-                                    height: ICON_BTN, width: ICON_BTN, fontSize: isTight ? 22 : 24,
+                                    height: ICON_BTN, width: ICON_BTN, fontSize: isTight ? 21 : 23,
                                     display: "flex", alignItems: "center", justifyContent: "center",
-                                    position: "relative"
+                                    position: "relative",
+                                    transition: "box-shadow .17s, background .15s",
+                                    background: "none",
+                                    cursor: "pointer"
                                 }}
-                                title={t("search.findUser", "Найти участника")}
+                                aria-label={t("common.notifications", "Уведомления")}
+                                onMouseOver={e => e.currentTarget.style.background = "#1c273e"}
+                                onMouseOut={e => e.currentTarget.style.background = "none"}
+                            >
+                                <NotificationBell token={user?.token} userId={user?.id} />
+                            </div>
+                            <button
+                                type="button"
+                                onClick={openMessenger}
+                                className="header-icon-btn"
+                                style={{ height: ICON_BTN, width: ICON_BTN, fontSize: isTight ? 22 : 24, display: "flex", alignItems: "center", justifyContent: "center", position: "relative" }}
+                                title={t("nav.chat", "Чат")}
                                 tabIndex={0}
                             >
-                                <FaSearch />
-                            </button>
-                            {showUserSearch && (
-                                <form
-                                    onSubmit={e => {
-                                        e.preventDefault();
-                                        if (results.length > 0) {
-                                            router.push(`/profile/${results[0].id}`);
-                                            setShowUserSearch(false);
-                                            setUserIdInput("");
-                                            setResults([]);
-                                        }
-                                    }}
-                                    style={{
-                                        position: "absolute",
-                                        left: 0, top: "110%",
-                                        zIndex: 100,
-                                        minWidth: 250,
-                                        background: "#22314a",
-                                        padding: 10,
-                                        borderRadius: 12,
-                                        boxShadow: "0 3px 12px #0002"
-                                    }}
-                                >
-                                    <input
-                                        type="text"
-                                        value={userIdInput}
-                                        onChange={e => setUserIdInput(e.target.value)}
-                                        placeholder={t("search.placeholder.user", "ID, имя или компания")}
+                                <FaComments />
+                                {unread > 0 && (
+                                    <span
                                         style={{
-                                            padding: "8px 14px",
-                                            borderRadius: 8,
-                                            border: "1px solid #4472c4",
-                                            width: 220,
-                                            fontSize: 15,
-                                            marginBottom: 5,
-                                            background: "#222e46",
-                                            color: "#e3f2fd",
-                                            outline: "none"
+                                            position: "absolute",
+                                            top: 4,
+                                            right: 3,
+                                            background: "#e45b5b",
+                                            color: "white",
+                                            borderRadius: 12,
+                                            padding: "0 7px",
+                                            fontWeight: 700,
+                                            fontSize: 13,
+                                            minWidth: 20,
+                                            height: 20,
+                                            textAlign: "center",
+                                            lineHeight: "20px"
                                         }}
-                                        autoFocus
-                                    />
-                                    {loading && <div style={{ padding: 9, color: "#69e" }}>{t("common.loading", "Загрузка...")}</div>}
-                                    {!loading && userIdInput && (
-                                        <div
-                                            style={{
-                                                background: "#273550",
-                                                borderRadius: 9,
-                                                marginTop: 0,
-                                                boxShadow: "0 2px 12px #0004",
-                                                minWidth: 200,
-                                                maxHeight: 260,
-                                                overflowY: "auto",
-                                                zIndex: 120
-                                            }}>
-                                            {notFound
-                                                ? <div style={{ padding: 13, color: "#888" }}>{t("common.notFound", "Не найдено")}</div>
-                                                : results.map(u => (
-                                                    <div
-                                                        key={u.id}
-                                                        onClick={() => {
-                                                            router.push(`/profile/${u.id}`);
-                                                            setShowUserSearch(false);
-                                                            setUserIdInput("");
-                                                            setResults([]);
-                                                        }}
-                                                        style={{
-                                                            display: "flex", alignItems: "center", gap: 11,
-                                                            cursor: "pointer", padding: "10px 13px",
-                                                            borderBottom: "1px solid #222e",
-                                                            transition: "background 0.13s",
-                                                        }}
-                                                        onMouseDown={e => e.preventDefault()} // не закрывать при клике мыши
-                                                        onMouseOver={e => e.currentTarget.style.background = "#23303e"}
-                                                        onMouseOut={e => e.currentTarget.style.background = "none"}
-                                                    >
-                                                        <div style={{
-                                                            width: 36, height: 36, borderRadius: 18, background: "#314060",
-                                                            overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center"
-                                                        }}>
-                                                            <img
-                                                                src={u.avatar ? abs(u.avatar) : "/default-avatar.png"}
-                                                                alt="ava"
-                                                                style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                                                                onError={e => { e.currentTarget.src = "/default-avatar.png"; }}
-                                                            />
-                                                        </div>
-                                                        <div>
-                                                            <div style={{ fontWeight: 700, color: "#fff" }}>
-                                                                {u.organization || u.name}
-                                                            </div>
-                                                            <div style={{ fontSize: 13, color: "#bfe6fa" }}>{t("common.id", "ID")}: {u.id}</div>
-                                                        </div>
-                                                    </div>
-                                                ))
-                                            }
-                                        </div>
-                                    )}
-                                </form>
-                            )}
-                        </div>
-                        <div
-                            className="header-icon-btn"
-                            style={{
-                                height: ICON_BTN, width: ICON_BTN, fontSize: isTight ? 21 : 23,
-                                display: "flex", alignItems: "center", justifyContent: "center",
-                                position: "relative",
-                                transition: "box-shadow .17s, background .15s",
-                                background: "none",
-                                cursor: "pointer"
-                            }}
-                            aria-label={t("common.notifications", "Уведомления")}
-                            onMouseOver={e => e.currentTarget.style.background = "#1c273e"}
-                            onMouseOut={e => e.currentTarget.style.background = "none"}
-                        >
-                            <NotificationBell token={user?.token} userId={user?.id} />
-                        </div>
-                        {/* Чат */}
-                        <button
-                            type="button"
-                            onClick={openMessenger}
-                            className="header-icon-btn"
-                            style={{ height: ICON_BTN, width: ICON_BTN, fontSize: isTight ? 22 : 24, display: "flex", alignItems: "center", justifyContent: "center", position: "relative" }}
-                            title={t("nav.chat", "Чат")}
-                            tabIndex={0}
-                        >
-                            <FaComments />
-                            {unread > 0 && (
-                                <span
-                                    style={{
-                                        position: "absolute",
-                                        top: 4,
-                                        right: 3,
-                                        background: "#e45b5b",
-                                        color: "white",
-                                        borderRadius: 12,
-                                        padding: "0 7px",
-                                        fontWeight: 700,
-                                        fontSize: 13,
-                                        minWidth: 20,
-                                        height: 20,
-                                        textAlign: "center",
-                                        lineHeight: "20px"
-                                    }}
-                                >
-                                    {unread}
-                                </span>
-                            )}
-                        </button>
-
-                        {/* Переключатель темы (десктоп) */}
-                        <ThemeToggle />
-
-                        {/* Профиль (режим зависит от ширины) */}
-                        <div style={{ position: "relative", height: "var(--header-h)" }} ref={profileMenuRef}>
-                            <MiniProfile
-                                user={user}
-                                mode={isTight ? "icon" : isCompact ? "compact" : "full"}
-                                onClick={() => setProfileMenuOpen((v) => !v)}
-                            />
-                            {profileMenuOpen && (
-                                <div
-                                    style={{
-                                        position: "absolute",
-                                        top: 52, right: 0,
-                                        background: "#232d45",
-                                        borderRadius: 10,
-                                        boxShadow: "0 4px 22px #123d7060",
-                                        padding: "10px 0",
-                                        zIndex: 100,
-                                        minWidth: 165,
-                                    }}
-                                >
-                                    <Link
-                                        href="/profile"
-                                        style={{
-                                            display: "block", padding: "10px 22px",
-                                            color: "#fff", fontWeight: 700, textDecoration: "none",
-                                            cursor: "pointer", transition: "background .14s"
-                                        }}
-                                        onClick={() => setProfileMenuOpen(false)}
                                     >
-                                        {t("nav.profile", "Профиль")}
-                                    </Link>
-                                    {isAdmin && (
+                                        {unread}
+                                    </span>
+                                )}
+                            </button>
+
+                            <ThemeToggle />
+
+                            <div style={{ position: "relative", height: "var(--header-h)" }} ref={profileMenuRef}>
+                                <MiniProfile
+                                    user={user}
+                                    mode={isTight ? "icon" : isCompact ? "compact" : "full"}
+                                    onClick={() => setProfileMenuOpen((v) => !v)}
+                                />
+                                {profileMenuOpen && (
+                                    <div
+                                        style={{
+                                            position: "absolute",
+                                            top: 52, right: 0,
+                                            background: "#232d45",
+                                            borderRadius: 10,
+                                            boxShadow: "0 4px 22px #123d7060",
+                                            padding: "10px 0",
+                                            zIndex: 100,
+                                            minWidth: 165,
+                                        }}
+                                    >
                                         <Link
-                                            href="/admin"
+                                            href="/profile"
                                             style={{
                                                 display: "block", padding: "10px 22px",
-                                                color: "#a6e0ff", fontWeight: 700, textDecoration: "none",
+                                                color: "#fff", fontWeight: 700, textDecoration: "none",
                                                 cursor: "pointer", transition: "background .14s"
                                             }}
                                             onClick={() => setProfileMenuOpen(false)}
                                         >
-                                            {t("nav.admin", "Админ")}
+                                            {t("nav.profile", "Профиль")}
                                         </Link>
-                                    )}
-                                    <div
-                                        style={{
-                                            height: 1, background: "#22364f", margin: "7px 0"
-                                        }}
-                                    />
-                                    {/* Языковой селектор — над "Выйти" */}
-                                    <div
-                                        style={{
-                                            background: "#1c2740",
-                                            border: "1px solid #3a475e",
-                                            borderRadius: 10,
-                                            padding: "10px 12px",
-                                            margin: "6px 10px 8px"
-                                        }}
-                                    >
-                                        <LangSwitcher />
+                                        {isAdmin && (
+                                            <Link
+                                                href="/admin"
+                                                style={{
+                                                    display: "block", padding: "10px 22px",
+                                                    color: "#a6e0ff", fontWeight: 700, textDecoration: "none",
+                                                    cursor: "pointer", transition: "background .14s"
+                                                }}
+                                                onClick={() => setProfileMenuOpen(false)}
+                                            >
+                                                {t("nav.admin", "Админ")}
+                                            </Link>
+                                        )}
+                                        <div
+                                            style={{
+                                                height: 1, background: "#22364f", margin: "7px 0"
+                                            }}
+                                        />
+                                        <div
+                                            style={{
+                                                background: "#1c2740",
+                                                border: "1px solid #3a475e",
+                                                borderRadius: 10,
+                                                padding: "10px 12px",
+                                                margin: "6px 10px 8px"
+                                            }}
+                                        >
+                                            <LangSwitcher />
+                                        </div>
+                                        <button
+                                            onClick={async () => {
+                                                setProfileMenuOpen(false);
+                                                try { await handleLogoutClick?.(); } catch { }
+                                            }}
+                                            style={{
+                                                background: "none", border: "none", color: "#e35c5c",
+                                                fontWeight: 700, fontSize: 15, width: "100%", textAlign: "left",
+                                                padding: "10px 22px", cursor: "pointer"
+                                            }}
+                                        >
+                                            {t("nav.logout", "Выйти")}
+                                        </button>
                                     </div>
+                                )}
+                            </div>
+                        </>
+                    )}
+                    {!user && (
+                        <div style={{ display: "flex", alignItems: "center", gap: isTight ? 8 : 10 }}>
+                            <div style={{ marginRight: 6 }}>
+                                <LangSwitcher variant="compact" />
+                            </div>
+                            {isTight ? (
+                                <>
                                     <button
-                                        onClick={async () => {
-                                            setProfileMenuOpen(false);
-                                            try { await handleLogoutClick?.(); } catch { }
-                                        }}
-                                        style={{
-                                            background: "none", border: "none", color: "#e35c5c",
-                                            fontWeight: 700, fontSize: 15, width: "100%", textAlign: "left",
-                                            padding: "10px 22px", cursor: "pointer"
-                                        }}
+                                        className="header-icon-btn"
+                                        style={{ height: ICON_BTN, width: ICON_BTN, fontSize: 20 }}
+                                        title={t("auth.register", "Регистрация")}
+                                        aria-label={t("auth.register", "Регистрация")}
+                                        onClick={() => setShowRegisterModal(true)}
                                     >
-                                        {t("nav.logout", "Выйти")}
+                                        <FaUserPlus />
                                     </button>
-                                </div>
+                                    <button
+                                        className="header-icon-btn"
+                                        style={{ height: ICON_BTN, width: ICON_BTN, fontSize: 20 }}
+                                        title={t("auth.login", "Вход")}
+                                        aria-label={t("auth.login", "Вход")}
+                                        onClick={() => setShowAuth(true)}
+                                    >
+                                        <FaSignInAlt />
+                                    </button>
+                                </>
+                            ) : (
+                                <>
+                                    <button
+                                        className="nav-link"
+                                        style={{ fontWeight: 800, fontSize: 16, background: "none", border: "none", cursor: "pointer", height: 44, padding: "0 19px" }}
+                                        onClick={() => setShowRegisterModal(true)}
+                                    >
+                                        <FaUserPlus className="nav-icon" style={{ fontSize: 20 }} />
+                                        <span className="nav-text">{t("auth.register", "Регистрация")}</span>
+                                    </button>
+                                    <button
+                                        className="header-btn"
+                                        type="button"
+                                        style={{ fontWeight: 700, fontSize: 16, height: 44, padding: "0 20px" }}
+                                        onClick={() => setShowAuth(true)}
+                                    >
+                                        <FaSignInAlt className="nav-icon" style={{ fontSize: 20 }} />
+                                        {t("auth.login", "Вход")}
+                                    </button>
+                                </>
                             )}
                         </div>
-                    </>
-                )}
-                {/* Кнопки регистрации/входа + язык для гостей (десктоп) */}
-                {!user && (
-                    <div style={{ display: "flex", alignItems: "center", gap: isTight ? 8 : 10 }}>
-                        <div style={{ marginRight: 6 }}>
-                            <LangSwitcher variant="compact" />
-                        </div>
-                        {isTight ? (
-                            <>
-                                <button
-                                    className="header-icon-btn"
-                                    style={{ height: ICON_BTN, width: ICON_BTN, fontSize: 20 }}
-                                    title={t("auth.register", "Регистрация")}
-                                    aria-label={t("auth.register", "Регистрация")}
-                                    onClick={() => setShowRegisterModal(true)}
-                                >
-                                    <FaUserPlus />
-                                </button>
-                                <button
-                                    className="header-icon-btn"
-                                    style={{ height: ICON_BTN, width: ICON_BTN, fontSize: 20 }}
-                                    title={t("auth.login", "Вход")}
-                                    aria-label={t("auth.login", "Вход")}
-                                    onClick={() => setShowAuth(true)}
-                                >
-                                    <FaSignInAlt />
-                                </button>
-                            </>
-                        ) : (
-                            <>
-                                <button
-                                    className="nav-link"
-                                    style={{ fontWeight: 800, fontSize: 16, background: "none", border: "none", cursor: "pointer", height: 44, padding: "0 19px" }}
-                                    onClick={() => setShowRegisterModal(true)}
-                                >
-                                    <FaUserPlus className="nav-icon" style={{ fontSize: 20 }} />
-                                    <span className="nav-text">{t("auth.register", "Регистрация")}</span>
-                                </button>
-                                <button
-                                    className="header-btn"
-                                    type="button"
-                                    style={{ fontWeight: 700, fontSize: 16, height: 44, padding: "0 20px" }}
-                                    onClick={() => setShowAuth(true)}
-                                >
-                                    <FaSignInAlt className="nav-icon" style={{ fontSize: 20 }} />
-                                    {t("auth.login", "Вход")}
-                                </button>
-                            </>
+                    )}
+                </div>
+            </div>
+
+            <div
+                className="header-nav-row"
+                style={{ display: "flex", alignItems: "center", gap: isCompact ? 10 : 14, width: "100%" }}
+            >
+                <div
+                    className="header-nav-shell"
+                    style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        background: "rgb(var(--surface))",
+                        border: "1px solid var(--border-strong)",
+                        borderRadius: isTight ? "0 14px 14px 0" : "0 18px 18px 0",
+                        boxShadow: "var(--header-shadow)",
+                        padding: isCompact ? "8px 12px" : "9px 14px",
+                        gap: NAV_GAP,
+                        maxWidth: "min(860px, 100%)"
+                    }}
+                >
+                    <nav
+                        className="header-nav"
+                        style={{
+                            display: "flex", alignItems: "center",
+                            gap: NAV_GAP, minWidth: 0
+                        }}
+                    >
+                        {!isTransportRole && (
+                            <Link className="nav-link" href="/transport"
+                                onClick={() => { try { sessionStorage.setItem("openMobileFilterOnEntry", "1"); } catch { } }}
+                                style={{ fontSize: NAV_FONT, fontWeight: 700, padding: NAV_PAD, minWidth: isTight ? 0 : isCompact ? 86 : 108 }}>
+                                <FaTruck className="nav-icon" style={{ fontSize: isTight ? 18 : 20 }} />
+                                {!isTight && <span className="nav-text">{t("nav.transport", "Транспорт")}</span>}
+                            </Link>
                         )}
-                    </div>
-                )}
+                        {!isOwnerRole && (
+                            <Link className="nav-link" href="/orders"
+                                onClick={() => { try { sessionStorage.setItem("openMobileFilterOnEntry", "1"); } catch { } }}
+                                style={{ fontSize: NAV_FONT, fontWeight: 700, padding: NAV_PAD, minWidth: isTight ? 0 : isCompact ? 86 : 108 }}>
+                                <FaBox className="nav-icon" style={{ fontSize: isTight ? 18 : 20 }} />
+                                {!isTight && <span className="nav-text">{t("nav.cargo", "Груз")}</span>}
+                            </Link>
+                        )}
+                        {!isOwnerRole && (
+                            <button
+                                className="nav-link"
+                                onClick={() => {
+                                    if (!isActive) { alert(t("error.account.blocked", "Аккаунт заблокирован")); return; }
+                                    router.push("/create-transport");
+                                }}
+                                style={{
+                                    fontSize: NAV_FONT, fontWeight: 700, padding: NAV_PAD,
+                                    minWidth: isTight ? 0 : isCompact ? 86 : 108,
+                                    opacity: isActive ? 1 : .5, cursor: "pointer", background: "none", border: "none"
+                                }}
+                            >
+                                {isTight ? <FaTruck className="nav-icon" style={{ fontSize: 18 }} /> : <FaPlus className="nav-icon" style={{ fontSize: 20 }} />}
+                                {!isTight && <span className="nav-text">{t("nav.addTransport", "Добавить Транспорт")}</span>}
+                            </button>
+                        )}
+                        {!isTransportRole && (
+                            <button
+                                className="nav-link"
+                                onClick={() => {
+                                    if (!isActive) { alert(t("error.account.blocked", "Аккаунт заблокирован")); return; }
+                                    router.push("/create");
+                                }}
+                                style={{
+                                    fontSize: NAV_FONT, fontWeight: 700, padding: NAV_PAD,
+                                    minWidth: isTight ? 0 : isCompact ? 86 : 108,
+                                    opacity: isActive ? 1 : .5, cursor: "pointer", background: "none", border: "none"
+                                }}
+                            >
+                                {isTight ? <FaBox className="nav-icon" style={{ fontSize: 18 }} /> : <FaPlus className="nav-icon" style={{ fontSize: 20 }} />}
+                                {!isTight && <span className="nav-text">{t("nav.addCargo", "Добавить Груз")}</span>}
+                            </button>
+                        )}
+                        <Link className="nav-link" href="/#service"
+                            style={{ fontSize: NAV_FONT, fontWeight: 700, padding: NAV_PAD, minWidth: isTight ? 0 : isCompact ? 86 : 108 }}>
+                            <FaInfoCircle className="nav-icon" style={{ fontSize: isTight ? 18 : 20 }} />
+                            {!isTight && <span className="nav-text">{t("nav.about", "О Сервисе")}</span>}
+                        </Link>
+                    </nav>
+                </div>
             </div>
         </header>
     );

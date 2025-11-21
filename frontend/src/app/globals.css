@@ -2160,15 +2160,14 @@ body {
 
 .header-root {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
   padding: 22px 3vw 17px 3vw;
   background: var(--bg-header);
   border-bottom: 1px solid var(--border-strong);
   box-shadow: var(--shadow-soft);
-  position: sticky;
-  top: 0;
-  z-index: 20;
+  position: static;
 }
 
 /* ——— Поджимаем отступы/зазоры у header и навигации на узких десктопах */
@@ -2218,24 +2217,36 @@ body {
   color: var(--brand-orange);
 }
 
+.header-logo-text {
+  color: #7cc3ff;
+  text-shadow: 0 1px 8px rgba(30, 160, 255, 0.22);
+  transition: color .15s ease, text-shadow .15s ease;
+}
+
+[data-theme="light"] .header-logo-text {
+  color: #2b6ba8;
+  text-shadow: 0 1px 6px rgba(30, 87, 145, 0.18);
+}
+
 .header-nav {
   display: flex;
-  gap: 32px;
-  align-items: end;
+  gap: 20px;
+  align-items: center;
 }
 
 .nav-link {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
   justify-content: flex-start;
+  gap: 10px;
   color: var(--text-primary);
   text-decoration: none;
   font-weight: 700;
   font-size: 1.09rem;
   letter-spacing: 0.01em;
-  padding: 8px 14px;
-  border-radius: 8px;
+  padding: 9px 14px;
+  border-radius: 12px;
   background: none;
   transition: background var(--transition-fast), color var(--transition-fast), box-shadow var(--transition-fast);
   position: relative;
@@ -2332,22 +2343,23 @@ body {
 
 .header-nav {
   display: flex;
-  gap: 32px;
-  align-items: end;
+  gap: 20px;
+  align-items: center;
 }
 
 .nav-link {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
   justify-content: flex-start;
+  gap: 10px;
   color: #e3f2fd;
   text-decoration: none;
   font-weight: 700;
   font-size: 1.09rem;
   letter-spacing: 0.01em;
-  padding: 8px 14px;
-  border-radius: 8px;
+  padding: 9px 14px;
+  border-radius: 12px;
   background: none;
   transition: background 0.17s, color 0.13s, box-shadow .12s;
   position: relative;
@@ -3396,15 +3408,15 @@ body {
 
   .header-root {
     display: flex;
-    align-items: center;
-    height: 80px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    min-height: 80px;
     background: rgba(22, 34, 54, 0.93);
     border-bottom: 2px solid #234167;
     box-shadow: 0 6px 32px #18336e22;
-    padding: 0 38px 0 30px;
-    position: sticky;
-    top: 0;
-    z-index: 20;
+    padding: 16px 38px 18px 30px;
+    position: static;
   }
 
   .header-logo {

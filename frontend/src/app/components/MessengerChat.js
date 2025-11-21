@@ -24,25 +24,25 @@ const fmtRemain = (iso, t) => !iso ? "" : (() => {
 import Lightbox from "yet-another-react-lightbox";
 import "yet-another-react-lightbox/styles.css";
 import {
-  FaPaperPlane,
-  FaGavel,
-  FaSmile,
-  FaPaperclip,
-  FaEye,
-  FaCheck,
-  FaThumbsUp,
-  FaHeart,
-  FaThumbtack,
-  FaTrash,
-  FaLanguage,
-  FaPlus,
-  FaImage,
-  FaCamera,
-  FaFileAlt,
-  FaAddressBook,
-  FaMapMarkerAlt,
+    FaPaperPlane,
+    FaGavel,
+    FaSmile,
+    FaPaperclip,
+    FaEye,
+    FaCheck,
+    FaThumbsUp,
+    FaHeart,
+    FaThumbtack,
+    FaTrash,
+    FaLanguage,
+    FaPlus,
+    FaImage,
+    FaCamera,
+    FaFileAlt,
+    FaAddressBook,
+    FaMapMarkerAlt,
 }
-from "react-icons/fa";
+    from "react-icons/fa";
 import { useMessenger } from "./MessengerContext";
 import { useUser } from "../UserContext";
 import { useRouter } from "next/navigation";
@@ -877,9 +877,7 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
 
     const { toast, show: showToast } = useCursorToast();
 
-    // Управление GPS-модалками
-    const [showRequestGps, setShowRequestGps] = useState(false);
-    const [showShareGps, setShowShareGps] = useState(false);
+// Управление GPS-модалками+    const [showRequestGps, setShowRequestGps] = useState(false);+    const [showShareGps, setShowShareGps] = useState(false);
     const GPS_DISABLED = true;
     const [gpsMenuOpen, setGpsMenuOpen] = useState(false);
     const gpsMenuRef = useRef(null);
@@ -888,7 +886,6 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
     const actionsMenuRef = useRef(null);
     // Не читаем chat?.support напрямую в коллбэках (TDZ). Держим флаг в ref:
     const isSupportRef = useRef(false);
-
     // Коллбэки из модалок → создаём спец-сообщения в чат
     const handleGpsRequested = useCallback(async (createdList = []) => {
         // В саппорт-чате запрещаем создание запросов локации
@@ -912,7 +909,7 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
 
     const handleGpsShared = useCallback(async (session, recipientId) => {
         // В саппорт-чате запрещаем делиться геолокацией
-        if (isSupportRef.current) { setShowShareGps(false); return; }
+        if (isSupportChatRef.current) { setShowShareGps(false); return; }
         try {
             // Делаем (или продлеваем) публичную ссылку, чтобы в чате была кликабельная
             let link = null, token = null;
@@ -977,7 +974,7 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
             );
             if (!resp?.ok) { showToast(e, t("toast.shareError", "Не удалось поделиться"), "error"); return; }
             await handleGpsShared(s, recipientId);
-             showToast(e, t("toast.locationSent", "Локация отправлена"), "ok");
+            showToast(e, t("toast.locationSent", "Локация отправлена"), "ok");
         } catch {
             showToast(e, t("toast.locationSendError", "Ошибка при отправке локации"), "error");
         } finally {
@@ -1464,7 +1461,7 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
         chat?.support ||
         (chatMeta?.support && (chatMeta?.chat_id === chatId || chatMeta?.id === chatId))
     );
-    useEffect(() => { isSupportRef.current = isSupport; }, [isSupport]);
+    useEffect(() => { isSupportChatRef.current = isSupport; }, [isSupport]);
     const supportStatus = (chat?.support_status || "").toString().replace("TicketStatus.", "");
     const eta = chat?.autoclose_eta_iso || null;
     // Если сервер прислал эфемерный отсчёт — он приоритетнее (содержит until_iso)
@@ -1615,7 +1612,7 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, [showEmojiPicker]);
 
-    
+
 
     // Закрытие мини-меню GPS по клику вне
     useEffect(() => {
@@ -1983,12 +1980,11 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
     );
 
     const handleKeyDown = (e) => {
-        if (e.key === "Enter" && !e.shiftKey) {
+        if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
             e.preventDefault();
             handleSend(e);
         }
     };
-
     const addEmoji = (emojiObject) => {
         if (!textareaRef.current) return;
         const cursorPos = textareaRef.current.selectionStart ?? input.length;
@@ -2956,291 +2952,291 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                         {t("chat.supportTyping", "Поддержка печатает…")}
                     </div>
                 )}
-                
-                    className="chat-input-actions"
-                    style={{
-                        display: "flex",
-                        gap: 7,
-                        alignItems: "center",
-                        marginRight: 10,
-                        position: "relative",
-                    }}
-                
-                    {/* Плюсик с дополнительными действиями (вложения, перевод) */}
-                    <div ref={attachmentMenuRef} style={{ position: "relative", display: "inline-block" }}>
-                        <button
-                            type="button"
-                            title={t("chat.moreActions", "Дополнительно")}
-                            className={`action-btn ${attachmentMenuOpen ? "action-btn--accent" : ""}`}
-                            onClick={() => { if (!inputLocked) setAttachmentMenuOpen(v => !v); }}
-                            aria-haspopup="menu"
-                            aria-expanded={attachmentMenuOpen ? "true" : "false"}
-                            disabled={inputLocked}
-                            aria-label={t("chat.moreActions", "Дополнительно")}
-                        >
-                            <FaPlus />
-                        </button>
 
-                        {attachmentMenuOpen && (
-                            <div
-                                role="menu"
-                                style={{
-                                    position: "absolute",
-                                    bottom: "48px",
-                                    left: 0,
-                                    background: "#1e2a44",
-                                    border: "1px solid rgba(59,130,246,.25)",
-                                    borderRadius: 12,
-                                    padding: 8,
-                                    minWidth: 220,
-                                    boxShadow: "0 12px 30px rgba(0,0,0,.35)",
-                                    zIndex: 220,
-                                    display: "flex",
-                                    flexDirection: "column",
-                                    gap: 6,
-                                }}
-                            >
-                                {attachmentActions.map(action => (
-                                    <button
-                                        key={action.key}
-                                        role="menuitem"
-                                        className="flex items-center gap-2 px-3 py-2 rounded-lg text-left text-sm"
-                                        style={{
-                                            background: "#223153",
-                                            color: "#e2f3ff",
-                                            border: "1px solid rgba(78,114,173,.55)",
-                                            opacity: action.disabled ? 0.6 : 1,
-                                            cursor: action.disabled ? "not-allowed" : "pointer",
-                                        }}
-                                        disabled={inputLocked || action.disabled}
-                                        onClick={action.onClick}
-                                    >
-                                        {action.icon && (
-                                            <span style={{ display: "inline-flex", alignItems: "center", fontSize: 15 }}>
-                                                {action.icon}
-                                            </span>
-                                        )}
-                                        <span>{action.label}</span>
-                                    </button>
-                               ))}
+                className="chat-input-actions"
+                style={{
+                    display: "flex",
+                    gap: 7,
+                    alignItems: "center",
+                    marginRight: 10,
+                    position: "relative",
+                }}
 
-                                {/* Автоперевод */}
-                                <button
-                                    role="menuitem"
-                                    className={`flex items-center gap-2 px-3 py-2 rounded-lg text-left text-sm ${autoTranslate ? "bg-[#27416b]" : "bg-[#223153]"}`}
-                                    style={{ color: "#e2f3ff", border: "1px solid rgba(78,114,173,.55)" }}
-                                    onClick={() => {
-                                        setAutoTranslate(v => !v);
-                                        setAttachmentMenuOpen(false);
-                                    }}
-                                >
-                                    <FaLanguage />
-                                    <span>
-                                        {translatingMessages
-                                            ? t("chat.translating", "Переводим сообщения…")
-                                            : autoTranslate
-                                                ? t("chat.autoTranslateToggleOn", "Автоперевод включён (последние 20 сообщений)")
-                                                : t("chat.autoTranslateToggleOff", "Включить автоперевод последних 20 сообщений")}
-                                    </span>
-                                </button>
-                            </div>
-                        )}
-                    <div
-                    className="chat-input-actions"
-                    style={{
-                        display: "flex",
-                        gap: 7,
-                        alignItems: "center",
-                        marginRight: 10,
-                        position: "relative",
-                    }}
-                >
-                    {/* Кнопка "плюс" (меню вложений) */}
-                    <div ref={attachmentMenuRef} style={{ position: "relative", display: "inline-block" }}>
-                        <button
-                            type="button"
-                            title={t("chat.moreActions", "Дополнительно")}
-                            className={`action-btn ${attachmentMenuOpen ? "action-btn--accent" : ""}`}
-                            onClick={() => { if (!inputLocked) setAttachmentMenuOpen(v => !v); }}
-                            aria-haspopup="menu"
-                            aria-expanded={attachmentMenuOpen ? "true" : "false"}
-                            disabled={inputLocked}
-                            aria-label={t("chat.moreActions", "Дополнительно")}
-                        >
-                            <FaPlus />
-                        </button>
-
-                        {attachmentMenuOpen && (
-                            <div
-                                role="menu"
-                                style={{
-                                    position: "absolute",
-                                    bottom: "48px",
-                                    left: 0,
-                                    background: "#1e2a44",
-                                    border: "1px solid rgba(59,130,246,.25)",
-                                    borderRadius: 12,
-                                    padding: 8,
-                                    minWidth: 220,
-                                    boxShadow: "0 12px 30px rgba(0,0,0,.35)",
-                                    zIndex: 220,
-                                    display: "flex",
-                                    flexDirection: "column",
-                                    gap: 6,
-                                }}
-                            >
-                                {attachmentActions.map(action => (
-                                    <button
-                                        key={action.key}
-                                        role="menuitem"
-                                        className="flex items-center gap-2 px-3 py-2 rounded-lg text-left text-sm"
-                                        style={{
-                                            background: "#223153",
-                                            color: "#e2f3ff",
-                                            border: "1px solid rgba(78,114,173,.55)",
-                                            opacity: action.disabled ? 0.6 : 1,
-                                            cursor: action.disabled ? "not-allowed" : "pointer",
-                                        }}
-                                        disabled={inputLocked || action.disabled}
-                                        onClick={action.onClick}
-                                    >
-                                        {action.icon && (
-                                            <span style={{ display: "inline-flex", alignItems: "center", fontSize: 15 }}>
-                                                {action.icon}
-                                            </span>
-                                        )}
-                                        <span>{action.label}</span>
-                                    </button>
-                               ))}
-
-                                {/* Автоперевод */}
-                                <button
-                                    role="menuitem"
-                                    className={`flex items-center gap-2 px-3 py-2 rounded-lg text-left text-sm ${autoTranslate ? "bg-[#27416b]" : "bg-[#223153]"}`}
-                                    style={{ color: "#e2f3ff", border: "1px solid rgba(78,114,173,.55)" }}
-                                    onClick={() => {
-                                        setAutoTranslate(v => !v);
-                                        setAttachmentMenuOpen(false);
-                                    }}
-                                >
-                                    <FaLanguage />
-                                    <span>
-                                        {translatingMessages
-                                            ? t("chat.translating", "Переводим сообщения…")
-                                            : autoTranslate
-                                                ? t("chat.autoTranslateToggleOn", "Автоперевод включён (последние 20 сообщений)")
-                                                : t("chat.autoTranslateToggleOff", "Включить автоперевод последних 20 сообщений")}
-                                    </span>
-                                </button>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Скрепка */}
+                {/* Плюсик с дополнительными действиями (вложения, перевод) */}
+                <div ref={attachmentMenuRef} style={{ position: "relative", display: "inline-block" }}>
                     <button
                         type="button"
-                        title={t("chat.attachFile", "Прикрепить файл")}
-                        className="action-btn"
-                        onClick={() => !inputLocked && fileInputRef.current && fileInputRef.current.click()}
+                        title={t("chat.moreActions", "Дополнительно")}
+                        className={`action-btn ${attachmentMenuOpen ? "action-btn--accent" : ""}`}
+                        onClick={() => { if (!inputLocked) setAttachmentMenuOpen(v => !v); }}
+                        aria-haspopup="menu"
+                        aria-expanded={attachmentMenuOpen ? "true" : "false"}
                         disabled={inputLocked}
-                        aria-label={t("chat.attachFile", "Прикрепить файл")}
+                        aria-label={t("chat.moreActions", "Дополнительно")}
                     >
-                        <FaPaperclip />
+                        <FaPlus />
                     </button>
-                    <input
-                        type="file"
-                        style={{ display: "none" }}
-                        ref={fileInputRef}
-                        onChange={handleFileSelect}
-                        multiple={false}
-                    />
 
-                    {/* Кнопки и мини-меню GPS — скрыты в саппорт-чате */}
-                    {!chat?.support && (
-                        <div ref={gpsMenuRef} style={{ position: "relative", display: "inline-block" }}>
+                    {attachmentMenuOpen && (
+                        <div
+                            role="menu"
+                            style={{
+                                position: "absolute",
+                                bottom: "48px",
+                                left: 0,
+                                background: "#1e2a44",
+                                border: "1px solid rgba(59,130,246,.25)",
+                                borderRadius: 12,
+                                padding: 8,
+                                minWidth: 220,
+                                boxShadow: "0 12px 30px rgba(0,0,0,.35)",
+                                zIndex: 220,
+                                display: "flex",
+                                flexDirection: "column",
+                                gap: 6,
+                            }}
+                        >
+                            {attachmentActions.map(action => (
+                                <button
+                                    key={action.key}
+                                    role="menuitem"
+                                    className="flex items-center gap-2 px-3 py-2 rounded-lg text-left text-sm"
+                                    style={{
+                                        background: "#223153",
+                                        color: "#e2f3ff",
+                                        border: "1px solid rgba(78,114,173,.55)",
+                                        opacity: action.disabled ? 0.6 : 1,
+                                        cursor: action.disabled ? "not-allowed" : "pointer",
+                                    }}
+                                    disabled={inputLocked || action.disabled}
+                                    onClick={action.onClick}
+                                >
+                                    {action.icon && (
+                                        <span style={{ display: "inline-flex", alignItems: "center", fontSize: 15 }}>
+                                            {action.icon}
+                                        </span>
+                                    )}
+                                    <span>{action.label}</span>
+                                </button>
+                            ))}
+
+                            {/* Автоперевод */}
+                            <button
+                                role="menuitem"
+                                className={`flex items-center gap-2 px-3 py-2 rounded-lg text-left text-sm ${autoTranslate ? "bg-[#27416b]" : "bg-[#223153]"}`}
+                                style={{ color: "#e2f3ff", border: "1px solid rgba(78,114,173,.55)" }}
+                                onClick={() => {
+                                    setAutoTranslate(v => !v);
+                                    setAttachmentMenuOpen(false);
+                                }}
+                            >
+                                <FaLanguage />
+                                <span>
+                                    {translatingMessages
+                                        ? t("chat.translating", "Переводим сообщения…")
+                                        : autoTranslate
+                                            ? t("chat.autoTranslateToggleOn", "Автоперевод включён (последние 20 сообщений)")
+                                            : t("chat.autoTranslateToggleOff", "Включить автоперевод последних 20 сообщений")}
+                                </span>
+                            </button>
+                        </div>
+                    )}
+                    <div
+                        className="chat-input-actions"
+                        style={{
+                            display: "flex",
+                            gap: 7,
+                            alignItems: "center",
+                            marginRight: 10,
+                            position: "relative",
+                        }}
+                    >
+                        {/* Кнопка "плюс" (меню вложений) */}
+                        <div ref={attachmentMenuRef} style={{ position: "relative", display: "inline-block" }}>
                             <button
                                 type="button"
-                                onClick={(e) => {
-                                    if (GPS_DISABLED) { showToast(e, t("gps.soon.short", "Скоро: GPS-мониторинг"), "info"); return; }
-                                    setGpsMenuOpen(v => !v);
-                                }}
-                                title="GPS"
+                                title={t("chat.moreActions", "Дополнительно")}
+                                className={`action-btn ${attachmentMenuOpen ? "action-btn--accent" : ""}`}
+                                onClick={() => { if (!inputLocked) setAttachmentMenuOpen(v => !v); }}
                                 aria-haspopup="menu"
-                                aria-expanded={gpsMenuOpen ? "true" : "false"}
-                                className={`action-btn ${gpsMenuOpen ? "action-btn--accent" : ""}`}
-                                style={{ color: "#bbf7d0" }}
+                                aria-expanded={attachmentMenuOpen ? "true" : "false"}
+                                disabled={inputLocked}
+                                aria-label={t("chat.moreActions", "Дополнительно")}
                             >
-                                <FaMapMarkerAlt />
+                                <FaPlus />
                             </button>
-                            {gpsMenuOpen && !GPS_DISABLED && (
+
+                            {attachmentMenuOpen && (
                                 <div
                                     role="menu"
                                     style={{
                                         position: "absolute",
-                                        bottom: "46px",
+                                        bottom: "48px",
                                         left: 0,
                                         background: "#1e2a44",
                                         border: "1px solid rgba(59,130,246,.25)",
                                         borderRadius: 12,
-                                        padding: 6,
-                                        minWidth: 160,
+                                        padding: 8,
+                                        minWidth: 220,
                                         boxShadow: "0 12px 30px rgba(0,0,0,.35)",
-                                        zIndex: 200,
+                                        zIndex: 220,
+                                        display: "flex",
+                                        flexDirection: "column",
+                                        gap: 6,
                                     }}
                                 >
+                                    {attachmentActions.map(action => (
+                                        <button
+                                            key={action.key}
+                                            role="menuitem"
+                                            className="flex items-center gap-2 px-3 py-2 rounded-lg text-left text-sm"
+                                            style={{
+                                                background: "#223153",
+                                                color: "#e2f3ff",
+                                                border: "1px solid rgba(78,114,173,.55)",
+                                                opacity: action.disabled ? 0.6 : 1,
+                                                cursor: action.disabled ? "not-allowed" : "pointer",
+                                            }}
+                                            disabled={inputLocked || action.disabled}
+                                            onClick={action.onClick}
+                                        >
+                                            {action.icon && (
+                                                <span style={{ display: "inline-flex", alignItems: "center", fontSize: 15 }}>
+                                                    {action.icon}
+                                                </span>
+                                            )}
+                                            <span>{action.label}</span>
+                                        </button>
+                                    ))}
+
+                                    {/* Автоперевод */}
                                     <button
                                         role="menuitem"
-                                        onClick={(e) => { quickShareGps(e); }}
-                                        style={{ display: "block", width: "100%", textAlign: "left", padding: "8px 10px", borderRadius: 8, background: "transparent", color: "#e2f3ff", border: "none", cursor: "pointer" }}
+                                        className={`flex items-center gap-2 px-3 py-2 rounded-lg text-left text-sm ${autoTranslate ? "bg-[#27416b]" : "bg-[#223153]"}`}
+                                        style={{ color: "#e2f3ff", border: "1px solid rgba(78,114,173,.55)" }}
+                                        onClick={() => {
+                                            setAutoTranslate(v => !v);
+                                            setAttachmentMenuOpen(false);
+                                        }}
                                     >
-                                        {t("gps.share", "Поделиться GPS")}
-                                    </button>
-                                    <button
-                                        role="menuitem"
-                                        onClick={(e) => { quickRequestGps(e); }}
-                                        style={{ display: "block", width: "100%", textAlign: "left", padding: "8px 10px", borderRadius: 8, background: "transparent", color: "#e2f3ff", border: "none", cursor: "pointer" }}
-                                    >
-                                        {t("gps.request", "Запросить GPS")}
+                                        <FaLanguage />
+                                        <span>
+                                            {translatingMessages
+                                                ? t("chat.translating", "Переводим сообщения…")
+                                                : autoTranslate
+                                                    ? t("chat.autoTranslateToggleOn", "Автоперевод включён (последние 20 сообщений)")
+                                                    : t("chat.autoTranslateToggleOff", "Включить автоперевод последних 20 сообщений")}
+                                        </span>
                                     </button>
                                 </div>
                             )}
                         </div>
-                    )}
 
-                    {/* Смайлик */}
-                    {!isMobile && (
+                        {/* Скрепка */}
                         <button
                             type="button"
-                            onClick={e => { e.preventDefault(); if (!inputLocked) setShowEmojiPicker(v => !v); }}
-                            className={`action-btn ${showEmojiPicker ? "action-btn--accent" : ""}`}
-                            title={t("chat.insertEmoji", "Вставить эмодзи")}
+                            title={t("chat.attachFile", "Прикрепить файл")}
+                            className="action-btn"
+                            onClick={() => !inputLocked && fileInputRef.current && fileInputRef.current.click()}
                             disabled={inputLocked}
-                            aria-label={t("chat.insertEmoji", "Вставить эмодзи")}
+                            aria-label={t("chat.attachFile", "Прикрепить файл")}
                         >
-                            <FaSmile />
+                            <FaPaperclip />
                         </button>
-                    )}
-
-                    {/* Микрофон — рядом со смайликом */}
-                    <div style={{ display: "flex", alignItems: "center" }}>
-                        <VoiceRecorder
-                            onReady={(blob, url) => setPendingVoice({ blob, url })}
-                            disabled={sending || inputLocked}
+                        <input
+                            type="file"
+                            style={{ display: "none" }}
+                            ref={fileInputRef}
+                            onChange={handleFileSelect}
+                            multiple={false}
                         />
-                    </div>
 
-                    <button
-                        type="button"
-                        onClick={() => setAutoTranslate(v => !v)}
-                        className={`action-btn ${autoTranslate ? "action-btn--accent" : ""} ${translatingMessages ? "opacity-80" : ""}`}
-                        title={autoTranslate
-                            ? t("chat.autoTranslateToggleOn", "Автоперевод включён (последние 20 сообщений)")
-                            : t("chat.autoTranslateToggleOff", "Включить автоперевод последних 20 сообщений")}
-                        aria-pressed={autoTranslate}
-                    >
-                        {translatingMessages ? <span style={{ fontSize: 12, fontWeight: 700 }}>…</span> : <FaLanguage />}
-                    </button>
-                </div>
+                        {/* Кнопки и мини-меню GPS — скрыты в саппорт-чате */}
+                        {!chat?.support && (
+                            <div ref={gpsMenuRef} style={{ position: "relative", display: "inline-block" }}>
+                                <button
+                                    type="button"
+                                    onClick={(e) => {
+                                        if (GPS_DISABLED) { showToast(e, t("gps.soon.short", "Скоро: GPS-мониторинг"), "info"); return; }
+                                        setGpsMenuOpen(v => !v);
+                                    }}
+                                    title="GPS"
+                                    aria-haspopup="menu"
+                                    aria-expanded={gpsMenuOpen ? "true" : "false"}
+                                    className={`action-btn ${gpsMenuOpen ? "action-btn--accent" : ""}`}
+                                    style={{ color: "#bbf7d0" }}
+                                >
+                                    <FaMapMarkerAlt />
+                                </button>
+                                {gpsMenuOpen && !GPS_DISABLED && (
+                                    <div
+                                        role="menu"
+                                        style={{
+                                            position: "absolute",
+                                            bottom: "46px",
+                                            left: 0,
+                                            background: "#1e2a44",
+                                            border: "1px solid rgba(59,130,246,.25)",
+                                            borderRadius: 12,
+                                            padding: 6,
+                                            minWidth: 160,
+                                            boxShadow: "0 12px 30px rgba(0,0,0,.35)",
+                                            zIndex: 200,
+                                        }}
+                                    >
+                                        <button
+                                            role="menuitem"
+                                            onClick={(e) => { quickShareGps(e); }}
+                                            style={{ display: "block", width: "100%", textAlign: "left", padding: "8px 10px", borderRadius: 8, background: "transparent", color: "#e2f3ff", border: "none", cursor: "pointer" }}
+                                        >
+                                            {t("gps.share", "Поделиться GPS")}
+                                        </button>
+                                        <button
+                                            role="menuitem"
+                                            onClick={(e) => { quickRequestGps(e); }}
+                                            style={{ display: "block", width: "100%", textAlign: "left", padding: "8px 10px", borderRadius: 8, background: "transparent", color: "#e2f3ff", border: "none", cursor: "pointer" }}
+                                        >
+                                            {t("gps.request", "Запросить GPS")}
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {/* Смайлик */}
+                        {!isMobile && (
+                            <button
+                                type="button"
+                                onClick={e => { e.preventDefault(); if (!inputLocked) setShowEmojiPicker(v => !v); }}
+                                className={`action-btn ${showEmojiPicker ? "action-btn--accent" : ""}`}
+                                title={t("chat.insertEmoji", "Вставить эмодзи")}
+                                disabled={inputLocked}
+                                aria-label={t("chat.insertEmoji", "Вставить эмодзи")}
+                            >
+                                <FaSmile />
+                            </button>
+                        )}
+
+                        {/* Микрофон — рядом со смайликом */}
+                        <div style={{ display: "flex", alignItems: "center" }}>
+                            <VoiceRecorder
+                                onReady={(blob, url) => setPendingVoice({ blob, url })}
+                                disabled={sending || inputLocked}
+                            />
+                        </div>
+
+                        <button
+                            type="button"
+                            onClick={() => setAutoTranslate(v => !v)}
+                            className={`action-btn ${autoTranslate ? "action-btn--accent" : ""} ${translatingMessages ? "opacity-80" : ""}`}
+                            title={autoTranslate
+                                ? t("chat.autoTranslateToggleOn", "Автоперевод включён (последние 20 сообщений)")
+                                : t("chat.autoTranslateToggleOff", "Включить автоперевод последних 20 сообщений")}
+                            aria-pressed={autoTranslate}
+                        >
+                            {translatingMessages ? <span style={{ fontSize: 12, fontWeight: 700 }}>…</span> : <FaLanguage />}
+                        </button>
+                    </div>
 
                     <button
                         type="button"
@@ -3269,6 +3265,7 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
                         onKeyDown={handleKeyDown}
+                        enterKeyHint="send"
                         placeholder={inputLocked ? "Диалог закрыт..." : "Напишите сообщение..."}
                         disabled={inputLocked}
                         style={{
