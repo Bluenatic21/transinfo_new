@@ -19,7 +19,7 @@ export default function CompactHero({
         <section id="hero" className="relative py-6 md:py-5 xl:py-4" aria-label="Hero">
             <div className="mx-auto max-w-7xl px-6">
                 {/* Заголовок и подзаголовок — компактно и аккуратно */}
-                <div className="text-center text-white">
+                <div className="text-center text-slate-900 dark:text-white">
                     <motion.h1
                         initial={{ opacity: 0, y: 6 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -36,7 +36,7 @@ export default function CompactHero({
                     />
 
                     {subtitleText && (
-                        <p className="mt-2 text-[14.5px] md:text-[15px] text-[#b9c7e6] leading-relaxed max-w-3xl mx-auto">
+                        <p className="mt-2 text-[14.5px] md:text-[15px] text-slate-600 dark:text-[#b9c7e6] leading-relaxed max-w-3xl mx-auto">
                             {subtitleText}
                         </p>
                     )}
@@ -44,7 +44,7 @@ export default function CompactHero({
 
                 {/* Метрики — БЕЗ анимации, сразу видимы при загрузке */}
                 <div className="mt-4">
-                    <div className="mx-auto max-w-5xl rounded-2xl bg-white/[0.04] backdrop-blur-[2px] ring-1 ring-white/5 px-3.5 py-2.5 md:px-5 md:py-3.5 shadow-[0_6px_24px_rgba(0,0,0,0.25)]">
+                    <div className="mx-auto max-w-5xl rounded-2xl bg-white shadow-[0_6px_24px_rgba(0,0,0,0.12)] ring-1 ring-slate-200 px-3.5 py-2.5 md:px-5 md:py-3.5 backdrop-blur-[2px] dark:bg-white/[0.04] dark:ring-white/5 dark:shadow-[0_6px_24px_rgba(0,0,0,0.35)]">
                         <div className="grid grid-cols-2 sm:grid-cols-5 gap-x-4 gap-y-2 text-center">
                             <Metric label={t("hero.metric.index", "TransInfo-Индекс")} value={s.index} />
                             <Metric label={t("hero.metric.cargos", "Грузы")} value={s.cargos} accent="orange" />
@@ -81,8 +81,8 @@ export default function CompactHero({
             </div>
 
             {/* Деликатные разделители для ровного стыка секций */}
-            <div aria-hidden className="absolute inset-x-0 bottom-0 h-px bg-white/5" />
-            <div aria-hidden className="absolute inset-x-0 top-0 h-px bg-white/5" />
+            <div aria-hidden className="absolute inset-x-0 bottom-0 h-px bg-slate-200 dark:bg-white/5" />
+            <div aria-hidden className="absolute inset-x-0 top-0 h-px bg-slate-200 dark:bg-white/5" />
         </section>
     );
 }
@@ -98,7 +98,7 @@ function Metric({ label, value, accent }) {
     return (
         <div className="flex flex-col items-center">
             <div className={`text-[18px] md:text-[19px] font-extrabold ${color}`}>{value ?? "—"}</div>
-            <div className="text-[12.5px] text-[#9fb0d5]">{label}</div>
+            <div className="text-[12.5px] text-slate-600 dark:text-[#9fb0d5]">{label}</div>
         </div>
     );
 }

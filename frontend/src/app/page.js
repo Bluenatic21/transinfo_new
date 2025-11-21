@@ -270,10 +270,10 @@ export default function Home() {
             <div className="section">
                 <div className="section-title">{t("home.sections.createTitle", "Создать новую заявку (груз)")}</div>
                 {!user?.email ? (
-                    <div style={{ textAlign: "center", color: "#FFD600", fontWeight: 500 }}>
+                    <div style={{ textAlign: "center", color: "var(--text-primary)", fontWeight: 600 }}>
                         {t("home.loginRequiredCreate", "Для создания заявки")}{" "}
                         <span
-                            style={{ textDecoration: "underline", cursor: "pointer" }}
+                            style={{ textDecoration: "underline", cursor: "pointer", color: "var(--accent, #1fb6ff)" }}
                             onClick={() => setShowAuth(true)}
                         >
                             {t("auth.loginLink", "войдите в аккаунт")}
@@ -298,9 +298,12 @@ export default function Home() {
             <div className="section">
                 <div className="section-title">{t("home.sections.addTransportTitle", "Добавить транспорт")}</div>
                 {!user?.email ? (
-                    <div style={{ textAlign: "center", color: "#FFD600", fontWeight: 500 }}>
+                    <div style={{ textAlign: "center", color: "var(--text-primary)", fontWeight: 600 }}>
                         {t("home.loginRequiredAddTransport", "Для добавления транспорта")}{" "}
-                        <span style={{ textDecoration: "underline", cursor: "pointer" }} onClick={() => setShowAuth(true)}>
+                        <span
+                            style={{ textDecoration: "underline", cursor: "pointer", color: "var(--accent, #1fb6ff)" }}
+                            onClick={() => setShowAuth(true)}
+                        >
                             {t("auth.loginLink", "войдите в аккаунт")}
                         </span>.
                     </div>
@@ -321,10 +324,10 @@ export default function Home() {
         return (
             <div className="section">
                 <div className="section-title">{t("home.sections.aboutTitle", "О сервисе")}</div>
-                <div style={{ color: "#ededed", fontSize: "1.05rem", textAlign: "center" }}>
+                <div style={{ color: "var(--text-primary)", fontSize: "1.05rem", textAlign: "center" }}>
                     {t("home.about.p1", "TransInfo — это современная площадка для поиска грузов и транспорта.")}<br />
                     {t("home.about.p2", "Всё быстро, удобно, без лишних звонков и посредников.")}<br /><br />
-                    <span style={{ color: "#FFD600" }}>{t("home.about.tagline", "Всё как у лидеров рынка — только проще и понятнее!")}</span>
+                    <span style={{ color: "var(--accent, #FE9805)" }}>{t("home.about.tagline", "Всё как у лидеров рынка — только проще и понятнее!")}</span>
                 </div>
             </div>
         );

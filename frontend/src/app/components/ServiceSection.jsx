@@ -53,11 +53,11 @@ export default function ServiceSection() {
             {/* Едва заметные разделители сверху/снизу для мягкого стыка секций */}
             <div
                 aria-hidden
-                className="pointer-events-none absolute inset-x-0 top-0 h-px bg-[rgba(255,255,255,0.06)]"
+                className="pointer-events-none absolute inset-x-0 top-0 h-px bg-slate-200 dark:bg-[rgba(255,255,255,0.06)]"
             />
             <div
                 aria-hidden
-                className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-[rgba(255,255,255,0.06)]"
+                className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-slate-200 dark:bg-[rgba(255,255,255,0.06)]"
             />
 
             <div className="relative mx-auto max-w-7xl px-6 space-y-28">
@@ -72,9 +72,9 @@ export default function ServiceSection() {
                             }`}
                     >
                         {/* Текст */}
-                        <div className="text-white">
+                        <div className="text-slate-900 dark:text-white">
                             <h3 className="text-2xl md:text-3xl font-bold mb-3">{it.title}</h3>
-                            <p className="text-[15px] leading-relaxed text-[#b9c7e6]">
+                            <p className="text-[15px] leading-relaxed text-slate-600 dark:text-[#b9c7e6]">
                                 {it.text}
                             </p>
                         </div>
