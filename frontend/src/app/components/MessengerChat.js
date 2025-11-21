@@ -889,7 +889,7 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
     const [actionsMenuOpen, setActionsMenuOpen] = useState(false);
     const actionsMenuRef = useRef(null);
     // Не читаем chat?.support напрямую в коллбэках (TDZ). Держим флаг в ref:
-    const isSupportRef = useRef(false);
+    const isSupportChatRef = useRef(false);
     // Коллбэки из модалок → создаём спец-сообщения в чат
     const handleGpsRequested = useCallback(async (createdList = []) => {
         // В саппорт-чате запрещаем создание запросов локации
@@ -2958,19 +2958,8 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                     </div>
                 )}
 
-
-
-                className="chat-input-actions"
-                style={{
-                    display: "flex",
-                    gap: 7,
-                    alignItems: "center",
-                    marginRight: 10,
-                    position: "relative",
-                }}
-
                 {/* Плюсик с дополнительными действиями (вложения, перевод) */}
-                <div ref={attachmentMenuRef} style={{ position: "relative", display: "inline-block" }}>
+                    <div ref={attachmentMenuRef} style={{ position: "relative", display: "inline-block" }}>
                     <button
                         type="button"
                         title={t("chat.moreActions", "Дополнительно")}

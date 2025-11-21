@@ -17,6 +17,7 @@ import BlockUserButton from "./BlockUserButton";
 import AddContactButton from "./AddContactButton";
 import { useIsMobile } from "../../hooks/useIsMobile"; // единый breakpoint 768px
 import { useLang } from "../i18n/LangProvider";
+import { useTheme } from "../providers/ThemeProvider";
 import { abs } from "@/config/env";
 
 /* -------------------- helpers -------------------- */
@@ -32,14 +33,15 @@ function getMessengerLinks(user) {
     };
 }
 
-const TenStars = ({ value = 0, t }) => {
+const TenStars = ({ value = 0, t, theme = "dark" }) => {
     const v = Math.max(0, Math.min(10, Number(value) || 0));
     const full = Math.floor(v);
     const frac = v - full;
     // 0 -> красный, 10 -> зелёный; между ними — плавный градиент по тону
     const hue = (v / 10) * 120; // 0..120
-    const color = `hsl(${hue}, 90%, 45%)`;
-    const emptyColor = "#273040";
+    const lightness = theme === "light" ? 38 : 45;
+    const color = `hsl(${hue}, 90%, ${lightness}%)`;
+    const emptyColor = theme === "light" ? "#d3dbe6" : "#273040";
 
     return (
         <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
@@ -121,6 +123,7 @@ const InfoRow = ({ icon, children }) => (
 /* -------------------- component -------------------- */
 export default function ProfileCard({ user: initialUser, readOnly, onUserUpdate, showMobileLogout = true, onChangePasswordClick }) {
     const { t } = useLang?.() || { t: (_k, f) => f };
+    const { resolvedTheme } = useTheme?.() || { resolvedTheme: "dark" };
     const [editMode, setEditMode] = useState(false);
     const handleOpenChangePassword = onChangePasswordClick || (() => { });
     const [user, setUser] = useState(initialUser);
@@ -359,7 +362,7 @@ export default function ProfileCard({ user: initialUser, readOnly, onUserUpdate,
                                     <FaStar />
                                     <span style={{ fontWeight: 700 }}>{t("profile.rating", "Рейтинг")}</span>
                                 </div>
-                                <TenStars value={ratingValue} t={t} />
+                                <TenStars value={ratingValue} t={t} theme={resolvedTheme} />
                             </Box>
                         </div>
                     ) : (

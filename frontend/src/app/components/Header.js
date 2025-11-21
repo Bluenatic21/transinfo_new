@@ -764,7 +764,7 @@ export default function Header({ setShowRegisterModal }) {
                         alignItems: "center",
                         gap: isTight ? 10 : 16,
                         minWidth: 0,
-                        height: 44,
+                        minHeight: ICON_BTN,
                     }}
                 >
                     {user && (
@@ -1076,11 +1076,11 @@ export default function Header({ setShowRegisterModal }) {
                         alignItems: "center",
                         background: "rgb(var(--surface))",
                         border: "1px solid var(--border-strong)",
-                        borderRadius: isTight ? "0 14px 14px 0" : "0 18px 18px 0",
-                        boxShadow: "var(--header-shadow)",
+                        borderRadius: isTight ? "0 0 12px 12px" : "0 0 16px 16px",
+                        boxShadow: "0 -4px 12px rgba(0,0,0,0.05), var(--header-shadow)",
                         padding: isCompact ? "8px 12px" : "9px 14px",
                         gap: NAV_GAP,
-                        marginTop: isCompact ? -2 : -4
+                        marginTop: isCompact ? -10 : -12
                     }}
                 >
                     <nav
