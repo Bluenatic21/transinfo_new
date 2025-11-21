@@ -4,13 +4,15 @@ import { API_BASE } from "@/config/env";
 export default async function handler(req, res) {
     // Проксируем на FastAPI
     const { method, query } = req;
-    // Поддерживаем явный override для внутреннего бэкенда, если он задан
+    // Поддерживаем явный override для внутреннего бэкенда, если он задан.
+    // Важно: по умолчанию не используем API_BASE (он указывает на сам Next.js и даёт рекурсию),
+    // поэтому оставляем безопасный локальный fallback на FastAPI (8004).
     const upstream =
         process.env.INTERNAL_API_BASE?.trim?.() ||
         process.env.NEXT_PUBLIC_API_URL?.trim?.() ||
         process.env.NEXT_PUBLIC_API_BASE_URL?.trim?.() ||
         process.env.NEXT_PUBLIC_DEV_API_URL?.trim?.() ||
-        API_BASE;
+        "http://127.0.0.1:8004";
 
     const url = new URL(`${upstream.replace(/\/$/, "")}/transports`);
 

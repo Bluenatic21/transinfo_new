@@ -2104,8 +2104,8 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
         const mkey = makeUniqueKey(__baseKey, idx);
         const translationKey = autoTranslate ? buildTranslationKey(msg, targetLang) : null;
         const translatedText = translationKey ? translationCache[translationKey] : null;
-        const hasTranslation = translatedText && translatedText !== msg.content;
-        const displayContent = hasTranslation ? translatedText : msg.content;
+        const hasTranslation = !!translatedText;
+        const displayContent = msg.content;
 
 
         // ---- CALL (карточка звонка) ----
@@ -2469,9 +2469,8 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                         minHeight: 40,
                         wordBreak: "break-word"
                     }}
-                >
-                     {searchMsg ? highlightText(displayContent, searchMsg) : displayContent}
-                    {hasTranslation && msg.content && (
+                >  {searchMsg ? highlightText(displayContent, searchMsg) : displayContent}
+                    {hasTranslation && (
                         <div style={{
                             marginTop: 8,
                             padding: "6px 8px",
@@ -2485,7 +2484,7 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                                 {t("chat.autoTranslatedLabel", "Переведено автоматически")}
                             </div>
                             <div style={{ fontSize: 12.5, opacity: 0.85 }}>
-                                {t("chat.originalText", "Оригинал")}: {msg.content}
+                                {translatedText}
                             </div>
                         </div>
                     )}

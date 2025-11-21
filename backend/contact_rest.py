@@ -136,6 +136,7 @@ def _notify(
     ntype: NotificationType,
     message: str,
     related_id: str | None = None,
+    extra: dict | None = None,
 ):
     # пишем в БД
     n = Notification(
@@ -143,6 +144,7 @@ def _notify(
         type=ntype,
         message=message,
         related_id=related_id,
+        payload=extra,
     )
     db.add(n)
     db.commit()
@@ -171,6 +173,7 @@ def _notify(
         "request_id": request_id,     # отдельное поле для удобства фронта
         "created_at": n.created_at.isoformat() if n.created_at else datetime.utcnow().isoformat(),
         "read": False,
+        "payload": extra,
     }
 
     # fire-and-forget WS (если нет running loop — молча пропускаем)
