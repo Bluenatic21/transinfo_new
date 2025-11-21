@@ -2943,7 +2943,96 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                         {t("chat.supportTyping", "Поддержка печатает…")}
                     </div>
                 )}
-                <div
+                
+                    className="chat-input-actions"
+                    style={{
+                        display: "flex",
+                        gap: 7,
+                        alignItems: "center",
+                        marginRight: 10,
+                        position: "relative",
+                    }}
+                
+                    {/* Плюсик с дополнительными действиями (вложения, перевод) */}
+                    <div ref={attachmentMenuRef} style={{ position: "relative", display: "inline-block" }}>
+                        <button
+                            type="button"
+                            title={t("chat.moreActions", "Дополнительно")}
+                            className={`action-btn ${attachmentMenuOpen ? "action-btn--accent" : ""}`}
+                            onClick={() => { if (!inputLocked) setAttachmentMenuOpen(v => !v); }}
+                            aria-haspopup="menu"
+                            aria-expanded={attachmentMenuOpen ? "true" : "false"}
+                            disabled={inputLocked}
+                            aria-label={t("chat.moreActions", "Дополнительно")}
+                        >
+                            <FaPlus />
+                        </button>
+
+                        {attachmentMenuOpen && (
+                            <div
+                                role="menu"
+                                style={{
+                                    position: "absolute",
+                                    bottom: "48px",
+                                    left: 0,
+                                    background: "#1e2a44",
+                                    border: "1px solid rgba(59,130,246,.25)",
+                                    borderRadius: 12,
+                                    padding: 8,
+                                    minWidth: 220,
+                                    boxShadow: "0 12px 30px rgba(0,0,0,.35)",
+                                    zIndex: 220,
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    gap: 6,
+                                }}
+                            >
+                                {attachmentActions.map(action => (
+                                    <button
+                                        key={action.key}
+                                        role="menuitem"
+                                        className="flex items-center gap-2 px-3 py-2 rounded-lg text-left text-sm"
+                                        style={{
+                                            background: "#223153",
+                                            color: "#e2f3ff",
+                                            border: "1px solid rgba(78,114,173,.55)",
+                                            opacity: action.disabled ? 0.6 : 1,
+                                            cursor: action.disabled ? "not-allowed" : "pointer",
+                                        }}
+                                        disabled={inputLocked || action.disabled}
+                                        onClick={action.onClick}
+                                    >
+                                        {action.icon && (
+                                            <span style={{ display: "inline-flex", alignItems: "center", fontSize: 15 }}>
+                                                {action.icon}
+                                            </span>
+                                        )}
+                                        <span>{action.label}</span>
+                                    </button>
+                               ))}
+
+                                {/* Автоперевод */}
+                                <button
+                                    role="menuitem"
+                                    className={`flex items-center gap-2 px-3 py-2 rounded-lg text-left text-sm ${autoTranslate ? "bg-[#27416b]" : "bg-[#223153]"}`}
+                                    style={{ color: "#e2f3ff", border: "1px solid rgba(78,114,173,.55)" }}
+                                    onClick={() => {
+                                        setAutoTranslate(v => !v);
+                                        setAttachmentMenuOpen(false);
+                                    }}
+                                >
+                                    <FaLanguage />
+                                    <span>
+                                        {translatingMessages
+                                            ? t("chat.translating", "Переводим сообщения…")
+                                            : autoTranslate
+                                                ? t("chat.autoTranslateToggleOn", "Автоперевод включён (последние 20 сообщений)")
+                                                : t("chat.autoTranslateToggleOff", "Включить автоперевод последних 20 сообщений")}
+                                    </span>
+                                </button>
+                            </div>
+                        )}
+                    <div
                     className="chat-input-actions"
                     style={{
                         display: "flex",
@@ -2953,7 +3042,7 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                         position: "relative",
                     }}
                 >
-                    {/* Плюсик с дополнительными действиями (вложения, перевод) */}
+                    {/* Кнопка "плюс" (меню вложений) */}
                     <div ref={attachmentMenuRef} style={{ position: "relative", display: "inline-block" }}>
                         <button
                             type="button"
@@ -3053,7 +3142,6 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                         multiple={false}
                     />
 
-
                     {/* Кнопки и мини-меню GPS — скрыты в саппорт-чате */}
                     {!chat?.support && (
                         <div ref={gpsMenuRef} style={{ position: "relative", display: "inline-block" }}>
@@ -3115,7 +3203,7 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                             title={t("chat.insertEmoji", "Вставить эмодзи")}
                             disabled={inputLocked}
                             aria-label={t("chat.insertEmoji", "Вставить эмодзи")}
-                       >
+                        >
                             <FaSmile />
                         </button>
                     )}
@@ -3127,6 +3215,19 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                             disabled={sending || inputLocked}
                         />
                     </div>
+
+                    <button
+                        type="button"
+                        onClick={() => setAutoTranslate(v => !v)}
+                        className={`action-btn ${autoTranslate ? "action-btn--accent" : ""} ${translatingMessages ? "opacity-80" : ""}`}
+                        title={autoTranslate
+                            ? t("chat.autoTranslateToggleOn", "Автоперевод включён (последние 20 сообщений)")
+                            : t("chat.autoTranslateToggleOff", "Включить автоперевод последних 20 сообщений")}
+                        aria-pressed={autoTranslate}
+                    >
+                        {translatingMessages ? <span style={{ fontSize: 12, fontWeight: 700 }}>…</span> : <FaLanguage />}
+                    </button>
+                </div>
 
                     <button
                         type="button"
