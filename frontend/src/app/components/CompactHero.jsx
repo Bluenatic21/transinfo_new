@@ -9,6 +9,7 @@ export default function CompactHero({
     stats, // { index, cargos, trucks, users, tenders }
     onFindCargo,
     onFindTransport,
+    hideText = false,
 }) {
     const { t } = useLang();
     const s = stats || {};
@@ -23,33 +24,34 @@ export default function CompactHero({
             style={{ color: "var(--text-primary)" }}
         >
             <div className="mx-auto max-w-7xl px-6">
-                {/* Заголовок и подзаголовок — компактно и аккуратно */}
-                <div className="text-center text-slate-900 dark:text-white">
-                    <motion.h1
-                        initial={{ opacity: 0, y: 6 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.35, ease: "easeOut" }}
-                        className="text-[26px] md:text-[30px] font-extrabold tracking-tight"
-                        style={{ color: "var(--text-primary)" }}
-                    >
-                        {titleText}
-                    </motion.h1>
-
-                    {/* Тонкий акцент-бар под заголовком */}
-                    <div
-                        aria-hidden
-                        className="mx-auto mt-2 h-[2px] w-16 rounded-full bg-gradient-to-r from-cyan-300/70 via-cyan-200 to-cyan-300/70"
-                    />
-
-                    {subtitleText && (
-                        <p
-                            className="mt-2 text-[14.5px] md:text-[15px] leading-relaxed max-w-3xl mx-auto"
-                            style={{ color: "var(--text-secondary)" }}
+                {!hideText && (
+                    <div className="text-center text-slate-900 dark:text-white">
+                        <motion.h1
+                            initial={{ opacity: 0, y: 6 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.35, ease: "easeOut" }}
+                            className="text-[26px] md:text-[30px] font-extrabold tracking-tight"
+                            style={{ color: "var(--text-primary)" }}
                         >
-                            {subtitleText}
-                        </p>
-                    )}
-                </div>
+                            {titleText}
+                        </motion.h1>
+
+                        {/* Тонкий акцент-бар под заголовком */}
+                        <div
+                            aria-hidden
+                            className="mx-auto mt-2 h-[2px] w-16 rounded-full bg-gradient-to-r from-cyan-300/70 via-cyan-200 to-cyan-300/70"
+                        />
+
+                        {subtitleText && (
+                            <p
+                                className="mt-2 text-[14.5px] md:text-[15px] leading-relaxed max-w-3xl mx-auto"
+                                style={{ color: "var(--text-secondary)" }}
+                            >
+                                {subtitleText}
+                            </p>
+                        )}
+                    </div>
+                )}
 
                 {/* Метрики — БЕЗ анимации, сразу видимы при загрузке */}
                 <div className="mt-4">

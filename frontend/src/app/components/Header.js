@@ -676,22 +676,22 @@ export default function Header({ setShowRegisterModal }) {
     }
 
     return (
-        <header
+        <div
             ref={headerRef}
             className="header-root"
             style={{
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "stretch",
-                gap: isCompact ? 10 : 14,
+                gap: isCompact ? 8 : 10,
                 ["--header-h"]: `${headerHeight}px`,
                 background: "rgb(var(--header-bg))",
-                padding: isCompact ? "18px 22px 14px 18px" : "20px 30px 16px 24px",
+                padding: isCompact ? "18px 22px 12px 18px" : "20px 30px 12px 24px",
                 boxShadow: "var(--header-shadow)",
                 zIndex: 100
             }}
         >
-            <div className="header-top" style={{ display: "flex", alignItems: "center", gap: isCompact ? 14 : 18 }}>
+            <header className="header-top" style={{ display: "flex", alignItems: "center", gap: isCompact ? 14 : 18 }}>
                 <Link
                     href="/"
                     className="header-logo"
@@ -734,9 +734,10 @@ export default function Header({ setShowRegisterModal }) {
                         color: "var(--text-primary)",
                         fontWeight: 800,
                         fontSize: isCompact ? 15.5 : 17,
-                        lineHeight: 1.35,
+                        lineHeight: 1.32,
                         letterSpacing: 0.1,
-                        maxWidth: 520
+                        maxWidth: 620,
+                        paddingLeft: 4
                     }}
                 >
                     {heroTitle}
@@ -1044,7 +1045,7 @@ export default function Header({ setShowRegisterModal }) {
                         </div>
                     )}
                 </div>
-            </div>
+            </header>
 
             <div
                 className="header-nav-row"
@@ -1129,6 +1130,6 @@ export default function Header({ setShowRegisterModal }) {
                     </nav>
                 </div>
             </div>
-        </header>
+        </div>
     );
 }

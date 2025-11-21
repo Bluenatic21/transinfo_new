@@ -2931,7 +2931,7 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                 <div ref={messagesEndRef} />
             </div>
             {preview}
-            <form
+           <form
                 onSubmit={handleSend}
                 style={{
                     background: "#203154",
@@ -2953,17 +2953,19 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                     </div>
                 )}
 
-                className="chat-input-actions"
-                style={{
-                    display: "flex",
-                    gap: 7,
-                    alignItems: "center",
-                    marginRight: 10,
-                    position: "relative",
-                }}
+                
 
-                {/* Плюсик с дополнительными действиями (вложения, перевод) */}
-                <div ref={attachmentMenuRef} style={{ position: "relative", display: "inline-block" }}>
+                    className="chat-input-actions"
+                    style={{
+                        display: "flex",
+                        gap: 7,
+                        alignItems: "center",
+                        marginRight: 10,
+                        position: "relative",
+                    }}
+                
+                    {/* Плюсик с дополнительными действиями (вложения, перевод) */}
+                    <div ref={attachmentMenuRef} style={{ position: "relative", display: "inline-block" }}>
                     <button
                         type="button"
                         title={t("chat.moreActions", "Дополнительно")}

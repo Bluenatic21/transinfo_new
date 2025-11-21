@@ -243,6 +243,7 @@ export default function Home() {
         };
         return (
             <CompactHero
+                hideText
                 stats={stats}
                 onFindCargo={() => {
                     setMode("main");
