@@ -2,37 +2,65 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 
 type Theme = "dark" | "light" | "system";
-type Ctx = { theme: Theme; setTheme: (t: Theme) => void };
-const ThemeCtx = createContext<Ctx>({ theme: "dark", setTheme: () => { } });
+type Ctx = { theme: Theme; resolvedTheme: "dark" | "light"; setTheme: (t: Theme) => void };
+
+const ThemeCtx = createContext<Ctx>({
+    theme: "dark",
+    resolvedTheme: "dark",
+    setTheme: () => { },
+});
+
+function applyTheme(mode: "dark" | "light") {
+    const root = document.documentElement;
+    const body = document.body;
+    root.setAttribute("data-theme", mode);
+    body?.setAttribute("data-theme", mode);
+    root.classList.toggle("dark", mode === "dark");
+    root.style.colorScheme = mode;
+}
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-    // HARD LOCK: держим только dark
     const [theme, setTheme] = useState<Theme>("dark");
+    const [resolvedTheme, setResolvedTheme] = useState<"dark" | "light">("dark");
 
-    // На монтировании сразу фиксируем атрибуты/локалсторадж
     useEffect(() => {
-        try {
-            const root = document.documentElement;
-            root.setAttribute("data-theme", "dark");
-            root.classList.add("dark");
-            localStorage.setItem("theme", "dark");
-        } catch {}
+        const prefersDark = () =>
+            typeof window !== "undefined" &&
+            window.matchMedia &&
+            window.matchMedia("(prefers-color-scheme: dark)").matches;
+
+        const stored = (() => {
+            try {
+                return (localStorage.getItem("theme") as Theme | null) ?? null;
+            } catch {
+                return null;
+            }
+        })();
+
+        const initial = stored ?? (prefersDark() ? "dark" : "light");
+        setTheme(initial);
     }, []);
 
-    // Применяем атрибут и сохраняем выбор
     useEffect(() => {
-        if (typeof document === "undefined") return;
-        const root = document.documentElement;
-        root.setAttribute("data-theme", "dark");
-        root.classList.add("dark");
-        try { localStorage.setItem("theme", "dark"); } catch {}
+        const media = window.matchMedia("(prefers-color-scheme: dark)");
+        const handle = () => {
+            const mode = theme === "system" ? (media.matches ? "dark" : "light") : theme;
+            setResolvedTheme(mode);
+            applyTheme(mode);
+        };
+
+        handle();
+        media.addEventListener("change", handle);
+        try { localStorage.setItem("theme", theme); } catch { }
+
+        return () => media.removeEventListener("change", handle);
     }, [theme]);
 
-    // Любые вызовы setTheme(...) игнорируются — держим dark
     const value = useMemo<Ctx>(
-        () => ({ theme: "dark", setTheme: () => setTheme("dark") }),
-        []
+        () => ({ theme, resolvedTheme, setTheme }),
+        [theme, resolvedTheme]
     );
+
     return <ThemeCtx.Provider value={value}>{children}</ThemeCtx.Provider>;
 }
 

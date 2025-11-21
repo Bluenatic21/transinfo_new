@@ -23,11 +23,30 @@ const fmtRemain = (iso, t) => !iso ? "" : (() => {
 })();
 import Lightbox from "yet-another-react-lightbox";
 import "yet-another-react-lightbox/styles.css";
-import { FaPaperPlane, FaGavel, FaSmile, FaPaperclip, FaEye, FaCheck, FaThumbsUp, FaHeart, FaThumbtack, FaTrash, FaLanguage } from "react-icons/fa";
+import {
+  FaPaperPlane,
+  FaGavel,
+  FaSmile,
+  FaPaperclip,
+  FaEye,
+  FaCheck,
+  FaThumbsUp,
+  FaHeart,
+  FaThumbtack,
+  FaTrash,
+  FaLanguage,
+  FaPlus,
+  FaImage,
+  FaCamera,
+  FaFileAlt,
+  FaAddressBook,
+  FaMapMarkerAlt,
+} from "react-icons/fa";
 import { useMessenger } from "./MessengerContext";
 import { useUser } from "../UserContext";
 import { useRouter } from "next/navigation";
 import { FaMapMarkerAlt } from "react-icons/fa";
+import { FaImage, FaCamera, FaFileAlt, FaAddressBook } from "react-icons/fa";
 import EmojiPicker from 'emoji-picker-react';
 import VoiceRecorder from "./VoiceRecorder";
 import AudioMessageBubble from "./AudioMessageBubble";
@@ -831,6 +850,9 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
         return n > 1 ? `${b}~${n}` : b;
     };
     const fileInputRef = useRef(null);
+    const photoInputRef = useRef(null);
+    const cameraInputRef = useRef(null);
+    const attachmentMenuRef = useRef(null);
     const router = useRouter();
     const { user, API, authFetchWithRefresh } = useUser();
     const [searchMsg, setSearchMsg] = useState(""); // ← уже есть
@@ -862,6 +884,9 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
     const GPS_DISABLED = true;
     const [gpsMenuOpen, setGpsMenuOpen] = useState(false);
     const gpsMenuRef = useRef(null);
+    const [attachmentMenuOpen, setAttachmentMenuOpen] = useState(false);
+    const [actionsMenuOpen, setActionsMenuOpen] = useState(false);
+    const actionsMenuRef = useRef(null);
     // Не читаем chat?.support напрямую в коллбэках (TDZ). Держим флаг в ref:
     const isSupportRef = useRef(false);
 
@@ -953,11 +978,11 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
             );
             if (!resp?.ok) { showToast(e, t("toast.shareError", "Не удалось поделиться"), "error"); return; }
             await handleGpsShared(s, recipientId);
-            showToast(e, t("toast.locationSent", "Локация отправлена"), "ok");
+             showToast(e, t("toast.locationSent", "Локация отправлена"), "ok");
         } catch {
             showToast(e, t("toast.locationSendError", "Ошибка при отправке локации"), "error");
         } finally {
-            setGpsMenuOpen(false);
+            setAttachmentMenuOpen(false);
         }
     }, [API, authFetchWithRefresh, ensureChatTrackSession, peerUser?.id, handleGpsShared, showToast]);
 
@@ -986,10 +1011,10 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
             const activeLike = (s) => s === "PENDING" || s === "ACCEPTED";
             const outToPeer = outgoing.find(it => it?.target_user_id === targetId && activeLike(it?.status));
             const inFromPeer = incoming.find(it => it?.user_id === targetId && activeLike(it?.status));
-            if (outToPeer?.status === "ACCEPTED") { showToast(e, t("toast.alreadySharing", "Вы уже делитесь с этим пользователем"), "ok"); setGpsMenuOpen(false); return; }
-            if (outToPeer?.status === "PENDING") { showToast(e, t("toast.requestAlreadySent", "Запрос уже отправлен — ждём ответа"), "info"); setGpsMenuOpen(false); return; }
-            if (inFromPeer?.status === "ACCEPTED") { showToast(e, t("toast.userAlreadyShares", "Пользователь уже делится с вами"), "ok"); setGpsMenuOpen(false); return; }
-            if (inFromPeer?.status === "PENDING") { showToast(e, t("toast.incomingExists", "Есть входящий запрос — проверьте чат"), "info"); setGpsMenuOpen(false); return; }
+            if (outToPeer?.status === "ACCEPTED") { showToast(e, t("toast.alreadySharing", "Вы уже делитесь с этим пользователем"), "ok"); setAttachmentMenuOpen(false); return; }
+            if (outToPeer?.status === "PENDING") { showToast(e, t("toast.requestAlreadySent", "Запрос уже отправлен — ждём ответа"), "info"); setAttachmentMenuOpen(false); return; }
+            if (inFromPeer?.status === "ACCEPTED") { showToast(e, t("toast.userAlreadyShares", "Пользователь уже делится с вами"), "ok"); setAttachmentMenuOpen(false); return; }
+            if (inFromPeer?.status === "PENDING") { showToast(e, t("toast.incomingExists", "Есть входящий запрос — проверьте чат"), "info"); setAttachmentMenuOpen(false); return; }
         } catch { /* не блокируем */ }
 
         try {
@@ -1004,10 +1029,9 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
         } catch {
             showToast(e, t("toast.requestSendError", "Не удалось отправить запрос"), "error");
         } finally {
-            setGpsMenuOpen(false);
+            setAttachmentMenuOpen(false);
         }
     }, [authFetchWithRefresh, peerUser?.id, handleGpsRequested, showToast]);
-
 
     useEffect(() => {
         if (!chatId) return;
@@ -1494,6 +1518,69 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
     // Блокировка ввода: только для сотрудников поддержки, пользователю писать всегда можно
     const inputLocked = (isSupportAgent && (supportStatus === "CLOSED" || forceClosed));
 
+    const attachmentActions = useMemo(() => {
+        const actions = [
+            {
+                key: "photo",
+                label: t("chat.menu.photo", "Фото или видео"),
+                icon: <FaImage />,
+                onClick: () => {
+                    setAttachmentMenuOpen(false);
+                    if (!inputLocked) photoInputRef.current?.click();
+                },
+            },
+            {
+                key: "camera",
+                label: t("chat.menu.camera", "Камера"),
+                icon: <FaCamera />,
+                onClick: () => {
+                    setAttachmentMenuOpen(false);
+                    if (!inputLocked) cameraInputRef.current?.click();
+                },
+            },
+            {
+                key: "document",
+                label: t("chat.menu.document", "Документ"),
+                icon: <FaFileAlt />,
+                onClick: () => {
+                    setAttachmentMenuOpen(false);
+                    if (!inputLocked) fileInputRef.current?.click();
+                },
+            },
+        ];
+
+        if (!chat?.support) {
+            actions.splice(2, 0,
+                {
+                    key: "location",
+                    label: t("chat.menu.location", "Местоположение"),
+                    icon: <FaMapMarkerAlt />,
+                    onClick: (e) => { quickShareGps(e); setAttachmentMenuOpen(false); },
+                    disabled: GPS_DISABLED,
+                },
+                {
+                    key: "request",
+                    label: t("chat.menu.requestLocation", "Запросить GPS"),
+                    icon: <PhoneIcon />,
+                    onClick: (e) => { quickRequestGps(e); setAttachmentMenuOpen(false); },
+                    disabled: GPS_DISABLED,
+                }
+            );
+        }
+
+        actions.push({
+            key: "contact",
+            label: t("chat.menu.contact", "Контакт"),
+            icon: <FaAddressBook />,
+            onClick: (e) => {
+                setAttachmentMenuOpen(false);
+                showToast(e, t("chat.menu.contactSoon", "Скоро: отправка контактов"), "info");
+            },
+        });
+
+        return actions;
+    }, [GPS_DISABLED, chat?.support, inputLocked, quickRequestGps, quickShareGps, showToast, t]);
+
     const [showGroupInfo, setShowGroupInfo] = useState(false);
     const [groupForceUpdate, setGroupForceUpdate] = useState(0); // счетчик для форс-апдейта участников
 
@@ -1529,7 +1616,6 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, [showEmojiPicker]);
 
-
     // Закрытие мини-меню GPS по клику вне
     useEffect(() => {
         if (!gpsMenuOpen) return;
@@ -1540,6 +1626,21 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
         document.addEventListener('mousedown', onDocClick);
         return () => document.removeEventListener('mousedown', onDocClick);
     }, [gpsMenuOpen]);
+
+
+
+
+    // Закрытие меню вложений по клику вне
+    useEffect(() => {
+        if (!attachmentMenuOpen) return;
+        function onDocClick(e) {
+            if (!attachmentMenuRef.current) return;
+            if (!attachmentMenuRef.current.contains(e.target)) setAttachmentMenuOpen(false);
+        }
+        document.addEventListener('mousedown', onDocClick);
+        return () => document.removeEventListener('mousedown', onDocClick);
+    }, [attachmentMenuOpen]);
+
 
     const [isMobile, setIsMobile] = useState(false);
     useEffect(() => {
@@ -2865,6 +2966,111 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                         position: "relative",
                     }}
                 >
+                    {/* Плюсик с дополнительными действиями (вложения, перевод, голосовое) */}
+                    <div ref={attachmentMenuRef} style={{ position: "relative", display: "inline-block" }}>
+                        <button
+                            type="button"
+                            title={t("chat.moreActions", "Дополнительно")}
+                            className={`action-btn ${attachmentMenuOpen ? "action-btn--accent" : ""}`}
+                            onClick={() => { if (!inputLocked) setAttachmentMenuOpen(v => !v); }}
+                            aria-haspopup="menu"
+                            aria-expanded={attachmentMenuOpen ? "true" : "false"}
+                            disabled={inputLocked}
+                            aria-label={t("chat.moreActions", "Дополнительно")}
+                        >
+                            <FaPlus />
+                        </button>
+
+                        {attachmentMenuOpen && (
+                            <div
+                                role="menu"
+                                style={{
+                                    position: "absolute",
+                                    bottom: "48px",
+                                    left: 0,
+                                    background: "#1e2a44",
+                                    border: "1px solid rgba(59,130,246,.25)",
+                                    borderRadius: 12,
+                                    padding: 8,
+                                    minWidth: 220,
+                                    boxShadow: "0 12px 30px rgba(0,0,0,.35)",
+                                    zIndex: 220,
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    gap: 6,
+                                }}
+                            >
+                                {attachmentActions.map(action => (
+                                    <button
+                                        key={action.key}
+                                        role="menuitem"
+                                        className="flex items-center gap-2 px-3 py-2 rounded-lg text-left text-sm"
+                                        style={{
+                                            background: "#223153",
+                                            color: "#e2f3ff",
+                                            border: "1px solid rgba(78,114,173,.55)",
+                                            opacity: action.disabled ? 0.6 : 1,
+                                            cursor: action.disabled ? "not-allowed" : "pointer",
+                                        }}
+                                        disabled={inputLocked || action.disabled}
+                                        onClick={action.onClick}
+                                    >
+                                        {action.icon && (
+                                            <span style={{ display: "inline-flex", alignItems: "center", fontSize: 15 }}>
+                                                {action.icon}
+                                            </span>
+                                        )}
+                                        <span>{action.label}</span>
+                                    </button>
+                                ))}
+
+                                {/* Автоперевод */}
+                                <button
+                                    role="menuitem"
+                                    className={`flex items-center gap-2 px-3 py-2 rounded-lg text-left text-sm ${autoTranslate ? "bg-[#27416b]" : "bg-[#223153]"}`}
+                                    style={{ color: "#e2f3ff", border: "1px solid rgba(78,114,173,.55)" }}
+                                    onClick={() => {
+                                        setAutoTranslate(v => !v);
+                                        setAttachmentMenuOpen(false);
+                                    }}
+                                >
+                                    <FaLanguage />
+                                    <span>
+                                        {translatingMessages
+                                            ? t("chat.translating", "Переводим сообщения…")
+                                            : autoTranslate
+                                                ? t("chat.autoTranslateToggleOn", "Автоперевод включён (последние 20 сообщений)")
+                                                : t("chat.autoTranslateToggleOff", "Включить автоперевод последних 20 сообщений")}
+                                    </span>
+                                </button>
+
+                                {/* Голосовое сообщение */}
+                                <div
+                                    role="menuitem"
+                                    style={{
+                                        padding: "6px 8px",
+                                        borderRadius: 10,
+                                        background: "#223153",
+                                        border: "1px solid rgba(78,114,173,.55)",
+                                        color: "#e2f3ff",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "space-between",
+                                        gap: 10,
+                                    }}
+                                >
+                                    <div className="text-sm">
+                                        {t("chat.voiceMessage", "Голосовое сообщение")}
+                                    </div>
+                                    <VoiceRecorder
+                                        onReady={(blob, url) => { setPendingVoice({ blob, url }); setAttachmentMenuOpen(false); }}
+                                        disabled={sending || inputLocked}
+                                    />
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
                     {/* Скрепка */}
                     <button
                         type="button"

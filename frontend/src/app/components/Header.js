@@ -42,7 +42,7 @@ function RatingStars({ value = 10, size = 12, showValue = true }) {
     const frac = v - full;
     const hue = (v / 10) * 120; // 0..120 (0=красный, 120=зелёный)
     const color = `hsl(${hue}, 90%, 45%)`;
-    const emptyColor = "#273040";
+    const emptyColor = "var(--text-secondary, #273040)";
 
     return (
         <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
@@ -187,9 +187,9 @@ function MiniProfile({ user, onClick, mode = "full" }) {
             <button
                 className="header-user-chip"
                 style={{
-                    background: "rgba(20,32,50,0.94)",
-                    border: "1px solid #18647e",
-                    boxShadow: "0 2px 10px rgba(30,180,250,0.10)",
+                    background: "rgb(var(--surface) / 0.94)",
+                    border: "1px solid var(--border-strong)",
+                    boxShadow: "var(--header-shadow, var(--shadow-soft))",
                     gap: 8,
                     minWidth: 170,
                     maxWidth: 260,
@@ -198,12 +198,12 @@ function MiniProfile({ user, onClick, mode = "full" }) {
                     transition: "box-shadow .2s ease"
                 }}
                 onClick={onClick}
-                onMouseOver={e => e.currentTarget.style.boxShadow = "0 2px 16px 0 #43f4f955"}
-                onMouseOut={e => e.currentTarget.style.boxShadow = "0 2px 10px rgba(30,180,250,0.10)"}
+                onMouseOver={e => e.currentTarget.style.boxShadow = "var(--header-shadow-hover, var(--shadow-soft))"}
+                onMouseOut={e => e.currentTarget.style.boxShadow = "var(--header-shadow, var(--shadow-soft))"}
             >
                 <div style={{
                     width: 32, height: 32, borderRadius: "50%", overflow: "hidden",
-                    background: "#2a384d", border: "1px solid #1c2c44", flexShrink: 0,
+                    background: "rgb(var(--surface))", border: "1px solid var(--border-strong)", flexShrink: 0,
                     display: "flex", alignItems: "center", justifyContent: "center"
                 }}>
                     <img src={avatarUrl} alt={t("img.avatar", "Аватар")}
@@ -211,7 +211,7 @@ function MiniProfile({ user, onClick, mode = "full" }) {
                         onError={e => { e.currentTarget.src = "/default-avatar.png"; }} />
                 </div>
                 <div className="chip-text" style={{
-                    fontSize: 13, fontWeight: 800, color: "#e3f2fd",
+                    fontSize: 13, fontWeight: 800, color: "var(--text-primary)",
                     lineHeight: 1.1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis"
                 }}>
                     {getDisplayName(user)}
@@ -225,9 +225,9 @@ function MiniProfile({ user, onClick, mode = "full" }) {
         <button
             className="header-user-chip"
             style={{
-                background: "rgba(20,32,50,0.94)",
-                border: "1px solid #18647e",
-                boxShadow: "0 2px 10px rgba(30,180,250,0.10)",
+                background: "rgb(var(--surface) / 0.94)",
+                border: "1px solid var(--border-strong)",
+                boxShadow: "var(--header-shadow, var(--shadow-soft))",
                 gap: 10,
                 minWidth: 220,
                 maxWidth: 340,
@@ -236,16 +236,16 @@ function MiniProfile({ user, onClick, mode = "full" }) {
                 transition: "box-shadow 0.2s ease",
             }}
             onClick={onClick}
-            onMouseOver={e => e.currentTarget.style.boxShadow = "0 2px 16px 0 #43f4f955"}
-            onMouseOut={e => e.currentTarget.style.boxShadow = "0 2px 10px rgba(30,180,250,0.10)"}
+            onMouseOver={e => e.currentTarget.style.boxShadow = "var(--header-shadow-hover, var(--shadow-soft))"}
+            onMouseOut={e => e.currentTarget.style.boxShadow = "var(--header-shadow, var(--shadow-soft))"}
         >
             <div style={{
                 width: 36,
                 height: 36,
                 borderRadius: "50%",
                 overflow: "hidden",
-                background: "#2a384d",
-                border: "1px solid #1c2c44",
+                background: "rgb(var(--surface))",
+                border: "1px solid var(--border-strong)",
                 flexShrink: 0,
                 display: "flex",
                 alignItems: "center",
@@ -262,7 +262,7 @@ function MiniProfile({ user, onClick, mode = "full" }) {
             <div style={{ display: "flex", flexDirection: "column", minWidth: 0, width: "100%", textAlign: "left" }}>
                 {/* Первая строка: организация/компания/имя (крупнее) */}
                 <div style={{
-                    fontSize: 14, fontWeight: 800, color: "#e3f2fd", textAlign: "left",
+                    fontSize: 14, fontWeight: 800, color: "var(--text-primary)", textAlign: "left",
                     lineHeight: 1.1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis"
                 }}>
                     {(() => {
@@ -280,7 +280,7 @@ function MiniProfile({ user, onClick, mode = "full" }) {
                         const person = getPersonName(user, title);
                         return (
                             <div style={{
-                                fontSize: 12, color: "#90cdf4", lineHeight: 1.1,
+                                fontSize: 12, color: "var(--text-secondary)", lineHeight: 1.1,
                                 minWidth: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis"
                             }}>
                                 {person}
@@ -288,7 +288,7 @@ function MiniProfile({ user, onClick, mode = "full" }) {
                         );
                     })()}
                     {user.created_at && (
-                        <span style={{ color: "#42e7b5", fontSize: 11, fontWeight: 800, whiteSpace: "nowrap" }}>
+                        <span style={{ color: `rgb(var(--primary))`, fontSize: 11, fontWeight: 800, whiteSpace: "nowrap" }}>
                             {Math.max(1, Math.floor((Date.now() - new Date(user.created_at)) / (1000 * 60 * 60 * 24)))} {t("unit.days.short", "дн.")}
                         </span>
                     )}
@@ -297,7 +297,7 @@ function MiniProfile({ user, onClick, mode = "full" }) {
                 <div className="chip-rating" style={{
                     marginTop: 4,
                     paddingTop: 4,
-                    borderTop: "1px solid rgba(255,255,255,.06)",
+                    borderTop: "1px solid rgba(var(--border), 0.35)",
                     display: "flex",
                     justifyContent: "flex-end"
                 }}>

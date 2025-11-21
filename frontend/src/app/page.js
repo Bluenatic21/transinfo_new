@@ -139,7 +139,7 @@ function StatsBlock() {
         <div
             style={{
                 margin: "34px 0 26px 0",
-                background: "#22314a",
+                background: "var(--bg-card, var(--surface, #22314a))",
                 borderRadius: 19,
                 display: "flex",
                 flexWrap: "nowrap",
@@ -147,7 +147,8 @@ function StatsBlock() {
                 padding: "36px 16px 20px 16px",
                 justifyContent: "space-between",
                 alignItems: "stretch",
-                boxShadow: "0 2px 14px #17418e18"
+                boxShadow: "var(--shadow-soft, 0 2px 14px #17418e18)",
+                border: "1px solid var(--border-subtle, rgba(23, 65, 142, 0.12))"
             }}
         >
             {stats.map((stat) => (
@@ -160,7 +161,7 @@ function StatsBlock() {
                         flexDirection: "column",
                         alignItems: "center",
                         gap: 6,
-                        color: "#eaf6ff"
+                        color: "var(--text-primary, #eaf6ff)"
                     }}
                 >
                     <div style={{ marginBottom: 4 }}>{stat.icon}</div>
@@ -180,7 +181,7 @@ function StatsBlock() {
                         />
                     </div>
                     <div style={{
-                        color: "#9edfff",
+                        color: "var(--text-secondary, #9edfff)",
                         fontSize: 17,
                         fontWeight: 700,
                         marginBottom: 2,

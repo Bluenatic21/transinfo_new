@@ -9,10 +9,10 @@
 #orderform .select2-container--default .select2-selection--single,
 #orderform .react-select__control,
 #orderform .ant-select .ant-select-selector {
-  background-color: #1e2746 !important;
+  background-color: var(--control-bg) !important;
   opacity: 1 !important;
-  color: #e3f2fd !important;
-  border: 1.5px solid #294c7a !important;
+  color: var(--text-primary) !important;
+  border: 1.5px solid var(--border-subtle) !important;
   border-radius: 7px !important;
   min-height: 38px;
   box-shadow: none !important;
@@ -21,11 +21,11 @@
 /* Базовый стиль для всех текстовых инпутов и textarea в orderform */
 #orderform input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="color"]):not([type="button"]):not([type="submit"]):not([type="reset"]),
 #orderform textarea {
-  background-color: #1e2746 !important;
-  color: #e3f2fd !important;
-  border: 1.5px solid #294c7a !important;
+  background-color: var(--control-bg) !important;
+  color: var(--text-primary) !important;
+  border: 1.5px solid var(--border-subtle) !important;
   border-radius: 7px !important;
-  box-shadow: 0 1px 6px #1b334d22 !important;
+  box-shadow: var(--shadow-soft) !important;
   outline: none !important;
   transition: border .2s, box-shadow .22s;
 }
@@ -40,15 +40,16 @@
 #orderform select:disabled,
 #orderform .ant-select-disabled .ant-select-selector,
 #orderform .select2-container--disabled .select2-selection--single {
-  background-color: #202a3f !important;
-  color: #7ca1b8 !important;
+  background-color: var(--bg-card-soft) !important;
+  color: var(--text-muted) !important;
 }
+
 
 /* Плейсхолдеры */
 #orderform .ant-select-selection-placeholder,
 #orderform .select2-selection__placeholder,
 #orderform .react-select__placeholder {
-  color: #9bb0c5 !important;
+  color: var(--text-muted) !important;
 }
 
 /* Меню выпадающих списков, которые рендерятся в body/портале (никогда не прозрачные) */
@@ -59,11 +60,11 @@
 .MuiMenu-paper,
 .dropdown-menu,
 [role="listbox"] {
-  background-color: #202e4a !important;
-  color: #e3f2fd !important;
-  border: 1.5px solid #294c7a !important;
+  background-color: var(--bg-card) !important;
+  color: var(--text-primary) !important;
+  border: 1.5px solid var(--border-subtle) !important;
   border-radius: 9px !important;
-  box-shadow: 0 8px 24px rgba(2, 16, 43, .28) !important;
+  box-shadow: var(--shadow-soft) !important;
   opacity: 1 !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
@@ -110,12 +111,6 @@
 }
 
 /* disabled:* */
-
-/* ===== HARD LOCK: всегда тёмная тема ===== */
-/* Сообщаем браузеру, что интерфейс тёмный (влияет на скроллбары, автозаполнение и т.п.) */
-:root {
-  color-scheme: dark;
-}
 
 /* Локализация: немного уменьшенные базовые размеры для грузинского языка */
 html:lang(ka) {
@@ -1846,26 +1841,27 @@ footer a:hover {
 /* === ГЛАВНЫЕ ЦВЕТОВЫЕ ПЕРЕМЕННЫЕ === */
 :root {
   /* Привязка к токенам темы (theme.css) */
-  --background: rgb(var(--bg));
-  --background-light: rgb(var(--card));
-  --foreground: rgb(var(--fg));
-  --border: rgb(var(--border));
-  --accent: rgb(var(--primary));
-  --accent-dark: rgb(var(--primary));
-  --accent-hover: rgb(var(--primary));
+  --background: var(--bg-body);
+  --background-light: var(--bg-card);
+  --foreground: var(--text-primary);
+  --border: var(--border-subtle);
+  --accent: var(--brand-blue);
+  --accent-dark: var(--brand-navy);
+  --accent-hover: var(--brand-teal);
   --accent-green: #17be9a;
+  --bg-app: var(--background);
   /* Карточки и алиасы для совместимости */
-  --card-bg: rgb(var(--card));
-  --card-fg: rgb(var(--fg));
-  --card-border: rgba(0, 0, 0, .12);
+  --card-bg: var(--bg-card);
+  --card-fg: var(--text-primary);
+  --card-border: var(--border-subtle);
   --surface: var(--card-bg);
   --text: var(--foreground);
 }
 
 .header-icon-btn {
-  background: none;
-  color: #bfe6fa;
-  border: none;
+  background: var(--control-bg);
+  color: var(--text-primary);
+  border: 1px solid var(--border-subtle);
   border-radius: 50%;
   cursor: pointer;
   display: flex;
@@ -1875,14 +1871,15 @@ footer a:hover {
   font-size: 22px;
   height: 40px;
   width: 40px;
-  transition: color 0.17s, background 0.14s;
+  transition: color var(--transition-fast), background var(--transition-fast), border var(--transition-fast);
   outline: none;
 }
 
 .header-icon-btn:hover,
 .header-icon-btn:focus {
-  color: #43c8ff;
-  background: rgba(67, 200, 255, 0.09);
+  color: var(--brand-blue);
+  background: var(--control-bg-hover);
+  border-color: var(--border-strong);
 }
 
 .leaflet-container,
@@ -2046,8 +2043,11 @@ body {
   background-size: cover;
 }
 
-/* [LOCK] светлая тема отключена */
-/* [data-theme="light"] body { ... } */
+[data-theme="light"] body {
+  background: var(--background);
+  color: var(--text-primary);
+}
+
 /* (удалено) fullscreen #modal-root – он и создавал «невидимую пленку» */
 
 .modal-open {
@@ -2112,9 +2112,9 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 22px 3vw 17px 3vw;
-  background: rgba(22, 34, 54, 0.93);
-  border-bottom: 2px solid #234167;
-  box-shadow: 0 6px 32px #18336e22;
+  background: var(--bg-header);
+  border-bottom: 1px solid var(--border-strong);
+  box-shadow: var(--shadow-soft);
   position: sticky;
   top: 0;
   z-index: 20;
@@ -2146,17 +2146,17 @@ body {
 
 /* Светлая тема: фон/бордер/тень из токенов */
 [data-theme="light"] .header-root {
-  background: rgb(var(--header-bg)) !important;
-  border-bottom: 1px solid rgb(var(--border)) !important;
-  box-shadow: var(--header-shadow) !important;
+  background: var(--bg-header);
+  border-bottom: 1px solid var(--border-strong);
+  box-shadow: var(--header-shadow);
 }
 
 .header-logo {
   font-weight: 900;
   font-size: 2.15rem;
-  color: var(--accent);
+  color: var(--brand-blue);
   letter-spacing: 2.5px;
-  text-shadow: 0 1px 13px #223c60cc;
+  text-shadow: 0 1px 13px color-mix(in srgb, var(--brand-navy) 45%, transparent);
   text-decoration: none;
   padding: 2px 0 0 0;
   transition: color .12s;
@@ -2164,7 +2164,7 @@ body {
 }
 
 .header-logo:hover {
-  color: #ffd600;
+  color: var(--brand-orange);
 }
 
 .header-nav {
@@ -2178,7 +2178,7 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  color: #e3f2fd;
+  color: var(--text-primary);
   text-decoration: none;
   font-weight: 700;
   font-size: 1.09rem;
@@ -2186,7 +2186,7 @@ body {
   padding: 8px 14px;
   border-radius: 8px;
   background: none;
-  transition: background 0.17s, color 0.13s, box-shadow .12s;
+  transition: background var(--transition-fast), color var(--transition-fast), box-shadow var(--transition-fast);
   position: relative;
   box-shadow: none;
   border: none;
@@ -2209,31 +2209,32 @@ body {
 
 .nav-icon {
   font-size: 1.35em;
-  color: #b3e6fc;
+  color: var(--text-secondary);
   margin-bottom: 3px;
-  transition: color 0.16s;
+  transition: color var(--transition-fast);
 }
 
 .header-nav .nav-link:hover .nav-icon {
-  color: var(--accent);
+  color: var(--brand-blue);
 }
 
 .header-profile-link {
-  color: var(--accent);
-  background: rgba(33, 150, 243, 0.10);
+  color: var(--brand-blue);
+  background: color-mix(in srgb, var(--brand-blue) 12%, transparent);
   margin-left: 13px;
   margin-right: 9px;
   border-radius: 10px;
   font-weight: 800;
-  box-shadow: 0 2px 8px #2256a188;
+  box-shadow: var(--shadow-soft);
   padding: 8px 15px;
   text-decoration: none;
-  transition: background 0.13s, color 0.12s;
+  transition: background var(--transition-fast), color var(--transition-fast), border var(--transition-fast);
+  border: 1px solid var(--border-subtle);
 }
 
 .header-profile-link:hover {
-  background: #236fbd25;
-  color: #ffd600;
+  background: var(--control-bg-hover);
+  color: var(--brand-orange);
 }
 
 .header-btn,
@@ -2241,18 +2242,18 @@ body {
   font-weight: 800;
   cursor: pointer;
   border-radius: 10px;
-  border: 1.5px solid var(--accent);
-  background: none;
-  transition: background 0.15s, color 0.15s, border .15s;
+  border: 1.5px solid var(--border-strong);
+  background: var(--control-bg);
+  transition: background var(--transition-fast), color var(--transition-fast), border var(--transition-fast);
   padding: 7px 19px;
   font-size: 1.08rem;
 }
 
 .header-btn:hover,
 .header-btn:active {
-  background: var(--accent);
-  color: #17344d;
-  border: 1.5px solid #ffd600;
+  background: var(--brand-blue);
+  color: var(--text-on-brand);
+  border: 1.5px solid var(--brand-orange);
 }
 
 
@@ -2338,30 +2339,31 @@ body {
 
   .mobile-header {
     width: 100vw;
-    background: rgba(24, 34, 54, 0.93);
+    background: var(--bg-header);
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 14px 14px 8px 17px;
-    border-bottom: 2px solid #233655;
+    border-bottom: 1px solid var(--border-strong);
     position: sticky;
     top: 0;
     z-index: 10;
+    box-shadow: var(--header-shadow);
   }
 
   /* Светлая тема: мобильный header тоже на токенах */
   [data-theme="light"] .mobile-header {
-    background: rgb(var(--header-bg)) !important;
-    border-bottom: 1px solid rgb(var(--border)) !important;
+    background: var(--bg-header) !important;
+    border-bottom: 1px solid var(--border-strong) !important;
     box-shadow: var(--header-shadow) !important;
   }
 
   .mobile-logo {
     font-weight: 900;
     font-size: 1.38rem;
-    color: var(--accent);
+    color: var(--brand-blue);
     letter-spacing: 2px;
-    text-shadow: 0 1px 9px #223c60cc;
+    text-shadow: 0 1px 9px color-mix(in srgb, var(--brand-navy) 35%, transparent);
     text-decoration: none;
   }
 

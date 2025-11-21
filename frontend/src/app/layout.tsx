@@ -72,7 +72,7 @@ export default async function RootLayout({
           name="viewport"
           content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover"
         />
-        <meta name="color-scheme" content="dark" />
+        <meta name="color-scheme" content="light dark" />
         {/* Ранняя инициализация глобальной переменной для легаси-кода */}
         <script
           // Важно: выполняется до гидратации клиентских бандлов
@@ -83,6 +83,7 @@ export default async function RootLayout({
       </head>
       <body
         suppressHydrationWarning
+        data-theme="dark"
         className="antialiased min-h-[100dvh] bg-bg text-fg overflow-x-hidden"
       >
         {/* Boot‑loader первого кадра */}

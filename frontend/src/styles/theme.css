@@ -1,25 +1,104 @@
 /* styles/theme.css */
 :root {
-    color-scheme: dark;
-    /* дефолт сейчас — тёмная */
-    --bg: 11 22 32;
-    /* #0b1620 — фон */
-    --fg: 236 240 244;
-    /* основной текст */
-    --muted: 148 163 184;
-    /* вторичный текст */
-    --card: 17 27 39;
-    /* фон карточек */
-    --border: 36 51 66;
-    /* цвет границ */
-    --primary: 59 130 246;
-    /* акцент */
-    --accent: 251 146 60;
-    /* доп. акцент */
+    /* brand */
+    --brand-blue: #81CAFF;
+    --brand-teal: #20C5B4;
+    --brand-orange: #FE9805;
+    --brand-navy: #111B27;
 
-    /* Алиасы под существующие компоненты/стили: */
-    --text: var(--fg);
-    --surface: var(--card);
+    /* neutral gray scale */
+    --gray-50: #F5F7FA;
+    --gray-75: #EEF1F6;
+    --gray-100: #E1E5ED;
+    --gray-200: #CBD2E1;
+    --gray-300: #A8B1C5;
+    --gray-600: #4B5565;
+    --gray-800: #111827;
+
+    /* timing */
+    --transition-fast: 150ms ease-out;
+    --transition-normal: 220ms ease-out;
 }
 
-/* Светлая тема отключена (жёсткая фиксация тёмной палитры) */
+/* Тёмная тема (по умолчанию) */
+:root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg-body: #050B12;
+    --bg-header: #0C141F;
+    --bg-card: #101927;
+    --bg-card-soft: #0B111C;
+
+    --border-subtle: rgba(255, 255, 255, 0.06);
+    --border-strong: rgba(255, 255, 255, 0.12);
+
+    --text-primary: #F9FAFB;
+    --text-secondary: #9CA3AF;
+    --text-muted: #6B7280;
+    --text-on-brand: #FFFFFF;
+
+    --control-bg: #101927;
+    --control-bg-hover: #151F2E;
+
+    --shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.55);
+
+    /* legacy tokens for Tailwind и старых стилей */
+    --bg: 5 11 18;
+    --fg: 249 250 251;
+    --muted: 156 163 175;
+    --card: 16 25 39;
+    --border: 36 51 66;
+    --primary: 129 202 255;
+    --accent: 254 152 5;
+}
+
+/* Светлая тема */
+:root[data-theme="light"] {
+    color-scheme: light;
+    --bg-body: var(--gray-50);
+    --bg-header: #FFFFFF;
+    --bg-card: #FFFFFF;
+    --bg-card-soft: var(--gray-75);
+
+    --border-subtle: var(--gray-100);
+    --border-strong: var(--gray-200);
+
+    --text-primary: var(--gray-800);
+    --text-secondary: var(--gray-600);
+    --text-muted: var(--gray-300);
+    --text-on-brand: #FFFFFF;
+
+    --control-bg: #FFFFFF;
+    --control-bg-hover: var(--gray-75);
+
+    --shadow-soft: 0 8px 24px rgba(15, 23, 42, 0.06);
+
+    --bg: 245 247 250;
+    --fg: 17 24 39;
+    --muted: 75 85 101;
+    --card: 255 255 255;
+    --border: 203 210 225;
+    --primary: 129 202 255;
+    --accent: 254 152 5;
+}
+
+/* === Header design tokens === */
+:root {
+    --header-bg: var(--bg-card);
+    --header-fg: var(--text-primary);
+    --header-muted: var(--text-secondary);
+    --header-shadow: 0 2px 16px 0 rgba(0, 32, 84, 0.09);
+}
+
+:root[data-theme="light"] {
+    --header-bg: var(--bg-header);
+    --header-fg: var(--text-primary);
+    --header-muted: var(--text-secondary);
+    --header-shadow: 0 2px 10px rgb(0 0 0 / 8%);
+}
+
+/* Общие алиасы */
+:root {
+    --surface: var(--bg-card);
+    --surface-soft: var(--bg-card-soft);
+    --text: var(--text-primary);
+}
