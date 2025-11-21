@@ -54,29 +54,31 @@
 /* Светлая тема */
 :root[data-theme="light"] {
     color-scheme: light;
-    --bg-body: var(--gray-50);
+    /* Мягкая светлая палитра с более тёмными текстами для читаемости */
+    --bg-body: #F4F6FB;
     --bg-header: #FFFFFF;
     --bg-card: #FFFFFF;
-    --bg-card-soft: var(--gray-75);
+    --bg-card-soft: #E9EDF5;
 
-    --border-subtle: var(--gray-100);
-    --border-strong: var(--gray-200);
+    --border-subtle: #D7DEEA;
+    --border-strong: #C4CCDD;
 
-    --text-primary: var(--gray-800);
-    --text-secondary: var(--gray-600);
-    --text-muted: var(--gray-300);
+    --text-primary: #0F172A;
+    --text-secondary: #334155;
+    --text-muted: #4B5565;
     --text-on-brand: #FFFFFF;
 
-    --control-bg: #FFFFFF;
-    --control-bg-hover: var(--gray-75);
+    --control-bg: #FBFCFF;
+    --control-bg-hover: #EEF3FB;
 
-    --shadow-soft: 0 8px 24px rgba(15, 23, 42, 0.06);
+    --shadow-soft: 0 10px 28px rgba(15, 23, 42, 0.08);
 
-    --bg: 245 247 250;
-    --fg: 17 24 39;
-    --muted: 75 85 101;
+    /* legacy tokens for Tailwind и старых стилей */
+    --bg: 244 246 251;
+    --fg: 15 23 42;
+    --muted: 51 65 85;
     --card: 255 255 255;
-    --border: 203 210 225;
+    --border: 215 222 234;
     --primary: 129 202 255;
     --accent: 254 152 5;
 }

@@ -41,12 +41,11 @@ import {
   FaFileAlt,
   FaAddressBook,
   FaMapMarkerAlt,
-} from "react-icons/fa";
+}
+from "react-icons/fa";
 import { useMessenger } from "./MessengerContext";
 import { useUser } from "../UserContext";
 import { useRouter } from "next/navigation";
-import { FaMapMarkerAlt } from "react-icons/fa";
-import { FaImage, FaCamera, FaFileAlt, FaAddressBook } from "react-icons/fa";
 import EmojiPicker from 'emoji-picker-react';
 import VoiceRecorder from "./VoiceRecorder";
 import AudioMessageBubble from "./AudioMessageBubble";
@@ -882,8 +881,6 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
     const [showRequestGps, setShowRequestGps] = useState(false);
     const [showShareGps, setShowShareGps] = useState(false);
     const GPS_DISABLED = true;
-    const [gpsMenuOpen, setGpsMenuOpen] = useState(false);
-    const gpsMenuRef = useRef(null);
     const [attachmentMenuOpen, setAttachmentMenuOpen] = useState(false);
     const [actionsMenuOpen, setActionsMenuOpen] = useState(false);
     const actionsMenuRef = useRef(null);
@@ -1616,17 +1613,7 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, [showEmojiPicker]);
 
-    // Закрытие мини-меню GPS по клику вне
-    useEffect(() => {
-        if (!gpsMenuOpen) return;
-        function onDocClick(e) {
-            if (!gpsMenuRef.current) return;
-            if (!gpsMenuRef.current.contains(e.target)) setGpsMenuOpen(false);
-        }
-        document.addEventListener('mousedown', onDocClick);
-        return () => document.removeEventListener('mousedown', onDocClick);
-    }, [gpsMenuOpen]);
-
+    
 
 
 
@@ -2966,7 +2953,7 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                         position: "relative",
                     }}
                 >
-                    {/* Плюсик с дополнительными действиями (вложения, перевод, голосовое) */}
+                    {/* Плюсик с дополнительными действиями (вложения, перевод) */}
                     <div ref={attachmentMenuRef} style={{ position: "relative", display: "inline-block" }}>
                         <button
                             type="button"
@@ -3022,7 +3009,7 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                                         )}
                                         <span>{action.label}</span>
                                     </button>
-                                ))}
+                               ))}
 
                                 {/* Автоперевод */}
                                 <button
@@ -3043,30 +3030,6 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                                                 : t("chat.autoTranslateToggleOff", "Включить автоперевод последних 20 сообщений")}
                                     </span>
                                 </button>
-
-                                {/* Голосовое сообщение */}
-                                <div
-                                    role="menuitem"
-                                    style={{
-                                        padding: "6px 8px",
-                                        borderRadius: 10,
-                                        background: "#223153",
-                                        border: "1px solid rgba(78,114,173,.55)",
-                                        color: "#e2f3ff",
-                                        display: "flex",
-                                        alignItems: "center",
-                                        justifyContent: "space-between",
-                                        gap: 10,
-                                    }}
-                                >
-                                    <div className="text-sm">
-                                        {t("chat.voiceMessage", "Голосовое сообщение")}
-                                    </div>
-                                    <VoiceRecorder
-                                        onReady={(blob, url) => { setPendingVoice({ blob, url }); setAttachmentMenuOpen(false); }}
-                                        disabled={sending || inputLocked}
-                                    />
-                                </div>
                             </div>
                         )}
                     </div>
@@ -3152,10 +3115,18 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                             title={t("chat.insertEmoji", "Вставить эмодзи")}
                             disabled={inputLocked}
                             aria-label={t("chat.insertEmoji", "Вставить эмодзи")}
-                        >
+                       >
                             <FaSmile />
                         </button>
                     )}
+
+                    {/* Микрофон — рядом со смайликом */}
+                    <div style={{ display: "flex", alignItems: "center" }}>
+                        <VoiceRecorder
+                            onReady={(blob, url) => setPendingVoice({ blob, url })}
+                            disabled={sending || inputLocked}
+                        />
+                    </div>
 
                     <button
                         type="button"
@@ -3168,14 +3139,6 @@ export default function MessengerChat({ chatId, peerUser, closeMessenger, goBack
                     >
                         {translatingMessages ? <span style={{ fontSize: 12, fontWeight: 700 }}>…</span> : <FaLanguage />}
                     </button>
-
-                    {/* Микрофон — кастомная иконка */}
-                    <div style={{ display: "flex", alignItems: "center" }}>
-                        <VoiceRecorder
-                            onReady={(blob, url) => setPendingVoice({ blob, url })}
-                            disabled={sending || inputLocked}
-                        />
-                    </div>
                 </div>
 
                 {pendingVoice && (
