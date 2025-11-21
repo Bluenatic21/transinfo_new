@@ -8,6 +8,7 @@ import { api } from "@/config/env";
 import { motion } from "framer-motion";
 import { FiTruck, FiPackage, FiArrowRight } from "react-icons/fi";
 import { useLang } from "../i18n/LangProvider";
+import { useTheme } from "../providers/ThemeProvider";
 
 const SimpleMap = dynamic(() => import("./SimpleMap"), { ssr: false });
 
@@ -17,13 +18,15 @@ function CardSkeleton() {
             initial={{ opacity: 0.4 }}
             animate={{ opacity: 0.9 }}
             transition={{ duration: 1.2, repeat: Infinity, repeatType: "reverse" }}
-            className="rounded-2xl bg-[#0b1528]/60 border border-white/8 backdrop-blur-xl shadow-[0_6px_24px_rgba(0,0,0,0.35)] h-[340px] md:h-[380px]"
+            className="rounded-2xl border backdrop-blur-xl shadow-[0_6px_24px_rgba(0,0,0,0.35)] h-[340px] md:h-[380px] bg-white/80 border-slate-200 dark:bg-[#0b1528]/60 dark:border-white/8"
         />
     );
 }
 
 export default function HomeMapsSection() {
     const { t } = useLang();
+    const { resolvedTheme } = useTheme();
+    const isLight = resolvedTheme === "light";
     const { authFetchWithRefresh } = useUser();
     const [orders, setOrders] = useState(null);
     const [transports, setTransports] = useState(null);
@@ -100,30 +103,51 @@ export default function HomeMapsSection() {
         <section aria-label={t("home.map.aria", "Карта предложений")} className="relative py-4 md:py-6">
             <div className="mx-auto max-w-7xl px-6">
                 {/* Общая карта: Грузы + Транспорт */}
-                <div className="rounded-2xl bg-[#0b1528]/60 border border-white/8 backdrop-blur-xl shadow-[0_6px_24px_rgba(0,0,0,0.35)] overflow-hidden">
+                <div
+                    className={`rounded-2xl overflow-hidden backdrop-blur-xl transition-colors duration-200 ${isLight
+                            ? "bg-white border border-slate-200 shadow-[0_10px_30px_rgba(15,23,42,0.12)]"
+                            : "bg-[#0b1528]/60 border border-white/8 shadow-[0_6px_24px_rgba(0,0,0,0.35)]"
+                        }`}
+                >
                     <div className="flex items-center justify-between px-4 md:px-5 pt-3">
                         <div className="flex items-center gap-2">
-                            <div className="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-[#1a2a47] border border-white/10">
-                                <FiTruck className="text-[#53b7ff]" />
+                            <div
+                                className={`inline-flex items-center justify-center w-9 h-9 rounded-xl border ${isLight ? "bg-slate-100 border-slate-200" : "bg-[#1a2a47] border-white/10"
+                                    }`}
+                            >
+                                <FiTruck className={isLight ? "text-sky-500" : "text-[#53b7ff]"} />
                             </div>
-                            <div className="text-[15px] md:text-[16px] font-semibold text-[#e6eefc]">
+                            <div
+                                className={`text-[15px] md:text-[16px] font-semibold ${isLight ? "text-slate-800" : "text-[#e6eefc]"
+                                    }`}
+                            >
                                 {t("home.map.header", "Грузы + Транспорт (общая карта)")}
                             </div>
                             {Array.isArray(orders) && Array.isArray(transports) && (
-                                <span className="ml-2 text-[12.5px] text-[#9fb0d5]">≈ {orders.length + transports.length}</span>
+                                <span
+                                    className={`ml-2 text-[12.5px] ${isLight ? "text-slate-600" : "text-[#9fb0d5]"}`}
+                                >
+                                    ≈ {orders.length + transports.length}
+                                </span>
                             )}
                         </div>
                         <div className="flex items-center gap-4">
                             <button
                                 onClick={() => router.push("/transport")}
-                                className="group inline-flex items-center gap-1.5 text-[12.5px] md:text-[13px] text-[#9fb0d5] hover:text-white transition-colors"
+                                className={`group inline-flex items-center gap-1.5 text-[12.5px] md:text-[13px] transition-colors ${isLight
+                                        ? "text-slate-600 hover:text-slate-900"
+                                        : "text-[#9fb0d5] hover:text-white"
+                                    }`}
                             >
                                 {t("nav.transport", "Транспорт")}
                                 <FiArrowRight className="transition-transform group-hover:translate-x-0.5" />
                             </button>
                             <button
                                 onClick={() => router.push("/orders")}
-                                className="group inline-flex items-center gap-1.5 text-[12.5px] md:text-[13px] text-[#9fb0d5] hover:text-white transition-colors"
+                                className={`group inline-flex items-center gap-1.5 text-[12.5px] md:text-[13px] transition-colors ${isLight
+                                        ? "text-slate-600 hover:text-slate-900"
+                                        : "text-[#9fb0d5] hover:text-white"
+                                    }`}
                             >
                                 {t("saved.cargo.title", "Грузы")}
                                 <FiArrowRight className="transition-transform group-hover:translate-x-0.5" />
@@ -131,7 +155,12 @@ export default function HomeMapsSection() {
                         </div>
                     </div>
                     <div className="px-4 md:px-5 pb-4 md:pb-5">
-                        <div className="rounded-xl overflow-hidden border border-white/8 h-[320px] md:h-[360px] bg-[#0a1426]">
+                        <div
+                            className={`rounded-xl overflow-hidden border h-[320px] md:h-[360px] ${isLight
+                                    ? "bg-white border-slate-200 shadow-[0_6px_20px_rgba(15,23,42,0.08)]"
+                                    : "bg-[#0a1426] border-white/8"
+                                }`}
+                        >
                             {Array.isArray(orders) && Array.isArray(transports) ? (
                                 <SimpleMap
                                     orders={orders}
