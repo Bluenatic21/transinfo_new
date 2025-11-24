@@ -53,10 +53,10 @@ export default function CompactHero({
                     </div>
                 )}
 
-                {/* Метрики — БЕЗ анимации, сразу видимы при загрузке */}
-                <div className="mt-4 flex justify-start">
-                    <div className="w-full max-w-5xl rounded-2xl bg-white shadow-[0_6px_24px_rgba(0,0,0,0.12)] ring-1 ring-slate-200 px-3.5 py-2.5 md:px-5 md:py-3.5 backdrop-blur-[2px] dark:bg-white/[0.04] dark:ring-white/5 dark:shadow-[0_6px_24px_rgba(0,0,0,0.35)]">
-                        <div className="grid grid-cols-2 sm:grid-cols-5 gap-x-4 gap-y-2 text-center">
+                {/* Метрики — компактный блок сразу под навигацией, прижат к левой части контейнера */}
+                <div className="mt-3 flex justify-start">
+                    <div className="inline-flex shrink-0 rounded-xl bg-white shadow-[0_8px_28px_rgba(0,0,0,0.12)] ring-1 ring-slate-200 px-3 py-2 md:px-4 md:py-3 backdrop-blur-[2px] dark:bg-white/[0.04] dark:ring-white/5 dark:shadow-[0_8px_28px_rgba(0,0,0,0.35)]">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-x-3 gap-y-1.5 text-left md:text-center">
                             <Metric label={t("hero.metric.index", "TransInfo-Индекс")} value={s.index} />
                             <Metric label={t("hero.metric.cargos", "Грузы")} value={s.cargos} />
                             <Metric label={t("hero.metric.trucks", "Машины")} value={s.trucks} />
@@ -100,12 +100,12 @@ export default function CompactHero({
 }
 
 function Metric({ label, value }) {
-    const color = "text-[#3b7bd9]";
+    const color = "text-[#1e3a8a] dark:text-[#8bc0ff]";
 
     return (
-        <div className="flex flex-col items-center">
-            <div className={`text-[18px] md:text-[19px] font-extrabold ${color}`}>{value ?? "—"}</div>
-            <div className="text-[12.5px] text-slate-600 dark:text-[#9fb0d5]">{label}</div>
+        <div className="flex flex-col items-start md:items-center leading-tight">
+            <div className={`text-[16px] md:text-[17px] font-extrabold ${color}`}>{value ?? "—"}</div>
+            <div className="text-[11.5px] text-slate-600 dark:text-[#9fb0d5]">{label}</div>
         </div>
     );
 }
