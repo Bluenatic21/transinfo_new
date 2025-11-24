@@ -334,25 +334,135 @@ export default function Home() {
         );
     }
 
+    const homeStyles = (
+        <style jsx global>{`
+          html { scroll-behavior: smooth; }
+
+          .home-shell {
+            position: relative;
+            isolation: isolate;
+          }
+
+          .home-top-band {
+            position: absolute;
+            inset: 0;
+            height: clamp(420px, 52vh, 620px);
+            background: var(--home-top-bg, linear-gradient(180deg, #0a4c78 0%, #0b2f4d 100%));
+            pointer-events: none;
+            z-index: 0;
+          }
+
+          .home-content {
+            position: relative;
+            z-index: 1;
+          }
+
+          [data-theme="light"] .home-top-band {
+            --home-top-bg:
+              radial-gradient(circle at 18% 18%, rgba(0, 0, 0, 0.06) 0 24%, transparent 38%),
+              radial-gradient(circle at 86% 12%, rgba(0, 0, 0, 0.08) 0 20%, transparent 38%),
+              linear-gradient(180deg, #0c4f7c 0%, #0b3c63 38%, #0b2f4d 100%);
+          }
+
+          [data-theme="dark"] .home-top-band {
+            --home-top-bg:
+              radial-gradient(circle at 12% 16%, rgba(0, 0, 0, 0.22) 0 22%, transparent 40%),
+              radial-gradient(circle at 90% 10%, rgba(0, 0, 0, 0.18) 0 18%, transparent 36%),
+              linear-gradient(180deg, #14d7de 0%, #0aa6b8 36%, #0a7f97 100%);
+          }
+        `}</style>
+    );
+
+    const topBand = <div className="home-top-band" aria-hidden />;
+
     if (isMobile) {
         return (
-            <>
-                <HeroCompactBridge />
-                <HomeMapsSection hideTransportPins={isTransportRole} />
-                <ServiceSection />
+            <div className="home-shell">
+                {homeStyles}
+                {topBand}
+                <div className="home-content">
+                    <HeroCompactBridge />
+                    <HomeMapsSection hideTransportPins={isTransportRole} />
+                    <ServiceSection />
 
+                    {showAuth && (
+                        <AuthModal
+                            visible={showAuth}
+                            onClose={() => setShowAuth(false)}
+                            setUser={setUser}
+                            setShowAuth={setShowAuth}
+                            setMessage={setMessage}
+                            setReload={setReload}
+                            previous={'/'}
+                        />
+                    )}
+
+                    {showRegisterModal && (
+                        <div
+                            style={{
+                                position: "fixed",
+                                zIndex: 1300,
+                                left: 0, top: 0, width: "100vw", height: "100vh",
+                                background: "rgba(0,0,0,0.33)",
+                                display: "flex", alignItems: "center", justifyContent: "center"
+                            }}
+                            onClick={() => setShowRegisterModal(false)}
+                        >
+                            <div
+                                style={{
+                                    position: "relative",
+                                    background: "#0f172a",
+                                    border: "1px solid #23314a",
+                                    borderRadius: 16,
+                                    width: "min(560px, 92vw)",
+                                    boxShadow: "0 12px 40px rgba(0,0,0,0.55)",
+                                    padding: 12
+                                }}
+                                onClick={(e) => e.stopPropagation()}
+                            >
+                                <button
+                                    onClick={() => setShowRegisterModal(false)}
+                                    style={{
+                                        position: "absolute",
+                                        right: 10,
+                                        top: 8,
+                                        fontSize: 29,
+                                        background: "none",
+                                        border: "none",
+                                        color: "#aaa",
+                                        cursor: "pointer",
+                                        lineHeight: 1,
+                                        zIndex: 2
+                                    }}
+                                    tabIndex={0}
+                                    aria-label={t("auth.closeRegister", "Закрыть регистрацию")}
+                                >
+                                    ×
+                                </button>
+                                <RegisterForm onSuccess={() => setShowRegisterModal(false)} />
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="home-shell">
+            {homeStyles}
+            {topBand}
+            <div className="home-content">
+                <FlashMessage message={message} setMessage={setMessage} />
                 {showAuth && (
                     <AuthModal
                         visible={showAuth}
                         onClose={() => setShowAuth(false)}
                         setUser={setUser}
                         setShowAuth={setShowAuth}
-                        setMessage={setMessage}
-                        setReload={setReload}
-                        previous={'/'}
+                        setShowRegisterModal={setShowRegisterModal}
                     />
                 )}
-
                 {showRegisterModal && (
                     <div
                         style={{
@@ -366,15 +476,15 @@ export default function Home() {
                     >
                         <div
                             style={{
-                                position: "relative",
-                                background: "#0f172a",
-                                border: "1px solid #23314a",
+                                background: "#222736",
                                 borderRadius: 16,
-                                width: "min(560px, 92vw)",
-                                boxShadow: "0 12px 40px rgba(0,0,0,0.55)",
-                                padding: 12
+                                boxShadow: "0 4px 32px rgba(0,0,0,0.29)",
+                                padding: "34px 30px 30px 30px",
+                                minWidth: 340,
+                                maxWidth: "92vw",
+                                position: "relative"
                             }}
-                            onClick={(e) => e.stopPropagation()}
+                            onClick={e => e.stopPropagation()}
                         >
                             <button
                                 onClick={() => setShowRegisterModal(false)}
@@ -399,84 +509,19 @@ export default function Home() {
                         </div>
                     </div>
                 )}
-            </>
-        );
-    }
-
-    return (
-        <>
-            {/* Глобально — плавный скролл по якорям (напр. #service) */}
-            <style jsx global>{`
-              html { scroll-behavior: smooth; }
-            `}</style>
-            <FlashMessage message={message} setMessage={setMessage} />
-            {showAuth && (
-                <AuthModal
-                    visible={showAuth}
-                    onClose={() => setShowAuth(false)}
-                    setUser={setUser}
-                    setShowAuth={setShowAuth}
-                    setShowRegisterModal={setShowRegisterModal}
-                />
-            )}
-            {showRegisterModal && (
-                <div
-                    style={{
-                        position: "fixed",
-                        zIndex: 1300,
-                        left: 0, top: 0, width: "100vw", height: "100vh",
-                        background: "rgba(0,0,0,0.33)",
-                        display: "flex", alignItems: "center", justifyContent: "center"
-                    }}
-                    onClick={() => setShowRegisterModal(false)}
-                >
-                    <div
-                        style={{
-                            background: "#222736",
-                            borderRadius: 16,
-                            boxShadow: "0 4px 32px rgba(0,0,0,0.29)",
-                            padding: "34px 30px 30px 30px",
-                            minWidth: 340,
-                            maxWidth: "92vw",
-                            position: "relative"
-                        }}
-                        onClick={e => e.stopPropagation()}
-                    >
-                        <button
-                            onClick={() => setShowRegisterModal(false)}
-                            style={{
-                                position: "absolute",
-                                right: 10,
-                                top: 8,
-                                fontSize: 29,
-                                background: "none",
-                                border: "none",
-                                color: "#aaa",
-                                cursor: "pointer",
-                                lineHeight: 1,
-                                zIndex: 2
-                            }}
-                            tabIndex={0}
-                            aria-label={t("auth.closeRegister", "Закрыть регистрацию")}
-                        >
-                            ×
-                        </button>
-                        <RegisterForm onSuccess={() => setShowRegisterModal(false)} />
-                    </div>
-                </div>
-            )}
-            {mode === "main" && (
-                <>
-                    {/* Компактный первый экран: ниже по высоте, сразу видно блок «О сервисе» */}
-                    <HeroCompactBridge />
-                    <HomeMapsSection hideTransportPins={isTransportRole} />
-                    <ServiceSection />
-                </>
-            )}
-            {mode === "orders" && !isOwnerRole && <OrdersSection />}
-            {mode === "create" && <CreateSection />}
-            {mode === "create-transport" && <CreateTransportSection />}
-            {mode === "about" && <ServiceSection />}
-        </>
+                {mode === "main" && (
+                    <>
+                        {/* Компактный первый экран: ниже по высоте, сразу видно блок «О сервисе» */}
+                        <HeroCompactBridge />
+                        <HomeMapsSection hideTransportPins={isTransportRole} />
+                        <ServiceSection />
+                    </>
+                )}
+                {mode === "orders" && !isOwnerRole && <OrdersSection />}
+                {mode === "create" && <CreateSection />}
+                {mode === "create-transport" && <CreateTransportSection />}
+                {mode === "about" && <ServiceSection />}
+            </div>
+        </div>
     );
 }

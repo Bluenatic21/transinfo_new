@@ -3530,10 +3530,10 @@ def unsave_transport(
 def get_my_transports(
     db: Session = Depends(get_db),
     current_user: UserModel = Depends(get_current_user)
-):
+    ):
     # "Мои" — ВСЕГДА только записи текущего пользователя
     
-     my_filters = [TransportModel.owner_id == current_user.id]
+    my_filters = [TransportModel.owner_id == current_user.id]
     if current_user.email:
         my_filters.append(and_(
             TransportModel.owner_id.is_(None),
@@ -3579,7 +3579,7 @@ def get_account_transports(
 
     # Не менеджерский аккаунт — просто свои записи
     if not account_manager_id:
-         trs_filters = [TransportModel.owner_id == current_user.id]
+        trs_filters = [TransportModel.owner_id == current_user.id]
         if current_user.email:
             trs_filters.append(and_(
                 TransportModel.owner_id.is_(None),

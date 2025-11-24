@@ -8,14 +8,39 @@ export default async function handler(req, res) {
   // поэтому прямое использование приведёт к бесконечному рекурсивному вызову этого же API-роута
   // и пустому списку транспорта. Всегда берём «настоящий» backend-хост, а в крайнем случае
   // откатываемся на локальный FastAPI (порт 8004 из run_backend_dev.bat).
-  const upstream =
-    process.env.INTERNAL_API_BASE?.trim?.() ||
-    process.env.BACKEND_HOST?.trim?.() ||
-    process.env.NEXT_PUBLIC_API_URL?.trim?.() ||
-    process.env.NEXT_PUBLIC_API_BASE_URL?.trim?.() ||
-    process.env.NEXT_PUBLIC_DEV_API_URL?.trim?.() ||
-    process.env.NEXT_PUBLIC_API_SERVER?.trim?.() ||
-    "http://127.0.0.1:8004";
+  const rawHost = req.headers?.host ? String(req.headers.host).toLowerCase() : "";
+
+  const candidates = [
+    process.env.INTERNAL_API_BASE,
+    process.env.BACKEND_HOST,
+    process.env.NEXT_PUBLIC_API_URL,
+    process.env.NEXT_PUBLIC_API_BASE_URL,
+    process.env.NEXT_PUBLIC_DEV_API_URL,
+    process.env.NEXT_PUBLIC_API_SERVER,
+    "http://127.0.0.1:8004",
+  ];
+
+  const upstream = candidates.find((c) => {
+    const trimmed = c?.trim?.();
+    if (!trimmed) return false;
+
+    try {
+      const u = new URL(trimmed);
+      const upstreamHost = `${u.hostname}${u.port ? `:${u.port}` : ""}`.toLowerCase();
+
+      // Реальный рекурсивный вызов случается только если base-URL указывает обратно
+      // на Next API (host совпадает и путь начинается с "/api"). Если backend крутится
+      // на том же домене, но за другим роутом (например, reverse-proxy на /backend),
+      // использовать такой адрес безопасно и нужно.
+      const isSameHost = rawHost && upstreamHost === rawHost;
+      const isApiPath = u.pathname === "/api" || u.pathname.startsWith("/api/");
+      if (isSameHost && isApiPath) return false;
+
+      return true;
+    } catch {
+      return false;
+    }
+  }) || "http://127.0.0.1:8004";
 
 
   const url = new URL(`${upstream.replace(/\/$/, "")}/transports`);

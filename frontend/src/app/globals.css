@@ -2276,7 +2276,7 @@ body {
   padding: 9px 14px;
   border-radius: 12px;
   background: none;
-  transition: background var(--transition-fast), color var(--transition-fast), box-shadow var(--transition-fast);
+  transition: background var(--transition-fast), color var(--transition-fast), box-shadow var(--transition-fast), transform var(--transition-fast);
   position: relative;
   box-shadow: none;
   border: none;
@@ -2320,6 +2320,12 @@ body {
 .header-nav-row .nav-icon,
 .header-nav-row .nav-link:hover .nav-icon {
   color: #0b67a9;
+}
+
+.header-nav-row .nav-link:hover {
+  background: color-mix(in srgb, #dce3ec 70%, transparent);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  transform: translateY(-1px);
 }
 
 .header-profile-link {
@@ -2403,7 +2409,7 @@ body {
   padding: 9px 14px;
   border-radius: 12px;
   background: none;
-  transition: background 0.17s, color 0.13s, box-shadow .12s;
+  transition: background 0.17s, color 0.13s, box-shadow .12s, transform .14s;
   position: relative;
   box-shadow: none;
   border: none;
@@ -3493,7 +3499,7 @@ body {
     padding: 8px 14px;
     border-radius: 8px;
     background: none;
-    transition: background 0.17s, color 0.13s, box-shadow .12s;
+    transition: background 0.17s, color 0.13s, box-shadow .12s, transform .14s;
     position: relative;
     box-shadow: none;
     border: none;
