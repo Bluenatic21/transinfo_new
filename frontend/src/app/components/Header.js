@@ -456,15 +456,15 @@ export default function Header({ setShowRegisterModal }) {
     }, [profileMenuOpen]);
 
     // ---- Управляемые размеры логотипа/надписи/шапки
-    const LOGO = isTight ? 64 : isCompact ? 80 : 96;   // размер иконки (меньше, чтобы шапка была компактнее)
-    const WORD = isTight ? 18 : isCompact ? 21 : 24;   // размер надписи Transinfo.ge
-    const HEADER_H = isTight ? 74 : isCompact ? 86 : 96;
+    const LOGO = isTight ? 56 : isCompact ? 70 : 84;   // размер иконки (меньше, чтобы шапка была компактнее)
+    const WORD = isTight ? 16 : isCompact ? 19 : 21;   // размер надписи Transinfo.ge
+    const HEADER_H = isTight ? 66 : isCompact ? 78 : 88;
     const LOGO_OVERSCAN = 1.18;       // «дозум» > 1.0, чтобы отсечь невидимые поля PNG
 
-    const NAV_GAP = isTight ? 12 : isCompact ? 18 : 28;
-    const NAV_FONT = isTight ? 14 : isCompact ? 15 : 17;
-    const NAV_PAD = isTight ? "6px 8px" : isCompact ? "7px 10px" : "7px 11px";
-    const ICON_BTN = isTight ? 40 : 44;
+    const NAV_GAP = isTight ? 10 : isCompact ? 16 : 22;
+    const NAV_FONT = isTight ? 13 : isCompact ? 14 : 16;
+    const NAV_PAD = isTight ? "5px 8px" : isCompact ? "6px 9px" : "6px 10px";
+    const ICON_BTN = isTight ? 38 : 42;
     const heroTitle = t("hero.title", "Интеллектуальная платформа для грузоперевозок");
 
     const headerRef = useRef(null);
@@ -676,8 +676,8 @@ export default function Header({ setShowRegisterModal }) {
     }
 
     const headerPadding = isCompact
-        ? { top: 14, right: 22, bottom: 10, left: 16 }
-        : { top: 16, right: 26, bottom: 10, left: 20 };
+        ? { top: 10, right: 20, bottom: 8, left: 14 }
+        : { top: 12, right: 22, bottom: 8, left: 16 };
 
     return (
         <div
@@ -1078,9 +1078,9 @@ export default function Header({ setShowRegisterModal }) {
                         border: "1px solid var(--border-strong)",
                         borderRadius: isTight ? "0 0 12px 12px" : "0 0 16px 16px",
                         boxShadow: "0 -4px 12px rgba(0,0,0,0.05), var(--header-shadow)",
-                        padding: isCompact ? "8px 12px" : "9px 14px",
+                        padding: isCompact ? "7px 11px" : "8px 12px",
                         gap: NAV_GAP,
-                        marginTop: isCompact ? -10 : -12
+                        marginTop: isCompact ? -8 : -10
                     }}
                 >
                     <nav

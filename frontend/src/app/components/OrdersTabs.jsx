@@ -43,24 +43,44 @@ export default function OrdersTabs({ mode = "route" }) {
         return null;
     }
 
-    const Tab = ({ tKey, label, Icon }) => (
-        <Link
-            href={hrefFor(tKey)}
-            prefetch={false}
-            onClick={() => remember(tKey)}
-            className={`flex-1 text-center py-2 rounded-xl text-sm font-semibold inline-flex items-center justify-center gap-2 ${isActive(tKey)
-                    ? "bg-cyan-500/20 text-cyan-300"
-                    : "bg-white/5 text-slate-300"
-                }`}
-        >
-            {/* слева иконка как в Header */}
-            <Icon className="shrink-0" style={{ fontSize: 16 }} />
-            <span>{label}</span>
-        </Link>
-    );
+    const Tab = ({ tKey, label, Icon }) => {
+        const active = isActive(tKey);
+        return (
+            <Link
+                href={hrefFor(tKey)}
+                prefetch={false}
+                onClick={() => remember(tKey)}
+                className="flex-1 text-center py-2 rounded-xl text-sm font-semibold inline-flex items-center justify-center gap-2"
+                style={{
+                    background: active ? "var(--orders-tab-active-bg)" : "var(--orders-tab-inactive-bg)",
+                    color: active ? "var(--orders-tab-active-fg)" : "var(--orders-tab-inactive-fg)",
+                    border: active
+                        ? "1px solid var(--orders-tab-active-border)"
+                        : "1px solid var(--orders-tab-border)",
+                    boxShadow: active
+                        ? "var(--orders-tab-active-shadow)"
+                        : "var(--orders-tab-shadow)",
+                    transition: "background var(--transition-normal), color var(--transition-normal), box-shadow var(--transition-normal), border-color var(--transition-fast)",
+                }}
+            >
+                {/* слева иконка как в Header */}
+                <Icon className="shrink-0" style={{ fontSize: 16 }} />
+                <span>{label}</span>
+            </Link>
+        );
+    };
 
     return (
-        <div className="sticky top-0 z-20 bg-[#0b1324]/80 backdrop-blur px-3 pt-3 pb-2">
+        <div
+            className="sticky top-0 z-20 px-3 pt-3 pb-2"
+            style={{
+                background: "var(--orders-tabs-bg)",
+                borderBottom: "1px solid var(--orders-tabs-border)",
+                boxShadow: "var(--orders-tabs-shadow)",
+                backdropFilter: "blur(14px)",
+                WebkitBackdropFilter: "blur(14px)",
+            }}
+        >
             <div className="flex gap-2">
                 <Tab
                     tKey="cargo"

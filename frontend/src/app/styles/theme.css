@@ -135,6 +135,20 @@
     --orders-panel-shadow: 0 4px 24px #00184455;
     --orders-heading: #43c8ff;
     --orders-muted: #9fb3c8;
+
+    --orders-tabs-bg: rgba(11, 19, 36, 0.9);
+    --orders-tabs-border: rgba(255, 255, 255, 0.04);
+    --orders-tabs-shadow: 0 12px 26px rgba(0, 16, 44, 0.6);
+
+    --orders-tab-border: rgba(255, 255, 255, 0.08);
+    --orders-tab-inactive-bg: rgba(255, 255, 255, 0.06);
+    --orders-tab-inactive-fg: #cbd5e1;
+    --orders-tab-shadow: 0 1px 8px rgba(0, 0, 0, 0.35);
+
+    --orders-tab-active-bg: rgba(67, 200, 255, 0.18);
+    --orders-tab-active-fg: #b9ecff;
+    --orders-tab-active-border: rgba(67, 200, 255, 0.6);
+    --orders-tab-active-shadow: 0 6px 18px rgba(0, 24, 68, 0.46);
 }
 
 :root[data-theme="light"] {
@@ -143,4 +157,18 @@
     --orders-panel-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
     --orders-heading: var(--brand-navy);
     --orders-muted: var(--text-secondary);
+
+    --orders-tabs-bg: rgba(255, 255, 255, 0.9);
+    --orders-tabs-border: var(--border-subtle);
+    --orders-tabs-shadow: 0 10px 26px rgba(15, 23, 42, 0.08);
+
+    --orders-tab-border: var(--border-subtle);
+    --orders-tab-inactive-bg: var(--control-bg);
+    --orders-tab-inactive-fg: var(--text-secondary);
+    --orders-tab-shadow: 0 1px 8px rgba(15, 23, 42, 0.04);
+
+    --orders-tab-active-bg: color-mix(in srgb, var(--brand-blue) 24%, #ffffff);
+    --orders-tab-active-fg: var(--brand-navy);
+    --orders-tab-active-border: color-mix(in srgb, var(--brand-blue) 46%, var(--border-subtle));
+    --orders-tab-active-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
 }
