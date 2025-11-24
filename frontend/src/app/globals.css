@@ -2289,6 +2289,25 @@ body {
   color: #7cc3ff;
 }
 
+/* Светлая тема: делаем навигацию более контрастной */
+[data-theme="light"] .header-root .nav-link,
+[data-theme="light"] .header-root-mobile .nav-link,
+[data-theme="light"] .header-nav-row .nav-link {
+  color: color-mix(in srgb, var(--brand-blue) 82%, #0b67a9 18%);
+  text-shadow: 0 1px 8px rgba(14, 82, 140, 0.18);
+}
+
+[data-theme="light"] .header-root .nav-icon,
+[data-theme="light"] .header-root-mobile .nav-icon,
+[data-theme="light"] .header-nav-row .nav-icon {
+  color: color-mix(in srgb, var(--brand-blue) 88%, #0f3f6d 12%);
+}
+
+[data-theme="light"] .header-nav .nav-link:hover .nav-icon,
+[data-theme="light"] .header-nav-row .nav-link:hover .nav-icon {
+  color: color-mix(in srgb, var(--brand-blue) 94%, var(--brand-orange) 6%);
+}
+
 
 /* Текст подписи в nav — явный класс, чтобы можно было скрывать на узких десктопах */
 .nav-text {
@@ -2310,6 +2329,14 @@ body {
 
 .header-nav .nav-link:hover .nav-icon {
   color: var(--brand-blue);
+}
+
+.header-nav .nav-link:hover,
+.header-nav .nav-link:focus-visible {
+  background: color-mix(in srgb, rgb(var(--surface)) 75%, transparent);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  transform: translateY(-1px);
+  color: var(--text-primary);
 }
 
 .header-nav-row .nav-link {
@@ -2823,17 +2850,53 @@ body {
 }
 
 /* --- Login --- */
+:root {
+  --auth-modal-overlay: rgba(16, 24, 43, 0.6);
+}
+
+:root[data-theme="light"] {
+  --auth-modal-overlay: rgba(15, 23, 42, 0.28);
+}
+
 .login-form-root {
-  background: var(--background, #191b1d);
+  --login-surface: var(--surface, var(--background, #191b1d));
+  --login-fg: var(--text, var(--foreground, #e3f2fd));
+  --login-border: var(--border, #233655);
+  --login-input-bg: var(--control-bg, var(--input, #23242b));
+  --login-input-focus-bg: var(--control-bg-hover, #26314b);
+  --login-placeholder: #9bb0c5;
+  --login-shadow: var(--shadow-soft, 0 2px 28px #0006);
+
+  background: var(--login-surface);
   border-radius: 16px;
   max-width: 430px;
   margin: 36px auto;
-  box-shadow: 0 2px 28px #0006;
+  box-shadow: var(--login-shadow);
   padding: 32px;
-  color: var(--foreground, #e3f2fd);
+  color: var(--login-fg);
   display: flex;
   flex-direction: column;
   gap: 15px;
+}
+
+:root[data-theme="dark"] .login-form-root {
+  --login-surface: #191b1d;
+  --login-fg: var(--foreground, #e3f2fd);
+  --login-border: var(--border, #233655);
+  --login-input-bg: #23242b;
+  --login-input-focus-bg: #26314b;
+  --login-placeholder: #9bb0c5;
+  --login-shadow: 0 2px 28px #0006;
+}
+
+:root[data-theme="light"] .login-form-root {
+  --login-surface: var(--bg-card, #ffffff);
+  --login-fg: var(--text-primary, #0f172a);
+  --login-border: var(--border-subtle, #d7deea);
+  --login-input-bg: var(--control-bg, #ffffff);
+  --login-input-focus-bg: var(--control-bg-hover, #eef3fb);
+  --login-placeholder: color-mix(in srgb, var(--text-muted, #4b5565) 72%, #ffffff 28%);
+  --login-shadow: var(--shadow-soft, 0 10px 28px rgba(15, 23, 42, 0.08));
 }
 
 .login-form-title {
@@ -2847,9 +2910,9 @@ body {
 
 .login-form-input {
   border-radius: 8px;
-  border: 1.5px solid var(--border, #233655);
-  background: var(--input, #23242b);
-  color: var(--foreground, #e3f2fd);
+  border: 1.5px solid var(--login-border);
+  background: var(--login-input-bg);
+  color: var(--login-fg);
   padding: 10px 15px;
   font-size: 1.11rem;
   margin-top: 2px;
@@ -2857,9 +2920,13 @@ body {
   transition: border 0.16s;
 }
 
+.login-form-input::placeholder {
+  color: var(--login-placeholder);
+}
+
 .login-form-input:focus {
   border-color: var(--accent, #FFD600);
-  background: #26314b;
+  background: var(--login-input-focus-bg);
 }
 
 .login-form-btn {
@@ -3153,6 +3220,47 @@ body {
 
 .register-form-msg.ok {
   color: #24c17a;
+}
+
+:root[data-theme="light"] .register-form-root {
+  background: var(--bg-card);
+  border-color: var(--border-subtle);
+  box-shadow: var(--shadow-soft);
+}
+
+:root[data-theme="light"] .register-form-title {
+  color: var(--text-primary);
+  text-shadow: none;
+}
+
+:root[data-theme="light"] .register-form-input,
+:root[data-theme="light"] .register-form-select {
+  background: var(--control-bg);
+  color: var(--text-primary);
+  border-color: var(--border-subtle);
+}
+
+:root[data-theme="light"] .register-form-input:focus,
+:root[data-theme="light"] .register-form-select:focus {
+  border-color: var(--border-strong);
+  background: var(--control-bg-hover);
+  color: var(--text-primary);
+}
+
+:root[data-theme="light"] .register-form-btn {
+  box-shadow: var(--shadow-soft);
+}
+
+:root[data-theme="light"] .register-cancel-btn {
+  border-color: var(--border-subtle);
+  color: var(--text-secondary);
+  background: var(--control-bg);
+}
+
+:root[data-theme="light"] .register-cancel-btn:hover {
+  border-color: var(--border-strong);
+  background: var(--control-bg-hover);
+  color: var(--text-primary);
 }
 
 @media (max-width: 680px) {

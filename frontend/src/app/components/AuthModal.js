@@ -51,7 +51,7 @@ export default function AuthModal({ visible, onClose, setShowRegisterModal }) {
                     // самый верх — чтобы гарантированно быть поверх всего
                     zIndex: 2147483647,
                     backdropFilter: "blur(3px)",
-                    background: "rgba(16, 24, 43, 0.6)",
+                    background: "var(--auth-modal-overlay, rgba(16, 24, 43, 0.6))",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",

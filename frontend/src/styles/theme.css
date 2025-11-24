@@ -113,6 +113,15 @@
     --sidebar-link-hover-bg: rgba(67, 200, 255, 0.12);
     --sidebar-link-hover: #bde8ff;
     --sidebar-shadow: 4px 0 32px #0a1c34aa;
+
+    /* Messenger list */
+    --chat-item-hover-bg: rgba(47, 73, 108, 0.6);
+    --chat-item-selected-bg: #232d3a;
+    --chat-item-selected-border: rgba(255, 255, 255, 0.08);
+    --chat-item-selected-title: #e5f1ff;
+    --chat-item-selected-subtitle: #a8c4e8;
+    --chat-item-selected-preview: #c7d8f1;
+    --chat-item-selected-timestamp: #b4c8e6;
 }
 
 :root[data-theme="light"] {
@@ -124,6 +133,15 @@
     --sidebar-link-hover-bg: color-mix(in srgb, var(--brand-blue) 16%, transparent);
     --sidebar-link-hover: var(--brand-navy);
     --sidebar-shadow: 4px 0 24px rgba(15, 23, 42, 0.08);
+
+    /* Messenger list */
+    --chat-item-hover-bg: color-mix(in srgb, #81caff 18%, #ffffff 82%);
+    --chat-item-selected-bg: color-mix(in srgb, #81caff 26%, #ffffff 74%);
+    --chat-item-selected-border: color-mix(in srgb, #81caff 38%, transparent);
+    --chat-item-selected-title: #0f172a;
+    --chat-item-selected-subtitle: #22324a;
+    --chat-item-selected-preview: #3d4f68;
+    --chat-item-selected-timestamp: #4f6581;
 }
 
 /* === Orders/Transport list shells === */

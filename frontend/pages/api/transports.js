@@ -8,7 +8,13 @@ export default async function handler(req, res) {
   // поэтому прямое использование приведёт к бесконечному рекурсивному вызову этого же API-роута
   // и пустому списку транспорта. Всегда берём «настоящий» backend-хост, а в крайнем случае
   // откатываемся на локальный FastAPI (порт 8004 из run_backend_dev.bat).
-  const rawHost = req.headers?.host ? String(req.headers.host).toLowerCase() : "";
+  const rawHost = req.headers?.host
+    ? String(req.headers.host).toLowerCase()
+    : "";
+
+  // Маркер, что запрос уже побывал в этом proxy (защита от рекурсии)
+  const loopGuard =
+    (req.headers["x-transports-proxy"] || "").toString() === "1";
 
   const candidates = [
     process.env.INTERNAL_API_BASE,
@@ -17,31 +23,38 @@ export default async function handler(req, res) {
     process.env.NEXT_PUBLIC_API_BASE_URL,
     process.env.NEXT_PUBLIC_DEV_API_URL,
     process.env.NEXT_PUBLIC_API_SERVER,
+    // Последний вариант — тот же хост, где крутится фронт (без /api), вдруг там настроен прокси
+    rawHost ? `https://${rawHost}` : null,
     "http://127.0.0.1:8004",
   ];
 
-  const upstream = candidates.find((c) => {
-    const trimmed = c?.trim?.();
-    if (!trimmed) return false;
+  const upstream =
+    candidates.find((c) => {
+      const trimmed = c?.trim?.();
+      if (!trimmed) return false;
 
-    try {
-      const u = new URL(trimmed);
-      const upstreamHost = `${u.hostname}${u.port ? `:${u.port}` : ""}`.toLowerCase();
+      try {
+        const u = new URL(trimmed);
+        const upstreamHost = `${u.hostname}${
+          u.port ? `:${u.port}` : ""
+        }`.toLowerCase();
 
-      // Реальный рекурсивный вызов случается только если base-URL указывает обратно
-      // на Next API (host совпадает и путь начинается с "/api"). Если backend крутится
-      // на том же домене, но за другим роутом (например, reverse-proxy на /backend),
-      // использовать такой адрес безопасно и нужно.
-      const isSameHost = rawHost && upstreamHost === rawHost;
-      const isApiPath = u.pathname === "/api" || u.pathname.startsWith("/api/");
-      if (isSameHost && isApiPath) return false;
+        // Реальный рекурсивный вызов случается только если base-URL указывает обратно
+        // на Next API (host совпадает и путь начинается с "/api"). Если backend крутится
+        // на том же домене, но за другим роутом (например, reverse-proxy на /backend),
+        // использовать такой адрес безопасно и нужно. Для безопасного прохождения через
+        // фронтовый домен с /api добавляем loop‑guard: первый заход отдаём на тот же хост,
+        // а повторный (если вдруг вернулись сюда) отфильтруем.
+        const isSameHost = rawHost && upstreamHost === rawHost;
+        const isApiPath =
+          u.pathname === "/api" || u.pathname.startsWith("/api/");
+        if (isSameHost && isApiPath && loopGuard) return false;
 
-      return true;
-    } catch {
-      return false;
-    }
-  }) || "http://127.0.0.1:8004";
-
+        return true;
+      } catch {
+        return false;
+      }
+    }) || "http://127.0.0.1:8004";
 
   const url = new URL(`${upstream.replace(/\/$/, "")}/transports`);
 
@@ -53,7 +66,9 @@ export default async function handler(req, res) {
     }
   });
 
-  const headers = {};
+  const headers = {
+    "X-Transports-Proxy": "1", // чтобы второй заход в этот API понимал, что мы уже проксировали
+  };
   if (req.headers.authorization)
     headers["Authorization"] = req.headers.authorization;
   if (req.headers.cookie) headers["Cookie"] = req.headers.cookie;

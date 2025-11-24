@@ -23,6 +23,7 @@ const input = {
     background: "#16243c",
     border: "1px solid #2b4b75",
     borderRadius: 10,
+    borderRadius: 10,
     padding: "9px 12px",
     color: "#e3f2fd",
     outline: "none",
@@ -277,6 +278,10 @@ export default function MobileFilterSheet({
                         <LocationAutocomplete
                             value={local.from || ""}
                             onChange={(v) => setLocal((s) => ({ ...s, from: v }))}
+                            style={{
+                                ...input,
+                                padding: "9px 12px",
+                            }}
                         />
                     </div>
                     <div style={field}>
@@ -285,6 +290,10 @@ export default function MobileFilterSheet({
                             value={local.to || ""}
                             onChange={(v) => setLocal((s) => ({ ...s, to: v }))}
                             multiple={false}
+                            style={{
+                                ...input,
+                                padding: "9px 12px",
+                            }}
                         />
                     </div>
 
@@ -300,11 +309,19 @@ export default function MobileFilterSheet({
                                 value={local.dateFrom || ""}
                                 onChange={(v) => setLocal((s) => ({ ...s, dateFrom: v }))}
                                 placeholder={t("range.from", "от")}
+                                inputStyle={{
+                                    ...input,
+                                    padding: local.dateFrom ? "9px 32px 9px 12px" : "9px 12px",
+                                }}
                             />
                             <DateInput
                                 value={local.dateTo || ""}
                                 onChange={(v) => setLocal((s) => ({ ...s, dateTo: v }))}
                                 placeholder={t("range.to", "до")}
+                                inputStyle={{
+                                    ...input,
+                                    padding: local.dateTo ? "9px 32px 9px 12px" : "9px 12px",
+                                }}
                             />
                         </Row2>
                     </div>

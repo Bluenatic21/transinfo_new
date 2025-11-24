@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useUser } from "../UserContext";
 import { api } from "@/config/env";
 import { motion } from "framer-motion";
-import { FiTruck, FiPackage, FiArrowRight } from "react-icons/fi";
+import { FiTruck, FiPackage } from "react-icons/fi";
 import { useLang } from "../i18n/LangProvider";
 import { useTheme } from "../providers/ThemeProvider";
 
@@ -105,7 +105,7 @@ export default function HomeMapsSection() {
             className="relative py-4 md:py-6"
             style={{ color: "var(--text-primary)" }}
         >
-            <div className="mx-auto max-w-7xl px-6">
+            <div className="mx-auto max-w-5xl px-6">
                 {/* Общая карта: Грузы + Транспорт */}
                 <div
                     className={`rounded-2xl overflow-hidden backdrop-blur-xl transition-colors duration-200 ${isLight
@@ -113,79 +113,70 @@ export default function HomeMapsSection() {
                         : "bg-[#0b1528]/60 border border-white/8 shadow-[0_6px_24px_rgba(0,0,0,0.35)]"
                         }`}
                 >
-                    <div className="flex items-center justify-between px-4 md:px-5 pt-3">
-                        <div className="flex items-center gap-2">
+                    <div className="px-4 md:px-5 pb-6 md:pb-7">
+                        <div className="relative">
                             <div
-                                className={`inline-flex items-center justify-center w-9 h-9 rounded-xl border ${isLight ? "bg-slate-100 border-slate-200" : "bg-[#1a2a47] border-white/10"
+                                className={`rounded-xl overflow-hidden border h-[320px] md:h-[360px] ${isLight
+                                    ? "bg-white border-slate-200 shadow-[0_6px_20px_rgba(15,23,42,0.08)]"
+                                    : "bg-[#0a1426] border-white/8"
                                     }`}
                             >
-                                <FiTruck className={isLight ? "text-sky-500" : "text-[#53b7ff]"} />
+                                {Array.isArray(orders) && Array.isArray(transports) ? (
+                                    <SimpleMap
+                                        orders={orders}
+                                        transports={transports}
+                                        hideSearch
+                                        fitAll
+                                        mixed
+                                        showLegend
+                                        onPinClick={({ id, item }) => {
+                                            // item.__kind: "order" | "transport" (передаётся из SimpleMap)
+                                            const kind = item?.__kind === "transport" ? "transport" : "order";
+                                            if (kind === "transport") {
+                                                router.push(`/transport?focus=${id}`);
+                                            } else {
+                                                router.push(`/orders?focus=${id}`);
+                                            }
+                                        }}
+                                    />
+                                ) : (
+                                    <CardSkeleton />
+                                )}
                             </div>
-                            <div
-                                className={`text-[15px] md:text-[16px] font-semibold ${isLight ? "text-slate-800" : "text-[#e6eefc]"
-                                    }`}
-                            >
-                                {t("home.map.header", "Грузы + Транспорт (общая карта)")}
-                            </div>
-                            {Array.isArray(orders) && Array.isArray(transports) && (
-                                <span
-                                    className={`ml-2 text-[12.5px] ${isLight ? "text-slate-600" : "text-[#9fb0d5]"}`}
+
+                            <div className="flex justify-center">
+                                <div
+                                    className={`-mt-7 md:-mt-8 inline-flex items-center gap-2 md:gap-3 rounded-full border px-3.5 py-2 md:px-4 md:py-2.5 shadow-[0_10px_28px_rgba(0,0,0,0.22)] ${isLight
+                                        ? "bg-white/98 text-slate-800 border-slate-200"
+                                        : "bg-[#0f1b30]/95 text-white border-white/10"
+                                        }`}
+                                    style={{ backdropFilter: "blur(12px)" }}
                                 >
-                                    ≈ {orders.length + transports.length}
-                                </span>
-                            )}
-                        </div>
-                        <div className="flex items-center gap-4">
-                            <button
-                                onClick={() => router.push("/transport")}
-                                className={`group inline-flex items-center gap-1.5 text-[12.5px] md:text-[13px] transition-colors ${isLight
-                                    ? "text-slate-600 hover:text-slate-900"
-                                    : "text-[#9fb0d5] hover:text-white"
-                                    }`}
-                            >
-                                {t("nav.transport", "Транспорт")}
-                                <FiArrowRight className="transition-transform group-hover:translate-x-0.5" />
-                            </button>
-                            <button
-                                onClick={() => router.push("/orders")}
-                                className={`group inline-flex items-center gap-1.5 text-[12.5px] md:text-[13px] transition-colors ${isLight
-                                    ? "text-slate-600 hover:text-slate-900"
-                                    : "text-[#9fb0d5] hover:text-white"
-                                    }`}
-                            >
-                                {t("saved.cargo.title", "Грузы")}
-                                <FiArrowRight className="transition-transform group-hover:translate-x-0.5" />
-                            </button>
-                        </div>
-                    </div>
-                    <div className="px-4 md:px-5 pb-4 md:pb-5">
-                        <div
-                            className={`rounded-xl overflow-hidden border h-[320px] md:h-[360px] ${isLight
-                                ? "bg-white border-slate-200 shadow-[0_6px_20px_rgba(15,23,42,0.08)]"
-                                : "bg-[#0a1426] border-white/8"
-                                }`}
-                        >
-                            {Array.isArray(orders) && Array.isArray(transports) ? (
-                                <SimpleMap
-                                    orders={orders}
-                                    transports={transports}
-                                    hideSearch
-                                    fitAll
-                                    mixed
-                                    showLegend
-                                    onPinClick={({ id, item }) => {
-                                        // item.__kind: "order" | "transport" (передаётся из SimpleMap)
-                                        const kind = item?.__kind === "transport" ? "transport" : "order";
-                                        if (kind === "transport") {
-                                            router.push(`/transport?focus=${id}`);
-                                        } else {
-                                            router.push(`/orders?focus=${id}`);
-                                        }
-                                    }}
-                                />
-                            ) : (
-                                <CardSkeleton />
-                            )}
+                                    <button
+                                        onClick={() => router.push("/orders")}
+                                        className="group inline-flex items-center gap-2 rounded-full px-3.5 md:px-4 py-1.5 md:py-2 text-[13px] md:text-[14px] font-semibold transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_12px_30px_rgba(0,0,0,0.18)]"
+                                        style={{
+                                            background: isLight ? "linear-gradient(180deg,#f8fbff,#e8f3ff)" : "linear-gradient(180deg,#12335d,#0f2544)",
+                                            color: isLight ? "#0f172a" : "#f8fbff",
+                                        }}
+                                    >
+                                        <FiPackage className={isLight ? "text-sky-500" : "text-[#53b7ff]"} />
+                                        {t("home.map.findCargo", "Найти груз")}
+                                    </button>
+                                    <span className={isLight ? "text-slate-300" : "text-white/20"}>|</span>
+                                    <button
+                                        onClick={() => router.push("/transport")}
+                                        className="group inline-flex items-center gap-2 rounded-full px-3.5 md:px-4 py-1.5 md:py-2 text-[13px] md:text-[14px] font-semibold transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_12px_30px_rgba(0,0,0,0.22)]"
+                                        style={{
+                                            background: isLight ? "linear-gradient(180deg,#f8fbff,#e8f3ff)" : "linear-gradient(180deg,#12335d,#0f2544)",
+                                            color: isLight ? "#0f172a" : "#f8fbff",
+                                        }}
+                                    >
+                                        <FiTruck className={isLight ? "text-sky-500" : "text-[#53b7ff]"} />
+                                        {t("home.map.findTransport", "Найти транспорт")}
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

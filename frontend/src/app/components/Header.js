@@ -187,7 +187,7 @@ function MiniProfile({ user, onClick, mode = "full" }) {
             <button
                 className="header-user-chip"
                 style={{
-                    background: "rgb(var(--surface) / 0.94)",
+                    background: "color-mix(in srgb, var(--surface) 94%, transparent)",
                     border: "1px solid var(--border-strong)",
                     boxShadow: "var(--header-shadow, var(--shadow-soft))",
                     gap: 8,
@@ -203,7 +203,7 @@ function MiniProfile({ user, onClick, mode = "full" }) {
             >
                 <div style={{
                     width: 32, height: 32, borderRadius: "50%", overflow: "hidden",
-                    background: "rgb(var(--surface))", border: "1px solid var(--border-strong)", flexShrink: 0,
+                    background: "var(--surface)", border: "1px solid var(--border-strong)", flexShrink: 0,
                     display: "flex", alignItems: "center", justifyContent: "center"
                 }}>
                     <img src={avatarUrl} alt={t("img.avatar", "Аватар")}
@@ -225,7 +225,7 @@ function MiniProfile({ user, onClick, mode = "full" }) {
         <button
             className="header-user-chip"
             style={{
-                background: "rgb(var(--surface) / 0.94)",
+                background: "color-mix(in srgb, var(--surface) 94%, transparent)",
                 border: "1px solid var(--border-strong)",
                 boxShadow: "var(--header-shadow, var(--shadow-soft))",
                 gap: 8,
@@ -244,7 +244,7 @@ function MiniProfile({ user, onClick, mode = "full" }) {
                 height: 32,
                 borderRadius: "50%",
                 overflow: "hidden",
-                background: "rgb(var(--surface))",
+                background: "var(--surface)",
                 border: "1px solid var(--border-strong)",
                 flexShrink: 0,
                 display: "flex",
@@ -502,7 +502,7 @@ export default function Header({ setShowRegisterModal }) {
                     gridTemplateColumns: "1fr auto 1fr",
                     alignItems: "center",
                     height: MOBILE_H,
-                    background: "rgb(var(--header-bg))",
+                    background: "var(--header-bg)",
                     padding: "0 12px",
                     boxShadow: "var(--header-shadow)",
                     zIndex: 100,
@@ -700,7 +700,7 @@ export default function Header({ setShowRegisterModal }) {
                     flexDirection: "row",
                     alignItems: "center",
                     gap: isCompact ? 14 : 18,
-                    background: "rgb(var(--header-bg))",
+                    background: "var(--header-bg)",
                     padding: `${headerPadding.top}px ${headerPadding.right}px ${headerPadding.bottom}px ${headerPadding.left}px`,
                     boxShadow: "var(--header-shadow)",
                     borderBottom: "1px solid var(--border-strong)",
@@ -944,9 +944,11 @@ export default function Header({ setShowRegisterModal }) {
                                         style={{
                                             position: "absolute",
                                             top: 52, right: 0,
-                                            background: "#232d45",
-                                            borderRadius: 10,
-                                            boxShadow: "0 4px 22px #123d7060",
+                                            background: "var(--surface)",
+                                            color: "var(--text-primary)",
+                                            border: "1px solid var(--border-subtle)",
+                                            borderRadius: 12,
+                                            boxShadow: "var(--shadow-soft)",
                                             padding: "10px 0",
                                             zIndex: 100,
                                             minWidth: 165,
@@ -956,10 +958,13 @@ export default function Header({ setShowRegisterModal }) {
                                             href="/profile"
                                             style={{
                                                 display: "block", padding: "10px 22px",
-                                                color: "#fff", fontWeight: 700, textDecoration: "none",
-                                                cursor: "pointer", transition: "background .14s"
+                                                color: "var(--text-primary)", fontWeight: 700, textDecoration: "none",
+                                                cursor: "pointer", transition: "background .14s",
+                                                borderRadius: 10,
                                             }}
                                             onClick={() => setProfileMenuOpen(false)}
+                                            onMouseOver={e => e.currentTarget.style.background = "var(--control-bg-hover)"}
+                                            onMouseOut={e => e.currentTarget.style.background = "transparent"}
                                         >
                                             {t("nav.profile", "Профиль")}
                                         </Link>
@@ -968,23 +973,26 @@ export default function Header({ setShowRegisterModal }) {
                                                 href="/admin"
                                                 style={{
                                                     display: "block", padding: "10px 22px",
-                                                    color: "#a6e0ff", fontWeight: 700, textDecoration: "none",
-                                                    cursor: "pointer", transition: "background .14s"
+                                                    color: "var(--brand-blue)", fontWeight: 700, textDecoration: "none",
+                                                    cursor: "pointer", transition: "background .14s",
+                                                    borderRadius: 10,
                                                 }}
                                                 onClick={() => setProfileMenuOpen(false)}
+                                                onMouseOver={e => e.currentTarget.style.background = "var(--control-bg-hover)"}
+                                                onMouseOut={e => e.currentTarget.style.background = "transparent"}
                                             >
                                                 {t("nav.admin", "Админ")}
                                             </Link>
                                         )}
                                         <div
                                             style={{
-                                                height: 1, background: "#22364f", margin: "7px 0"
+                                                height: 1, background: "var(--border-subtle)", margin: "7px 0"
                                             }}
                                         />
                                         <div
                                             style={{
-                                                background: "#1c2740",
-                                                border: "1px solid #3a475e",
+                                                background: "var(--control-bg)",
+                                                border: "1px solid var(--border-subtle)",
                                                 borderRadius: 10,
                                                 padding: "10px 12px",
                                                 margin: "6px 10px 8px"
@@ -1070,7 +1078,7 @@ export default function Header({ setShowRegisterModal }) {
                     gap: isCompact ? 10 : 14,
                     width: "100%",
                     padding: `${isCompact ? 4 : 6}px ${headerPadding.right}px ${isCompact ? 4 : 6}px ${headerPadding.left}px`,
-                    background: "rgb(var(--surface))"
+                    background: "var(--surface)"
                 }}
             >
                 <div
@@ -1078,7 +1086,7 @@ export default function Header({ setShowRegisterModal }) {
                     style={{
                         display: "inline-flex",
                         alignItems: "center",
-                        background: "linear-gradient(180deg, rgb(var(--header-bg) / 0.96), rgb(var(--surface)))",
+                        background: "linear-gradient(180deg, color-mix(in srgb, var(--header-bg) 96%, transparent), var(--surface))",
                         border: "1px solid var(--border-strong)",
                         borderTop: "1px solid var(--border-strong)",
                         borderRadius: isTight ? "0 0 12px 12px" : "0 0 16px 16px",

@@ -345,7 +345,9 @@ export default function Home() {
 
           .home-top-band {
             position: absolute;
-            inset: 0;
+            left: 0;
+            right: 0;
+            top: 0;
             height: clamp(420px, 52vh, 620px);
             background: var(--home-top-bg, linear-gradient(180deg, #0a4c78 0%, #0b2f4d 100%));
             pointer-events: none;
@@ -357,29 +359,20 @@ export default function Home() {
             z-index: 1;
           }
 
-          [data-theme="light"] .home-top-band {
+          [data-theme="light"] .home-top-band,
+          [data-theme="dark"] .home-top-band {
             --home-top-bg:
               radial-gradient(circle at 18% 18%, rgba(0, 0, 0, 0.06) 0 24%, transparent 38%),
               radial-gradient(circle at 86% 12%, rgba(0, 0, 0, 0.08) 0 20%, transparent 38%),
               linear-gradient(180deg, #0c4f7c 0%, #0b3c63 38%, #0b2f4d 100%);
           }
-
-          [data-theme="dark"] .home-top-band {
-            --home-top-bg:
-              radial-gradient(circle at 12% 16%, rgba(0, 0, 0, 0.22) 0 22%, transparent 40%),
-              radial-gradient(circle at 90% 10%, rgba(0, 0, 0, 0.18) 0 18%, transparent 36%),
-              linear-gradient(180deg, #14d7de 0%, #0aa6b8 36%, #0a7f97 100%);
-          }
         `}</style>
     );
-
-    const topBand = <div className="home-top-band" aria-hidden />;
 
     if (isMobile) {
         return (
             <div className="home-shell">
                 {homeStyles}
-                {topBand}
                 <div className="home-content">
                     <HeroCompactBridge />
                     <HomeMapsSection hideTransportPins={isTransportRole} />
@@ -451,7 +444,6 @@ export default function Home() {
     return (
         <div className="home-shell">
             {homeStyles}
-            {topBand}
             <div className="home-content">
                 <FlashMessage message={message} setMessage={setMessage} />
                 {showAuth && (

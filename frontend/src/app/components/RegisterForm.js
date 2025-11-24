@@ -7,24 +7,57 @@ import { useRouter } from "next/navigation";
 import { API_BASE } from "@/app/lib/apiBase";
 import { setTokenEverywhere, setUserEverywhere, removeTokenEverywhere } from "./yourTokenUtils";
 import { useUser } from "../UserContext";
+import { useTheme } from "../providers/ThemeProvider";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
 import "../globals.css";
 import { useLang } from "../i18n/LangProvider";
 import { api } from "@/config/env";
 
-// Палитра под ваш интерфейс
-const COLORS = {
-    accent: "#43c8ff",
-    accentL: "#6bd9ff",
-    btnIdle: "#2b2f3a",     // темнее фона, но светлее прежнего #23242c
-    btnHover: "#303544",
-    textIdle: "#bde8ff",    // чуть светлее, читаемей на тёмном
+// Палитры для тёмной/светлой темы — подхватываем общие токены
+const PALETTES = {
+    dark: {
+        accent: "#43c8ff",
+        accentL: "#6bd9ff",
+        btnIdle: "#2b2f3a",     // темнее фона, но светлее прежнего #23242c
+        btnHover: "#303544",
+        textIdle: "#bde8ff",    // чуть светлее, читаемей на тёмном
+        surface: "rgba(34,36,52,0.94)",
+        modalSurface: "#242531",
+        modalText: "#a8ffe5",
+        border: "#43c8ff",
+        inputBg: "#23242c",
+        inputText: "#8ac6c8",
+        eyeColor: "#222",
+        overlay: "rgba(0,0,0,0.45)",
+        cardShadow: "0 6px 32px 0 rgba(0,0,0,.15)",
+        modalShadow: "0 8px 40px rgba(0,0,0,.3)",
+        errorSoft: "#ffbfc4",
+        errorStrong: "#ff7b7b",
+    },
+    light: {
+        accent: "var(--brand-blue)",
+        accentL: "color-mix(in srgb, var(--brand-blue) 84%, white)",
+        btnIdle: "var(--control-bg)",
+        btnHover: "var(--control-bg-hover)",
+        textIdle: "var(--text-primary)",
+        surface: "var(--bg-card)",
+        modalSurface: "var(--bg-card)",
+        modalText: "var(--text-primary)",
+        border: "color-mix(in srgb, var(--brand-blue) 70%, var(--border-subtle))",
+        inputBg: "var(--control-bg)",
+        inputText: "var(--text-primary)",
+        eyeColor: "var(--text-secondary)",
+        overlay: "rgba(0,0,0,0.32)",
+        cardShadow: "var(--shadow-soft)",
+        modalShadow: "0 12px 40px rgba(15,23,42,0.16)",
+        errorSoft: "#c72c41",
+        errorStrong: "#c53030",
+    },
 };
-const ACTIVE_BG = `linear-gradient(180deg, ${COLORS.accentL} 0%, ${COLORS.accent} 100%)`;
 
 
-function ModalNotice({ text }) {
+function ModalNotice({ text, palette }) {
     return (
         <div
             style={{
@@ -34,7 +67,7 @@ function ModalNotice({ text }) {
                 width: "100vw",
                 height: "100vh",
                 zIndex: 1000,
-                background: "rgba(0,0,0,0.25)",
+                background: palette?.overlay ?? "rgba(0,0,0,0.25)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -43,14 +76,14 @@ function ModalNotice({ text }) {
         >
             <div
                 style={{
-                    background: "#242531",
-                    color: "#a8ffe5",
+                    background: palette?.modalSurface ?? "#242531",
+                    color: palette?.modalText ?? "#a8ffe5",
                     borderRadius: 16,
                     fontSize: 21,
                     minWidth: 300,
                     padding: "30px 36px",
                     boxShadow: "0 6px 32px 0 rgba(0,0,0,.18)",
-                    border: "2.5px solid #43c8ff",
+                    border: `2.5px solid ${palette?.border ?? "#43c8ff"}`,
                     textAlign: "center",
                 }}
             >
@@ -59,9 +92,6 @@ function ModalNotice({ text }) {
         </div>
     );
 }
-
-// Единый стиль для текста ошибок
-const errorStyle = { color: "#ffbfc4", fontSize: 12, marginTop: 4 };
 
 // Мягкая подсветка рамки при ошибке
 const withErrorStyles = (hasError) =>
@@ -98,6 +128,10 @@ function renderCodeDestination(template, target) {
 
 export default function RegisterForm({ onSuccess }) {
     const { t, lang } = useLang?.() || { t: (_k, f) => f, lang: "ru" };
+    const { resolvedTheme } = useTheme?.() || { resolvedTheme: "dark" };
+    const palette = PALETTES[resolvedTheme] ?? PALETTES.dark;
+    const ACTIVE_BG = `linear-gradient(180deg, ${palette.accentL} 0%, ${palette.accent} 100%)`;
+    const errorStyle = { color: palette.errorSoft, fontSize: 12, marginTop: 4 };
     // Точный язык UI для бэкенда
     const uiLang =
         (lang && String(lang).split("-")[0].toLowerCase()) ||
@@ -720,6 +754,9 @@ export default function RegisterForm({ onSuccess }) {
     const fieldStyle = (hasError) => ({
         ...withErrorStyles(hasError),
         width: "100%",
+        background: palette.inputBg,
+        color: palette.inputText,
+        borderColor: hasError ? "#ff6b6b" : palette.border,
     });
 
     // Динамика для PhoneInput — без конфликта border/borderColor
@@ -728,9 +765,9 @@ export default function RegisterForm({ onSuccess }) {
         borderRadius: 8,
         borderWidth: 1.5,
         borderStyle: "solid",
-        borderColor: hasError ? "#ff6b6b" : "#43c8ff",
-        background: "#23242c",
-        color: "#8ac6c8",
+        borderColor: hasError ? "#ff6b6b" : palette.border,
+        background: palette.inputBg,
+        color: palette.inputText,
         fontSize: 16,
         padding: "10px 12px",
         boxShadow: hasError ? "0 0 0 3px rgba(255,107,107,.2)" : "none",
@@ -743,9 +780,9 @@ export default function RegisterForm({ onSuccess }) {
             style={{
                 maxWidth: 420,
                 width: "100%",
-                background: "rgba(34,36,52,0.94)",
+                background: palette.surface,
                 borderRadius: 18,
-                boxShadow: "0 6px 32px 0 rgba(0,0,0,.15)",
+                boxShadow: palette.cardShadow,
                 padding: "24px 18px 24px 18px",
                 margin: "0 auto",
                 position: "relative",
@@ -753,7 +790,7 @@ export default function RegisterForm({ onSuccess }) {
                 minHeight: 0,
             }}
         >
-            {showSuccess && <ModalNotice text="Регистрация успешна!" />}
+            {showSuccess && <ModalNotice text="Регистрация успешна!" palette={palette} />}
             <h2
                 className="register-form-title"
                 style={{ textAlign: "center", fontWeight: 600, marginBottom: 18, fontSize: 27 }}
@@ -769,13 +806,14 @@ export default function RegisterForm({ onSuccess }) {
                 {Object.entries(ROLE_LABELS).map(([val, { label, icon }]) => {
                     const isActive = role === val;
                     const isHover = hoveredRole === val;
+                    const inactiveBorder = resolvedTheme === "light" ? "var(--border-subtle)" : "rgba(67,200,255,.35)";
                     const roleBtnStyle = {
                         fontSize: 15,
                         padding: "8px 20px",
                         borderRadius: 14,
-                        border: isActive ? "1px solid rgba(67,200,255,.60)" : "1px solid rgba(67,200,255,.35)",
-                        background: isActive ? ACTIVE_BG : (isHover ? COLORS.btnHover : COLORS.btnIdle),
-                        color: isActive ? "#ffffff" : COLORS.textIdle,
+                        border: `1px solid ${isActive ? palette.border : inactiveBorder}`,
+                        background: isActive ? ACTIVE_BG : (isHover ? palette.btnHover : palette.btnIdle),
+                        color: isActive ? "#ffffff" : palette.textIdle,
                         cursor: "pointer",
                         display: "flex",
                         alignItems: "center",
@@ -953,7 +991,7 @@ export default function RegisterForm({ onSuccess }) {
                                     top: "50%",
                                     transform: "translateY(-50%)",
                                     cursor: "pointer",
-                                    color: "#222",
+                                    color: palette.eyeColor,
                                     opacity: eyeHover ? 1 : 0.55,
                                     fontSize: 22,
                                     transition: "opacity 0.15s",
@@ -995,7 +1033,7 @@ export default function RegisterForm({ onSuccess }) {
                                     top: "50%",
                                     transform: "translateY(-50%)",
                                     cursor: "pointer",
-                                    color: "#222",
+                                    color: palette.eyeColor,
                                     opacity: eyeHover2 ? 1 : 0.55,
                                     fontSize: 22,
                                     transition: "opacity 0.15s",
@@ -1074,7 +1112,7 @@ export default function RegisterForm({ onSuccess }) {
                         top: 0,
                         width: "100vw",
                         height: "100vh",
-                        background: "rgba(0,0,0,0.45)",
+                        background: palette.overlay,
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
@@ -1086,13 +1124,13 @@ export default function RegisterForm({ onSuccess }) {
                         style={{
                             width: 420,
                             maxWidth: "92vw",
-                            background: "rgba(34,36,52,0.98)",
+                            background: palette.modalSurface,
                             borderWidth: 2,
                             borderStyle: "solid",
-                            borderColor: "#43c8ff",
+                            borderColor: palette.border,
                             borderRadius: 16,
                             padding: 20,
-                            boxShadow: "0 8px 40px rgba(0,0,0,.3)",
+                            boxShadow: palette.modalShadow,
                         }}
                     >
                         <h3 style={{ margin: 0, marginBottom: 8, fontSize: 20 }}>{phoneModalTitle}</h3>
@@ -1113,15 +1151,15 @@ export default function RegisterForm({ onSuccess }) {
                                     textAlign: "center",
                                     padding: "10px 12px",
                                     borderRadius: 12,
-                                    border: "2px solid #43c8ff",
+                                    border: `2px solid ${palette.border}`,
                                     outline: "none",
-                                    background: "rgba(255,255,255,0.04)",
-                                    color: "white",
+                                    background: palette.inputBg,
+                                    color: palette.inputText,
                                 }}
                                 disabled={isPhoneVerifyLoading}
                             />
                             {phoneVerifyMsg && (
-                                <div style={{ color: "#ff7b7b", marginTop: 8 }}>{phoneVerifyMsg}</div>
+                                <div style={{ color: palette.errorStrong, marginTop: 8 }}>{phoneVerifyMsg}</div>
                             )}
                             <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
                                 <button
@@ -1165,7 +1203,7 @@ export default function RegisterForm({ onSuccess }) {
                         top: 0,
                         width: "100vw",
                         height: "100vh",
-                        background: "rgba(0,0,0,0.45)",
+                        background: palette.overlay,
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
@@ -1177,13 +1215,13 @@ export default function RegisterForm({ onSuccess }) {
                         style={{
                             width: 420,
                             maxWidth: "92vw",
-                            background: "rgba(34,36,52,0.98)",
+                            background: palette.modalSurface,
                             borderWidth: 2,
                             borderStyle: "solid",
-                            borderColor: "#43c8ff",
+                            borderColor: palette.border,
                             borderRadius: 16,
                             padding: 20,
-                            boxShadow: "0 8px 40px rgba(0,0,0,.3)",
+                            boxShadow: palette.modalShadow,
                         }}
                     >
                         <h3 style={{ margin: 0, marginBottom: 8, fontSize: 20 }}>{emailModalTitle}</h3>
@@ -1204,14 +1242,14 @@ export default function RegisterForm({ onSuccess }) {
                                     textAlign: "center",
                                     padding: "10px 12px",
                                     borderRadius: 12,
-                                    border: "2px solid #43c8ff",
+                                    border: `2px solid ${palette.border}`,
                                     outline: "none",
-                                    background: "rgba(255,255,255,0.04)",
-                                    color: "white",
+                                    background: palette.inputBg,
+                                    color: palette.inputText,
                                 }}
                             />
                             {verifyMsg && (
-                                <div style={{ color: "#ff7b7b", marginTop: 8 }}>{verifyMsg}</div>
+                                <div style={{ color: palette.errorStrong, marginTop: 8 }}>{verifyMsg}</div>
                             )}
                             <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
                                 <button
@@ -1248,7 +1286,7 @@ export default function RegisterForm({ onSuccess }) {
                         top: 0,
                         width: "100vw",
                         height: "100vh",
-                        background: "rgba(0,0,0,0.45)",
+                        background: palette.overlay,
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
@@ -1260,13 +1298,13 @@ export default function RegisterForm({ onSuccess }) {
                         style={{
                             width: 420,
                             maxWidth: "92vw",
-                            background: "rgba(34,36,52,0.98)",
+                            background: palette.modalSurface,
                             borderWidth: 2,
                             borderStyle: "solid",
-                            borderColor: "#43c8ff",
+                            borderColor: palette.border,
                             borderRadius: 16,
                             padding: 20,
-                            boxShadow: "0 8px 40px rgba(0,0,0,.3)",
+                            boxShadow: palette.modalShadow,
                         }}
                     >
                         <h3 style={{ margin: 0, marginBottom: 8, fontSize: 20 }}>{emailModalTitle}</h3>
@@ -1282,11 +1320,11 @@ export default function RegisterForm({ onSuccess }) {
                                 onChange={(e) => setVerifyCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
                                 style={{
                                     width: "100%", fontSize: 22, letterSpacing: 4, textAlign: "center",
-                                    padding: "10px 12px", borderRadius: 12, border: "2px solid #43c8ff",
-                                    outline: "none", background: "rgba(255,255,255,0.04)", color: "white",
+                                    padding: "10px 12px", borderRadius: 12, border: `2px solid ${palette.border}`,
+                                    outline: "none", background: palette.inputBg, color: palette.inputText,
                                 }}
                             />
-                            {verifyMsg && <div style={{ color: "#ff7b7b", marginTop: 8 }}>{verifyMsg}</div>}
+                            {verifyMsg && <div style={{ color: palette.errorStrong, marginTop: 8 }}>{verifyMsg}</div>}
                             <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
                                 <button type="submit" disabled={verifyCode.replace(/\D/g, "").length !== 6} className="register-submit-btn" style={{ flex: 1 }}>
                                     {verifySubmitLabel}

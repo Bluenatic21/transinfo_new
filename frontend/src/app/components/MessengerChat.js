@@ -38,7 +38,6 @@ import {
   FaGavel,
   FaSmile,
   FaPaperclip,
-  FaEye,
   FaCheck,
   FaThumbsUp,
   FaHeart,
@@ -52,6 +51,7 @@ import {
   FaAddressBook,
   FaMapMarkerAlt,
 } from "react-icons/fa";
+import { FaEye } from "react-icons/fa6";
 import { useMessenger } from "./MessengerContext";
 import { useUser } from "../UserContext";
 import { useRouter } from "next/navigation";
@@ -3296,7 +3296,6 @@ export default function MessengerChat({
               justifyContent: "flex-end",
             }}
           >
-            {msg.sent_at ? new Date(msg.sent_at).toLocaleString() : ""}
             {isMine && msg.id === lastMyMsgId && (
               <span
                 style={{
@@ -3310,12 +3309,17 @@ export default function MessengerChat({
                 }}
               >
                 {msg.is_read ? (
-                  <>
-                    <FaEye title={t("chat.read", "Прочитано")} />{" "}
-                    <span style={{ fontSize: 12 }}>
-                      {t("chat.seen", "Просмотрено")}
-                    </span>
-                  </>
+                  <span
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 4,
+                    }}
+                    title={t("chat.read", "Прочитано")}
+                  >
+                    <FaCheck />
+                    <FaCheck />
+                  </span>
                 ) : (
                   <FaCheck title={t("chat.delivered", "Доставлено")} />
                 )}
@@ -3603,10 +3607,37 @@ export default function MessengerChat({
               fontSize: 11,
               color: "#a6bde6",
               marginTop: 7,
-              textAlign: isMine ? "right" : "left",
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              justifyContent: isMine ? "flex-end" : "flex-start",
             }}
           >
             {msg.sent_at ? new Date(msg.sent_at).toLocaleString() : ""}
+            {isMine && msg.id === lastMyMsgId && (
+              <span
+                style={{
+                  marginLeft: 8,
+                  fontSize: 15,
+                  color: msg.is_read ? "#48ff78" : "#95b0d2",
+                  verticalAlign: "middle",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 3,
+                }}
+              >
+                {msg.is_read ? (
+                  <>
+                    <FaEye title={t("chat.read", "Прочитано")} />{" "}
+                    <span style={{ fontSize: 12 }}>
+                      {t("chat.seen", "Просмотрено")}
+                    </span>
+                  </>
+                ) : (
+                  <FaCheck title={t("chat.delivered", "Доставлено")} />
+                )}
+              </span>
+            )}
           </div>
         </div>
 

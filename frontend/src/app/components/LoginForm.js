@@ -151,7 +151,7 @@ export default function LoginForm({ onLogin, onClose, onShowRegister }) {
                     alignItems: "center",
                     margin: "7px 0 2px 0",
                     fontSize: 15,
-                    color: "#b9e1fa",
+                    color: "var(--text-secondary, #b9e1fa)",
                     gap: 7,
                     userSelect: "none",
                 }}

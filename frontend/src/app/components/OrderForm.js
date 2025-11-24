@@ -478,6 +478,7 @@ function getDefaultForm(user) {
     rate_with_vat: "",
     rate_no_vat: "",
     rate_cash: "",
+    rate_selected: "rate_with_vat",
     rate_currency: "₾",
     rate_to_card: false,
     payment_scenario: "unload",
@@ -491,6 +492,31 @@ function getDefaultForm(user) {
   };
 }
 
+function detectRateSelection(data = {}) {
+  if (
+    data.rate_with_vat !== undefined &&
+    data.rate_with_vat !== null &&
+    data.rate_with_vat !== ""
+  ) {
+    return "rate_with_vat";
+  }
+  if (
+    data.rate_no_vat !== undefined &&
+    data.rate_no_vat !== null &&
+    data.rate_no_vat !== ""
+  ) {
+    return "rate_no_vat";
+  }
+  if (
+    data.rate_cash !== undefined &&
+    data.rate_cash !== null &&
+    data.rate_cash !== ""
+  ) {
+    return "rate_cash";
+  }
+  return "rate_with_vat";
+}
+
 // --- ГЛАВНАЯ ФОРМА ---
 export default function OrderForm({ order = null, onSaved }) {
   const isMobile = useIsMobile();
@@ -499,6 +525,20 @@ export default function OrderForm({ order = null, onSaved }) {
   const PACKAGING_OPTIONS = useMemo(() => makePackagingOptions(t), [t]);
   const RATE_TYPES = useMemo(() => makeRateTypes(t), [t]);
   const REQUEST_OPTIONS = useMemo(() => makeRequestOptions(t), [t]);
+  const RATE_PAYMENT_OPTIONS = useMemo(
+    () => [
+      {
+        value: "rate_with_vat",
+        label: t("rate.withVat_cashless", "С НДС, безнал"),
+      },
+      {
+        value: "rate_no_vat",
+        label: t("rate.noVat_cashless", "Без НДС, безнал"),
+      },
+      { value: "rate_cash", label: t("rate.cash", "Наличными") },
+    ],
+    [t]
+  );
   const PAYMENT_SCENARIOS = useMemo(() => makePaymentScenarios(t), [t]);
   const PREPAY_TYPES = useMemo(() => makePrepayTypes(t), [t]);
   const BODY_TYPES = useMemo(() => getTruckBodyTypes(t), [t]);
@@ -542,6 +582,7 @@ export default function OrderForm({ order = null, onSaved }) {
   // SSR-safe: только дефолт или order
   const [form, setForm] = useState(() => {
     if (order) {
+      const inferredRate = detectRateSelection(order);
       return {
         ...getDefaultForm(user),
         ...order,
@@ -569,22 +610,22 @@ export default function OrderForm({ order = null, onSaved }) {
         truck_quantity: order.truck_quantity || 1,
         phone: order.phone || user?.phone || "",
         requested_rate_options: order?.requested_rate_options || [],
+        rate_selected: inferredRate,
       };
     }
-    return getDefaultForm(user);
+    return {
+      ...getDefaultForm(user),
+      rate_selected: detectRateSelection({}),
+    };
   });
   // если пришли без rate_type — установим локализованный дефолт
-  useEffect(() => {
-    if (!form?.rate_type && RATE_TYPES?.length) {
-      setForm((f) => ({ ...f, rate_type: RATE_TYPES[0] }));
-    }
-  }, [RATE_TYPES]);
-
   useEffect(() => {
     if (!isEdit && user?.phone && !form.phone) {
       setForm((f) => ({ ...f, phone: user.phone }));
     }
   }, [user?.phone]);
+
+  const selectedRateValue = form[form.rate_selected] ?? "";
 
   // === Стили как в TransportForm ===
   const section = {
@@ -1133,12 +1174,10 @@ export default function OrderForm({ order = null, onSaved }) {
       return;
     }
 
-    // === ВАЛИДАЦИЯ: Если "Без торга", обязательна хотя бы одна цена ===
+    // === ВАЛИДАЦИЯ: Если "Без торга", обязательна цена для выбранного варианта ===
     if (
       form.rate_type === t("rate.kind.fixed", "Без торга") &&
-      !form.rate_with_vat &&
-      !form.rate_no_vat &&
-      !form.rate_cash
+      !selectedRateValue
     ) {
       setMsg("");
       priceRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -1208,6 +1247,7 @@ export default function OrderForm({ order = null, onSaved }) {
       rate_with_vat: form.rate_with_vat,
       rate_no_vat: form.rate_no_vat,
       rate_cash: form.rate_cash,
+      rate_selected: form.rate_selected,
       rate_currency: form.rate_currency,
       rate_to_card: form.rate_to_card,
       payment_scenario: form.payment_scenario,
@@ -1218,7 +1258,7 @@ export default function OrderForm({ order = null, onSaved }) {
       payment_comment: form.payment_comment,
       comment: form.comment,
       phone: form.phone,
-      price: form.rate_with_vat,
+      price: form[form.rate_selected],
       username: user?.email || "",
     };
     let url = api("/orders");
@@ -1316,10 +1356,12 @@ export default function OrderForm({ order = null, onSaved }) {
             routes: [""],
             has_customs: false,
             customs_info: "",
+            customs_info: "",
             rate_type: RATE_TYPES[0],
             rate_with_vat: "",
             rate_no_vat: "",
             rate_cash: "",
+            rate_selected: "rate_with_vat",
             rate_currency: "₾",
             rate_to_card: false,
             payment_scenario: "unload",
@@ -2519,111 +2561,107 @@ export default function OrderForm({ order = null, onSaved }) {
                 border:
                   form.rate_type === "Без торга" &&
                   wasTriedSubmit &&
-                  !form.rate_with_vat &&
-                  !form.rate_no_vat &&
-                  !form.rate_cash
+                  !selectedRateValue
                     ? "2px solid #ffd600"
                     : "none",
                 boxShadow:
                   form.rate_type === "Без торга" &&
                   wasTriedSubmit &&
-                  !form.rate_with_vat &&
-                  !form.rate_no_vat &&
-                  !form.rate_cash
+                  !selectedRateValue
                     ? "0 0 0 2px #ffd60044"
                     : "none",
                 padding: 4,
                 transition: "border .2s, box-shadow .2s",
               }}
             >
-              <input
-                placeholder={t("rate.withVat_cashless", "С НДС, безнал")}
+              <div
                 style={{
                   flex: 1,
-                  borderRadius: 7,
-                  border:
-                    form.rate_type === "Без торга" &&
-                    wasTriedSubmit &&
-                    !form.rate_with_vat &&
-                    !form.rate_no_vat &&
-                    !form.rate_cash
-                      ? "2px solid #ffd600"
-                      : "1.5px solid var(--of-border)",
-                  padding: "8px 13px",
-                  fontSize: 15,
-                  background: "var(--of-surface-strong)",
-                  color: "var(--of-text-strong)",
-                  outline: "none",
-                  minWidth: 0,
-                  transition: "border .2s",
+                  minWidth: 180,
+                  display: "flex",
+                  flexDirection: "column",
                 }}
-                name="rate_with_vat"
-                value={form.rate_with_vat}
-                onChange={handleChange}
-                type="number"
-                inputMode="decimal"
-                min="0"
-                step="0.01"
-              />
-              <input
-                placeholder={t("rate.noVat_cashless", "Без НДС, безнал")}
+              >
+                <label style={{ ...label, marginBottom: 6 }}>
+                  {t("rate.paymentOption", "Вариант оплаты")}
+                </label>
+                <CustomSelect
+                  value={form.rate_selected}
+                  onChange={(v) =>
+                    setForm((f) => ({
+                      ...f,
+                      rate_selected: v || "rate_with_vat",
+                    }))
+                  }
+                  options={RATE_PAYMENT_OPTIONS}
+                  name="rate_selected"
+                  placeholder={t("common.choose", "Выбрать")}
+                  style={{
+                    ...input,
+                    marginBottom: 0,
+                    height: 40,
+                    minHeight: 40,
+                    padding: "7px 13px",
+                    fontSize: 16,
+                    cursor: "pointer",
+                  }}
+                  menuStyle={{
+                    background: "var(--of-surface-strong)",
+                    border: "1.5px solid var(--accent)",
+                    borderRadius: 9,
+                  }}
+                />
+              </div>
+              <div
                 style={{
                   flex: 1,
-                  borderRadius: 7,
-                  border:
-                    form.rate_type === "Без торга" &&
-                    wasTriedSubmit &&
-                    !form.rate_with_vat &&
-                    !form.rate_no_vat &&
-                    !form.rate_cash
-                      ? "2px solid #ffd600"
-                      : "1.5px solid var(--of-border)",
-                  padding: "8px 13px",
-                  fontSize: 15,
-                  background: "var(--of-surface-strong)",
-                  color: "var(--of-text-strong)",
-                  outline: "none",
-                  minWidth: 0,
-                  transition: "border .2s",
+                  minWidth: 170,
+                  display: "flex",
+                  flexDirection: "column",
                 }}
-                name="rate_no_vat"
-                value={form.rate_no_vat}
-                onChange={handleChange}
-                type="number"
-                inputMode="decimal"
-                min="0"
-                step="0.01"
-              />
-              <input
-                placeholder={t("rate.cash", "Наличными")}
+              >
+                <label style={{ ...label, marginBottom: 6 }}>
+                  {t("rate.amount", "Ставка")}
+                </label>
+                <input
+                  placeholder={
+                    RATE_PAYMENT_OPTIONS.find(
+                      (opt) => opt.value === form.rate_selected
+                    )?.label || t("rate.amount", "Ставка")
+                  }
+                  style={{
+                    ...input,
+                    marginBottom: 0,
+                    height: 40,
+                    padding: "8px 13px",
+                    border:
+                      form.rate_type === "Без торга" &&
+                      wasTriedSubmit &&
+                      !selectedRateValue
+                        ? "2px solid #ffd600"
+                        : "1.5px solid var(--of-border)",
+                    boxShadow: "0 1px 6px rgba(27,51,77,0.13)",
+                  }}
+                  name={form.rate_selected}
+                  value={selectedRateValue}
+                  onChange={handleChange}
+                  type="number"
+                  inputMode="decimal"
+                  min="0"
+                  step="0.01"
+                />
+              </div>
+              <div
                 style={{
                   flex: 1,
-                  borderRadius: 7,
-                  border:
-                    form.rate_type === "Без торга" &&
-                    wasTriedSubmit &&
-                    !form.rate_with_vat &&
-                    !form.rate_no_vat &&
-                    !form.rate_cash
-                      ? "2px solid #ffd600"
-                      : "1.5px solid var(--of-border)",
-                  padding: "8px 13px",
-                  fontSize: 15,
-                  background: "var(--of-surface-strong)",
-                  color: "var(--of-text-strong)",
-                  outline: "none",
-                  minWidth: 0,
-                  transition: "border .2s",
+                  minWidth: 150,
+                  display: "flex",
+                  flexDirection: "column",
                 }}
-                name="rate_cash"
-                value={form.rate_cash}
-                onChange={handleChange}
-                type="number"
-                inputMode="decimal"
-                min="0"
-                step="0.01"
-              />
-              <div style={{ marginLeft: 10, minWidth: 85, flexShrink: 0 }}>
+              >
+                <label style={{ ...label, marginBottom: 6 }}>
+                  {t("common.currency", "Валюта")}
+                </label>
                 <CustomSelect
                   value={form.rate_currency}
                   onChange={(v) => setForm((f) => ({ ...f, rate_currency: v }))}
@@ -2634,29 +2672,14 @@ export default function OrderForm({ order = null, onSaved }) {
                   name="rate_currency"
                   placeholder={t("common.currency", "Валюта")}
                   style={{
-                    background: form.rate_currency
-                      ? "var(--accent)"
-                      : "var(--of-surface-strong)",
-                    color: form.rate_currency
-                      ? "#161616"
-                      : "var(--of-text-strong)",
-                    border: form.rate_currency
-                      ? "2px solid var(--accent)"
-                      : "1.5px solid var(--of-border)",
-                    borderRadius: 8,
-                    fontWeight: 700,
-                    fontSize: 15,
+                    ...input,
+                    marginBottom: 0,
                     height: 40,
                     minHeight: 40,
                     minWidth: 110,
                     padding: "9px 14px",
                     cursor: "pointer",
                     boxShadow: "0 2px 8px rgba(15,22,41,0.5)",
-                    outline: "none",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    transition: "background .17s, color .17s, border .17s",
                   }}
                   menuStyle={{
                     background: "var(--of-surface-strong)",
@@ -2669,9 +2692,7 @@ export default function OrderForm({ order = null, onSaved }) {
             {/* Сообщение об ошибке прямо под полями */}
             {form.rate_type === "Без торга" &&
               wasTriedSubmit &&
-              !form.rate_with_vat &&
-              !form.rate_no_vat &&
-              !form.rate_cash && (
+              !selectedRateValue && (
                 <div
                   style={{
                     color: "#ffd600",
@@ -2682,7 +2703,7 @@ export default function OrderForm({ order = null, onSaved }) {
                 >
                   {t(
                     "rate.validation.oneField",
-                    "Укажите цену хотя бы в одном из полей: 'С НДС, безнал', 'Без НДС, безнал' или 'Наличными'."
+                    "Укажите цену для выбранного варианта оплаты."
                   )}
                 </div>
               )}

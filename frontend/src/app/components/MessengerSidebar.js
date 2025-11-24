@@ -283,6 +283,22 @@ export default function MessengerSidebar({ onSelectChat, selectedChat }) {
                         // NEW: помечаем карточки, которые уходим на авто-закрытие
                         const isClosing = closingIds.has(chat.chat_id);
 
+                        const textColors = {
+                            title: isSelected ? "var(--chat-item-selected-title)" : "var(--text-primary)",
+                            subtitle: isSelected ? "var(--chat-item-selected-subtitle)" : "var(--text-secondary)",
+                            preview: isSelected ? "var(--chat-item-selected-preview)" : "var(--text-secondary)",
+                            timestamp: isSelected ? "var(--chat-item-selected-timestamp)" : "var(--text-secondary)",
+                        };
+
+                        const cardStyle = {
+                            overflow: "hidden",
+                            background: isSelected ? "var(--chat-item-selected-bg)" : "var(--control-bg)",
+                            border: isSelected ? "1px solid var(--chat-item-selected-border)" : "1px solid var(--border-subtle)",
+                            boxShadow: isSelected ? "var(--shadow-soft)" : "none",
+                            color: textColors.title,
+                            transition: "background-color var(--transition-normal), color var(--transition-fast), border-color var(--transition-normal), box-shadow var(--transition-normal), opacity 200ms ease",
+                        };
+
                         if (isSupport) {
                             // --- Саппорт: всегда через i18n ---
                             const statusRaw = String(chat.support_status || "").replace("TicketStatus.", "");
@@ -322,11 +338,12 @@ export default function MessengerSidebar({ onSelectChat, selectedChat }) {
                         return (
                             <div
                                 key={chat.chat_id ?? chat.id ?? chat.uid}
-                                className={`flex items-center gap-3 p-3 cursor-pointer hover:bg-[#eaf4fd] dark:hover:bg-[#2a3344] rounded-lg mb-1
-                                            transition-all duration-700
-                                            ${isSelected ? "bg-[#d4eaf7] dark:bg-[#232d3a]" : ""}
-                                            ${isClosing ? "opacity-0 max-h-0 -my-2 pointer-events-none" : "opacity-100 max-h-40"}`}
-                                style={{ overflow: "hidden" }}
+                                className={`flex items-center gap-3 p-3 cursor-pointer rounded-lg mb-1
+                                            hover:bg-[var(--chat-item-hover-bg)]
+                                            ${isSelected ? "hover:bg-[var(--chat-item-selected-bg)]" : ""}
+                                            ${isClosing ? "opacity-0 max-h-0 -my-2 pointer-events-none" : "opacity-100 max-h-40"}
+                                            transition-[background-color,border-color,box-shadow,opacity] duration-300`}
+                                style={cardStyle}
 
                                 onClick={() => onSelectChat(chat.chat_id)}
                                 onContextMenu={e => {
@@ -371,13 +388,21 @@ export default function MessengerSidebar({ onSelectChat, selectedChat }) {
                                     />
                                 )}
                                 <div className="flex-1 min-w-0 flex flex-col">
-                                    <span className="truncate font-semibold">
+                                    <span className="truncate font-semibold" style={{ color: textColors.title }}>
                                         {title || (isSupport ? t("support.title", "Поддержка") : "")}
                                     </span>
                                     {subtitle && (
-                                        <span className="truncate text-xs text-[#6691a7] mt-1">{subtitle}</span>
+                                        <span
+                                            className="truncate text-xs mt-1"
+                                            style={{ color: textColors.subtitle }}
+                                        >
+                                            {subtitle}
+                                        </span>
                                     )}
-                                    <div className="text-xs text-gray-500 truncate mt-1">
+                                    <div
+                                        className="text-xs truncate mt-1"
+                                        style={{ color: textColors.preview }}
+                                    >
                                         {chat.last_message
                                             ? chat.last_message.content
                                             : t("chat.noMessagesShort", "Нет сообщений")}
@@ -390,20 +415,28 @@ export default function MessengerSidebar({ onSelectChat, selectedChat }) {
                                     )}
                                 </div>
                                 <div className="flex flex-col items-end">
-                                    {chat.last_message?.sent_at &&
-                                        <div className="text-xs text-gray-400">
+                                    {chat.last_message?.sent_at && (
+                                        <div
+                                            className="text-xs"
+                                            style={{ color: textColors.timestamp }}
+                                        >
                                             {new Date(chat.last_message.sent_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                                         </div>
-                                    }
+                                    )}
                                     {chat.unread > 0 && chat.chat_id !== selectedChat && (
                                         <span className="inline-block bg-[#e45b5b] text-white text-xs rounded-full px-2 mt-1">{chat.unread}</span>
                                     )}
                                     {isGroup && !isSupport && (
                                         <button
-                                            className="mt-2 flex items-center justify-center p-1 rounded-full bg-[#264a7b] hover:bg-[#2a5fa0] transition"
+                                            className="mt-2 flex items-center justify-center p-1 rounded-full transition"
                                             onClick={e => { e.stopPropagation(); setGroupModalChat(chat); }}
                                             title={t("sidebar.manageMembers", "Управлять участниками")}
-                                            style={{ width: 32, height: 32 }}
+                                            style={{
+                                                width: 32,
+                                                height: 32,
+                                                background: "var(--chat-item-hover-bg)",
+                                                border: "1px solid var(--border-subtle)",
+                                            }}
                                         >
                                             <Users2 size={20} color="#90e1ff" />
                                         </button>
