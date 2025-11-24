@@ -1070,7 +1070,7 @@ export default function Header({ setShowRegisterModal }) {
                     gap: isCompact ? 10 : 14,
                     width: "100%",
                     padding: `${isCompact ? 4 : 6}px ${headerPadding.right}px ${isCompact ? 4 : 6}px ${headerPadding.left}px`,
-                    background: "linear-gradient(180deg, rgb(var(--header-bg)), rgb(var(--header-bg)) 48%, rgb(var(--surface)) 100%)"
+                    background: "rgb(var(--surface))"
                 }}
             >
                 <div
@@ -1080,12 +1080,12 @@ export default function Header({ setShowRegisterModal }) {
                         alignItems: "center",
                         background: "linear-gradient(180deg, rgb(var(--header-bg) / 0.96), rgb(var(--surface)))",
                         border: "1px solid var(--border-strong)",
-                        borderTop: "none",
+                        borderTop: "1px solid var(--border-strong)",
                         borderRadius: isTight ? "0 0 12px 12px" : "0 0 16px 16px",
-                        boxShadow: "0 -4px 12px rgba(0,0,0,0.05), var(--header-shadow)",
+                        boxShadow: "var(--header-shadow)",
                         padding: isCompact ? "7px 11px" : "8px 12px",
                         gap: NAV_GAP,
-                        marginTop: isCompact ? -8 : -10
+                        marginTop: 0
                     }}
                 >
                     <nav

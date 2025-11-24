@@ -77,8 +77,8 @@ const iconBtnStyle = {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    background: "#1e2d44",
-    color: "#43c8ff",
+    background: "var(--transport-card-icon-bg, #1e2d44)",
+    color: "var(--transport-card-icon-fg, #43c8ff)",
     border: "none",
     borderRadius: "50%",
     width: 32,
@@ -86,7 +86,7 @@ const iconBtnStyle = {
     fontSize: 16,
     cursor: "pointer",
     marginLeft: 3,
-    boxShadow: "0 1px 8px #23416722",
+    boxShadow: "var(--transport-card-icon-shadow, 0 1px 8px #23416722)",
 };
 
 const SimpleMap = dynamic(() => import("./SimpleMap"), { ssr: false });
@@ -112,12 +112,12 @@ function FlagIcon({ country, size = 22 }) {
                 height: size,
                 minWidth: size,
                 minHeight: size,
-                background: "#193158",
+                background: "var(--transport-card-chip-bg, #193158)",
                 borderRadius: 5,
-                border: "1.2px solid #234167",
+                border: "1.2px solid var(--transport-card-tag-border, #234167)",
                 marginRight: 8,
                 marginLeft: -2,
-                boxShadow: "0 1px 6px #23416711",
+                boxShadow: "var(--transport-card-chip-shadow, 0 1px 6px #23416711)",
                 overflow: "hidden",
                 flexShrink: 0,
                 flexGrow: 0,
@@ -977,6 +977,35 @@ function TransportCard({ transport, expanded, onToggle }) {
         }
     }, [clickedItemId, transport.id]);
 
+    const cardColors = {
+        bg: "var(--transport-card-bg, rgba(23, 38, 60, 0.97))",
+        text: "var(--transport-card-text, #e3f2fd)",
+        shadow: "var(--transport-card-shadow, 0 2px 24px #001844cc)",
+        shadowExpanded: "var(--transport-card-shadow-expanded, 0 4px 32px #43c8ff55, 0 2px 24px #001844cc)",
+        border: "var(--transport-card-border, #1e88e5)",
+        borderActive: "var(--transport-card-border-active, #43c8ff)",
+        sectionBg: "var(--transport-card-section-bg, rgba(28, 37, 52, 0.95))",
+        sectionBorder: "var(--transport-card-section-border, #193158)",
+        heading: "var(--transport-card-heading, #43c8ff)",
+        label: "var(--transport-card-label, #8ecae6)",
+        chipBg: "var(--transport-card-chip-bg, #1a273f)",
+        chipFg: "var(--transport-card-chip-fg, #cfe9ff)",
+        chipShadow: "var(--transport-card-chip-shadow, 0 2px 8px #23416711)",
+        routeBg: "var(--transport-card-route-bg, linear-gradient(90deg, #183969 38%, #253759 100%))",
+        routeFg: "var(--transport-card-route-fg, #ffffff)",
+        iconBg: "var(--transport-card-icon-bg, #162239)",
+        iconFg: "var(--transport-card-icon-fg, #43c8ff)",
+        iconShadow: "var(--transport-card-icon-shadow, 0 1px 8px #43c8ff17)",
+        metaBg: "var(--transport-card-meta-bg, #193158cc)",
+        metaFg: "var(--transport-card-meta-fg, #cfe9ff)",
+        metaShadow: "var(--transport-card-meta-shadow, 0 2px 8px #23416711)",
+        buttonBg: "var(--transport-card-button-bg, #192b42)",
+        buttonFg: "var(--transport-card-button-fg, #43c8ff)",
+        buttonShadow: "var(--transport-card-button-shadow, 0 1px 6px #43c8ff10)",
+        tooltipBg: "var(--transport-card-tooltip-bg, #222e43)",
+        tooltipFg: "var(--transport-card-tooltip-fg, #53ee5c)",
+    };
+
     async function handleChatClick() {
         const userId = ownerId;
         if (!userId) return;
@@ -1021,7 +1050,7 @@ function TransportCard({ transport, expanded, onToggle }) {
                 {visible.join(joiner)}
                 {hidden > 0 && (
                     <span
-                        style={{ color: "#43c8ff", fontWeight: 700, cursor: "pointer" }}
+                        style={{ color: cardColors.heading, fontWeight: 700, cursor: "pointer" }}
                         title={arr.join(joiner)}
                     >{` …+${hidden}`}</span>
                 )}
@@ -1044,8 +1073,8 @@ function TransportCard({ transport, expanded, onToggle }) {
                 title={t("common.copyNumber", "Скопировать номер")}
                 style={{
                     marginLeft: 7,
-                    background: "#192b42",
-                    color: "#43c8ff",
+                    background: cardColors.buttonBg,
+                    color: cardColors.buttonFg,
                     border: "none",
                     borderRadius: 7,
                     padding: "7px 11px",
@@ -1054,7 +1083,7 @@ function TransportCard({ transport, expanded, onToggle }) {
                     display: "flex",
                     alignItems: "center",
                     position: "relative",
-                    boxShadow: "0 1px 6px #43c8ff10",
+                    boxShadow: cardColors.buttonShadow,
                 }}
             >
                 <FaRegCopy style={{ marginRight: 2, fontSize: 16 }} />
@@ -1065,13 +1094,13 @@ function TransportCard({ transport, expanded, onToggle }) {
                             top: -28,
                             left: "50%",
                             transform: "translateX(-50%)",
-                            background: "#222e43",
-                            color: "#53ee5c",
+                            background: cardColors.tooltipBg,
+                            color: cardColors.tooltipFg,
                             fontSize: 12,
                             padding: "4px 10px",
                             borderRadius: 7,
                             whiteSpace: "nowrap",
-                            boxShadow: "0 2px 12px #43c8ff11",
+                            boxShadow: cardColors.metaShadow,
                         }}
                     >
                         {t("common.copied", "Скопировано!")}
@@ -1083,9 +1112,9 @@ function TransportCard({ transport, expanded, onToggle }) {
 
     // --- Общий стиль секций
     const sectionStyle = {
-        background: "rgba(28, 37, 52, 0.95)",
+        background: cardColors.sectionBg,
         borderRadius: 13,
-        border: "1.3px solid #193158",
+        border: `1.3px solid ${cardColors.sectionBorder}`,
         padding: "17px 18px 16px 18px",
         minWidth: 220,
         display: "flex",
@@ -1132,15 +1161,13 @@ function TransportCard({ transport, expanded, onToggle }) {
             ref={ref}
             data-transport-id={transport.id}
             style={{
-                background: "rgba(23, 38, 60, 0.97)",
+                background: cardColors.bg,
                 borderRadius: 20,
                 /* паддинг снизу больше не нужен — панель кнопок внутри сетки */
                 padding: "18px",
-                color: "#e3f2fd",
-                boxShadow: expanded
-                    ? "0 4px 32px #43c8ff55, 0 2px 24px #001844cc"
-                    : "0 2px 24px #001844cc",
-                borderLeft: expanded ? "8px solid #43c8ff" : "8px solid #1e88e5",
+                color: cardColors.text,
+                boxShadow: expanded ? cardColors.shadowExpanded : cardColors.shadow,
+                borderLeft: expanded ? `8px solid ${cardColors.borderActive}` : `8px solid ${cardColors.border}`,
                 display: "grid",
                 gridTemplateColumns: "1fr",            // одна колонка у карточки
                 rowGap: 14,                            // вертикальный зазор между секциями и нижней панелью
@@ -1172,13 +1199,13 @@ function TransportCard({ transport, expanded, onToggle }) {
                         <span
                             style={{
                                 fontSize: 12,
-                                color: "#8ecae6cc",
-                                background: "#193158bb",
+                                color: cardColors.metaFg,
+                                background: cardColors.metaBg,
                                 padding: "2px 10px",
                                 borderRadius: 11,
                                 fontWeight: 500,
                                 letterSpacing: 0.1,
-                                boxShadow: "0 2px 8px #23416711",
+                                boxShadow: cardColors.metaShadow,
                             }}
                             title={new Date(transport.created_at).toLocaleString("ru-RU")}
                         >
@@ -1200,13 +1227,13 @@ function TransportCard({ transport, expanded, onToggle }) {
                             title={t("views.title", "Просмотры")}
                             style={{
                                 fontSize: 12,
-                                color: "#cfe9ff",
-                                background: "#193158cc",
+                                color: cardColors.metaFg,
+                                background: cardColors.metaBg,
                                 padding: "2px 10px",
                                 borderRadius: 11,
                                 fontWeight: 700,
                                 letterSpacing: 0.1,
-                                boxShadow: "0 2px 8px #23416711",
+                                boxShadow: cardColors.metaShadow,
                                 display: "inline-flex",
                                 alignItems: "center",
                             }}
@@ -1225,12 +1252,11 @@ function TransportCard({ transport, expanded, onToggle }) {
                 <div
                     ref={sectionRefs[0]}
                     style={{
-                        background: "rgba(28, 37, 52, 0.95)",
-                        border: "1.3px solid #193158",
+                        ...sectionStyle,
                         borderRadius: 16,
-                        boxShadow: "0 2px 14px #23416722",
+                        boxShadow: cardColors.chipShadow,
                         padding: "18px 18px 15px 18px",
-                        color: "#e3f2fd",
+                        color: cardColors.text,
                         minWidth: 220,
                         display: "flex",
                         flexDirection: "column",
@@ -1247,7 +1273,7 @@ function TransportCard({ transport, expanded, onToggle }) {
                         style={{
                             fontSize: 19,
                             fontWeight: 700,
-                            color: "#43c8ff",
+                            color: cardColors.heading,
                             marginBottom: 10,
                             display: "flex",
                             alignItems: "center",
@@ -1262,12 +1288,12 @@ function TransportCard({ transport, expanded, onToggle }) {
                             alignItems: "center",
                             fontSize: 17,
                             fontWeight: 800,
-                            background: "linear-gradient(90deg, #183969 38%, #253759 100%)",
-                            color: "#fff",
+                            background: cardColors.routeBg,
+                            color: cardColors.routeFg,
                             borderRadius: 9,
                             padding: "7px 13px",
                             marginBottom: 2,
-                            boxShadow: "0 2px 8px #43c8ff17",
+                            boxShadow: cardColors.chipShadow,
                             letterSpacing: 0.02,
                             gap: 9,
                             flexWrap: "wrap",
@@ -1280,13 +1306,13 @@ function TransportCard({ transport, expanded, onToggle }) {
                                 display: "inline-flex",
                                 alignItems: "center",
                                 gap: 6,
-                                background: "#1a273f",
+                                background: cardColors.chipBg,
                                 borderRadius: 7,
                                 padding: "3px 10px",
                                 fontSize: 15,
-                                color: "#8ecae6",
+                                color: cardColors.label,
                                 fontWeight: 700,
-                                boxShadow: "0 1px 8px #42a9ff11",
+                                boxShadow: cardColors.chipShadow,
                                 minWidth: 0,
                                 lineHeight: 1.17,
                                 whiteSpace: "normal",
@@ -1326,7 +1352,7 @@ function TransportCard({ transport, expanded, onToggle }) {
                                         style={{
                                             fontSize: 19,
                                             margin: "0 7px",
-                                            color: "#43c8ff",
+                                            color: cardColors.heading,
                                             fontWeight: 900,
                                             flexShrink: 0,
                                         }}
@@ -1356,14 +1382,14 @@ function TransportCard({ transport, expanded, onToggle }) {
                                                             display: "inline-flex",
                                                             alignItems: "center",
                                                             gap: 6,
-                                                            background: "#1a273f",
+                                                            background: cardColors.chipBg,
                                                             borderRadius: 7,
                                                             padding: "3px 10px",
                                                             fontSize: 15,
                                                             marginBottom: idx !== arr.length - 1 ? 3 : 0,
-                                                            color: "#8ecae6",
+                                                            color: cardColors.label,
                                                             fontWeight: 700,
-                                                            boxShadow: "0 1px 8px #42a9ff11",
+                                                            boxShadow: cardColors.chipShadow,
                                                             minWidth: 0,
                                                             lineHeight: 1.17,
                                                             whiteSpace: "normal",
@@ -1398,8 +1424,8 @@ function TransportCard({ transport, expanded, onToggle }) {
                                                         {radius && (
                                                             <span
                                                                 style={{
-                                                                    background: "#233655",
-                                                                    color: "#8ecae6",
+                                                                    background: cardColors.sectionBorder,
+                                                                    color: cardColors.label,
                                                                     fontWeight: 500,
                                                                     fontSize: 13,
                                                                     borderRadius: 6,
@@ -1417,7 +1443,7 @@ function TransportCard({ transport, expanded, onToggle }) {
                                 </>
                             )}
                     </div>
-                    <div style={{ color: "#fff", fontSize: 15 }}>
+                    <div style={{ color: cardColors.text, fontSize: 15 }}>
                         <b>{t("transport.available", "Доступен:")}</b>{" "}
                         {transport?.mode === "постоянно"
                             ? transport?.regularity
@@ -1437,7 +1463,7 @@ function TransportCard({ transport, expanded, onToggle }) {
                     className={isLimited ? "pw-blur pw-overlay pw-noevents" : ""}
                     style={{ ...sectionStyle, minHeight: maxSectionHeight || 120 }}
                 >
-                    <div style={{ fontSize: 15, fontWeight: 700, color: "#43c8ff", marginBottom: 3 }}>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: cardColors.heading, marginBottom: 3 }}>
                         {t("transport.params", "ПАРАМЕТРЫ")}
                     </div>
                     {!!transport.truck_type && (
@@ -1448,14 +1474,14 @@ function TransportCard({ transport, expanded, onToggle }) {
                             }}
                         >
                             <span>
-                                <span style={{ color: "#8ecae6" }}>{t("truck.bodyType", "Тип кузова")}:</span> <b>{findBodyLabelByValue(transport.truck_type)}</b>
+                                <span style={{ color: cardColors.label }}>{t("truck.bodyType", "Тип кузова")}:</span> <b>{findBodyLabelByValue(transport.truck_type)}</b>
                             </span>
                         </div>
                     )}
                     {!!transport.transport_kind && (
                         <div style={rowStyle}>
                             <span>
-                                <span style={{ color: "#8ecae6" }}>{t("transport.kind", "Тип транспорта")}:</span>{" "}
+                                <span style={{ color: cardColors.label }}>{t("transport.kind", "Тип транспорта")}:</span>{" "}
                                 <b>{localizeTransportKind(transport.transport_kind)}</b>
                             </span>
                         </div>
@@ -1464,12 +1490,12 @@ function TransportCard({ transport, expanded, onToggle }) {
                         <div style={rowStyle}>
                             {!!transport.weight && (
                                 <span>
-                                    <span style={{ color: "#8ecae6" }}>{t("transport.payloadShort", "Г/п")}:</span> <b>{transport.weight} т</b>
+                                    <span style={{ color: cardColors.label }}>{t("transport.payloadShort", "Г/п")}:</span> <b>{transport.weight} т</b>
                                 </span>
                             )}
                             {!!transport.volume && (
                                 <span>
-                                    <span style={{ color: "#8ecae6" }}>{t("transport.volume", "Объём")}:</span> <b>{transport.volume} м³</b>
+                                    <span style={{ color: cardColors.label }}>{t("transport.volume", "Объём")}:</span> <b>{transport.volume} м³</b>
                                 </span>
                             )}
                         </div>
@@ -1477,7 +1503,7 @@ function TransportCard({ transport, expanded, onToggle }) {
                     {!!(transport.body_length && transport.body_width && transport.body_height) && (
                         <div style={rowStyle}>
                             <span>
-                                <span style={{ color: "#8ecae6" }}>{t("transport.bodyDims", "Кузов")}:</span>{" "}
+                                <span style={{ color: cardColors.label }}>{t("transport.bodyDims", "Кузов")}:</span>{" "}
                                 <b>
                                     {transport.body_length}×{transport.body_width}×{transport.body_height} м
                                 </b>
@@ -1487,7 +1513,7 @@ function TransportCard({ transport, expanded, onToggle }) {
                     {!!(transport.trailer_length && transport.trailer_width && transport.trailer_height) && (
                         <div style={rowStyle}>
                             <span>
-                                <span style={{ color: "#8ecae6" }}>{t("transport.trailerDims", "Прицеп")}:</span>{" "}
+                                <span style={{ color: cardColors.label }}>{t("transport.trailerDims", "Прицеп")}:</span>{" "}
                                 <b>
                                     {transport.trailer_length}×{transport.trailer_width}×{transport.trailer_height} м
                                 </b>
@@ -1541,13 +1567,13 @@ function TransportCard({ transport, expanded, onToggle }) {
                     className={isLimited ? "pw-blur pw-overlay pw-noevents" : ""}
                     style={{ ...sectionStyle, minHeight: maxSectionHeight || 120 }}
                 >
-                    <div style={{ fontSize: 15, fontWeight: 700, color: "#43c8ff", marginBottom: 3 }}>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: cardColors.heading, marginBottom: 3 }}>
                         {t("transport.features", "ОСОБЕННОСТИ")}
                     </div>
                     {Array.isArray(transport.load_types) && transport.load_types.length > 0 && (
                         <div style={rowStyle}>
                             <span>
-                                <span style={{ color: "#8ecae6" }}>{t("order.loading", "Загрузка:")}</span>
+                                <span style={{ color: cardColors.label }}>{t("order.loading", "Загрузка:")}</span>
                                 <b>{localizeLoadingTypes(transport.load_types).join(", ")}</b>
                             </span>
                         </div>
@@ -1605,7 +1631,7 @@ function TransportCard({ transport, expanded, onToggle }) {
                                                         lineHeight: 1.4,
                                                     }}
                                                 >
-                                                    <span style={{ color: "#fff", fontWeight: 900, marginRight: 7 }}>{num}</span>
+                                                    <span style={{ color: cardColors.text, fontWeight: 900, marginRight: 7 }}>{num}</span>
                                                     {ADR_CLASS_INFO[num] || ""}
                                                 </div>
                                             ))}
@@ -1622,15 +1648,15 @@ function TransportCard({ transport, expanded, onToggle }) {
                                     display: "inline-flex",
                                     alignItems: "center",
                                     fontWeight: 700,
-                                    background: "#193158",
+                                    background: cardColors.metaBg,
                                     borderRadius: 6,
                                     padding: "2px 11px",
-                                    color: "#43c8ff",
+                                    color: cardColors.heading,
                                     fontSize: 14,
-                                    boxShadow: "0 0 6px #43c8ff55",
+                                    boxShadow: cardColors.metaShadow,
                                 }}
                             >
-                                <svg width="16" height="16" fill="#43c8ff" style={{ marginRight: 4 }} viewBox="0 0 20 20">
+                                <svg width="16" height="16" fill={cardColors.heading} style={{ marginRight: 4 }} viewBox="0 0 20 20">
                                     <path d="M10 2C7.243 2 5 4.243 5 7c0 2.948 4.46 9.018 4.651 9.286a1 1 0 0 0 1.698 0C10.54 16.018 15 9.948 15 7c0-2.757-2.243-5-5-5zm0 12.243C8.185 11.167 7 8.995 7 7a3 3 0 0 1 6 0c0 1.995-1.185 4.167-3 7.243zM10 9a2 2 0 1 0 0-4 2 2 0 0 0 0 4z" />
                                 </svg>
                                 {t("transport.gps", "GPS мониторинг")}
@@ -1641,8 +1667,8 @@ function TransportCard({ transport, expanded, onToggle }) {
                         <div style={rowStyle}>
                             <span
                                 style={{
-                                    background: "#43c8ff",
-                                    color: "#193158",
+                                    background: cardColors.metaBg,
+                                    color: cardColors.metaFg,
                                     fontWeight: 700,
                                     borderRadius: 6,
                                     padding: "2px 9px",
@@ -1661,7 +1687,7 @@ function TransportCard({ transport, expanded, onToggle }) {
                     ) && (
                             <div
                                 style={{
-                                    color: "#6ec6ff",
+                                    color: cardColors.heading,
                                     fontWeight: 500,
                                     fontSize: 16,
                                     display: "flex",
@@ -1676,15 +1702,15 @@ function TransportCard({ transport, expanded, onToggle }) {
                                         width: 23,
                                         height: 23,
                                         borderRadius: "50%",
-                                        background: "#172a47",
+                                        background: cardColors.sectionBorder,
                                         display: "inline-flex",
                                         alignItems: "center",
                                         justifyContent: "center",
                                     }}
                                 >
                                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                                        <circle cx="8" cy="8" r="8" fill="#21395d" />
-                                        <text x="8" y="12" textAnchor="middle" fill="#6ec6ff" fontSize="13" fontWeight="bold">
+                                        <circle cx="8" cy="8" r="8" fill={cardColors.sectionBorder} />
+                                        <text x="8" y="12" textAnchor="middle" fill={cardColors.heading} fontSize="13" fontWeight="bold">
                                             i
                                         </text>
                                     </svg>
@@ -1776,12 +1802,12 @@ function TransportCard({ transport, expanded, onToggle }) {
                         <UserAvatar
                             user={ownerProfile}
                             size={40}
-                            style={{ border: "2px solid #233655", background: "#222d38", marginRight: 12 }}
+                            style={{ border: `2px solid ${cardColors.sectionBorder}`, background: cardColors.sectionBg, marginRight: 12 }}
                         />
                         <span
                             style={{
                                 fontWeight: 700,
-                                color: "#e3f2fd",
+                                color: cardColors.text,
                                 fontSize: 15,
                                 whiteSpace: "nowrap",
                                 maxWidth: 130,
@@ -1794,7 +1820,7 @@ function TransportCard({ transport, expanded, onToggle }) {
                         {ownerProfile.contact_person && (
                             <span
                                 style={{
-                                    color: "#8ecae6",
+                                    color: cardColors.label,
                                     fontSize: 14,
                                     maxWidth: 110,
                                     whiteSpace: "nowrap",
@@ -1926,8 +1952,8 @@ function TransportCard({ transport, expanded, onToggle }) {
                                                                     gap: 10,
                                                                 }}
                                                             >
-                                                                <b style={{ color: "#e3f2fd", fontSize: 13 }}>{c.author_name || t("comments.member", "Участник")}</b>
-                                                                <span style={{ color: "#8ecae6", fontSize: 11 }}>
+                                                                <b style={{ color: cardColors.text, fontSize: 13 }}>{c.author_name || t("comments.member", "Участник")}</b>
+                                                                <span style={{ color: cardColors.label, fontSize: 11 }}>
                                                                     {(() => {
                                                                         const d = new Date(c.created_at);
                                                                         return isNaN(d.getTime())
@@ -1985,8 +2011,8 @@ function TransportCard({ transport, expanded, onToggle }) {
                                                     height: 16,
                                                     minWidth: 16,
                                                     borderRadius: "50%",
-                                                    background: "#193158",
-                                                    color: "#9ec3ff",
+                                                    background: cardColors.sectionBorder,
+                                                    color: cardColors.label,
                                                     fontWeight: 900,
                                                     fontSize: 11,
                                                     border: "1px solid #2b4a77",

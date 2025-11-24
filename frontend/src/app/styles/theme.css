@@ -215,3 +215,64 @@
     --order-card-icon-fg: var(--brand-navy);
     --order-card-icon-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
 }
+
+/* === Transport card tokens === */
+:root[data-theme="dark"] {
+    --transport-card-bg: rgba(23, 38, 60, 0.97);
+    --transport-card-text: #e3f2fd;
+    --transport-card-shadow: 0 2px 24px #001844cc;
+    --transport-card-shadow-expanded: 0 4px 32px #43c8ff55, 0 2px 24px #001844cc;
+    --transport-card-border: #1e88e5;
+    --transport-card-border-active: #43c8ff;
+    --transport-card-section-bg: rgba(28, 37, 52, 0.95);
+    --transport-card-section-border: #193158;
+    --transport-card-heading: #43c8ff;
+    --transport-card-label: #8ecae6;
+    --transport-card-chip-bg: #1a273f;
+    --transport-card-chip-fg: #cfe9ff;
+    --transport-card-chip-shadow: 0 2px 8px #23416711;
+    --transport-card-route-bg: linear-gradient(90deg, #183969 38%, #253759 100%);
+    --transport-card-route-fg: #ffffff;
+    --transport-card-icon-bg: #162239;
+    --transport-card-icon-fg: #43c8ff;
+    --transport-card-icon-shadow: 0 1px 8px #43c8ff17;
+    --transport-card-meta-bg: #193158cc;
+    --transport-card-meta-fg: #cfe9ff;
+    --transport-card-meta-shadow: 0 2px 8px #23416711;
+    --transport-card-button-bg: #192b42;
+    --transport-card-button-fg: #43c8ff;
+    --transport-card-button-shadow: 0 1px 6px #43c8ff10;
+    --transport-card-tooltip-bg: #222e43;
+    --transport-card-tooltip-fg: #53ee5c;
+    --transport-card-tag-border: #234167;
+}
+
+:root[data-theme="light"] {
+    --transport-card-bg: #ffffff;
+    --transport-card-text: #0f172a;
+    --transport-card-shadow: 0 10px 26px rgba(15, 23, 42, 0.08);
+    --transport-card-shadow-expanded: 0 16px 36px rgba(15, 23, 42, 0.12);
+    --transport-card-border: color-mix(in srgb, var(--brand-blue) 36%, var(--border-subtle));
+    --transport-card-border-active: color-mix(in srgb, var(--brand-blue) 64%, #0ea5e9);
+    --transport-card-section-bg: #f4f7fd;
+    --transport-card-section-border: var(--border-subtle);
+    --transport-card-heading: var(--brand-navy);
+    --transport-card-label: var(--text-secondary);
+    --transport-card-chip-bg: #eef3fb;
+    --transport-card-chip-fg: var(--text-primary);
+    --transport-card-chip-shadow: 0 4px 10px rgba(15, 23, 42, 0.08);
+    --transport-card-route-bg: linear-gradient(90deg, #f1f7ff 25%, #e6f1ff 100%);
+    --transport-card-route-fg: var(--text-primary);
+    --transport-card-icon-bg: #e8f2ff;
+    --transport-card-icon-fg: var(--brand-navy);
+    --transport-card-icon-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
+    --transport-card-meta-bg: color-mix(in srgb, var(--brand-blue) 16%, #eef3fb);
+    --transport-card-meta-fg: var(--text-primary);
+    --transport-card-meta-shadow: 0 4px 10px rgba(15, 23, 42, 0.08);
+    --transport-card-button-bg: color-mix(in srgb, var(--brand-blue) 18%, #f5f8ff);
+    --transport-card-button-fg: var(--brand-navy);
+    --transport-card-button-shadow: 0 2px 10px rgba(15, 23, 42, 0.08);
+    --transport-card-tooltip-bg: #0f172a;
+    --transport-card-tooltip-fg: #16a34a;
+    --transport-card-tag-border: color-mix(in srgb, var(--brand-blue) 30%, var(--border-subtle));
+}

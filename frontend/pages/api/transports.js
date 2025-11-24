@@ -10,11 +10,13 @@ export default async function handler(req, res) {
   // откатываемся на локальный FastAPI (порт 8004 из run_backend_dev.bat).
   const upstream =
     process.env.INTERNAL_API_BASE?.trim?.() ||
+    process.env.BACKEND_HOST?.trim?.() ||
     process.env.NEXT_PUBLIC_API_URL?.trim?.() ||
     process.env.NEXT_PUBLIC_API_BASE_URL?.trim?.() ||
     process.env.NEXT_PUBLIC_DEV_API_URL?.trim?.() ||
     process.env.NEXT_PUBLIC_API_SERVER?.trim?.() ||
-    "http://127.0.0.1:8004/api";
+    "http://127.0.0.1:8004";
+
 
   const url = new URL(`${upstream.replace(/\/$/, "")}/transports`);
 
