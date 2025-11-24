@@ -143,40 +143,6 @@ export default function HomeMapsSection() {
                                     <CardSkeleton />
                                 )}
                             </div>
-
-                            <div className="flex justify-center">
-                                <div
-                                    className={`-mt-7 md:-mt-8 inline-flex items-center gap-2 md:gap-3 rounded-full border px-3.5 py-2 md:px-4 md:py-2.5 shadow-[0_10px_28px_rgba(0,0,0,0.22)] ${isLight
-                                        ? "bg-white/98 text-slate-800 border-slate-200"
-                                        : "bg-[#0f1b30]/95 text-white border-white/10"
-                                        }`}
-                                    style={{ backdropFilter: "blur(12px)" }}
-                                >
-                                    <button
-                                        onClick={() => router.push("/orders")}
-                                        className="group inline-flex items-center gap-2 rounded-full px-3.5 md:px-4 py-1.5 md:py-2 text-[13px] md:text-[14px] font-semibold transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_12px_30px_rgba(0,0,0,0.18)]"
-                                        style={{
-                                            background: isLight ? "linear-gradient(180deg,#f8fbff,#e8f3ff)" : "linear-gradient(180deg,#12335d,#0f2544)",
-                                            color: isLight ? "#0f172a" : "#f8fbff",
-                                        }}
-                                    >
-                                        <FiPackage className={isLight ? "text-sky-500" : "text-[#53b7ff]"} />
-                                        {t("home.map.findCargo", "Найти груз")}
-                                    </button>
-                                    <span className={isLight ? "text-slate-300" : "text-white/20"}>|</span>
-                                    <button
-                                        onClick={() => router.push("/transport")}
-                                        className="group inline-flex items-center gap-2 rounded-full px-3.5 md:px-4 py-1.5 md:py-2 text-[13px] md:text-[14px] font-semibold transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_12px_30px_rgba(0,0,0,0.22)]"
-                                        style={{
-                                            background: isLight ? "linear-gradient(180deg,#f8fbff,#e8f3ff)" : "linear-gradient(180deg,#12335d,#0f2544)",
-                                            color: isLight ? "#0f172a" : "#f8fbff",
-                                        }}
-                                    >
-                                        <FiTruck className={isLight ? "text-sky-500" : "text-[#53b7ff]"} />
-                                        {t("home.map.findTransport", "Найти транспорт")}
-                                    </button>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </div>

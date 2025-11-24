@@ -74,30 +74,6 @@ export default function CompactHero({
                     </div>
                 </div>
 
-
-                {/* CTA — компактно на одной линии */}
-                <div className="mt-4 flex items-center justify-center gap-3">
-                    <button
-                        type="button"
-                        onClick={onFindCargo}
-                        className="rounded-xl px-4 md:px-5 py-2.5 text-[15px] font-semibold
-                       bg-gradient-to-r from-[#1fb6ff] to-[#54d1ff] text-[#0b1222]
-                       shadow-[0_6px_24px_rgba(0,0,0,0.35)] hover:opacity-95 active:translate-y-[1px]
-                       ring-1 ring-cyan-300/40"
-                    >
-                        {t("hero.cta.findCargo", "Найти груз")}
-                    </button>
-                    <button
-                        type="button"
-                        onClick={onFindTransport}
-                        className="rounded-xl px-4 md:px-5 py-2.5 text-[15px] font-semibold
-                       bg-gradient-to-r from-[#2ea9ff] to-[#71c6ff] text-[#0b1222]
-                       shadow-[0_6px_24px_rgba(0,0,0,0.35)] hover:opacity-95 active:translate-y-[1px]
-                       ring-1 ring-cyan-300/40"
-                    >
-                        {t("hero.cta.findTransport", "Найти транспорт")}
-                    </button>
-                </div>
             </div>
 
             {/* Деликатные разделители для ровного стыка секций */}
