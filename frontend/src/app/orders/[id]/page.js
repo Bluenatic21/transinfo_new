@@ -54,12 +54,12 @@ function FlagIcon({ country, size = 22 }) {
                 height: size,
                 minWidth: size,
                 minHeight: size,
-                background: "#193158",
+                background: LIGHT_COLORS.accentSoft,
                 borderRadius: 5,
-                border: "1.2px solid #234167",
+                border: `1.2px solid ${LIGHT_COLORS.border}`,
                 marginRight: 8,
                 marginLeft: -2,
-                boxShadow: "0 1px 6px #23416711",
+                boxShadow: LIGHT_COLORS.shadow,
                 overflow: "hidden",
                 flexShrink: 0,
                 flexGrow: 0,
@@ -108,7 +108,7 @@ function getCountryCode(location) {
 
 const OrderRouteMap = dynamic(() => import("../../components/OrderRouteMap"), {
     ssr: false,
-    loading: () => <div style={{ height: 220, background: "#182337", borderRadius: 16 }} />,
+    loading: () => <div style={{ height: 220, background: LIGHT_COLORS.pillBg, borderRadius: 16 }} />,
 });
 
 // SVG ICONS
@@ -163,6 +163,20 @@ const icons = {
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10z" stroke="currentColor" strokeWidth="2" />
         </svg>
     ),
+};
+
+const LIGHT_COLORS = {
+    pageBg: "#f5f7fb",
+    cardBg: "#ffffff",
+    border: "#e1e8f0",
+    text: "#1f2937",
+    heading: "#0f172a",
+    muted: "#526075",
+    accent: "#0f75e0",
+    accentSoft: "#e6f2ff",
+    highlight: "#f6d24b",
+    shadow: "0 18px 40px rgba(15, 23, 42, 0.08)",
+    pillBg: "#f0f4fa",
 };
 
 // --- Helpers for attachments (как в транспортах) ---
@@ -481,14 +495,14 @@ export default function OrderDetailsPage() {
 
     const cardStyle = useMemo(
         () => ({
-            background: "#1f2f48",
-            border: "1px solid #223c62",
+            background: LIGHT_COLORS.cardBg,
+            border: `1px solid ${LIGHT_COLORS.border}`,
             borderRadius: 16,
             padding: isMobile ? 14 : 18,
             display: "flex",
             flexDirection: "column",
             gap: isMobile ? 10 : 12,
-            boxShadow: "0 14px 30px rgba(7, 19, 38, 0.32)",
+            boxShadow: LIGHT_COLORS.shadow,
         }),
         [isMobile]
     );
@@ -950,15 +964,15 @@ export default function OrderDetailsPage() {
 
                 <div
                     style={{
-                        background: isMobile ? "transparent" : "rgba(24,34,54,0.96)",
+                        background: isMobile ? "transparent" : LIGHT_COLORS.pageBg,
                         minHeight: "100dvh",
-                        color: "#e3f2fd",
+                        color: LIGHT_COLORS.text,
                         padding: `${PAD + (isMobile ? 4 : 0)}px ${PAD}px ${PAD * (isMobile ? 2 : 2)}px`,
-                        boxSizing: "border-box",           // ← фикс переполнения по ширине
+                        boxSizing: "border-box",           // ← фикс переполнения по ширине␊
                         maxWidth: isMobile ? "100%" : 1300,
                         margin: "0 auto",
                         borderRadius: isMobile ? 0 : 20,
-                        boxShadow: isMobile ? "none" : "0 6px 28px #192f4c85",
+                        boxShadow: isMobile ? "none" : LIGHT_COLORS.shadow,
                         position: "relative"
                     }}
                 >
@@ -975,11 +989,12 @@ export default function OrderDetailsPage() {
                             gap: 6,
                             padding: "4px 10px",
                             borderRadius: 999,
-                            background: "#193158cc",
-                            border: "1px solid #2a4872",
-                            color: "#cfe9ff",
+                            background: LIGHT_COLORS.accentSoft,
+                            border: `1px solid ${LIGHT_COLORS.border}`,
+                            color: LIGHT_COLORS.heading,
                             fontWeight: 700,
-                            fontSize: isMobile ? 12 : 13
+                            fontSize: isMobile ? 12 : 13,
+                            boxShadow: LIGHT_COLORS.shadow
                         }}
                     >
                         <FaEye style={{ filter: "drop-shadow(0 0 3px #43c8ff55)" }} />
@@ -997,14 +1012,14 @@ export default function OrderDetailsPage() {
                     >
                         <button
                             style={{
-                                background: "#193158",
-                                color: "#e3f2fd",
-                                border: 0,
+                                background: LIGHT_COLORS.accent,
+                                color: "#ffffff",
+                                border: `1px solid ${LIGHT_COLORS.border}`,
                                 borderRadius: 10,
                                 padding: isMobile ? "9px 14px" : "11px 18px",
                                 fontWeight: 800,
                                 fontSize: isMobile ? 16 : 18,
-                                boxShadow: "0 2px 10px #40c8fc22",
+                                boxShadow: LIGHT_COLORS.shadow,
                                 cursor: "pointer",
                             }}
                             onClick={() => router.back()}
@@ -1473,8 +1488,8 @@ export default function OrderDetailsPage() {
                                                         height: isMobile ? 84 : 100,
                                                         objectFit: "cover",
                                                         borderRadius: 8,
-                                                        border: "1px solid #2c4a70",
-                                                        background: "#0b1c2f",
+                                                        border: `1px solid ${LIGHT_COLORS.border}`,
+                                                        background: LIGHT_COLORS.pillBg,
                                                         cursor: "pointer",
                                                     }}
                                                     onClick={() => {
@@ -1500,8 +1515,8 @@ export default function OrderDetailsPage() {
                                                         display: "flex",
                                                         alignItems: "center",
                                                         gap: 10,
-                                                        background: "#1b2742",
-                                                        border: "1px solid #27446d",
+                                                        background: LIGHT_COLORS.pillBg,
+                                                        border: `1px solid ${LIGHT_COLORS.border}`,
                                                         borderRadius: 10,
                                                         padding: "10px 12px",
                                                         marginBottom: 8,

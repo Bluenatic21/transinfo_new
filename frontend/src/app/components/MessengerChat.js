@@ -2705,9 +2705,14 @@ export default function MessengerChat({
   );
 
   const handleKeyDown = (e) => {
-    if (e.target !== textareaRef.current) return;
+    const textarea = textareaRef.current;
+    const isActiveTextarea =
+      textarea &&
+      (e.target === textarea || document.activeElement === textarea);
+
     if (
-      e.key === "Enter" &&
+      isActiveTextarea &&
+      (e.key === "Enter" || e.key === "NumpadEnter") &&
       !e.shiftKey &&
       !e.ctrlKey &&
       !e.altKey &&
@@ -2718,7 +2723,6 @@ export default function MessengerChat({
       handleSend(e);
     }
   };
-
   const addEmoji = (emojiObject) => {
     if (!textareaRef.current) return;
     const cursorPos = textareaRef.current.selectionStart ?? input.length;
@@ -3935,6 +3939,7 @@ export default function MessengerChat({
       {preview}
       <form
         onSubmit={handleSend}
+        onKeyDown={handleKeyDown}
         style={{
           background: "#203154",
           padding: "18px 16px",

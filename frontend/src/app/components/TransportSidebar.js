@@ -22,27 +22,30 @@ export default function TransportSidebar() {
     const items = (isOwnerRole ? itemsAll.filter(i => i.href !== "/create-transport") : itemsAll);
     return (
         <aside
+            className="app-sidebar"
             style={{
                 width: 232,
-                background: "rgba(24, 38, 60, 0.97)",         // глубокий стеклянный синий
-                borderRight: "1.5px solid #24385b",             // голубая граница
+                background: "var(--sidebar-bg)",
+                borderRight: "1.5px solid var(--sidebar-border)",
                 padding: "42px 0 0 0",
                 minHeight: "100vh",
                 display: "flex",
                 flexDirection: "column",
                 gap: 18,
-                boxShadow: "4px 0 32px #0a1c34aa",             // синяя тень
+                boxShadow: "var(--sidebar-shadow)",
                 backdropFilter: "blur(4px)",                    // размытый фон
+                position: "sticky",
+                top: 0,
             }}
         >
             <div
                 style={{
-                    color: "#4fc3f7",                           // голубой акцент
+                    color: "var(--sidebar-title)",
                     fontWeight: 900,
                     fontSize: 27,
                     letterSpacing: 2,
                     margin: "0 0 30px 32px",
-                    textShadow: "0 1px 10px #112b4dcc",        // glow-тень
+                    textShadow: "var(--sidebar-title-shadow)",        // glow-тень
                 }}
             >
                 {t("nav.transport", "Транспорт")}
@@ -53,14 +56,13 @@ export default function TransportSidebar() {
                         key={item.href}
                         href={item.href}
                         style={{
-                            color: "#e3f2fd",                   // почти белый-синий
                             padding: "13px 32px",
                             textDecoration: "none",
                             fontWeight: 700,
                             borderRadius: 8,
                             margin: "0 14px",
                             background: "none",
-                            transition: "background 0.18s, color 0.16s",
+                            transition: "background var(--transition-normal), color var(--transition-fast)",
                             display: "flex",
                             alignItems: "center",
                             gap: 10,

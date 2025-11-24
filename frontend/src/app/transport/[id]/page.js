@@ -50,12 +50,12 @@ function FlagIcon({ country, size = 22 }) {
                 height: size,
                 minWidth: size,
                 minHeight: size,
-                background: "#193158",
+                background: LIGHT_COLORS.accentSoft,
                 borderRadius: 5,
-                border: "1.2px solid #234167",
+                border: `1.2px solid ${LIGHT_COLORS.border}`,
                 marginRight: 8,
                 marginLeft: -2,
-                boxShadow: "0 1px 6px #23416711",
+                boxShadow: LIGHT_COLORS.shadow,
                 overflow: "hidden",
                 flexShrink: 0,
                 flexGrow: 0,
@@ -152,6 +152,20 @@ const icons = {
     ),
 };
 
+const LIGHT_COLORS = {
+    pageBg: "#f5f7fb",
+    cardBg: "#ffffff",
+    border: "#e1e8f0",
+    text: "#1f2937",
+    heading: "#0f172a",
+    muted: "#526075",
+    accent: "#0f75e0",
+    accentSoft: "#e6f2ff",
+    highlight: "#f6d24b",
+    shadow: "0 18px 40px rgba(15, 23, 42, 0.08)",
+    pillBg: "#f0f4fa",
+};
+
 // ADR классы — берём локализованный текст через t()
 const getAdrClassInfo = (t) => ({
     "1": t("adr.info.1", "Класс 1: Взрывчатые вещества и изделия"),
@@ -169,23 +183,24 @@ function Section({ title, children, style }) {
     return (
         <section
             style={{
-                background: "#1f2f48",
-                border: "1px solid #223c62",
+                background: LIGHT_COLORS.cardBg,
+                border: `1px solid ${LIGHT_COLORS.border}`,
                 borderRadius: 16,
                 padding: "clamp(14px, 4vw, 18px)",
                 marginBottom: "clamp(12px, 3vw, 18px)",
                 height: "100%", // <--- ДОБАВЬ ЭТО
-                boxShadow: "0 14px 30px rgba(7, 19, 38, 0.32)",
+                boxShadow: LIGHT_COLORS.shadow,
                 display: "flex",
                 flexDirection: "column",
                 gap: 10,
+                color: LIGHT_COLORS.text,
                 ...style,
             }}
         >
             {title && (
                 <div
                     style={{
-                        color: "#cfe3ff",
+                        color: LIGHT_COLORS.heading,
                         fontWeight: 750,
                         fontSize: 17,
                         marginBottom: 10,
@@ -238,14 +253,15 @@ function FileIcon({ ext }) {
     return (
         <span style={{
             width: 28, height: 28, minWidth: 28, minHeight: 28,
-            borderRadius: 7, background: "#1f2f4d",
+            borderRadius: 7, background: LIGHT_COLORS.pillBg,
             display: "inline-flex", alignItems: "center", justifyContent: "center",
-            fontSize: 12, color: "#9fd3ff", border: "1px solid #27446d"
+            fontSize: 12, color: LIGHT_COLORS.accent, border: `1px solid ${LIGHT_COLORS.border}`
         }}>
             {upper || "FILE"}
         </span>
     );
 }
+
 
 export default function TransportDetailPage() {
     const { t } = useLang();
@@ -501,9 +517,9 @@ export default function TransportDetailPage() {
                 />
 
                 <div style={{
-                    background: "#182337",
+                    background: LIGHT_COLORS.pageBg,
                     minHeight: "100vh",
-                    color: "#e3f2fd",
+                    color: LIGHT_COLORS.text,
                     padding: "24px 16px 48px",
                     maxWidth: 520,
                     margin: "0 auto",
@@ -527,12 +543,13 @@ export default function TransportDetailPage() {
                             gap: 6,
                             padding: "3px 9px",
                             borderRadius: 999,
-                            background: "#193158cc",
-                            border: "1px solid #2a4872",
-                            color: "#cfe9ff",
+                            background: LIGHT_COLORS.accentSoft,
+                            border: `1px solid ${LIGHT_COLORS.border}`,
+                            color: LIGHT_COLORS.heading,
                             fontWeight: 700,
                             fontSize: 12,
-                            pointerEvents: "none"
+                            pointerEvents: "none",
+                            boxShadow: LIGHT_COLORS.shadow,
                         }}
                     >
                         <FaEye />
@@ -541,14 +558,14 @@ export default function TransportDetailPage() {
                     <button
                         style={{
                             marginBottom: 16,
-                            background: "#43c8ff",
-                            color: "#182337",
-                            border: 0,
+                            background: LIGHT_COLORS.accent,
+                            color: "#ffffff",
+                            border: `1px solid ${LIGHT_COLORS.border}`,
                             borderRadius: 8,
                             padding: "10px 19px",
                             fontWeight: 800,
                             fontSize: 17,
-                            boxShadow: "0 1px 12px #40c8fc30"
+                            boxShadow: LIGHT_COLORS.shadow
                         }}
                         onClick={() => router.back()}
                     >← {t("common.back", "Назад")}</button>
@@ -678,15 +695,15 @@ export default function TransportDetailPage() {
                                     <span
                                         style={{
                                             marginLeft: 6,
-                                            background: "#232f45",
-                                            color: "#FFD600",
+                                            background: LIGHT_COLORS.accentSoft,
+                                            color: LIGHT_COLORS.heading,
                                             fontWeight: 700,
                                             borderRadius: 6,
                                             padding: "2px 13px",
                                             fontSize: 16,
                                             cursor: "pointer",
-                                            boxShadow: "0 2px 16px #ffe60018",
-                                            border: adrDropdownOpen ? "2px solid #FFD600" : "2px solid #232f45",
+                                            boxShadow: LIGHT_COLORS.shadow,
+                                            border: adrDropdownOpen ? `2px solid ${LIGHT_COLORS.accent}` : `2px solid ${LIGHT_COLORS.border}`,
                                             transition: "border .15s",
                                             display: "inline-block",
                                         }}
@@ -702,11 +719,11 @@ export default function TransportDetailPage() {
                                             position: "absolute",
                                             left: 0,
                                             top: "110%",
-                                            background: "#212d3d",
-                                            color: "#FFD600",
+                                            background: LIGHT_COLORS.cardBg,
+                                            color: LIGHT_COLORS.text,
                                             borderRadius: 10,
                                             padding: "13px 19px 13px 19px",
-                                            boxShadow: "0 4px 24px #ffe60022",
+                                            boxShadow: LIGHT_COLORS.shadow,
                                             zIndex: 24,
                                             minWidth: 220,
                                             fontSize: 15,
@@ -810,13 +827,14 @@ export default function TransportDetailPage() {
                                         {docItems.map((f, i) => (
                                             <li key={i} style={{
                                                 display: "flex", alignItems: "center", gap: 10,
-                                                background: "#1b2742", border: "1px solid #27446d",
-                                                borderRadius: 10, padding: "10px 12px", marginBottom: 8
+                                                background: LIGHT_COLORS.pillBg, border: `1px solid ${LIGHT_COLORS.border}`,
+                                                borderRadius: 10, padding: "10px 12px", marginBottom: 8,
+                                                boxShadow: LIGHT_COLORS.shadow,
                                             }}>
                                                 <FileIcon ext={f.ext} />
                                                 <a
                                                     href={withApi(f.url)} target="_blank" rel="noopener noreferrer"
-                                                    style={{ color: "#c9eaff", textDecoration: "none", fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
+                                                    style={{ color: LIGHT_COLORS.text, textDecoration: "none", fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
                                                     title={f.name}
                                                 >
                                                     {f.name}
@@ -825,8 +843,9 @@ export default function TransportDetailPage() {
                                                     <a
                                                         href={withApi(f.url)} download
                                                         style={{
-                                                            background: "#2a6eb3", border: "1px solid #3a86d1",
-                                                            color: "#e8f4ff", borderRadius: 8, padding: "6px 10px",
+                                                            background: LIGHT_COLORS.accent,
+                                                            border: `1px solid ${LIGHT_COLORS.border}`,
+                                                            color: "#ffffff", borderRadius: 8, padding: "6px 10px",
                                                             fontSize: 14, textDecoration: "none"
                                                         }}
                                                     >

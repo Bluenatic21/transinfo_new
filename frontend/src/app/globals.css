@@ -932,29 +932,30 @@ html[data-booting] body> :not(#boot-loader) {
 
 /* === Header sizing (чтобы карточка всегда помещалась внутрь) === */
 :root {
-  --header-h: 64px;
+  --header-h: 56px;
   /* desktop по умолчанию */
 }
 
 @media (max-width: 1280px) {
   :root {
-    --header-h: 60px;
+    --header-h: 54px;
   }
 }
 
 @media (max-width: 1024px) {
   :root {
-    --header-h: 56px;
+    --header-h: 52px;
   }
 }
 
 @media (max-width: 640px) {
   :root {
-    --header-h: 52px;
+    --header-h: 50px;
   }
 
   /* мобильные */
 }
+
 
 /* Карточка пользователя в правом верхнем углу */
 .header-user-chip {
@@ -2162,8 +2163,8 @@ body {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 12px;
-  padding: 22px 3vw 17px 3vw;
+  gap: 10px;
+  padding: 14px 3vw 12px 3vw;
   background: var(--bg-header);
   border-bottom: 1px solid var(--border-strong);
   box-shadow: var(--shadow-soft);
@@ -2253,6 +2254,12 @@ body {
   box-shadow: none;
   border: none;
   cursor: pointer;
+}
+
+[data-theme="dark"] .header-root .nav-link,
+[data-theme="dark"] .header-root-mobile .nav-link,
+[data-theme="dark"] .header-nav-row .nav-link {
+  color: #7cc3ff;
 }
 
 
