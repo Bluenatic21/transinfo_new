@@ -1080,6 +1080,7 @@ export default function Header({ setShowRegisterModal }) {
                         alignItems: "center",
                         background: "linear-gradient(180deg, rgb(var(--header-bg) / 0.96), rgb(var(--surface)))",
                         border: "1px solid var(--border-strong)",
+                        borderTop: "none",
                         borderRadius: isTight ? "0 0 12px 12px" : "0 0 16px 16px",
                         boxShadow: "0 -4px 12px rgba(0,0,0,0.05), var(--header-shadow)",
                         padding: isCompact ? "7px 11px" : "8px 12px",
