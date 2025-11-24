@@ -143,8 +143,8 @@ function LoadingTypeDropdown({ value, onChange, options }) {
                     borderRadius: 8,
                     padding: "9px 15px",
                     fontSize: 15,
-                    background: "#202e4a",
-                    color: value.length ? "var(--accent)" : "#b0bcdc",
+                    background: "var(--of-input-bg)",
+                    color: value.length ? "var(--accent)" : "var(--of-text-muted)",
                     cursor: "pointer",
                     minHeight: 38,
                     transition: "border 0.14s",
@@ -162,7 +162,7 @@ function LoadingTypeDropdown({ value, onChange, options }) {
                     zIndex: 99,
                     left: 0,
                     top: 39,
-                    background: "#202e4a",
+                    background: "var(--of-input-bg)",
                     border: "1.5px solid var(--accent)",
                     borderRadius: 9,
                     minWidth: "100%",
@@ -179,12 +179,12 @@ function LoadingTypeDropdown({ value, onChange, options }) {
                         style={{
                             width: "97%",
                             borderRadius: 6,
-                            border: "1px solid #294c7a",
+                            border: "1px solid var(--of-border)",
                             padding: "7px 10px",
                             fontSize: 15,
                             marginBottom: 8,
-                            color: "#e3f2fd",
-                            background: "#181c20"
+                            color: "var(--of-text-strong)",
+                            background: "var(--of-surface-strong)"
                         }}
                     />
                     {filtered.length
@@ -197,7 +197,7 @@ function LoadingTypeDropdown({ value, onChange, options }) {
                                     borderRadius: 7,
                                     cursor: "pointer",
                                     background: value.includes(opt) ? "var(--accent-hover)" : "none",
-                                    color: value.includes(opt) ? "#fff" : "#e3f2fd",
+                                    color: value.includes(opt) ? "#fff" : "var(--of-text-strong)",
                                     marginBottom: 2,
                                     display: "flex",
                                     alignItems: "center",
@@ -302,7 +302,7 @@ function TruckTypeDropdown({ value, onChange, options, inputRef }) {
                     borderRadius: 7,
                     cursor: "pointer",
                     background: value === opt.value ? "var(--accent-hover, #FFD60022)" : "none",
-                    color: value === opt.value ? "var(--accent)" : "#e3f2fd",
+                    color: value === opt.value ? "var(--accent)" : "var(--of-text-strong)",
                     marginBottom: 2,
                     fontWeight: value === opt.value ? 600 : 400,
                     outline: "none",
@@ -324,8 +324,8 @@ function TruckTypeDropdown({ value, onChange, options, inputRef }) {
                     borderRadius: 8,
                     padding: "9px 15px",
                     fontSize: 15,
-                    background: "#202e4a",
-                    color: value ? "var(--accent)" : "#b0bcdc",
+                    background: "var(--of-input-bg)",
+                    color: value ? "var(--accent)" : "var(--of-text-muted)",
                     cursor: "pointer",
                     minHeight: 38,
                     transition: "border 0.14s",
@@ -343,7 +343,7 @@ function TruckTypeDropdown({ value, onChange, options, inputRef }) {
                     zIndex: 99,
                     left: 0,
                     top: 39,
-                    background: "#202e4a",
+                    background: "var(--of-input-bg)",
                     border: "1.5px solid var(--accent)",
                     borderRadius: 9,
                     minWidth: "100%",
@@ -360,12 +360,12 @@ function TruckTypeDropdown({ value, onChange, options, inputRef }) {
                         style={{
                             width: "97%",
                             borderRadius: 6,
-                            border: "1px solid #294c7a",
+                            border: "1px solid var(--of-border)",
                             padding: "7px 10px",
                             fontSize: 15,
                             marginBottom: 8,
-                            color: "#e3f2fd",
-                            background: "#181c20"
+                            color: "var(--of-text-strong)",
+                            background: "var(--of-surface-strong)"
                         }}
                     />
                     {filtered.length
@@ -460,10 +460,10 @@ export default function OrderForm({ order = null, onSaved }) {
             ? "2px solid #ffd600"
             : focused
                 ? "2px solid #5fd8ff"
-                : "1.5px solid #294c7a",
-        boxShadow: focused ? "0 0 0 2px #4fd4fd33" : "0 1px 6px #1b334d22",
-        background: "#202e4a",
-        color: "#c8e6fa",
+                : "1.5px solid var(--of-border)",
+        boxShadow: focused ? "0 0 0 2px #4fd4fd33" : "0 1px 6px rgba(27,51,77,0.13)",
+        background: "var(--of-input-bg)",
+        color: "var(--of-text)",
         padding: "8px 13px",
         fontSize: 16,
         outline: "none",
@@ -508,15 +508,16 @@ export default function OrderForm({ order = null, onSaved }) {
 
     // === Стили как в TransportForm ===
     const section = {
-        background: "rgba(28,38,65,0.93)",
+        background: "var(--of-surface)",
         borderRadius: 18,
         padding: "20px 26px",
         marginBottom: 22,
-        boxShadow: "0 2px 32px #14305b30"
+        boxShadow: "var(--of-shadow)",
+        border: "1px solid var(--of-border)"
     };
     const label = {
         fontWeight: 500,
-        color: "#68caff",
+        color: "var(--of-text-muted)",
         marginBottom: 3,
         display: "block",
         letterSpacing: 0.01
@@ -528,9 +529,9 @@ export default function OrderForm({ order = null, onSaved }) {
         border: "none",
         padding: "8px 13px",
         fontSize: 16,
-        background: "#202e4a",
-        color: "#c8e6fa",
-        boxShadow: "0 1px 6px #1b334d22",
+        background: "var(--of-input-bg)",
+        color: "var(--of-text)",
+        boxShadow: "0 1px 6px rgba(27,51,77,0.13)",
         outline: "none"
     };
 
@@ -805,14 +806,14 @@ export default function OrderForm({ order = null, onSaved }) {
                         left: "105%",
                         top: "50%",
                         transform: "translateY(-50%)",
-                        background: "#212534",
+                        background: "var(--of-surface-strong)",
                         color: "#FFD600",
                         borderRadius: 10,
                         padding: "10px 14px",
                         fontSize: 14,
                         fontWeight: 500,
                         minWidth: 180,
-                        boxShadow: "0 4px 22px #10152155",
+                        boxShadow: "0 4px 22px rgba(16,21,33,0.33)",
                         zIndex: 99,
                         whiteSpace: "pre-line",
                     }}>
@@ -1163,12 +1164,9 @@ export default function OrderForm({ order = null, onSaved }) {
             <div
                 className="order-card"
                 style={{
+                    ...section,
                     padding: 20,
                     marginTop: 10,
-                    background: "rgba(28,38,65,0.93)",
-                    borderRadius: 18,
-                    border: "none",
-                    boxShadow: "0 2px 32px #14305b30"
                 }}
             >
                 <div
@@ -1184,7 +1182,7 @@ export default function OrderForm({ order = null, onSaved }) {
                 </div>
                 <div className="stack-mobile" style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 8 }}>
                     <div style={{ flex: 1, minWidth: 150 }}>
-                        <label style={{ color: "#b0bcdc", fontWeight: 500 }}>{t("common.from", "Погрузка")} *</label>
+                        <label style={{ color: "var(--of-text-muted)", fontWeight: 500 }}>{t("common.from", "Погрузка")} *</label>
                         {form.from_locations.map((item, idx) => (
                             <div key={idx} className="stack-mobile-inline" style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 4 }}>
                                 <LocationAutocomplete
@@ -1256,7 +1254,7 @@ export default function OrderForm({ order = null, onSaved }) {
                     </div>
 
                     <div style={{ flex: 1, minWidth: 150 }}>
-                        <label style={{ color: "#b0bcdc", fontWeight: 500 }}>{t("common.to", "Выгрузка")} *</label>
+                        <label style={{ color: "var(--of-text-muted)", fontWeight: 500 }}>{t("common.to", "Выгрузка")} *</label>
                         {form.to_locations.map((item, idx) => (
                             <div key={idx} className="stack-mobile-inline" style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 4 }}>
                                 <LocationAutocomplete
@@ -1342,16 +1340,16 @@ export default function OrderForm({ order = null, onSaved }) {
                             onBlur={() => setLoadDateFocused(false)}
                             onChange={v => setForm(f => ({ ...f, load_date: v }))}
                             style={{
-                                background: "#1e2746",
+                                background: "var(--of-surface-strong)",
                                 marginTop: 2,
                             }}
                             inputStyle={{
                                 borderRadius: 7,
                                 border: !form.load_date && wasTriedSubmit
                                     ? "2px solid #ffd600"
-                                    : "1.5px solid #294c7a",
-                                background: "#1e2746",
-                                color: "#e3f2fd",
+                                    : "1.5px solid var(--of-border)",
+                                background: "var(--of-surface-strong)",
+                                color: "var(--of-text-strong)",
                                 padding: "8px 13px",
                                 fontSize: 15,
                                 outline: "none",
@@ -1368,14 +1366,14 @@ export default function OrderForm({ order = null, onSaved }) {
                             value={form.unload_date}
                             onChange={v => setForm(f => ({ ...f, unload_date: v }))}
                             style={{
-                                background: "#1e2746",
+                                background: "var(--of-surface-strong)",
                                 marginTop: 2,
                             }}
                             inputStyle={{
                                 borderRadius: 7,
                                 border: "none",
-                                background: "#1e2746",
-                                color: "#e3f2fd",
+                                background: "var(--of-surface-strong)",
+                                color: "var(--of-text-strong)",
                                 padding: "8px 13px",
                                 fontSize: 15,
                                 outline: "none",
@@ -1397,7 +1395,7 @@ export default function OrderForm({ order = null, onSaved }) {
                     background: "rgba(28,38,65,0.93)",
                     borderRadius: 18,
                     border: "none",
-                    boxShadow: "0 2px 32px #14305b30"
+                    boxShadow: "var(--of-shadow)"
                 }}
             >
                 <div
@@ -1414,9 +1412,9 @@ export default function OrderForm({ order = null, onSaved }) {
                     <button
                         type="button"
                         style={{
-                            background: form.transport_type === "LTL" ? "#43c8ff" : "var(--background)",
-                            color: form.transport_type === "LTL" ? "#fff" : "#b0bcdc",
-                            border: "1.5px solid #43c8ff",
+                            background: form.transport_type === "LTL" ? "var(--accent)" : "var(--background)",
+                            color: form.transport_type === "LTL" ? "#fff" : "var(--of-text-muted)",
+                            border: "1.5px solid var(--accent)",
                             borderRadius: 8,
                             fontWeight: 700,
                             padding: "9px 22px",
@@ -1432,9 +1430,9 @@ export default function OrderForm({ order = null, onSaved }) {
                     <button
                         type="button"
                         style={{
-                            background: form.transport_type === "FTL" ? "#43c8ff" : "var(--background)",
-                            color: form.transport_type === "FTL" ? "#fff" : "#b0bcdc",
-                            border: "1.5px solid #43c8ff",
+                            background: form.transport_type === "FTL" ? "var(--accent)" : "var(--background)",
+                            color: form.transport_type === "FTL" ? "#fff" : "var(--of-text-muted)",
+                            border: "1.5px solid var(--accent)",
                             borderRadius: 8,
                             fontWeight: 700,
                             padding: "9px 22px",
@@ -1458,7 +1456,7 @@ export default function OrderForm({ order = null, onSaved }) {
                             background: "rgba(28,38,65,0.93)",
                             borderRadius: 18,
                             border: "none",
-                            boxShadow: "0 2px 32px #14305b30"
+                            boxShadow: "var(--of-shadow)"
                         }}
                     >
                         {/* --- Основные поля --- */}
@@ -1475,9 +1473,9 @@ export default function OrderForm({ order = null, onSaved }) {
                                     border:
                                         wasTriedSubmit && !cargo.name.trim()
                                             ? "2px solid #ffd600"
-                                            : "1.5px solid #294c7a",
-                                    background: "#1e2746",
-                                    color: "#e3f2fd",
+                                            : "1.5px solid var(--of-border)",
+                                    background: "var(--of-surface-strong)",
+                                    color: "var(--of-text-strong)",
                                     padding: "8px 13px",
                                     fontSize: 15,
                                     marginTop: 2,
@@ -1507,9 +1505,9 @@ export default function OrderForm({ order = null, onSaved }) {
                                     border:
                                         wasTriedSubmit && !cargo.tons.trim()
                                             ? "2px solid #ffd600"
-                                            : "1.5px solid #294c7a",
-                                    background: "#1e2746",
-                                    color: "#e3f2fd",
+                                            : "1.5px solid var(--of-border)",
+                                    background: "var(--of-surface-strong)",
+                                    color: "var(--of-text-strong)",
                                     padding: "8px 13px",
                                     fontSize: 15,
                                     marginTop: 2,
@@ -1536,8 +1534,8 @@ export default function OrderForm({ order = null, onSaved }) {
                                     minWidth: 80,
                                     borderRadius: 7,
                                     border: "none",
-                                    background: "#1e2746",
-                                    color: "#e3f2fd",
+                                    background: "var(--of-surface-strong)",
+                                    color: "var(--of-text-strong)",
                                     padding: "8px 13px",
                                     fontSize: 15,
                                     marginTop: 2,
@@ -1551,7 +1549,7 @@ export default function OrderForm({ order = null, onSaved }) {
                                     onClick={() => removeCargo(idx)}
                                     style={{
                                         marginLeft: 10,
-                                        background: "#1e2746",
+                                        background: "var(--of-surface-strong)",
                                         border: "1.5px solid var(--accent)",
                                         color: "var(--accent)",
                                         borderRadius: 6,
@@ -1610,8 +1608,8 @@ export default function OrderForm({ order = null, onSaved }) {
                                             minWidth: 95,
                                             borderRadius: 7,
                                             border: "none",
-                                            background: "#1e2746",
-                                            color: "#e3f2fd",
+                                            background: "var(--of-surface-strong)",
+                                            color: "var(--of-text-strong)",
                                             padding: "8px 13px",
                                             fontSize: 15,
                                             marginTop: 2,
@@ -1635,8 +1633,8 @@ export default function OrderForm({ order = null, onSaved }) {
                                             minWidth: 80,
                                             borderRadius: 7,
                                             border: "none",
-                                            background: "#1e2746",
-                                            color: "#e3f2fd",
+                                            background: "var(--of-surface-strong)",
+                                            color: "var(--of-text-strong)",
                                             padding: "8px 13px",
                                             fontSize: 15,
                                             marginTop: 2,
@@ -1657,8 +1655,8 @@ export default function OrderForm({ order = null, onSaved }) {
                                             minWidth: 90,
                                             borderRadius: 7,
                                             border: "none",
-                                            background: "#1e2746",
-                                            color: "#e3f2fd",
+                                            background: "var(--of-surface-strong)",
+                                            color: "var(--of-text-strong)",
                                             padding: "8px 13px",
                                             fontSize: 15,
                                             marginTop: 2,
@@ -1680,8 +1678,8 @@ export default function OrderForm({ order = null, onSaved }) {
                                             minWidth: 90,
                                             borderRadius: 7,
                                             border: "none",
-                                            background: "#1e2746",
-                                            color: "#e3f2fd",
+                                            background: "var(--of-surface-strong)",
+                                            color: "var(--of-text-strong)",
                                             padding: "8px 13px",
                                             fontSize: 15,
                                             marginTop: 2,
@@ -1703,8 +1701,8 @@ export default function OrderForm({ order = null, onSaved }) {
                                             minWidth: 90,
                                             borderRadius: 7,
                                             border: "none",
-                                            background: "#1e2746",
-                                            color: "#e3f2fd",
+                                            background: "var(--of-surface-strong)",
+                                            color: "var(--of-text-strong)",
                                             padding: "8px 13px",
                                             fontSize: 15,
                                             marginTop: 2,
@@ -1725,8 +1723,8 @@ export default function OrderForm({ order = null, onSaved }) {
                                             minWidth: 90,
                                             borderRadius: 7,
                                             border: "none",
-                                            background: "#1e2746",
-                                            color: "#e3f2fd",
+                                            background: "var(--of-surface-strong)",
+                                            color: "var(--of-text-strong)",
                                             padding: "8px 13px",
                                             fontSize: 15,
                                             marginTop: 2,
@@ -1745,8 +1743,8 @@ export default function OrderForm({ order = null, onSaved }) {
                                             minHeight: 30,
                                             borderRadius: 7,
                                             border: "none",
-                                            background: "#1e2746",
-                                            color: "#e3f2fd",
+                                            background: "var(--of-surface-strong)",
+                                            color: "var(--of-text-strong)",
                                             padding: "8px 13px",
                                             fontSize: 15,
                                             marginTop: 2,
@@ -1771,7 +1769,7 @@ export default function OrderForm({ order = null, onSaved }) {
                     background: "rgba(28,38,65,0.93)",
                     borderRadius: 18,
                     border: "none",
-                    boxShadow: "0 2px 32px #14305b30"
+                    boxShadow: "var(--of-shadow)"
                 }}
             >
                 <div
@@ -1786,7 +1784,7 @@ export default function OrderForm({ order = null, onSaved }) {
                 </div>
                 <div className="stack-mobile" style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "flex-end" }}>
                     <div style={{ flex: 2, minWidth: 140 }}>
-                        <label style={{ color: "#b0bcdc", fontWeight: 500, marginBottom: 3, display: "block" }}>{t("order.truckBodyType", "Тип кузова")} *</label>
+                        <label style={{ color: "var(--of-text-muted)", fontWeight: 500, marginBottom: 3, display: "block" }}>{t("order.truckBodyType", "Тип кузова")} *</label>
                         <div
                             ref={truckTypeRef}
                             tabIndex={-1}
@@ -1795,9 +1793,9 @@ export default function OrderForm({ order = null, onSaved }) {
                             style={{
                                 border: !form.truck_type && wasTriedSubmit
                                     ? "2px solid #ffd600"
-                                    : "1.5px solid #294c7a",
+                                    : "1.5px solid var(--of-border)",
                                 borderRadius: 7,
-                                background: "#1e2746",
+                                background: "var(--of-surface-strong)",
                                 padding: 0,
                                 transition: "border .2s",
                                 marginTop: 2,
@@ -1816,7 +1814,7 @@ export default function OrderForm({ order = null, onSaved }) {
                         )}
                     </div>
                     <div style={{ flex: 2, minWidth: 170 }}>
-                        <label style={{ color: "#b0bcdc", fontWeight: 500, marginBottom: 3, display: "block" }}>{t("order.loadingTypes", "Вид(ы) загрузки")}</label>
+                        <label style={{ color: "var(--of-text-muted)", fontWeight: 500, marginBottom: 3, display: "block" }}>{t("order.loadingTypes", "Вид(ы) загрузки")}</label>
                         <LoadingTypeDropdown
                             value={form.loading_types}
                             onChange={value => setForm(f => ({ ...f, loading_types: value }))}
@@ -1824,7 +1822,7 @@ export default function OrderForm({ order = null, onSaved }) {
                         />
                     </div>
                     <div style={{ flex: 1, minWidth: 110 }}>
-                        <label style={{ color: "#b0bcdc", fontWeight: 500, marginBottom: 3, display: "block" }}>{t("order.truckCount", "Кол-во машин")}</label>
+                        <label style={{ color: "var(--of-text-muted)", fontWeight: 500, marginBottom: 3, display: "block" }}>{t("order.truckCount", "Кол-во машин")}</label>
                         <input
                             type="number"
                             inputMode="decimal"
@@ -1841,7 +1839,7 @@ export default function OrderForm({ order = null, onSaved }) {
                                 padding: "8px 13px",
                                 fontSize: 15,
                                 marginTop: 2,
-                                background: "#1e2746",
+                                background: "var(--of-surface-strong)",
                                 color: "var(--accent)",
                                 outline: "none"
                             }}
@@ -1859,7 +1857,7 @@ export default function OrderForm({ order = null, onSaved }) {
                     }}
                 >
                     <div className="stack-mobile-inline" style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                        <label style={{ color: "#b0bcdc", fontWeight: 500 }}>{t("adr.short", "ADR")}</label>
+                        <label style={{ color: "var(--of-text-muted)", fontWeight: 500 }}>{t("adr.short", "ADR")}</label>
                         <input
                             type="checkbox"
                             name="adr"
@@ -1874,7 +1872,7 @@ export default function OrderForm({ order = null, onSaved }) {
                         />
                         {form.adr && (
                             <>
-                                <label style={{ color: "#b0bcdc", fontWeight: 500, marginLeft: 10 }}>{t("adr.class", "Класс")}</label>
+                                <label style={{ color: "var(--of-text-muted)", fontWeight: 500, marginLeft: 10 }}>{t("adr.class", "Класс")}</label>
                                 <div style={{ minWidth: 60, display: "inline-block", verticalAlign: "middle" }}>
                                     <ADRClassTooltip value={form.adr_class}>
                                         <CustomSelect
@@ -1882,7 +1880,7 @@ export default function OrderForm({ order = null, onSaved }) {
                                             onChange={v => setForm(f => ({ ...f, adr_class: v }))}
                                             /* те же цвета меню, что и у селектора валюты */
                                             menuStyle={{
-                                                background: "#242b33", border: "1.5px solid var(--accent)", borderRadius: 9
+                                                background: "var(--of-surface-strong)", border: "1.5px solid var(--accent)", borderRadius: 9
                                             }}
                                             options={["1", "2", "3", "4", "5", "6", "7", "8", "9"].map(num => ({ value: num, label: num }))}
                                             style={{ width: 90 }}
@@ -1896,7 +1894,7 @@ export default function OrderForm({ order = null, onSaved }) {
                         )}
                     </div>
                     <div className="stack-mobile-inline" style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                        <label style={{ color: "#b0bcdc", fontWeight: 500 }}>{t("temp.mode", "Темп. режим")}</label>
+                        <label style={{ color: "var(--of-text-muted)", fontWeight: 500 }}>{t("temp.mode", "Темп. режим")}</label>
                         <input
                             type="checkbox"
                             name="temp_mode"
@@ -1922,15 +1920,15 @@ export default function OrderForm({ order = null, onSaved }) {
                                         width: 60,
                                         borderRadius: 7,
                                         border: "none",
-                                        background: "#1e2746",
-                                        color: "#e3f2fd",
+                                        background: "var(--of-surface-strong)",
+                                        color: "var(--of-text-strong)",
                                         padding: "6px 8px",
                                         fontSize: 15,
                                         outline: "none"
                                     }}
                                     placeholder={t("temp.from", "от")}
                                 />
-                                <span style={{ color: "#b0bcdc" }}>—</span>
+                                <span style={{ color: "var(--of-text-muted)" }}>—</span>
                                 <input
                                     type="number"
                                     inputMode="decimal"
@@ -1941,15 +1939,15 @@ export default function OrderForm({ order = null, onSaved }) {
                                         width: 60,
                                         borderRadius: 7,
                                         border: "none",
-                                        background: "#1e2746",
-                                        color: "#e3f2fd",
+                                        background: "var(--of-surface-strong)",
+                                        color: "var(--of-text-strong)",
                                         padding: "6px 8px",
                                         fontSize: 15,
                                         outline: "none"
                                     }}
                                     placeholder={t("temp.to", "до")}
                                 />
-                                <span style={{ color: "#7ca1b8" }}>°C</span>
+                                <span style={{ color: "var(--of-text-soft)" }}>°C</span>
                             </div>
                         )}
                     </div>
@@ -1965,7 +1963,7 @@ export default function OrderForm({ order = null, onSaved }) {
                     background: "rgba(28,38,65,0.93)",
                     borderRadius: 18,
                     border: "none",
-                    boxShadow: "0 2px 32px #14305b30"
+                    boxShadow: "var(--of-shadow)"
                 }}
             >
                 <div style={{ fontWeight: 700, marginBottom: 10, color: "var(--accent)", fontSize: 17 }}>
@@ -1980,9 +1978,9 @@ export default function OrderForm({ order = null, onSaved }) {
                                 fontWeight: 600,
                                 padding: "7px 16px",
                                 borderRadius: 8,
-                                border: form.rate_type === opt ? "2px solid var(--accent)" : "1.5px solid #294c7a",
+                                border: form.rate_type === opt ? "2px solid var(--accent)" : "1.5px solid var(--of-border)",
                                 background: form.rate_type === opt ? "var(--accent-bg, #FFD6001A)" : "transparent",
-                                color: form.rate_type === opt ? "var(--accent)" : "#b0bcdc",
+                                color: form.rate_type === opt ? "var(--accent)" : "var(--of-text-muted)",
                                 cursor: "pointer",
                                 fontSize: 15,
                                 transition: "border .2s, color .2s"
@@ -2022,13 +2020,13 @@ export default function OrderForm({ order = null, onSaved }) {
                                     borderRadius: 8,
                                     border: form.requested_rate_options?.includes(value)
                                         ? "2px solid var(--accent)"
-                                        : "1.5px solid #294c7a",
+                                        : "1.5px solid var(--of-border)",
                                     background: form.requested_rate_options?.includes(value)
                                         ? "var(--accent)"
-                                        : "#1e2746",
+                                        : "var(--of-surface-strong)",
                                     color: form.requested_rate_options?.includes(value)
                                         ? "#161616"
-                                        : "#b0bcdc",
+                                        : "var(--of-text-muted)",
                                     fontWeight: 700,
                                     fontSize: 15,
                                     cursor: "pointer",
@@ -2067,11 +2065,11 @@ export default function OrderForm({ order = null, onSaved }) {
                                     borderRadius: 7,
                                     border: (form.rate_type === "Без торга" && wasTriedSubmit && !form.rate_with_vat && !form.rate_no_vat && !form.rate_cash)
                                         ? "2px solid #ffd600"
-                                        : "1.5px solid #294c7a",
+                                        : "1.5px solid var(--of-border)",
                                     padding: "8px 13px",
                                     fontSize: 15,
-                                    background: "#1e2746",
-                                    color: "#e3f2fd",
+                                    background: "var(--of-surface-strong)",
+                                    color: "var(--of-text-strong)",
                                     outline: "none",
                                     minWidth: 0,
                                     transition: "border .2s",
@@ -2092,11 +2090,11 @@ export default function OrderForm({ order = null, onSaved }) {
                                     borderRadius: 7,
                                     border: (form.rate_type === "Без торга" && wasTriedSubmit && !form.rate_with_vat && !form.rate_no_vat && !form.rate_cash)
                                         ? "2px solid #ffd600"
-                                        : "1.5px solid #294c7a",
+                                        : "1.5px solid var(--of-border)",
                                     padding: "8px 13px",
                                     fontSize: 15,
-                                    background: "#1e2746",
-                                    color: "#e3f2fd",
+                                    background: "var(--of-surface-strong)",
+                                    color: "var(--of-text-strong)",
                                     outline: "none",
                                     minWidth: 0,
                                     transition: "border .2s",
@@ -2117,11 +2115,11 @@ export default function OrderForm({ order = null, onSaved }) {
                                     borderRadius: 7,
                                     border: (form.rate_type === "Без торга" && wasTriedSubmit && !form.rate_with_vat && !form.rate_no_vat && !form.rate_cash)
                                         ? "2px solid #ffd600"
-                                        : "1.5px solid #294c7a",
+                                        : "1.5px solid var(--of-border)",
                                     padding: "8px 13px",
                                     fontSize: 15,
-                                    background: "#1e2746",
-                                    color: "#e3f2fd",
+                                    background: "var(--of-surface-strong)",
+                                    color: "var(--of-text-strong)",
                                     outline: "none",
                                     minWidth: 0,
                                     transition: "border .2s",
@@ -2143,9 +2141,9 @@ export default function OrderForm({ order = null, onSaved }) {
                                     name="rate_currency"
                                     placeholder={t("common.currency", "Валюта")}
                                     style={{
-                                        background: form.rate_currency ? "var(--accent)" : "#1e2746",
-                                        color: form.rate_currency ? "#161616" : "#e3f2fd",
-                                        border: form.rate_currency ? "2px solid var(--accent)" : "1.5px solid #294c7a",
+                                        background: form.rate_currency ? "var(--accent)" : "var(--of-surface-strong)",
+                                        color: form.rate_currency ? "#161616" : "var(--of-text-strong)",
+                                        border: form.rate_currency ? "2px solid var(--accent)" : "1.5px solid var(--of-border)",
                                         borderRadius: 8,
                                         fontWeight: 700,
                                         fontSize: 15,
@@ -2154,7 +2152,7 @@ export default function OrderForm({ order = null, onSaved }) {
                                         minWidth: 110,
                                         padding: "9px 14px",
                                         cursor: "pointer",
-                                        boxShadow: "0 2px 8px #0f162980",
+                                        boxShadow: "0 2px 8px rgba(15,22,41,0.5)",
                                         outline: "none",
                                         display: "flex",
                                         alignItems: "center",
@@ -2162,7 +2160,7 @@ export default function OrderForm({ order = null, onSaved }) {
                                         transition: "background .17s, color .17s, border .17s"
                                     }}
                                     menuStyle={{
-                                        background: "#242b33",
+                                        background: "var(--of-surface-strong)",
                                         border: "1.5px solid var(--accent)",
                                         borderRadius: 9
                                     }}
@@ -2209,9 +2207,9 @@ export default function OrderForm({ order = null, onSaved }) {
                                 style={{
                                     borderRadius: 8,
                                     padding: "6px 16px",
-                                    border: form.payment_scenario === opt.key ? "2px solid var(--accent)" : "1.5px solid #294c7a",
+                                    border: form.payment_scenario === opt.key ? "2px solid var(--accent)" : "1.5px solid var(--of-border)",
                                     background: form.payment_scenario === opt.key ? "var(--accent-bg, #FFD6001A)" : "transparent",
-                                    color: form.payment_scenario === opt.key ? "var(--accent)" : "#b0bcdc",
+                                    color: form.payment_scenario === opt.key ? "var(--accent)" : "var(--of-text-muted)",
                                     fontWeight: 600,
                                     fontSize: 15,
                                     cursor: "pointer",
@@ -2358,11 +2356,11 @@ export default function OrderForm({ order = null, onSaved }) {
                     background: "rgba(28,38,65,0.93)",
                     borderRadius: 18,
                     border: "none",
-                    boxShadow: "0 2px 32px #14305b30"
+                    boxShadow: "var(--of-shadow)"
                 }}
             >
                 <div style={{ flex: 1, minWidth: 120 }}>
-                    <label style={{ color: "#aaa", fontWeight: 500 }}>{t("contacts.phone", "Телефон")} *</label>
+                    <label style={{ color: "var(--of-text-muted)", fontWeight: 500 }}>{t("contacts.phone", "Телефон")} *</label>
                     <input
                         name="phone"
                         placeholder="+995..."
@@ -2375,7 +2373,7 @@ export default function OrderForm({ order = null, onSaved }) {
                             padding: "8px 13px",
                             fontSize: 15,
                             marginTop: 2,
-                            background: "#1e2746",
+                            background: "var(--of-surface-strong)",
                             color: "#fff"
                         }}
 
@@ -2388,12 +2386,12 @@ export default function OrderForm({ order = null, onSaved }) {
             {/* --- Комментарий --- */}
             <div style={{
                 marginTop: 10,
-                background: "#1e2746",
+                background: "var(--of-surface-strong)",
                 borderRadius: 12,
                 border: "none",
                 padding: "15px 18px 12px 18px"
             }}>
-                <label style={{ color: "#aaa", fontWeight: 500 }}>{t("comment.title", "Комментарий")}</label>
+                <label style={{ color: "var(--of-text-muted)", fontWeight: 500 }}>{t("comment.title", "Комментарий")}</label>
                 <textarea
                     name="comment"
                     placeholder={t("comment.placeholder", "Любая доп. информация (по желанию)")}
@@ -2408,7 +2406,7 @@ export default function OrderForm({ order = null, onSaved }) {
                         fontSize: 15,
                         marginTop: 2,
                         resize: "vertical",
-                        background: "#1e2746",
+                        background: "var(--of-surface-strong)",
                         color: "#fff"
                     }}
                 />
@@ -2423,7 +2421,7 @@ export default function OrderForm({ order = null, onSaved }) {
                     background: "rgba(28,38,65,0.93)",
                     borderRadius: 18,
                     border: "none",
-                    boxShadow: "0 2px 32px #14305b30"
+                    boxShadow: "var(--of-shadow)"
                 }}
             >
                 <input
@@ -2434,9 +2432,9 @@ export default function OrderForm({ order = null, onSaved }) {
                     onChange={handleChange}
                     style={{ width: 18, height: 18, marginTop: 2 }}
                 />
-                <label htmlFor="gps" style={{ display: "block", color: "#b0bcdc" }}>
+                <label htmlFor="gps" style={{ display: "block", color: "var(--of-text-muted)" }}>
                     {t("gps.requestFull", "Запросить у перевозчика GPS-мониторинг груза")}
-                    <div style={{ fontSize: 13, color: "#8eaac1", marginTop: 4 }}>
+                    <div style={{ fontSize: 13, color: "var(--of-text-soft)", marginTop: 4 }}>
                         {t("gps.requestDesc", "Вы получите ссылку для онлайн-отслеживания маршрута на время перевозки. Уточните возможность GPS у перевозчика.")}
                     </div>
                 </label>
@@ -2444,18 +2442,18 @@ export default function OrderForm({ order = null, onSaved }) {
 
             {/* --- Примечание и файлы --- */}
             <div style={section}>
-                <div style={{ fontWeight: 700, color: "#71bfff", marginBottom: 8 }}>
+                <div style={{ fontWeight: 700, color: "var(--accent)", marginBottom: 8 }}>
                     {t("files.imagesAndFiles", "Изображения и файлы")}
                 </div>
                 <div className="chip-row" style={{ display: "flex", gap: 12, marginBottom: 13 }}>
                     <label className="full-width-mobile" style={{
-                        background: "#253857",
-                        color: "#88d4ff",
+                        background: "var(--of-surface-strong)",
+                        color: "var(--accent)",
                         padding: "8px 18px",
                         borderRadius: 10,
                         cursor: "pointer",
                         fontWeight: 600,
-                        border: "1.5px solid #295b8d"
+                        border: "1.5px solid var(--of-border)"
                     }}>
                         <input
                             type="file"
@@ -2467,8 +2465,8 @@ export default function OrderForm({ order = null, onSaved }) {
                         {t("files.addImagesLimit", "Добавить изображения (до 12)")}
                     </label>
                     <label className="full-width-mobile" style={{
-                        background: "#253857",
-                        color: "#f2c77d",
+                        background: "var(--of-surface-strong)",
+                        color: "var(--accent)",
                         padding: "8px 18px",
                         borderRadius: 10,
                         cursor: "pointer",
@@ -2508,9 +2506,9 @@ export default function OrderForm({ order = null, onSaved }) {
                                                 key={imgKey}
                                                 style={{
                                                     minWidth: 78, minHeight: 60,
-                                                    background: "#181f2d",
+                                                    background: "var(--of-surface-strong)",
                                                     borderRadius: 10, overflow: "hidden",
-                                                    border: "1px solid #25304a",
+                                                    border: "1px solid var(--of-border)",
                                                     display: "flex", alignItems: "center", justifyContent: "center",
                                                     position: "relative"
                                                 }}
@@ -2578,17 +2576,17 @@ export default function OrderForm({ order = null, onSaved }) {
                                                 display: "flex",
                                                 flexDirection: "column",
                                                 alignItems: "center",
-                                                background: "#21293a",
+                                                background: "var(--of-surface-strong)",
                                                 borderRadius: 9,
                                                 padding: "9px 13px",
                                                 minWidth: 56,
                                                 marginBottom: 4,
-                                                border: "1px solid #223251",
+                                                border: "1px solid var(--of-border)",
                                                 position: "relative"
                                             }}
                                             className="preview-file-item"
                                         >
-                                            <span style={{ fontSize: 28, color: "#f2c77d" }}>
+                                            <span style={{ fontSize: 28, color: "var(--accent)" }}>
                                                 📄
                                             </span>
                                             <a
@@ -2660,7 +2658,7 @@ export default function OrderForm({ order = null, onSaved }) {
                     background: "rgba(28,38,65,0.93)",
                     borderRadius: 18,
                     border: "none",
-                    boxShadow: "0 2px 32px #14305b30"
+                    boxShadow: "var(--of-shadow)"
                 }}
             >
                 {isMobile ? (
@@ -2671,7 +2669,7 @@ export default function OrderForm({ order = null, onSaved }) {
                             disabled={loading}
                             style={{
                                 background: "linear-gradient(90deg, #38bdf8 0%, #22d3ee 100%)",
-                                color: "#0f172a",
+                                color: "var(--text-primary)",
                                 fontWeight: 700,
                                 fontSize: 18,
                                 border: 0,
@@ -2700,7 +2698,7 @@ export default function OrderForm({ order = null, onSaved }) {
                         disabled={loading}
                         style={{
                             background: "linear-gradient(90deg, #38bdf8 0%, #22d3ee 100%)",
-                            color: "#0f172a",
+                            color: "var(--text-primary)",
                             fontWeight: 700,
                             fontSize: 18,
                             border: 0,
@@ -2769,8 +2767,8 @@ export default function OrderForm({ order = null, onSaved }) {
                                 alt={t("files.preview", "Просмотр")}
                                 style={{
                                     maxWidth: "94vw", maxHeight: "74vh",
-                                    borderRadius: 14, boxShadow: "0 8px 40px #111b274a",
-                                    background: "#121a2a", display: "block"
+                                    borderRadius: 14, boxShadow: "0 8px 40px rgba(17,27,39,0.29)",
+                                    background: "var(--of-surface-strong)", display: "block"
                                 }}
                             />
                             <button
@@ -2782,7 +2780,7 @@ export default function OrderForm({ order = null, onSaved }) {
                                     border: "none", borderRadius: "50%", width: 38, height: 38,
                                     fontWeight: 900, fontSize: 23, lineHeight: "36px",
                                     cursor: "pointer", opacity: 0, transition: "opacity .15s",
-                                    zIndex: 10, boxShadow: "0 3px 24px #18315344"
+                                    zIndex: 10, boxShadow: "0 3px 24px rgba(24,49,83,0.27)"
                                 }}
                                 title={t("common.close", "Закрыть")}
                             >×</button>
@@ -2798,7 +2796,7 @@ export default function OrderForm({ order = null, onSaved }) {
                                             position: "absolute", left: -56, top: "50%", transform: "translateY(-50%)",
                                             background: "rgba(24,28,38,0.92)", color: "#ffd600",
                                             border: "none", borderRadius: "50%", width: 42, height: 42,
-                                            fontSize: 22, fontWeight: 900, cursor: "pointer", boxShadow: "0 3px 24px #18315344"
+                                            fontSize: 22, fontWeight: 900, cursor: "pointer", boxShadow: "0 3px 24px rgba(24,49,83,0.27)"
                                         }}
                                         title={t("common.prev", "Предыдущее")}
                                     >‹</button>
@@ -2812,7 +2810,7 @@ export default function OrderForm({ order = null, onSaved }) {
                                             position: "absolute", right: -56, top: "50%", transform: "translateY(-50%)",
                                             background: "rgba(24,28,38,0.92)", color: "#ffd600",
                                             border: "none", borderRadius: "50%", width: 42, height: 42,
-                                            fontSize: 22, fontWeight: 900, cursor: "pointer", boxShadow: "0 3px 24px #18315344"
+                                            fontSize: 22, fontWeight: 900, cursor: "pointer", boxShadow: "0 3px 24px rgba(24,49,83,0.27)"
                                         }}
                                         title={t("common.next", "Следующее")}
                                     >›</button>

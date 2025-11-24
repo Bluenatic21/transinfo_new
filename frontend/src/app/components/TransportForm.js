@@ -13,6 +13,19 @@ import BillingPaywallNotice from "./BillingPaywallNotice";
 import { useLang } from "../i18n/LangProvider";
 import { api } from "@/config/env";
 
+const palette = {
+    surface: "var(--surface)",
+    surfaceSoft: "var(--bg-card-soft)",
+    controlBg: "var(--control-bg)",
+    controlHover: "var(--control-bg-hover)",
+    border: "var(--border-subtle)",
+    text: "var(--text-primary)",
+    muted: "var(--text-secondary)",
+    accent: "var(--brand-blue)",
+    accentStrong: "#ffd600",
+    error: "#ff6868",
+};
+
 const UI_LANG =
     typeof navigator !== "undefined"
         ? (navigator.language || "ru").split("-")[0]
@@ -117,8 +130,8 @@ function TruckTypeDropdown({ value, onChange, options, error, focused }) {
                     padding: "7px 12px",
                     borderRadius: 7,
                     cursor: "pointer",
-                    background: value === opt.value ? "#1b4e81" : "none",
-                    color: value === opt.value ? "#ffd600" : "#e3f2fd",
+                    background: value === opt.value ? `color-mix(in srgb, ${palette.accent} 18%, transparent)` : "none",
+                    color: value === opt.value ? palette.accentStrong : palette.text,
                     marginBottom: 2,
                     fontWeight: value === opt.value ? 600 : 400,
                     outline: "none",
@@ -136,20 +149,20 @@ function TruckTypeDropdown({ value, onChange, options, error, focused }) {
                 tabIndex={0}
                 style={{
                     border: error
-                        ? "2px solid #ffd600"
+                        ? `2px solid ${palette.accentStrong}`
                         : focused
-                            ? "2px solid #5fd8ff"
-                            : "1.5px solid #244e78",
+                            ? `2px solid ${palette.accent}`
+                            : `1.5px solid ${palette.border}`,
                     boxShadow: error
                         ? "0 0 0 2px #ffd60044"
                         : focused
                             ? "0 0 0 2px #4fd4fd33"
-                            : undefined,
+                            : "var(--shadow-soft)",
                     borderRadius: 8,
                     padding: "9px 15px",
                     fontSize: 16,
-                    background: "#1e2746",
-                    color: value ? "#ffd600" : "#b0bcdc",
+                    background: palette.controlBg,
+                    color: value ? palette.accentStrong : palette.muted,
                     cursor: "pointer",
                     minHeight: 38,
                     transition: "border 0.14s, box-shadow 0.14s",
@@ -166,8 +179,8 @@ function TruckTypeDropdown({ value, onChange, options, error, focused }) {
                     zIndex: 99,
                     left: 0,
                     top: 41,
-                    background: "#202e4a",
-                    border: "1.5px solid #244e78",
+                    background: palette.surface,
+                    border: `1.5px solid ${palette.border}`,
                     borderRadius: 9,
                     minWidth: "100%",
                     maxHeight: 320,
@@ -182,12 +195,12 @@ function TruckTypeDropdown({ value, onChange, options, error, focused }) {
                         style={{
                             width: "97%",
                             borderRadius: 6,
-                            border: "1px solid #294c7a",
+                            border: `1px solid ${palette.border}`,
                             padding: "7px 10px",
                             fontSize: 15,
                             marginBottom: 8,
-                            color: "#e3f2fd",
-                            background: "#192337"
+                            color: palette.text,
+                            background: palette.controlBg
                         }}
                     />
                     {filtered.length
@@ -285,21 +298,21 @@ function LoadingTypeDropdown({ value, onChange, options }) {
                     flexWrap: "wrap",
                     gap: 7,
                     alignItems: "center",
-                    background: "#1e2746",
-                    border: "1.5px solid #244e78",
+                    background: palette.controlBg,
+                    border: `1.5px solid ${palette.border}`,
                     borderRadius: 7,
                     padding: "7px 12px",
                     cursor: "pointer"
                 }}
                 onClick={() => setOpened(v => !v)}
             >
-                {value.length === 0 && <span style={{ color: "#a8b9d7" }}>
+                {value.length === 0 && <span style={{ color: palette.muted }}>
                     {t("common.choose", "Выбрать")}
                 </span>}
                 {value.map(v => (
                     <span key={v} style={{
-                        background: "#265b9c",
-                        color: "#b4e1fd",
+                        background: `color-mix(in srgb, ${palette.accent} 18%, transparent)`,
+                        color: palette.text,
                         borderRadius: 7,
                         padding: "2px 9px",
                         fontSize: 15,
@@ -311,7 +324,7 @@ function LoadingTypeDropdown({ value, onChange, options }) {
                             style={{
                                 marginLeft: 5,
                                 cursor: "pointer",
-                                color: "#b6b6b6"
+                                color: palette.muted
                             }}
                             onClick={e => {
                                 e.stopPropagation();
@@ -326,10 +339,10 @@ function LoadingTypeDropdown({ value, onChange, options }) {
                     style={{
                         position: "absolute",
                         zIndex: 20,
-                        background: "#202e4a",
-                        border: "1.5px solid #244e78",
+                        background: palette.surface,
+                        border: `1.5px solid ${palette.border}`,
                         borderRadius: 10,
-                        boxShadow: "0 2px 20px #193364cc",
+                        boxShadow: "var(--shadow-soft)",
                         marginTop: 3,
                         width: "100%",
                         maxHeight: 230,
@@ -343,8 +356,8 @@ function LoadingTypeDropdown({ value, onChange, options }) {
                         placeholder={t("common.search", "Поиск…")}
                         style={{
                             width: "100%",
-                            background: "#192337",
-                            color: "#b6d0e8",
+                            background: palette.controlBg,
+                            color: palette.text,
                             border: "none",
                             outline: "none",
                             borderRadius: "10px 10px 0 0",
@@ -354,7 +367,7 @@ function LoadingTypeDropdown({ value, onChange, options }) {
                         }}
                     />
                     {filtered.length === 0 && (
-                        <div style={{ color: "#b6b6b6", padding: 10 }}>
+                        <div style={{ color: palette.muted, padding: 10 }}>
                             {t("common.noOptions", "Нет вариантов")}
                         </div>
                     )}
@@ -365,7 +378,7 @@ function LoadingTypeDropdown({ value, onChange, options }) {
                             gap: 7,
                             padding: "8px 12px",
                             cursor: "pointer",
-                            background: value.includes(opt) ? "#265b9c44" : "",
+                            background: value.includes(opt) ? `color-mix(in srgb, ${palette.accent} 12%, transparent)` : "",
                             fontWeight: value.includes(opt) ? 700 : 400,
                             color: value.includes(opt) ? "#b4e1fd" : "#e3f2fd"
                         }}>
@@ -465,13 +478,13 @@ export default function TransportForm({ onCreated, initialData, mode = "create",
         marginBottom: 13,
         borderRadius: 7,
         border: error
-            ? "2px solid #ffd600"
+            ? `2px solid ${palette.accentStrong}`
             : focused
-                ? "2px solid #5fd8ff"
-                : "1.5px solid #294c7a",
-        boxShadow: focused ? "0 0 0 2px #4fd4fd33" : "0 1px 6px #1b334d22",
-        background: "#1e2746",
-        color: "#c8e6fa",
+                ? `2px solid ${palette.accent}`
+                : `1.5px solid ${palette.border}`,
+        boxShadow: focused ? "0 0 0 2px #4fd4fd33" : "var(--shadow-soft)",
+        background: palette.controlBg,
+        color: palette.text,
         padding: "8px 13px",
         fontSize: 16,
         outline: "none",
@@ -973,9 +986,27 @@ export default function TransportForm({ onCreated, initialData, mode = "create",
 
 
     // ======= ЦВЕТОВАЯ СХЕМА =======
-    const section = { background: "rgba(28,38,65,0.93)", borderRadius: 18, padding: "20px 26px", marginBottom: 22, boxShadow: "0 2px 32px #14305b30" };
-    const label = { fontWeight: 500, color: "#68caff", marginBottom: 3, display: "block", letterSpacing: 0.01 };
-    const input = { width: "100%", marginBottom: 13, borderRadius: 7, border: "1.5px solid #294c7a", padding: "8px 13px", fontSize: 16, background: "#1e2746", color: "#c8e6fa", boxShadow: "0 1px 6px #1b334d22" };
+    const section = {
+        background: palette.surface,
+        borderRadius: 18,
+        padding: "20px 26px",
+        marginBottom: 22,
+        boxShadow: "var(--shadow-soft)",
+        border: `1.5px solid ${palette.border}`,
+    };
+    const label = { fontWeight: 500, color: palette.muted, marginBottom: 3, display: "block", letterSpacing: 0.01 };
+    const input = {
+        width: "100%",
+        marginBottom: 13,
+        borderRadius: 7,
+        border: `1.5px solid ${palette.border}`,
+        padding: "8px 13px",
+        fontSize: 16,
+        background: palette.controlBg,
+        color: palette.text,
+        boxShadow: "var(--shadow-soft)",
+        transition: "border .2s, box-shadow .22s",
+    };
     const col2 = { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 20px" };
 
     return (
@@ -997,7 +1028,7 @@ export default function TransportForm({ onCreated, initialData, mode = "create",
             {renderBillingHint()}
             {/* --- Даты и маршрут --- */}
             <div style={section} className="form-section">
-                <div className="section-title" style={{ fontSize: 19, fontWeight: 700, marginBottom: 9, color: "#71bfff" }}>
+                <div className="section-title" style={{ fontSize: 19, fontWeight: 700, marginBottom: 9, color: palette.accent }}>
                     {t("tf.section.datesRoute", "Даты и маршрут")}
                 </div>
 
@@ -1208,15 +1239,15 @@ export default function TransportForm({ onCreated, initialData, mode = "create",
                                                 && !!item.location    // что-то введено!
                                                 && !item.coords
                                                 && wasTriedSubmit
-                                                ? "2px solid #ff6868"
-                                                : "1.5px solid #294c7a",
+                                                ? `2px solid ${palette.error}`
+                                                : `1.5px solid ${palette.border}`,
                                             borderRadius: 7,
-                                            background: "#1e2746",
-                                            color: "#c8e6fa",
+                                            background: palette.controlBg,
+                                            color: palette.text,
                                             padding: "8px 13px",
                                             fontSize: 16,
                                             marginBottom: 0,
-                                            boxShadow: "0 1px 6px #1b334d22",
+                                            boxShadow: "var(--shadow-soft)",
                                             width: "100%",
                                             paddingRight: 36
                                         }}
@@ -1359,7 +1390,7 @@ export default function TransportForm({ onCreated, initialData, mode = "create",
 
             {/* --- Тип кузова и детали --- */}
             <div style={section} className="form-section">
-                <div className="section-title" style={{ fontSize: 19, fontWeight: 700, marginBottom: 9, color: "#71bfff" }}>
+                <div className="section-title" style={{ fontSize: 19, fontWeight: 700, marginBottom: 9, color: palette.accent }}>
                     {t("tf.section.typeAndDetails", "Тип и детали транспорта")}
                 </div>
                 <div style={col2} className="split-grid">
@@ -1560,10 +1591,10 @@ export default function TransportForm({ onCreated, initialData, mode = "create",
                                             style={{
                                                 marginLeft: 7,
                                                 borderRadius: 6,
-                                                border: "1.5px solid #244e78",
+                                                border: `1.5px solid ${palette.border}`,
                                                 padding: "4px 9px",
-                                                background: "#1e2746",
-                                                color: "#6dd9f9"
+                                                background: palette.controlBg,
+                                                color: palette.accent
                                             }}
                                         >
                                             <option value="1">{t("transport.crew.one", "1 водитель")}</option>
@@ -1636,8 +1667,8 @@ export default function TransportForm({ onCreated, initialData, mode = "create",
                                             Object.assign(tooltip.style, {
                                                 position: "absolute",
                                                 left: 12, top: "110%",
-                                                background: "#233d5a",
-                                                color: "#fff",
+                                                background: palette.surface,
+                                                color: palette.text,
                                                 padding: "10px 14px",
                                                 borderRadius: 9,
                                                 boxShadow: "0 4px 18px #18315344",
@@ -1678,7 +1709,7 @@ export default function TransportForm({ onCreated, initialData, mode = "create",
 
             {/* --- Ставка и контакты --- */}
             <div style={section} className="form-section">
-                <div className="section-title" style={{ fontSize: 19, fontWeight: 700, marginBottom: 9, color: "#71bfff" }}>
+                <div className="section-title" style={{ fontSize: 19, fontWeight: 700, marginBottom: 9, color: palette.accent }}>
                     {t("tf.section.rateAndContacts", "Ставка и контакты")}
                 </div>
 
@@ -1783,8 +1814,8 @@ export default function TransportForm({ onCreated, initialData, mode = "create",
                                     marginBottom: 0,
                                 }}
                                 menuStyle={{
-                                    background: "#242b33",
-                                    border: "1.5px solid var(--accent)",
+                                    background: palette.surface,
+                                    border: `1.5px solid ${palette.accent}`,
                                     borderRadius: 9
                                 }}
                             />
@@ -1822,7 +1853,7 @@ export default function TransportForm({ onCreated, initialData, mode = "create",
 
             {/* --- Примечание и файлы --- */}
             <div style={section} className="form-section">
-                <div className="section-title" style={{ fontSize: 19, fontWeight: 700, marginBottom: 9, color: "#71bfff" }}>
+                <div className="section-title" style={{ fontSize: 19, fontWeight: 700, marginBottom: 9, color: palette.accent }}>
                     {t("tf.section.noteAndFiles", "Примечание и файлы")}
                 </div>
                 <label style={label}>{t("common.note", "Примечание")}</label>
@@ -1830,13 +1861,13 @@ export default function TransportForm({ onCreated, initialData, mode = "create",
                 <label style={label}>{t("common.attachments", "Вложения")}</label>
                 <div className="stack-mobile" style={{ display: "flex", gap: 12, marginBottom: 13 }}>
                     <label style={{
-                        background: "#253857",
-                        color: "#88d4ff",
+                        background: palette.controlBg,
+                        color: palette.accent,
                         padding: "8px 18px",
                         borderRadius: 10,
                         cursor: "pointer",
                         fontWeight: 600,
-                        border: "1.5px solid #295b8d"
+                        border: `1.5px solid ${palette.border}`
                     }}>
                         <input
                             type="file"
@@ -1848,13 +1879,13 @@ export default function TransportForm({ onCreated, initialData, mode = "create",
                         {t("common.addImages", "Добавить изображения")}
                     </label>
                     <label style={{
-                        background: "#253857",
-                        color: "#f2c77d",
+                        background: palette.controlBg,
+                        color: palette.accentStrong,
                         padding: "8px 18px",
                         borderRadius: 10,
                         cursor: "pointer",
                         fontWeight: 600,
-                        border: "1.5px solid #8d6e29"
+                        border: `1.5px solid ${palette.border}`
                     }}>
                         <input
                             type="file"
@@ -1886,8 +1917,8 @@ export default function TransportForm({ onCreated, initialData, mode = "create",
                                         <div
                                             key={idx}
                                             style={{
-                                                minWidth: 78, minHeight: 60, background: "#181f2d",
-                                                borderRadius: 10, overflow: "hidden", border: "1px solid #25304a",
+                                                minWidth: 78, minHeight: 60, background: palette.controlBg,
+                                                borderRadius: 10, overflow: "hidden", border: `1px solid ${palette.border}`,
                                                 display: "flex", alignItems: "center", justifyContent: "center",
                                                 position: "relative"
                                             }}
@@ -1916,7 +1947,7 @@ export default function TransportForm({ onCreated, initialData, mode = "create",
                                                     position: "absolute",
                                                     top: 5,
                                                     right: 5,
-                                                    background: "rgba(27,35,51,0.88)",
+                                                    background: palette.surface,
                                                     color: "#ff5e5e",
                                                     border: "none",
                                                     borderRadius: "50%",
@@ -1959,17 +1990,17 @@ export default function TransportForm({ onCreated, initialData, mode = "create",
                                                 display: "flex",
                                                 flexDirection: "column",
                                                 alignItems: "center",
-                                                background: "#21293a",
+                                                background: palette.controlBg,
                                                 borderRadius: 9,
                                                 padding: "9px 13px",
                                                 minWidth: 56,
                                                 marginBottom: 4,
-                                                border: "1px solid #223251",
+                                                border: `1px solid ${palette.border}`,
                                                 position: "relative"
                                             }}
                                             className="preview-file-item"
                                         >
-                                            <span style={{ fontSize: 28, color: "#f2c77d" }}>
+                                            <span style={{ fontSize: 28, color: palette.accentStrong }}>
                                                 📄
                                             </span>
                                             <a
@@ -1978,7 +2009,7 @@ export default function TransportForm({ onCreated, initialData, mode = "create",
                                                 rel="noopener noreferrer"
                                                 style={{
                                                     fontSize: 13,
-                                                    color: "#f1f3f6",
+                                                    color: palette.text,
                                                     marginTop: 3,
                                                     maxWidth: 60,
                                                     overflow: "hidden",
@@ -2002,7 +2033,7 @@ export default function TransportForm({ onCreated, initialData, mode = "create",
                                                     position: "absolute",
                                                     top: 4,
                                                     right: 4,
-                                                    background: "rgba(27,35,51,0.88)",
+                                                    background: palette.surface,
                                                     color: "#ff5e5e",
                                                     border: "none",
                                                     borderRadius: "50%",
@@ -2109,8 +2140,8 @@ export default function TransportForm({ onCreated, initialData, mode = "create",
                                 maxWidth: "94vw",
                                 maxHeight: "74vh",
                                 borderRadius: 14,
-                                boxShadow: "0 8px 40px #111b274a",
-                                background: "#121a2a",
+                                boxShadow: "var(--shadow-soft)",
+                                background: palette.surface,
                                 display: "block"
                             }}
                         />

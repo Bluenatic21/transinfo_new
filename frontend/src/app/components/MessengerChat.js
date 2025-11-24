@@ -2706,9 +2706,13 @@ export default function MessengerChat({
 
   const handleKeyDown = (e) => {
     const textarea = textareaRef.current;
+    const isTextareaTarget =
+      e.target instanceof HTMLTextAreaElement ||
+      e.target?.closest?.("textarea");
     const isActiveTextarea =
-      textarea &&
-      (e.target === textarea || document.activeElement === textarea);
+      (textarea &&
+        (e.target === textarea || document.activeElement === textarea)) ||
+      isTextareaTarget;
 
     if (
       isActiveTextarea &&
