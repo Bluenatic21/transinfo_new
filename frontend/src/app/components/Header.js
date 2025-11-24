@@ -468,12 +468,14 @@ export default function Header({ setShowRegisterModal }) {
     const heroTitle = t("hero.title", "Интеллектуальная платформа для грузоперевозок");
 
     const headerRef = useRef(null);
-    const [headerHeight, setHeaderHeight] = useState(HEADER_H + 48);
+    const topHeaderRef = useRef(null);
+    const [headerHeight, setHeaderHeight] = useState(HEADER_H);
 
     useEffect(() => {
         const updateHeight = () => {
-            if (headerRef.current) {
-                const h = headerRef.current.offsetHeight;
+            const target = topHeaderRef.current;
+            if (target) {
+                const h = target.offsetHeight;
                 setHeaderHeight(h);
                 try { document.documentElement.style.setProperty("--header-h", `${h}px`); } catch { }
             }
@@ -692,6 +694,7 @@ export default function Header({ setShowRegisterModal }) {
         >
             <header
                 className="header-root header-top"
+                ref={topHeaderRef}
                 style={{
                     display: "flex",
                     flexDirection: "row",

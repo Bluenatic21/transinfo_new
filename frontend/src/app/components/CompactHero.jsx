@@ -54,8 +54,8 @@ export default function CompactHero({
                 )}
 
                 {/* Метрики — БЕЗ анимации, сразу видимы при загрузке */}
-                <div className="mt-4">
-                    <div className="mx-auto max-w-5xl rounded-2xl bg-white shadow-[0_6px_24px_rgba(0,0,0,0.12)] ring-1 ring-slate-200 px-3.5 py-2.5 md:px-5 md:py-3.5 backdrop-blur-[2px] dark:bg-white/[0.04] dark:ring-white/5 dark:shadow-[0_6px_24px_rgba(0,0,0,0.35)]">
+                <div className="mt-4 flex justify-start">
+                    <div className="w-full max-w-5xl rounded-2xl bg-white shadow-[0_6px_24px_rgba(0,0,0,0.12)] ring-1 ring-slate-200 px-3.5 py-2.5 md:px-5 md:py-3.5 backdrop-blur-[2px] dark:bg-white/[0.04] dark:ring-white/5 dark:shadow-[0_6px_24px_rgba(0,0,0,0.35)]">
                         <div className="grid grid-cols-2 sm:grid-cols-5 gap-x-4 gap-y-2 text-center">
                             <Metric label={t("hero.metric.index", "TransInfo-Индекс")} value={s.index} />
                             <Metric label={t("hero.metric.cargos", "Грузы")} value={s.cargos} />
@@ -65,6 +65,7 @@ export default function CompactHero({
                         </div>
                     </div>
                 </div>
+
 
                 {/* CTA — компактно на одной линии */}
                 <div className="mt-4 flex items-center justify-center gap-3">

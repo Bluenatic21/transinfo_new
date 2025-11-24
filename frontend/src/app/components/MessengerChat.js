@@ -1270,6 +1270,12 @@ export default function MessengerChat({
   const { user, API, authFetchWithRefresh } = useUser();
   const [searchMsg, setSearchMsg] = useState(""); // ← уже есть
   const [showSearch, setShowSearch] = useState(false); // ← уже есть
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    try {
+      setIsMobile(/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent));
+    } catch {}
+  }, []);
   const {
     messages,
     sendMessage,
@@ -1794,6 +1800,7 @@ export default function MessengerChat({
   const [olderEOF, setOlderEOF] = useState(false);
   const PAGE_SIZE_DEBUG = Number(process.env.NEXT_PUBLIC_PAGE_SIZE_DEBUG) || 30;
   const [pendingVoice, setPendingVoice] = useState(null); // { blob, url }
+  const shouldStackInput = isMobile && !!pendingVoice;
   const [hoveredMsgId, setHoveredMsgId] = useState(null);
 
   // Функция подгрузки старых сообщений (до первого загруженного id).
@@ -2271,13 +2278,6 @@ export default function MessengerChat({
     return () => document.removeEventListener("mousedown", onDocClick);
   }, [attachmentMenuOpen]);
 
-  const [isMobile, setIsMobile] = useState(false);
-  useEffect(() => {
-    try {
-      setIsMobile(/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent));
-    } catch {}
-  }, []);
-
   // === ВСТАВИТЬ СЮДА! ===
   // Собираем все картинки (image type) из сообщений для Lightbox
   const images =
@@ -2704,29 +2704,29 @@ export default function MessengerChat({
     ]
   );
 
-  const handleKeyDown = (e) => {
-    const textarea = textareaRef.current;
-    const isTextareaTarget =
-      e.target instanceof HTMLTextAreaElement ||
-      e.target?.closest?.("textarea");
-    const isActiveTextarea =
-      (textarea &&
-        (e.target === textarea || document.activeElement === textarea)) ||
-      isTextareaTarget;
+  const handleKeyDown = useCallback(
+    (e) => {
+      const textarea = textareaRef.current;
+      const isActiveTextarea =
+        textarea &&
+        (e.target === textarea || document.activeElement === textarea);
 
-    if (
-      isActiveTextarea &&
-      (e.key === "Enter" || e.key === "NumpadEnter") &&
-      !e.shiftKey &&
-      !e.ctrlKey &&
-      !e.altKey &&
-      !e.metaKey &&
-      !e.nativeEvent?.isComposing
-    ) {
-      e.preventDefault();
-      handleSend(e);
-    }
-  };
+      if (
+        isActiveTextarea &&
+        (e.key === "Enter" || e.key === "NumpadEnter") &&
+        !e.shiftKey &&
+        !e.ctrlKey &&
+        !e.altKey &&
+        !e.metaKey &&
+        !e.isComposing &&
+        !e.nativeEvent?.isComposing
+      ) {
+        e.preventDefault();
+        handleSend(e);
+      }
+    },
+    [handleSend]
+  );
   const addEmoji = (emojiObject) => {
     if (!textareaRef.current) return;
     const cursorPos = textareaRef.current.selectionStart ?? input.length;
@@ -3950,11 +3950,12 @@ export default function MessengerChat({
           paddingBottom: "calc(18px + env(safe-area-inset-bottom))",
           borderTop: "1px solid #234",
           display: "flex",
-          alignItems: "center",
+          flexDirection: shouldStackInput ? "column" : "row",
+          alignItems: shouldStackInput ? "stretch" : "center",
           position: "sticky", // ← фиксируем панель
           bottom: 0, // ← у нижнего края
           zIndex: 20, // ← поверх контента
-          gap: 10,
+          gap: shouldStackInput ? 12 : 10,
         }}
       >
         {/* Эфемерный индикатор набора для саппорта */}
@@ -4155,9 +4156,15 @@ export default function MessengerChat({
               border: "1.5px solid var(--border)",
               borderRadius: 7,
               background: "var(--background)",
+              width: "100%",
+              minWidth: 0,
             }}
           >
-            <audio src={pendingVoice.url} controls style={{ flex: 1 }} />
+            <audio
+              src={pendingVoice.url}
+              controls
+              style={{ flex: 1, minWidth: 0 }}
+            />
             <button
               type="button"
               title={t("chat.deleteVoice", "Удалить голосовое")}
@@ -4181,7 +4188,7 @@ export default function MessengerChat({
             ref={textareaRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyDown={handleKeyDown}
+            onKeyDownCapture={handleKeyDown}
             enterKeyHint="send"
             placeholder={
               inputLocked ? "Диалог закрыт..." : "Напишите сообщение..."
@@ -4211,7 +4218,11 @@ export default function MessengerChat({
             (!input.trim() && !pendingAttachment && !pendingVoice)
           }
           className="action-btn action-btn--accent"
-          style={{ marginLeft: 6 }}
+          style={{
+            marginLeft: shouldStackInput ? 0 : 6,
+            width: shouldStackInput ? "100%" : undefined,
+            alignSelf: shouldStackInput ? "stretch" : "center",
+          }}
           title={t("common.send", "Отправить")}
         >
           <FaPaperPlane />
