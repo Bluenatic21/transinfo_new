@@ -911,6 +911,28 @@ function OrderCard({
     );
     const titleString = useMemo(() => safeFormatDate(order.created_at, "ru-RU"), [order.created_at]);
 
+    const cardColors = {
+        bg: "var(--order-card-bg, rgba(23, 38, 60, 0.98))",
+        text: "var(--order-card-text, #e3f2fd)",
+        shadow: "var(--order-card-shadow, 0 2px 24px #001844cc)",
+        shadowExpanded: "var(--order-card-shadow-expanded, 0 4px 32px #43c8ff55, 0 2px 24px #001844cc)",
+        border: "var(--order-card-border, #1e88e5)",
+        borderActive: "var(--order-card-border-active, #43c8ff)",
+        sectionBg: "var(--order-card-section-bg, rgba(28, 37, 52, 0.92))",
+        sectionBorder: "var(--order-card-section-border, #193158)",
+        heading: "var(--order-card-heading, #43c8ff)",
+        label: "var(--order-card-label, #8ecae6)",
+        chipBg: "var(--order-card-chip-bg, #193158bb)",
+        chipFg: "var(--order-card-chip-fg, #cfe9ff)",
+        chipShadow: "var(--order-card-chip-shadow, 0 2px 8px #23416711)",
+        routeBg: "var(--order-card-route-bg, linear-gradient(90deg, #183969 38%, #253759 100%))",
+        routeFg: "var(--order-card-route-fg, #ffffff)",
+        iconBg: "var(--order-card-icon-bg, #162239)",
+        iconFg: "var(--order-card-icon-fg, #43c8ff)",
+        iconShadow: "var(--order-card-icon-shadow, 0 1px 8px #43c8ff17)",
+    };
+
+
     const iconBtnStyle = {
         display: "flex",
         alignItems: "center",
@@ -918,13 +940,13 @@ function OrderCard({
         width: 32,
         height: 32,
         borderRadius: "45%",
-        background: "#162239",
-        color: "#43c8ff",
+        background: cardColors.iconBg,
+        color: cardColors.iconFg,
         border: "none",
         fontSize: 15,
         cursor: "pointer",
-        boxShadow: "0 1px 8px #43c8ff17",
-        transition: "background .16s",
+        boxShadow: cardColors.iconShadow,
+        transition: "background .16s, color .16s, box-shadow .16s",
     };
 
     function toLocationArray(val) {
@@ -1167,9 +1189,9 @@ function OrderCard({
     }, [order, expanded, cargoItems.length, loadingTypes.length, order.gps_monitoring, order.adr, order.temp_mode, order.temp_from, order.temp_to]);
 
     const sectionStyle = {
-        background: "rgba(28, 37, 52, 0.92)",
+        background: cardColors.sectionBg,
         borderRadius: 12,
-        border: "1.3px solid #193158",
+        border: `1.3px solid ${cardColors.sectionBorder}`,
         padding: "12px 12px 10px 12px",
         minWidth: 200,
         display: "flex",
@@ -1197,12 +1219,12 @@ function OrderCard({
         <div
             ref={ref}
             style={{
-                background: "rgba(23, 38, 60, 0.98)",
+                background: cardColors.bg,
                 borderRadius: 17,
                 padding: "18px 18px 64px 18px",
-                color: "#e3f2fd",
-                boxShadow: expanded ? "0 4px 32px #43c8ff55, 0 2px 24px #001844cc" : "0 2px 24px #001844cc",
-                borderLeft: expanded ? "6px solid #43c8ff" : "6px solid #1e88e5",
+                color: cardColors.text,
+                boxShadow: expanded ? cardColors.shadowExpanded : cardColors.shadow,
+                borderLeft: expanded ? `6px solid ${cardColors.borderActive}` : `6px solid ${cardColors.border}`,
                 display: "grid",
                 // Гибкая сетка: красиво перестраивается от 1 до 4 колонок
                 gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
@@ -1234,13 +1256,13 @@ function OrderCard({
                         <span
                             style={{
                                 fontSize: 12,
-                                color: "#8ecae6cc",
-                                background: "#193158bb",
+                                color: cardColors.label,
+                                background: cardColors.chipBg,
                                 padding: "2px 10px",
                                 borderRadius: 11,
                                 fontWeight: 500,
                                 letterSpacing: 0.1,
-                                boxShadow: "0 2px 8px #23416711",
+                                boxShadow: cardColors.chipShadow,
                             }}
                             title={titleString}
                         >
@@ -1252,13 +1274,13 @@ function OrderCard({
                             title={t("views.title", "Просмотры")}
                             style={{
                                 fontSize: 12,
-                                color: "#cfe9ff",
-                                background: "#193158cc",
+                                color: cardColors.chipFg,
+                                background: cardColors.chipBg,
                                 padding: "2px 10px",
                                 borderRadius: 11,
                                 fontWeight: 700,
                                 letterSpacing: 0.1,
-                                boxShadow: "0 2px 8px #23416711",
+                                boxShadow: cardColors.chipShadow,
                                 display: "inline-flex",
                                 alignItems: "center",
                             }}
@@ -1280,13 +1302,13 @@ function OrderCard({
                     ...(isGuest ? { zIndex: 31 } : {}),
                 }}
             >
-                <div style={{ fontSize: 14, fontWeight: 700, color: "#43c8ff", marginBottom: 3 }}>{t("order.route", "МАРШРУТ")}</div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: cardColors.heading, marginBottom: 3 }}>{t("order.route", "МАРШРУТ")}</div>
                 <div
                     style={{
                         fontSize: 16,
                         fontWeight: 800,
-                        background: "linear-gradient(90deg, #183969 38%, #253759 100%)",
-                        color: "#fff",
+                        background: cardColors.routeBg,
+                        color: cardColors.routeFg,
                         borderRadius: 9,
                         padding: "7px 13px",
                         marginBottom: 2,
@@ -1310,7 +1332,7 @@ function OrderCard({
                             minWidth: 0,
                             whiteSpace: "pre-line",
                             fontWeight: 700,
-                            color: "#8ecae6",
+                            color: cardColors.label,
                             fontSize: 16,
                             wordBreak: "break-word",
                         }}
@@ -1344,7 +1366,7 @@ function OrderCard({
                                 <span
                                     style={{
                                         fontSize: 19,
-                                        color: "#43c8ff",
+                                        color: cardColors.heading,
                                         fontWeight: 900,
                                         margin: "0 8px 0 0",
                                         flexShrink: 0,
@@ -1372,13 +1394,13 @@ function OrderCard({
                                                     display: "flex",
                                                     alignItems: "center",
                                                     gap: 7,
-                                                    background: "#1a273f",
+                                                    background: cardColors.chipBg,
                                                     borderRadius: 7,
                                                     padding: "3px 10px",
                                                     fontSize: 15,
-                                                    color: "#8ecae6",
+                                                    color: cardColors.label,
                                                     fontWeight: 700,
-                                                    boxShadow: "0 1px 8px #42a9ff11",
+                                                    boxShadow: cardColors.chipShadow,
                                                     wordBreak: "break-word",
                                                     lineHeight: 1.17,
                                                     whiteSpace: "pre-line",
@@ -1415,20 +1437,20 @@ function OrderCard({
                 </div>
 
                 {/* Даты */}
-                <div style={{ fontSize: 13, color: "#8ecae6", fontWeight: 600, marginLeft: 1 }}>
+                <div style={{ fontSize: 13, color: cardColors.label, fontWeight: 600, marginLeft: 1 }}>
                     {order.load_date && (
                         <div>
-                            <b style={{ color: "#fff", fontWeight: 700 }}>{t("order.loadDate", "Дата погрузки:")}</b> {order.load_date}
+                            <b style={{ color: cardColors.text, fontWeight: 700 }}>{t("order.loadDate", "Дата погрузки:")}</b> {order.load_date}
                         </div>
                     )}
                     {order.unload_date && (
                         <div>
-                            <b style={{ color: "#fff", fontWeight: 700 }}>{t("order.unloadDate", "Дата разгрузки:")}</b> {order.unload_date}
+                            <b style={{ color: cardColors.text, fontWeight: 700 }}>{t("order.unloadDate", "Дата разгрузки:")}</b> {order.unload_date}
                         </div>
                     )}
                     {!order.load_date && !order.unload_date && (
                         <div>
-                            <b style={{ color: "#fff", fontWeight: 700 }}>-</b>
+                            <b style={{ color: cardColors.text, fontWeight: 700 }}>-</b>
                         </div>
                     )}
                 </div>
@@ -1440,7 +1462,7 @@ function OrderCard({
                 className={isLimited ? "pw-blur pw-overlay pw-noevents" : ""}
                 style={{ ...sectionStyle, minHeight: maxSectionHeight || 95 }}
             >
-                <div style={{ fontSize: 14, fontWeight: 700, color: "#43c8ff", marginBottom: 1 }}>{t("order.params", "ПАРАМЕТРЫ")}</div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: cardColors.heading, marginBottom: 1 }}>{t("order.params", "ПАРАМЕТРЫ")}</div>
 
                 {/* Кол-во машин / Тип кузова */}
                 {(order.truck_quantity || order.truck_type) && (
@@ -1448,12 +1470,12 @@ function OrderCard({
                         {[
                             order.truck_quantity ? (
                                 <span key="quantity">
-                                    <span style={{ color: "#8ecae6" }}>{t("order.truckQty", "Кол-во машин:")}</span> <b>{order.truck_quantity}</b>
+                                    <div style={{ fontSize: 14, fontWeight: 700, color: cardColors.heading, marginBottom: 1 }}>{t("order.params", "ПАРАМЕТРЫ")}</div>
                                 </span>
                             ) : null,
                             order.truck_type ? (
                                 <span key="bodytype" style={isGuest ? { position: "relative", zIndex: 31 } : undefined}>
-                                    <span style={{ color: "#8ecae6" }}>{t("order.truckType", "Тип кузова:")}</span> <b>{findBodyLabelByValue(order.truck_type)}</b>
+                                    <span style={{ color: cardColors.label }}>{t("order.truckType", "Тип кузова:")}</span> <b>{findBodyLabelByValue(order.truck_type)}</b>
                                 </span>
                             ) : null,
                         ].filter(Boolean)}
@@ -1465,12 +1487,12 @@ function OrderCard({
                     <div style={rowStyle}>
                         {mainCargo.tons && (
                             <span>
-                                <span style={{ color: "#8ecae6" }}>{t("order.weight", "Вес:")}</span> <b>{mainCargo.tons} {t("unit.t", "т")}</b>
+                                <span style={{ color: cardColors.label }}>{t("order.weight", "Вес:")}</span> <b>{mainCargo.tons} {t("unit.t", "т")}</b>
                             </span>
                         )}
                         {mainCargo.volume && (
                             <span style={{ marginLeft: mainCargo.tons ? 18 : 0 }}>
-                                <span style={{ color: "#8ecae6" }}>{t("order.volume", "Объём:")}</span> <b>{mainCargo.volume} {t("unit.m3", "м³")}</b>
+                                <span style={{ color: cardColors.label }}>{t("order.volume", "Объём:")}</span> <b>{mainCargo.volume} {t("unit.m3", "м³")}</b>
                             </span>
                         )}
                     </div>
@@ -1480,7 +1502,7 @@ function OrderCard({
                 {mainCargo.name && (
                     <div style={rowStyle}>
                         <span>
-                            <span style={{ color: "#8ecae6" }}>{t("order.cargo", "Груз:")}</span> <b>{mainCargo.name}</b>
+                            <span style={{ color: cardColors.label }}>{t("order.cargo", "Груз:")}</span> <b>{mainCargo.name}</b>
                         </span>
                     </div>
                 )}
@@ -1489,7 +1511,7 @@ function OrderCard({
                 {mainCargo.packaging && mainCargo.packaging !== "не указано" && (
                     <div style={rowStyle}>
                         <span>
-                            <span style={{ color: "#8ecae6" }}>{t("order.packaging", "Упаковка:")}</span> <b>{mainCargo.packaging}</b>
+                            <span style={{ color: cardColors.label }}>{t("order.packaging", "Упаковка:")}</span> <b>{mainCargo.packaging}</b>
                         </span>
                     </div>
                 )}
@@ -1498,7 +1520,7 @@ function OrderCard({
                 {mainCargo.pieces && (
                     <div style={rowStyle}>
                         <span>
-                            <span style={{ color: "#8ecae6" }}>{t("order.pieces", "Мест:")}</span> <b>{mainCargo.pieces}</b>
+                            <span style={{ color: cardColors.label }}>{t("order.pieces", "Мест:")}</span> <b>{mainCargo.pieces}</b>
                         </span>
                     </div>
                 )}
@@ -1508,22 +1530,22 @@ function OrderCard({
                     <div style={rowStyle}>
                         {mainCargo.length && (
                             <span>
-                                <span style={{ color: "#8ecae6" }}>{t("order.length", "Длина:")}</span> <b>{mainCargo.length} {t("unit.m", "м")}</b>
+                                <span style={{ color: cardColors.label }}>{t("order.length", "Длина:")}</span> <b>{mainCargo.length} {t("unit.m", "м")}</b>
                             </span>
                         )}
                         {mainCargo.width && (
                             <span>
-                                <span style={{ color: "#8ecae6" }}>{t("order.width", "Ширина:")}</span> <b>{mainCargo.width} {t("unit.m", "м")}</b>
+                                <span style={{ color: cardColors.label }}>{t("order.width", "Ширина:")}</span> <b>{mainCargo.width} {t("unit.m", "м")}</b>
                             </span>
                         )}
                         {mainCargo.height && (
                             <span>
-                                <span style={{ color: "#8ecae6" }}>{t("order.height", "Высота:")}</span> <b>{mainCargo.height} {t("unit.m", "м")}</b>
+                                <span style={{ color: cardColors.label }}>{t("order.height", "Высота:")}</span> <b>{mainCargo.height} {t("unit.m", "м")}</b>
                             </span>
                         )}
                         {mainCargo.diameter && (
                             <span>
-                                <span style={{ color: "#8ecae6" }}>{t("order.diameter", "Диаметр:")}</span> <b>{mainCargo.diameter} {t("unit.m", "м")}</b>
+                                <span style={{ color: cardColors.label }}>{t("order.diameter", "Диаметр:")}</span> <b>{mainCargo.diameter} {t("unit.m", "м")}</b>
                             </span>
                         )}
                     </div>
@@ -1533,7 +1555,7 @@ function OrderCard({
                 {mainCargo.description && (
                     <div style={rowStyle}>
                         <span>
-                            <span style={{ color: "#8ecae6" }}>{t("order.description", "Описание:")}</span> <b>{mainCargo.description}</b>
+                            <span style={{ color: cardColors.label }}>{t("order.description", "Описание:")}</span> <b>{mainCargo.description}</b>
                         </span>
                     </div>
                 )}
@@ -1545,13 +1567,13 @@ function OrderCard({
                 className={isLimited ? "pw-blur pw-overlay pw-noevents" : ""}
                 style={{ ...sectionStyle, minHeight: maxSectionHeight || 95 }}
             >
-                <div style={{ fontSize: 14, fontWeight: 700, color: "#43c8ff", marginBottom: 1 }}>{t("order.features", "ОСОБЕННОСТИ")}</div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: cardColors.heading, marginBottom: 1 }}>{t("order.features", "ОСОБЕННОСТИ")}</div>
 
                 {/* --- Загрузка --- */}
                 {Array.isArray(loadingTypes) && loadingTypes.length > 0 && (
                     <div style={rowStyle}>
                         <span>
-                            <span style={{ color: "#8ecae6" }}>{t("order.loading", "Загрузка:")}</span>
+                            <span style={{ color: cardColors.label }}>{t("order.loading", "Загрузка:")}</span>
                             <b>{localizeLoadingTypes(loadingTypes).join(", ")}</b>
                         </span>
                     </div>
@@ -1565,15 +1587,15 @@ function OrderCard({
                                 display: "inline-flex",
                                 alignItems: "center",
                                 fontWeight: 700,
-                                background: "#193158",
+                                background: cardColors.chipBg,
                                 borderRadius: 6,
                                 padding: "2px 10px",
-                                color: "#43c8ff",
+                                color: cardColors.heading,
                                 fontSize: 13,
-                                boxShadow: "0 0 6px #43c8ff55",
+                                boxShadow: cardColors.chipShadow,
                             }}
                         >
-                            <svg width="14" height="14" fill="#43c8ff" style={{ marginRight: 4 }} viewBox="0 0 20 20">
+                            <svg width="14" height="14" fill={cardColors.heading} style={{ marginRight: 4 }} viewBox="0 0 20 20">
                                 <path d="M10 2C7.243 2 5 4.243 5 7c0 2.948 4.46 9.018 4.651 9.286a1 1 0 0 0 1.698 0C10.54 16.018 15 9.948 15 7c0-2.757-2.243-5-5-5zm0 12.243C8.185 11.167 7 8.995 7 7a3 3 0 0 1 6 0c0 1.995-1.185 4.167-3 7.243zM10 9a2 2 0 1 0 0-4 2 2 0 0 0 0 4z" />
                             </svg>
                             {t("gps.monitoringLabel", "GPS мониторинг")}
@@ -1593,7 +1615,7 @@ function OrderCard({
                             </span>
                         )}
                         {order.temp_mode && (order.temp_from || order.temp_to) && (
-                            <span style={{ color: "#43c8ff", fontWeight: 600 }}>
+                            <span style={{ color: cardColors.heading, fontWeight: 600 }}>
                                 {t("order.tempShort", "Темп.")}: {order.temp_from ?? ""}
                                 {order.temp_from && order.temp_to ? "…" : ""}
                                 {order.temp_to ?? ""}°C
@@ -1641,7 +1663,7 @@ function OrderCard({
                 className={isLimited ? "pw-blur pw-overlay pw-noevents" : ""}
                 style={{ ...sectionStyle, minHeight: maxSectionHeight || 95, gap: 11, justifyContent: "flex-start", minWidth: 170 }}
             >
-                <div style={{ fontSize: 14, fontWeight: 700, color: "#43c8ff", marginBottom: 1 }}>{t("order.bid", "СТАВКА")}</div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: cardColors.heading, marginBottom: 1 }}>{t("order.bid", "СТАВКА")}</div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
                     {order.rate_type === "Запрос" && Array.isArray(order.requested_rate_options) && order.requested_rate_options.length > 0 ? (
                         <span style={{ color: "#ffd600", fontWeight: 700, fontSize: 15, letterSpacing: 0.03 }}>
@@ -1670,22 +1692,22 @@ function OrderCard({
                         <>
                             {rateWithVat && (
                                 <span>
-                                    <span style={{ color: "#8ecae6" }}>{t("rate.withVat", "С НДС:")}</span> <b>{`${rateWithVat} ${rateCurrency}`}</b>
+                                    <span style={{ color: cardColors.label }}>{t("rate.withVat", "С НДС:")}</span> <b>{`${rateWithVat} ${rateCurrency}`}</b>
                                 </span>
                             )}
                             {rateNoVat && (
                                 <span>
-                                    <span style={{ color: "#8ecae6" }}>{t("rate.noVat", "Без НДС:")}</span> <b>{`${rateNoVat} ${rateCurrency}`}</b>
+                                    <span style={{ color: cardColors.label }}>{t("rate.noVat", "Без НДС:")}</span> <b>{`${rateNoVat} ${rateCurrency}`}</b>
                                 </span>
                             )}
                             {rateCash && (
                                 <span>
-                                    <span style={{ color: "#8ecae6" }}>{t("rate.cash", "Наличными:")}</span> <b>{`${rateCash} ${rateCurrency}`}</b>
+                                    <span style={{ color: cardColors.label }}>{t("rate.cash", "Наличными:")}</span> <b>{`${rateCash} ${rateCurrency}`}</b>
                                 </span>
                             )}
                             {order.payment_scenario && (
                                 <div>
-                                    <span style={{ color: "#8ecae6" }}>{t("payment.terms", "Условия оплаты:")}</span>{" "}
+                                    <span style={{ color: cardColors.label }}>{t("payment.terms", "Условия оплаты:")}</span>{" "}
                                     <b>
                                         {order.payment_scenario === "unload" && t("payment.scenario.unload", "На выгрузке")}
                                         {order.payment_scenario === "after_x_days" &&
@@ -1739,7 +1761,7 @@ function OrderCard({
                                 {ownerProfile.organization}
                             </span>
                             {ownerProfile.contact_person && (
-                                <span style={{ color: "#8ecae6", fontSize: 14, maxWidth: 110, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                                <span style={{ color: cardColors.label, fontSize: 14, maxWidth: 110, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                                     {ownerProfile.contact_person}
                                 </span>
                             )}
@@ -1758,7 +1780,7 @@ function OrderCard({
                             )}
                         </>
                     ) : (
-                        <span style={{ color: "#8ecae6", fontSize: 14 }}>{t("profile.hiddenOrUnavailable", "Профиль недоступен")}</span>
+                        <span style={{ color: cardColors.label, fontSize: 14 }}>{t("profile.hiddenOrUnavailable", "Профиль недоступен")}</span>
                     )}
                 </div>
 
@@ -1844,7 +1866,7 @@ function OrderCard({
                                         }}
                                     >
                                         {(commentsMap[order.id]?.length || 0) === 0 ? (
-                                            <div style={{ color: "#8ecae6", fontSize: 14 }}>{t("comments.none", "Пока нет комментариев")}</div>
+                                            <div style={{ color: cardColors.label, fontSize: 14 }}>{t("comments.none", "Пока нет комментариев")}</div>
                                         ) : (
                                             commentsMap[order.id].map((c) => (
                                                 <div
@@ -1875,7 +1897,7 @@ function OrderCard({
                                                             }}
                                                         >
                                                             <b style={{ color: "#e3f2fd", fontSize: 13 }}>{c.author_name || t("comments.member", "Участник")}</b>
-                                                            <span style={{ color: "#8ecae6", fontSize: 11 }}>
+                                                            <span style={{ color: cardColors.label, fontSize: 11 }}>
                                                                 {(() => {
                                                                     const d = new Date(c.created_at);
                                                                     return isNaN(d.getTime())
@@ -2124,7 +2146,7 @@ function OrderCard({
                                     let bidsToShow = allBids ? [...allBids] : [];
                                     bidsToShow.sort((a, b) => b.amount - a.amount);
                                     if (bidsToShow.length === 0) {
-                                        return <div style={{ color: "#8ecae6", fontSize: 14 }}>{t("bids.noneYet", "Пока нет ставок")}</div>;
+                                        return <div style={{ color: cardColors.label, fontSize: 14 }}>{t("bids.noneYet", "Пока нет ставок")}</div>;
                                     }
                                     return bidsToShow.map((bid) => (
                                         <div

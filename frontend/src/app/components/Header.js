@@ -1069,7 +1069,7 @@ export default function Header({ setShowRegisterModal }) {
                     alignItems: "center",
                     gap: isCompact ? 10 : 14,
                     width: "100%",
-                    padding: `${isCompact ? 4 : 6}px ${headerPadding.right}px ${isCompact ? 4 : 6}px 0`,
+                    padding: `${isCompact ? 4 : 6}px ${headerPadding.right}px ${isCompact ? 4 : 6}px ${headerPadding.left}px`,
                     background: "linear-gradient(180deg, rgb(var(--header-bg)), rgb(var(--header-bg)) 48%, rgb(var(--surface)) 100%)"
                 }}
             >

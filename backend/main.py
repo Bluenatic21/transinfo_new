@@ -3532,9 +3532,16 @@ def get_my_transports(
     current_user: UserModel = Depends(get_current_user)
 ):
     # "Мои" — ВСЕГДА только записи текущего пользователя
+    
+     my_filters = [TransportModel.owner_id == current_user.id]
+    if current_user.email:
+        my_filters.append(and_(
+            TransportModel.owner_id.is_(None),
+            func.lower(TransportModel.email) == func.lower(current_user.email),
+        ))
     transports = (
         db.query(TransportModel)
-        .filter(TransportModel.owner_id == current_user.id)
+       .filter(or_(*my_filters))
         .order_by(TransportModel.created_at.desc())
         .all()
     )
@@ -3572,9 +3579,15 @@ def get_account_transports(
 
     # Не менеджерский аккаунт — просто свои записи
     if not account_manager_id:
+         trs_filters = [TransportModel.owner_id == current_user.id]
+        if current_user.email:
+            trs_filters.append(and_(
+                TransportModel.owner_id.is_(None),
+                func.lower(TransportModel.email) == func.lower(current_user.email),
+            ))
         trs = (
             db.query(TransportModel)
-            .filter(TransportModel.owner_id == current_user.id)
+           .filter(or_(*trs_filters))
             .order_by(TransportModel.created_at.desc())
             .all()
         )
@@ -3592,10 +3605,23 @@ def get_account_transports(
         UserModel.manager_id == account_manager_id
     ).all()
     account_user_ids = [account_manager_id] + [e.id for e in employees]
+    account_emails = [u.email for u in ([current_user] + employees) if u.email]
+
+    email_match_filter = None
+    if account_emails:
+        lower_emails = [email.lower() for email in account_emails]
+        email_match_filter = and_(
+            TransportModel.owner_id.is_(None),
+            func.lower(TransportModel.email).in_(lower_emails),
+        )
+
+    account_filters = [TransportModel.owner_id.in_(account_user_ids)]
+    if email_match_filter is not None:
+        account_filters.append(email_match_filter)
 
     transports = (
         db.query(TransportModel)
-        .filter(TransportModel.owner_id.in_(account_user_ids))
+         .filter(or_(*account_filters))
         .order_by(TransportModel.created_at.desc())
         .all()
     )
@@ -3833,13 +3859,10 @@ def get_transports(
         print('from_radius:', repr(from_radius))
         print('---')
 
-    # Исторические записи могли иметь NULL в is_active, поэтому считаем их активными,
-    # иначе выборка может вернуться пустой, даже если транспорт в базе есть.
-    query = db.query(TransportModel).filter(
-        or_(TransportModel.is_active == True,
-            TransportModel.is_active.is_(None))
-    )
-
+     # Исторические записи попадаются с любыми значениями is_active (True/False/NULL),
+    # поэтому не фильтруем по этому флагу, иначе легаси-заявки пропадают из общего
+    # списка и становятся «невидимыми» на сайте.
+    query = db.query(TransportModel)
     # Применяем фильтр блокировок только для авторизованного пользователя.
     if current_user is not None:
         query = query.filter(

@@ -53,8 +53,16 @@ export default function CompactHero({
                     </div>
                 )}
 
-                {/* Метрики — компактный блок сразу под навигацией, прижат к левой части контейнера */}
-                <div className="mt-3 flex justify-start">
+                {/* Метрики — компактный блок сразу под навигацией, прижат к линии начала навигации */}
+                <div
+                    className="mt-3 flex justify-start"
+                    style={{
+                        marginLeft: "calc(50% - 50vw)",
+                        marginRight: "calc(50% - 50vw)",
+                        paddingLeft: "clamp(12px, 3vw, 22px)",
+                        paddingRight: "clamp(14px, 3.5vw, 24px)",
+                    }}
+                >
                     <div className="inline-flex shrink-0 rounded-xl bg-white shadow-[0_8px_28px_rgba(0,0,0,0.12)] ring-1 ring-slate-200 px-3 py-2 md:px-4 md:py-3 backdrop-blur-[2px] dark:bg-white/[0.04] dark:ring-white/5 dark:shadow-[0_8px_28px_rgba(0,0,0,0.35)]">
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-x-3 gap-y-1.5 text-left md:text-center">
                             <Metric label={t("hero.metric.index", "TransInfo-Индекс")} value={s.index} />
