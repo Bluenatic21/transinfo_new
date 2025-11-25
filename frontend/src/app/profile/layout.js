@@ -3,12 +3,14 @@ import ProfileSidebar from "../components/ProfileSidebar";
 import { useIsMobile } from "../../hooks/useIsMobile";
 import { useUser } from "../UserContext";
 import { useParams } from "next/navigation";
-
+import { useTheme } from "../providers/ThemeProvider";
 import MonitoringSoonGuard from "./MonitoringSoonGuard";
+
 export default function ProfileLayout({ children }) {
     const isMobile = useIsMobile();
     const { user } = useUser();
     const params = useParams();
+    const { resolvedTheme } = useTheme();
 
     // Как узнать чей профиль? Допустим url: /profile/[id]
     // params.id — это id профиля, user.id — id залогиненного
@@ -23,7 +25,7 @@ export default function ProfileLayout({ children }) {
             flexDirection: "row",
             minHeight: "100vh",
             width: "100vw",
-            background: "#171e2b"
+            background: resolvedTheme === "light" ? "var(--bg-body)" : "#171e2b"
         }}>
             {isOwnProfile && <ProfileSidebar />}
             <div style={{

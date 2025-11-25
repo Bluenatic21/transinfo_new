@@ -12,6 +12,24 @@ export default async function handler(req, res) {
     ? String(req.headers.host).toLowerCase()
     : "";
 
+  // Используем схему из заголовков запроса (если фронт крутится по http, запрос
+  // на https://<host> провалится и список транспорта окажется пустым).
+  const forwardedProto = (req.headers?.["x-forwarded-proto"] || "")
+    .toString()
+    .split(",")?.[0]
+    ?.trim();
+  const refererProto = (() => {
+    try {
+      return new URL(req.headers?.referer || "").protocol.replace(":", "");
+    } catch {
+      return null;
+    }
+  })();
+  const requestScheme =
+    forwardedProto ||
+    refererProto ||
+    (req.socket?.encrypted ? "https" : "http");
+
   // Маркер, что запрос уже побывал в этом proxy (защита от рекурсии)
   const loopGuard =
     (req.headers["x-transports-proxy"] || "").toString() === "1";
@@ -23,8 +41,10 @@ export default async function handler(req, res) {
     process.env.NEXT_PUBLIC_API_BASE_URL,
     process.env.NEXT_PUBLIC_DEV_API_URL,
     process.env.NEXT_PUBLIC_API_SERVER,
-    // Последний вариант — тот же хост, где крутится фронт (без /api), вдруг там настроен прокси
-    rawHost ? `https://${rawHost}` : null,
+    // Последний вариант — тот же хост, где крутится фронт (с сохранением схемы), вдруг там настроен прокси
+    rawHost ? `${requestScheme}://${rawHost}` : null,
+    // Дублируем явный http-вариант, если фронт за HTTPS-прокси, а бэкенд доступен только по http
+    rawHost ? `http://${rawHost}` : null,
     "http://127.0.0.1:8004",
   ];
 

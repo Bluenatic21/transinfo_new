@@ -24,13 +24,13 @@ const fmtRemain = (iso, t) =>
   !iso
     ? ""
     : (() => {
-        const ms = new Date(iso) - Date.now();
-        if (ms <= 0) return t("time.fewSeconds", "несколько секунд");
-        const m = Math.floor(ms / 60000);
-        if (m < 60) return `${m} ${t("unit.min", "мин")}`;
-        const h = Math.floor(m / 60);
-        return `${h} ${t("unit.h", "ч")} ${m % 60} ${t("unit.min", "мин")}`;
-      })();
+      const ms = new Date(iso) - Date.now();
+      if (ms <= 0) return t("time.fewSeconds", "несколько секунд");
+      const m = Math.floor(ms / 60000);
+      if (m < 60) return `${m} ${t("unit.min", "мин")}`;
+      const h = Math.floor(m / 60);
+      return `${h} ${t("unit.h", "ч")} ${m % 60} ${t("unit.min", "мин")}`;
+    })();
 import Lightbox from "yet-another-react-lightbox";
 import "yet-another-react-lightbox/styles.css";
 import {
@@ -246,8 +246,8 @@ function ChatHeader({
   const titleText = isSupport
     ? t("support.title", chat?.display_title || "Поддержка")
     : isGroup
-    ? chat?.group_name || t("chat.groupFallback", "Группа")
-    : peer?.organization ||
+      ? chat?.group_name || t("chat.groupFallback", "Группа")
+      : peer?.organization ||
       peer?.contact_person ||
       peer?.full_name ||
       peer?.name ||
@@ -275,13 +275,13 @@ function ChatHeader({
 
   const avatarUrl = isSupport
     ? abs(
-        chat?.support_logo_url ||
-          chat?.group_avatar ||
-          "/static/support-logo.svg"
-      )
+      chat?.support_logo_url ||
+      chat?.group_avatar ||
+      "/static/support-logo.svg"
+    )
     : isGroup
-    ? chat?.group_avatar || "/group-default.png"
-    : resolveAvatar(peer) || "/default-avatar.png";
+      ? chat?.group_avatar || "/group-default.png"
+      : resolveAvatar(peer) || "/default-avatar.png";
   const { mutedGroups, muteGroup, unmuteGroup } = useMessenger();
   const isMuted = isGroup && mutedGroups.includes(chat.chat_id);
   const avatarRef = useRef(null);
@@ -330,9 +330,8 @@ function ChatHeader({
 
   return (
     <div
-      className={`${
-        isMobile ? "sticky top-0" : "relative"
-      } z-20 flex items-center gap-4 px-5 py-3 border-b border-[#e7eaf1] dark:border-[#232c39] bg-[#f7fafe] dark:bg-[#1c2231]`}
+      className={`${isMobile ? "sticky top-0" : "relative"
+        } z-20 flex items-center gap-4 px-5 py-3 border-b border-[#e7eaf1] dark:border-[#232c39] bg-[#f7fafe] dark:bg-[#1c2231]`}
       style={{
         position: isMobile ? "sticky" : "relative",
         top: 0,
@@ -484,18 +483,17 @@ function ChatHeader({
             ? chat?.display_subtitle
               ? t(chat.display_subtitle, chat.display_subtitle)
               : chat?.support_status
-              ? `${t("support.status", "Статус")}: ${localizeTicketStatus(
+                ? `${t("support.status", "Статус")}: ${localizeTicketStatus(
                   String(chat.support_status).replace("TicketStatus.", ""),
                   t
                 )}`
-              : ""
+                : ""
             : isGroup
-            ? `${t("chat.members", "Участников")}: ${
-                participants.length || "—"
+              ? `${t("chat.members", "Участников")}: ${participants.length || "—"
               }`
-            : peer?.organization
-            ? peer?.contact_person
-            : peer?.email || ""}
+              : peer?.organization
+                ? peer?.contact_person
+                : peer?.email || ""}
         </span>
       </div>
       {/* ПОИСК и КНОПКА "закрыть" */}
@@ -562,7 +560,7 @@ function ChatHeader({
                 window.dispatchEvent(
                   new CustomEvent("call_start", { detail: { chatId } })
                 );
-              } catch {}
+              } catch { }
             }}
             className="w-9 h-9 grid place-items-center rounded-xl border bg-[var(--control-bg)] hover:bg-[var(--control-bg-hover)] focus:outline-none focus:ring-2 focus:ring-[var(--border-subtle)] active:scale-[0.98] transition"
             style={{
@@ -669,9 +667,9 @@ function ChatHeader({
                 width: 220,
                 padding: "7px 32px 7px 34px",
                 borderRadius: 7,
-                border: "1.5px solid #364869",
-                background: "#232b3c",
-                color: "#e8f1ff",
+                border: "1.5px solid var(--chat-input-border)",
+                background: "var(--chat-input-bg)",
+                color: "var(--chat-input-text)",
                 fontSize: 15,
               }}
             />
@@ -701,13 +699,13 @@ function ChatHeader({
             }}
             title={
               Array.isArray(pinnedChats) &&
-              pinnedChats.some((c) => c.chat_id === chat?.chat_id)
+                pinnedChats.some((c) => c.chat_id === chat?.chat_id)
                 ? t("chat.unpin", "Открепить чат")
                 : t("chat.pin", "Закрепить чат")
             }
             aria-label={
               Array.isArray(pinnedChats) &&
-              pinnedChats.some((c) => c.chat_id === chat?.chat_id)
+                pinnedChats.some((c) => c.chat_id === chat?.chat_id)
                 ? t("chat.unpin", "Открепить чат")
                 : t("chat.pin", "Закрепить чат")
             }
@@ -717,12 +715,12 @@ function ChatHeader({
                 display: "inline-block",
                 transform:
                   Array.isArray(pinnedChats) &&
-                  pinnedChats.some((c) => c.chat_id === chat?.chat_id)
+                    pinnedChats.some((c) => c.chat_id === chat?.chat_id)
                     ? "rotate(0deg)"
                     : "rotate(-25deg)",
                 filter:
                   Array.isArray(pinnedChats) &&
-                  pinnedChats.some((c) => c.chat_id === chat?.chat_id)
+                    pinnedChats.some((c) => c.chat_id === chat?.chat_id)
                     ? "none"
                     : "brightness(1.1)",
                 opacity: 0.95,
@@ -979,9 +977,9 @@ function GpsRequestCard({
         <div style={{ fontSize: 13, opacity: 0.8, marginBottom: 8 }}>
           {isTarget
             ? t(
-                "gps.pendingTarget",
-                "С вами хотят поделиться геолокацией. Принять запрос?"
-              )
+              "gps.pendingTarget",
+              "С вами хотят поделиться геолокацией. Принять запрос?"
+            )
             : t("gps.pendingOut", "Запрос отправлен. Ожидаем ответа.")}
         </div>
       )}
@@ -1274,7 +1272,7 @@ export default function MessengerChat({
   useEffect(() => {
     try {
       setIsMobile(/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent));
-    } catch {}
+    } catch { }
   }, []);
   const {
     messages,
@@ -1358,7 +1356,7 @@ export default function MessengerChat({
           link =
             data?.url ||
             (token ? `${window.location.origin}/track/link/${token}` : null);
-        } catch (_) {}
+        } catch (_) { }
         await sendMessage({
           message_type: "gps_share",
           content: JSON.stringify({
@@ -1590,7 +1588,7 @@ export default function MessengerChat({
     didInitialScrollRef.current = false;
     try {
       initialJumpDoneRef.current = false;
-    } catch {}
+    } catch { }
   }, [chatId]);
   const textareaRef = useRef(null);
   const [messagesLimit, setMessagesLimit] = useState(30);
@@ -1604,7 +1602,7 @@ export default function MessengerChat({
     try {
       const saved = localStorage.getItem("ti-auto-translate-enabled");
       if (saved === "1") setAutoTranslate(true);
-    } catch {}
+    } catch { }
   }, []);
 
   useEffect(() => {
@@ -1614,11 +1612,11 @@ export default function MessengerChat({
         "ti-auto-translate-enabled",
         autoTranslate ? "1" : "0"
       );
-    } catch {}
+    } catch { }
   }, [autoTranslate]);
 
   useEffect(() => {
-    if (typeof window === "undefined") return () => {};
+    if (typeof window === "undefined") return () => { };
     let timer = null;
     try {
       const shown = localStorage.getItem("ti-translate-hint-shown");
@@ -1632,7 +1630,7 @@ export default function MessengerChat({
       } else {
         setShowTranslateHint(false);
       }
-    } catch {}
+    } catch { }
     return () => {
       if (translateHintTimerRef.current)
         clearTimeout(translateHintTimerRef.current);
@@ -1651,7 +1649,7 @@ export default function MessengerChat({
         let payload = {};
         try {
           payload = JSON.parse(m.content || "{}");
-        } catch {}
+        } catch { }
         const to = payload?.target_user_id || m?.target_user_id;
         const from = m?.sender_id;
         const key = `rq:${from}->${to}`;
@@ -1748,7 +1746,7 @@ export default function MessengerChat({
     // на всякий случай "дергаем" якорь внизу без анимации
     try {
       messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
-    } catch {}
+    } catch { }
     // возвращаем поведение назад после кадра
     requestAnimationFrame(() => {
       c.style.scrollBehavior = prev || "";
@@ -1759,7 +1757,7 @@ export default function MessengerChat({
     try {
       stickToBottomRef.current = true;
       setIsNearBottom(true);
-    } catch {}
+    } catch { }
   }, [chatId, messages?.length]);
   const messagesContainerRef = useRef(null);
   // --- автофиксация к низу и отключение автоскролла, когда читаем историю ---
@@ -1886,8 +1884,8 @@ export default function MessengerChat({
   const base = dedupedMessages;
   const filteredMessages = searchMsg.trim()
     ? base.filter((m) =>
-        (m.content || "").toLowerCase().includes(searchMsg.trim().toLowerCase())
-      )
+      (m.content || "").toLowerCase().includes(searchMsg.trim().toLowerCase())
+    )
     : base;
 
   const matchRefs = useRef([]);
@@ -1923,8 +1921,8 @@ export default function MessengerChat({
       typeof payload === "string"
         ? payload
         : payload == null
-        ? ""
-        : String(payload);
+          ? ""
+          : String(payload);
     const safePayload = text.trim();
     if (!safePayload) return null;
     const resp = await fetch(
@@ -2040,7 +2038,7 @@ export default function MessengerChat({
           const data = await res.json();
           if (!aborted) setChatMeta(data);
         }
-      } catch {}
+      } catch { }
     }
     // Если в локальном chat нет support-инфы — подгружаем метаданные
     if (!chat?.support) loadMeta();
@@ -2060,7 +2058,7 @@ export default function MessengerChat({
             if (res.ok) {
               setChatMeta(await res.json());
             }
-          } catch {}
+          } catch { }
         })();
       }
     }
@@ -2374,13 +2372,13 @@ export default function MessengerChat({
     setChatId(newId);
     connectWS(newId);
     // не блокируем UI ожиданием истории и сайдбара
-    Promise.resolve(fetchMessages(newId)).catch(() => {});
+    Promise.resolve(fetchMessages(newId)).catch(() => { });
     try {
       fetchChatList();
-    } catch {}
+    } catch { }
     try {
       window.dispatchEvent(new CustomEvent("inbox_update"));
-    } catch {}
+    } catch { }
     return newId;
   }, [chatId, peerUser, setChatId, connectWS, fetchMessages]);
 
@@ -2407,7 +2405,7 @@ export default function MessengerChat({
           if (newChatId && newChatId !== cid) {
             setChatId(newChatId);
             connectWS(newChatId);
-            Promise.resolve(fetchMessages(newChatId)).catch(() => {});
+            Promise.resolve(fetchMessages(newChatId)).catch(() => { });
             cid = newChatId;
 
             res = await authFetchWithRefresh(`${API}/chat/${cid}/send`, {
@@ -2417,7 +2415,7 @@ export default function MessengerChat({
             });
           }
         }
-      } catch {}
+      } catch { }
     }
 
     // если бэкенд сам создал новый чат и вернул redirect_chat_id
@@ -2427,19 +2425,19 @@ export default function MessengerChat({
         if (data?.redirect_chat_id && data.redirect_chat_id !== cid) {
           setChatId(data.redirect_chat_id);
           connectWS(data.redirect_chat_id);
-          Promise.resolve(fetchMessages(data.redirect_chat_id)).catch(() => {});
+          Promise.resolve(fetchMessages(data.redirect_chat_id)).catch(() => { });
           cid = data.redirect_chat_id;
         }
-      } catch {}
+      } catch { }
     }
     if (!res.ok) throw new Error("send_failed");
     // успешная отправка — форсируем обновление боковой панели и счётчиков
     try {
       fetchChatList();
-    } catch {}
+    } catch { }
     try {
       window.dispatchEvent(new CustomEvent("inbox_update"));
-    } catch {}
+    } catch { }
     return cid;
   }
 
@@ -2476,13 +2474,13 @@ export default function MessengerChat({
               // переключаемся на новый чат и подтягиваем историю (обычно пусто)
               setChatId(effectiveChatId);
               connectWS(effectiveChatId);
-              Promise.resolve(fetchMessages(effectiveChatId)).catch(() => {});
+              Promise.resolve(fetchMessages(effectiveChatId)).catch(() => { });
               try {
                 fetchChatList();
-              } catch {}
+              } catch { }
               try {
                 window.dispatchEvent(new CustomEvent("inbox_update"));
-              } catch {}
+              } catch { }
             }
           } else {
             // Если создать новый тикет не вышло — лучше не пытаться слать в закрытый
@@ -2509,10 +2507,10 @@ export default function MessengerChat({
           const ext = pendingVoice.blob.type.includes("webm")
             ? "webm"
             : pendingVoice.blob.type.includes("ogg")
-            ? "ogg"
-            : pendingVoice.blob.type.includes("mp4")
-            ? "m4a"
-            : "webm";
+              ? "ogg"
+              : pendingVoice.blob.type.includes("mp4")
+                ? "m4a"
+                : "webm";
           fd.append("file", pendingVoice.blob, `voice.${ext}`);
           const res = await fetch(api(`/chat/${effectiveChatId}/upload`), {
             method: "POST",
@@ -2569,31 +2567,25 @@ export default function MessengerChat({
           message_type = "bid_info";
           orderId = b.order_id;
           content =
-            `${t("msg.yourBidOnOrder", "Ваша ставка на заявку")} #${
-              b.order_id
+            `${t("msg.yourBidOnOrder", "Ваша ставка на заявку")} #${b.order_id
             }\n` +
-            `${t("msg.route", "Маршрут")}: ${
-              o.from_locations && o.from_locations.length
-                ? o.from_locations[0]
-                : o.from_location || "-"
+            `${t("msg.route", "Маршрут")}: ${o.from_locations && o.from_locations.length
+              ? o.from_locations[0]
+              : o.from_location || "-"
             } → ` +
-            `${
-              o.to_locations && o.to_locations.length
-                ? o.to_locations[0]
-                : o.to_location || "-"
+            `${o.to_locations && o.to_locations.length
+              ? o.to_locations[0]
+              : o.to_location || "-"
             }\n` +
-            `${t("msg.cargo", "Груз")}: ${
-              o.cargo_items && o.cargo_items.length
-                ? o.cargo_items[0].name
-                : "-"
+            `${t("msg.cargo", "Груз")}: ${o.cargo_items && o.cargo_items.length
+              ? o.cargo_items[0].name
+              : "-"
             }, ` +
-            `${t("msg.weight", "Вес")}: ${
-              o.cargo_items && o.cargo_items.length
-                ? o.cargo_items[0].tons
-                : "-"
+            `${t("msg.weight", "Вес")}: ${o.cargo_items && o.cargo_items.length
+              ? o.cargo_items[0].tons
+              : "-"
             } ${t("unit.t", "т")}\n` +
-            `${t("msg.price", "Цена")}: ${o.rate_with_vat || o.price || "-"} ${
-              o.rate_currency || ""
+            `${t("msg.price", "Цена")}: ${o.rate_with_vat || o.price || "-"} ${o.rate_currency || ""
             }\n` +
             `${t("msg.loadDate", "Дата загрузки")}: ${o.load_date || "-"}\n` +
             `${t("info.bidAmount", "Сумма ставки")}: ${b.amount}\n` +
@@ -2604,37 +2596,31 @@ export default function MessengerChat({
           orderId = o.id;
           content =
             `📦 ${t("msg.order", "Заявка")} #${o.id}\n` +
-            `${t("msg.route", "Маршрут")}: ${
-              o.from_locations && o.from_locations.length
-                ? o.from_locations[0]
-                : o.from_location || "-"
+            `${t("msg.route", "Маршрут")}: ${o.from_locations && o.from_locations.length
+              ? o.from_locations[0]
+              : o.from_location || "-"
             } → ` +
-            `${
-              o.to_locations && o.to_locations.length
-                ? o.to_locations[0]
-                : o.to_location || "-"
+            `${o.to_locations && o.to_locations.length
+              ? o.to_locations[0]
+              : o.to_location || "-"
             }\n` +
-            `${t("msg.cargo", "Груз")}: ${
-              o.cargo_items && o.cargo_items.length
-                ? o.cargo_items[0].name
-                : "-"
+            `${t("msg.cargo", "Груз")}: ${o.cargo_items && o.cargo_items.length
+              ? o.cargo_items[0].name
+              : "-"
             }, ` +
-            `${t("msg.weight", "Вес")}: ${
-              o.cargo_items && o.cargo_items.length
-                ? o.cargo_items[0].tons
-                : "-"
+            `${t("msg.weight", "Вес")}: ${o.cargo_items && o.cargo_items.length
+              ? o.cargo_items[0].tons
+              : "-"
             } ${t("unit.t", "т")}\n` +
             `${t("msg.loadDate", "Дата загрузки")}: ${o.load_date || "-"}\n` +
-            `${t("msg.price", "Цена")}: ${o.rate_with_vat || o.price || "-"} ${
-              o.rate_currency || ""
+            `${t("msg.price", "Цена")}: ${o.rate_with_vat || o.price || "-"} ${o.rate_currency || ""
             }`;
         } else if (pendingAttachment.bid) {
           const b = pendingAttachment.bid;
           message_type = "bid_info";
           orderId = b.order_id;
           content =
-            `${t("info.yourBidOnOrder", "Ваша ставка на заявку")} #${
-              b.order_id
+            `${t("info.yourBidOnOrder", "Ваша ставка на заявку")} #${b.order_id
             }\n` +
             `${t("info.sum", "Сумма")}: ${b.amount}\n` +
             `${t("info.comment", "Комментарий")}: ${b.comment || "-"}`;
@@ -2645,28 +2631,26 @@ export default function MessengerChat({
           content =
             `🚚 ${t("info.transportLabel", "Транспорт")} #${tr.id}\n` +
             `${t("info.type", "Тип")}: ${typeLabel(tr.truck_type) || "-"}\n` +
-            `${t("info.route", "Маршрут")}: ${tr.from_location || "-"} → ${
-              Array.isArray(tr.to_locations)
-                ? tr.to_locations
-                    .map((l) => (typeof l === "string" ? l : l.location))
-                    .join(", ")
-                : tr.to_location || "-"
+            `${t("info.route", "Маршрут")}: ${tr.from_location || "-"} → ${Array.isArray(tr.to_locations)
+              ? tr.to_locations
+                .map((l) => (typeof l === "string" ? l : l.location))
+                .join(", ")
+              : tr.to_location || "-"
             }` +
             (tr.ready_date
               ? `\n${t("info.readyToLoad", "Готов к загрузке")}: ${new Date(
-                  tr.ready_date
-                ).toLocaleDateString()}`
+                tr.ready_date
+              ).toLocaleDateString()}`
               : "") +
             (tr.weight
-              ? `\n${t("transport.capacity", "Грузоподъемность")}: ${
-                  tr.weight
-                } ${t("unit.t", "т")}`
+              ? `\n${t("transport.capacity", "Грузоподъемность")}: ${tr.weight
+              } ${t("unit.t", "т")}`
               : "") +
             (tr.volume
               ? `\n${t("transport.volume", "Объем")}: ${tr.volume} ${t(
-                  "unit.m3",
-                  "м³"
-                )}`
+                "unit.m3",
+                "м³"
+              )}`
               : "");
         }
 
@@ -2688,7 +2672,7 @@ export default function MessengerChat({
         // отправляем без await — затем сразу форс-обновляем историю
         apiSendWith409(effectiveChatId, payload)
           .then(() => fetchMessages(effectiveChatId, { force: true }))
-          .catch(() => {}) // ошибки обработаются уведомлением/стейтом
+          .catch(() => { }) // ошибки обработаются уведомлением/стейтом
           .finally(() => setSending(false));
       } else {
         setSending(false);
@@ -3017,8 +3001,8 @@ export default function MessengerChat({
             <b>{t("info.route", "Маршрут")}:</b> {tr.from_location || "-"} →{" "}
             {Array.isArray(tr.to_locations)
               ? tr.to_locations
-                  .map((l) => (typeof l === "string" ? l : l.location))
-                  .join(", ")
+                .map((l) => (typeof l === "string" ? l : l.location))
+                .join(", ")
               : tr.to_location || "-"}
           </div>
           <div>
@@ -3102,8 +3086,8 @@ export default function MessengerChat({
       typeof msg.content === "string"
         ? msg.content
         : msg.content == null
-        ? ""
-        : String(msg.content);
+          ? ""
+          : String(msg.content);
 
     // ---- CALL (карточка звонка) ----
     if (msg.message_type === "call") {
@@ -3270,24 +3254,32 @@ export default function MessengerChat({
         <div
           key={mkey}
           style={{
-            background: isMine ? "#2361ae" : "#233655",
+            background: isMine
+              ? "var(--chat-bubble-self-bg)"
+              : "var(--chat-bubble-peer-bg)",
             borderRadius: 13,
             padding: "8px 14px",
             marginBottom: 9,
             maxWidth: 480,
-            color: isMine ? "#dff5fa" : "#e4eaf5",
+            color: isMine
+              ? "var(--chat-bubble-self-text)"
+              : "var(--chat-bubble-peer-text)",
             alignSelf: isMine ? "flex-end" : "flex-start",
             position: "relative",
           }}
         >
           <AudioMessageBubble
             src={resolveChatFileUrl(msg.file?.file_url ?? "")}
-            accent={isMine ? "#2e5c8a" : "#264267"}
+            accent={
+              isMine
+                ? "var(--chat-bubble-self-accent)"
+                : "var(--chat-bubble-peer-accent)"
+            }
           />
           <div
             style={{
               fontSize: 11,
-              color: "#a6bde6",
+              color: "var(--chat-bubble-meta)",
               textAlign: "right",
               marginTop: 5,
               display: "flex",
@@ -3380,8 +3372,8 @@ export default function MessengerChat({
             {msg.message_type === "transport_info"
               ? t("info.transport", "Инфо о транспорте")
               : msg.message_type === "bid_info"
-              ? t("info.orderAndBid", "Инфо по заявке и ставке")
-              : t("info.order", "Инфо по заявке")}
+                ? t("info.orderAndBid", "Инфо по заявке и ставке")
+                : t("info.order", "Инфо по заявке")}
           </div>
           <div
             style={{ color: "#fff", whiteSpace: "pre-line", fontWeight: 500 }}
@@ -3429,24 +3421,32 @@ export default function MessengerChat({
         <div
           key={mkey}
           style={{
-            background: isMine ? "#2361ae" : "#233655",
+            background: isMine
+              ? "var(--chat-bubble-self-bg)"
+              : "var(--chat-bubble-peer-bg)",
             borderRadius: 13,
             padding: "8px 14px",
             marginBottom: 9,
             maxWidth: 480,
-            color: isMine ? "#dff5fa" : "#e4eaf5",
+            color: isMine
+              ? "var(--chat-bubble-self-text)"
+              : "var(--chat-bubble-peer-text)",
             alignSelf: isMine ? "flex-end" : "flex-start",
             position: "relative",
           }}
         >
           <AudioMessageBubble
             src={resolveChatFileUrl(msg.file?.file_url ?? "")}
-            accent={isMine ? "#2e5c8a" : "#264267"}
+            accent={
+              isMine
+                ? "var(--chat-bubble-self-accent)"
+                : "var(--chat-bubble-peer-accent)"
+            }
           />
           <div
             style={{
               fontSize: 11,
-              color: "#a6bde6",
+              color: "var(--chat-bubble-meta)",
               textAlign: "right",
               marginTop: 5,
               display: "flex",
@@ -3516,10 +3516,14 @@ export default function MessengerChat({
       >
         <div
           style={{
-            background: isMine ? "#2361ae" : "#233655",
+            background: isMine
+              ? "var(--chat-bubble-self-bg)"
+              : "var(--chat-bubble-peer-bg)",
             borderRadius: 13,
             padding: "8px 14px",
-            color: isMine ? "#dff5fa" : "#e4eaf5",
+            color: isMine
+              ? "var(--chat-bubble-self-text)"
+              : "var(--chat-bubble-peer-text)",
             position: "relative",
             minHeight: 40,
             wordBreak: "break-word",
@@ -3534,8 +3538,8 @@ export default function MessengerChat({
                 marginTop: 8,
                 padding: "6px 8px",
                 borderRadius: 8,
-                background: "rgba(0,0,0,0.12)",
-                color: "#d7e8ff",
+                background: "var(--chat-translation-bg)",
+                color: "var(--chat-translation-text)",
                 fontSize: 13.5,
                 lineHeight: 1.35,
               }}
@@ -3569,7 +3573,7 @@ export default function MessengerChat({
                 minHeight: 24,
                 minWidth: 24,
                 padding: 0,
-                boxShadow: "0 2px 12px #0002",
+                boxShadow: "var(--chat-reaction-shadow)",
               }}
             >
               {Object.keys(grouped).map((emoji) => (
@@ -3605,7 +3609,7 @@ export default function MessengerChat({
           <div
             style={{
               fontSize: 11,
-              color: "#a6bde6",
+              color: "var(--chat-bubble-meta)",
               marginTop: 7,
               display: "flex",
               alignItems: "center",
@@ -4025,9 +4029,8 @@ export default function MessengerChat({
             <button
               type="button"
               title={t("chat.moreActions", "Дополнительно")}
-              className={`action-btn ${
-                attachmentMenuOpen ? "action-btn--accent" : ""
-              }`}
+              className={`action-btn ${attachmentMenuOpen ? "action-btn--accent" : ""
+                }`}
               onClick={() => {
                 if (!inputLocked) setAttachmentMenuOpen((v) => !v);
               }}
@@ -4091,9 +4094,8 @@ export default function MessengerChat({
                 {/* Автоперевод */}
                 <button
                   role="menuitem"
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-left text-sm ${
-                    autoTranslate ? "bg-[#27416b]" : "bg-[#223153]"
-                  }`}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-left text-sm ${autoTranslate ? "bg-[#27416b]" : "bg-[#223153]"
+                    }`}
                   style={{
                     color: "#e2f3ff",
                     border: "1px solid rgba(78,114,173,.55)",
@@ -4108,11 +4110,11 @@ export default function MessengerChat({
                     {translatingMessages
                       ? t("chat.translating", "Переводим сообщения…")
                       : autoTranslate
-                      ? t(
+                        ? t(
                           "chat.autoTranslateToggleOn",
                           "Автоперевод включён (последние 20 сообщений)"
                         )
-                      : t(
+                        : t(
                           "chat.autoTranslateToggleOff",
                           "Включить автоперевод последних 20 сообщений"
                         )}
@@ -4156,9 +4158,8 @@ export default function MessengerChat({
                 e.preventDefault();
                 if (!inputLocked) setShowEmojiPicker((v) => !v);
               }}
-              className={`action-btn ${
-                showEmojiPicker ? "action-btn--accent" : ""
-              }`}
+              className={`action-btn ${showEmojiPicker ? "action-btn--accent" : ""
+                }`}
               title={t("chat.insertEmoji", "Вставить эмодзи")}
               disabled={inputLocked}
               aria-label={t("chat.insertEmoji", "Вставить эмодзи")}

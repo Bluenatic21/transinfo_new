@@ -190,7 +190,17 @@ def _notify(
                 user_id, {"event": "new_notification", "notification": payload})
         )
     except RuntimeError:
-        pass
+        # нет активного event loop (например, в пуле потоков sync-эндпоинта) —
+        # задействуем отдельный цикл, чтобы уведомление не терялось
+        try:
+            asyncio.run(
+                push_notification(
+                    user_id, {"event": "new_notification", "notification": payload}
+                )
+            )
+        except Exception:
+            pass
+
 
 
 # ------------ routes ------------

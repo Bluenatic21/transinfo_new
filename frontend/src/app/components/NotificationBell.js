@@ -92,6 +92,17 @@ export default function NotificationBell() {
     const unreadNotifications = notifications.filter((n) => !n.read);
     const unreadCount = unreadNotifications.length;
 
+    const popoverStyles = {
+        surface: "var(--bg-card)",
+        border: "var(--border-subtle)",
+        shadow: "var(--shadow-soft)",
+        readBg: "transparent",
+        unreadBg: "color-mix(in srgb, var(--brand-blue) 10%, var(--control-bg))",
+        hoverBg: "color-mix(in srgb, var(--brand-blue) 16%, var(--control-bg-hover))",
+        muted: "var(--text-muted)",
+        secondary: "var(--text-secondary)",
+    };
+
     // --- Показывать ли кнопки для CONTACT_REQUEST (только если заявка всё ещё pending)
     const getNotifSenderId = (n) => (
         (n?.from_user && n.from_user.id) ||
@@ -456,10 +467,11 @@ export default function NotificationBell() {
                         position: "absolute",
                         right: 0,
                         top: 34,
-                        background: "#263047",
-                        color: "#fff",
-                        boxShadow: "0 2px 16px #000a",
+                        background: popoverStyles.surface,
+                        color: "var(--text-primary)",
+                        boxShadow: popoverStyles.shadow,
                         borderRadius: 13,
+                        border: `1px solid ${popoverStyles.border}`,
                         zIndex: 120,
                         minWidth: 290,
                         maxWidth: 400,
@@ -469,7 +481,7 @@ export default function NotificationBell() {
                     }}
                 >
                     {notifications.length === 0 && (
-                        <div style={{ padding: 18, color: "#889" }}>
+                        <div style={{ padding: 18, color: popoverStyles.muted }}>
                             {t("notifications.none", "Нет уведомлений")}
                         </div>
                     )}
@@ -487,8 +499,8 @@ export default function NotificationBell() {
                                 key={n.id || `${n.type}-${n.created_at}`}
                                 style={{
                                     padding: "12px 18px 11px 17px",
-                                    borderBottom: "1px solid #243149",
-                                    background: n.read ? "none" : "#273960",
+                                    borderBottom: `1px solid ${popoverStyles.border}`,
+                                    background: n.read ? popoverStyles.readBg : popoverStyles.unreadBg,
                                     fontWeight: n.read ? 400 : 700,
                                     cursor: n.related_id ? "pointer" : "default",
                                     fontSize: 15,
@@ -498,9 +510,9 @@ export default function NotificationBell() {
                                     gap: 10,
                                 }}
                                 onClick={() => handleNotificationClick(n)}
-                                onMouseOver={(e) => (e.currentTarget.style.background = "#254488")}
+                                onMouseOver={(e) => (e.currentTarget.style.background = popoverStyles.hoverBg)}
                                 onMouseOut={(e) =>
-                                    (e.currentTarget.style.background = n.read ? "none" : "#273960")
+                                    (e.currentTarget.style.background = n.read ? popoverStyles.readBg : popoverStyles.unreadBg)
                                 }
                             >
                                 <span
@@ -550,7 +562,7 @@ export default function NotificationBell() {
                                         </div>
                                     )}
 
-                                    <div style={{ fontSize: 12, color: "#b9d7ff" }}>{created}</div>
+                                    <div style={{ fontSize: 12, color: popoverStyles.secondary }}>{created}</div>
                                 </div>
                             </div>
                         );
