@@ -113,8 +113,37 @@ export default function HomeMapsSection() {
                         : "bg-[#0b1528]/60 border border-white/8 shadow-[0_6px_24px_rgba(0,0,0,0.35)]"
                         }`}
                 >
-                    <div className="px-4 md:px-5 pb-6 md:pb-7">
+                    <div className="px-4 md:px-5 pt-14 md:pt-16 pb-6 md:pb-7">
                         <div className="relative">
+                            <div className="absolute -top-12 md:-top-14 left-4 md:left-5 flex items-center gap-3 md:gap-4">
+                                <button
+                                    type="button"
+                                    onClick={() => router.push("/orders")}
+                                    className={`${isLight
+                                        ? "bg-white text-slate-900 shadow-[0_6px_18px_rgba(15,23,42,0.12)] border border-slate-200"
+                                        : "bg-[#0f1930] text-white border border-white/10 shadow-[0_10px_25px_rgba(0,0,0,0.35)]"
+                                        } rounded-full px-5 md:px-6 py-2.5 md:py-3 text-sm md:text-base font-semibold hover:translate-y-[-2px] transition-transform duration-200`}
+                                >
+                                    <span className="inline-flex items-center gap-2">
+                                        <FiPackage className="text-lg" />
+                                        {t("home.map.findCargo", "Найти груз")}
+                                    </span>
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => router.push("/transport")}
+                                    className={`${isLight
+                                        ? "bg-white text-slate-900 shadow-[0_6px_18px_rgba(15,23,42,0.12)] border border-slate-200"
+                                        : "bg-[#0f1930] text-white border border-white/10 shadow-[0_10px_25px_rgba(0,0,0,0.35)]"
+                                        } rounded-full px-5 md:px-6 py-2.5 md:py-3 text-sm md:text-base font-semibold hover:translate-y-[-2px] transition-transform duration-200`}
+                                >
+                                    <span className="inline-flex items-center gap-2">
+                                        <FiTruck className="text-lg" />
+                                        {t("home.map.findTransport", "Найти транспорт")}
+                                    </span>
+                                </button>
+                            </div>
+
                             <div
                                 className={`rounded-xl overflow-hidden border h-[320px] md:h-[360px] ${isLight
                                     ? "bg-white border-slate-200 shadow-[0_6px_20px_rgba(15,23,42,0.08)]"

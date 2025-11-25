@@ -2648,6 +2648,12 @@ body {
   position: relative;
 }
 
+:root[data-theme="light"] .section {
+  background: var(--surface);
+  border: 1px solid var(--border-subtle);
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.08);
+}
+
 .section-title {
   font-size: 1.4rem;
   color: var(--accent);
@@ -2657,6 +2663,10 @@ body {
   text-align: center;
   position: relative;
   padding-bottom: 10px;
+}
+
+:root[data-theme="light"] .section-title {
+  color: var(--brand-navy);
 }
 
 .section-title::after {

@@ -1675,9 +1675,6 @@ export default function SimpleMap({
                             <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: 999, background: "#ffb020" }} />
                             {t("map.legend.cargo", "Груз")}
                         </div>
-                        <div style={{ marginTop: 6, fontSize: 11, color: "#9fb0d5" }}>
-                            {t("map.legend.clusterHint", "Кольцо кластера: доля синего/оранжевого показывает состав.")}
-                        </div>
                     </div>
                 </div>
             )}

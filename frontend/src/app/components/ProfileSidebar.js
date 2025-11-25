@@ -40,12 +40,15 @@ export default function ProfileSidebar({ variant = "desktop" }) {
 
     const baseStyle = {
         minWidth: 280,
-        background: "#182033",
+        background: "var(--sidebar-bg)",
         borderRadius: 18,
+        border: "1px solid var(--sidebar-border)",
+        boxShadow: "var(--sidebar-shadow)",
         padding: "38px 14px 28px 18px",
-        color: "#f8fafd",
+        color: "var(--sidebar-link)",
         height: "fit-content",
-        marginRight: 22
+        marginRight: 22,
+        transition: "background var(--transition-normal), color var(--transition-normal), border-color var(--transition-normal)",
     };
     const mobStyle = {
         ...baseStyle,
@@ -60,7 +63,7 @@ export default function ProfileSidebar({ variant = "desktop" }) {
         <aside style={variant === "mobile" ? mobStyle : baseStyle}>
             {variant === "mobile" ? (
                 <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
-                    <div style={{ fontWeight: 800, fontSize: 18, color: "#e3f2fd" }}>
+                    <div style={{ fontWeight: 800, fontSize: 18, color: "var(--sidebar-link)" }}>
                         {t("auth.loginOrRegister", "შესვლა / რეგისტრაცია")}
                     </div>
                     <div style={{ marginLeft: "auto" }}>
@@ -68,15 +71,16 @@ export default function ProfileSidebar({ variant = "desktop" }) {
                     </div>
                 </div>
             ) : (
-                <div style={{ fontWeight: 700, fontSize: 18, color: "#8bc6fc" }}>
+                <div style={{ fontWeight: 700, fontSize: 18, color: "var(--sidebar-title)" }}>
                     {t("nav.profile", "Профиль")}
                 </div>
             )}
-            <div style={{ marginTop: variant === "mobile" ? 6 : 25, color: "#aaa" }}>
+            <div style={{ marginTop: variant === "mobile" ? 6 : 25, color: "var(--sidebar-link-muted)" }}>
                 {t("common.loading", "Загрузка...")}
             </div>
         </aside>
     );
+
 
     return (
         <aside
@@ -90,7 +94,7 @@ export default function ProfileSidebar({ variant = "desktop" }) {
                 <div style={{
                     fontWeight: 700,
                     fontSize: 22,
-                    color: "#43c8ff",
+                    color: "var(--sidebar-title)",
                     marginBottom: 17,
                     marginLeft: 3,
                 }}>
@@ -108,7 +112,7 @@ export default function ProfileSidebar({ variant = "desktop" }) {
                         gap: 13,
                         padding: "10px 8px 10px 6px",
                         borderRadius: 9,
-                        color: "#e3f2fd",
+                        color: "var(--sidebar-link)",
                         fontWeight: 600,
                         fontSize: 16,
                         background: "none",
@@ -144,7 +148,7 @@ export default function ProfileSidebar({ variant = "desktop" }) {
                     gap: 13,
                     padding: "10px 8px 10px 6px",
                     borderRadius: 9,
-                    color: "#e3f2fd",
+                    color: "var(--sidebar-link)",
                     fontWeight: 600,
                     fontSize: 16,
                     background: "none",
@@ -244,7 +248,7 @@ export default function ProfileSidebar({ variant = "desktop" }) {
             >
                 <>
                     <span>{t("sidebar.contacts", "Контакты")}</span>
-                    <span style={{ marginLeft: "auto", background: "#0b1222", color: "#b3f1fc", border: "1px solid #1d2b4a", borderRadius: 10, padding: "2px 8px", fontSize: 12 }}>
+                    <span style={{ marginLeft: "auto", background: "var(--sidebar-badge-bg)", color: "var(--sidebar-badge-fg)", border: "1px solid var(--sidebar-badge-border)", borderRadius: 10, padding: "2px 8px", fontSize: 12 }}>
                         {(contacts || []).length || 0}
                     </span>
                 </>
@@ -278,7 +282,7 @@ export default function ProfileSidebar({ variant = "desktop" }) {
                     gap: 13,
                     padding: "10px 8px 10px 6px",
                     borderRadius: 9,
-                    color: "#e3f2fd",
+                    color: "var(--sidebar-link)",
                     fontWeight: 600,
                     fontSize: 16,
                     background: "none",
@@ -313,7 +317,7 @@ export default function ProfileSidebar({ variant = "desktop" }) {
                         gap: 13,
                         padding: "10px 8px 10px 6px",
                         borderRadius: 9,
-                        color: "#e3f2fd",
+                        color: "var(--sidebar-link)",
                         fontWeight: 600,
                         fontSize: 16,
                         textDecoration: "none",
@@ -353,24 +357,24 @@ export default function ProfileSidebar({ variant = "desktop" }) {
                         onClick={(e) => e.stopPropagation()}
                         style={{
                             width: "min(92vw, 420px)",
-                            background: "#0f1b2e",
-                            border: "1px solid #1f3355",
+                            background: "var(--sidebar-bg)",
+                            border: "1px solid var(--sidebar-border)",
                             borderRadius: 14,
                             padding: 22,
-                            color: "#cde2ff",
-                            boxShadow: "0 10px 40px #0008"
+                            color: "var(--sidebar-link)",
+                            boxShadow: "0 10px 40px color-mix(in srgb, #000 22%, transparent)"
                         }}
                     >
                         <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 10 }}>
                             {t("gps.soon.title", "Скоро доступно")}
                         </div>
-                        <div style={{ fontSize: 14, lineHeight: 1.5, color: "#9ec8ff" }}>
-                            {t("gps.soon.body", "GPS-мониторинг находится в разработке и появится в ближайших обновлениях.")}
+                        <div style={{ fontSize: 14, lineHeight: 1.5, color: "var(--sidebar-link-muted)" }}>
+                            {t("gps.soon.body", "GPS-мониторинг находится в разработке и появится в ближайших обновлениях.")}␊
                         </div>
                         <div style={{ display: "flex", gap: 10, marginTop: 18, justifyContent: "flex-end" }}>
                             <button
                                 onClick={() => setShowSoon(false)}
-                                style={{ background: "#43c8ff", color: "#fff", border: "none", borderRadius: 9, padding: "8px 18px", fontWeight: 800, cursor: "pointer" }}
+                                style={{ background: "var(--brand-blue)", color: "#fff", border: "none", borderRadius: 9, padding: "8px 18px", fontWeight: 800, cursor: "pointer" }}
                             >
                                 {t("common.ok", "Понятно")}
                             </button>
@@ -386,24 +390,25 @@ function SidebarLink({ href, icon, active, children }) {
     return (
         <Link
             href={href}
+            className="sidebar-link"
             style={{
                 display: "flex",
                 alignItems: "center",
                 gap: 13,
                 padding: "10px 8px 10px 6px",
-                background: active ? "#20325a" : "none",
+                background: active ? "var(--sidebar-link-active-bg)" : "none",
                 borderRadius: 9,
-                color: active ? "#43c8ff" : "#e3f2fd",
+                color: active ? "var(--sidebar-link-active)" : "var(--sidebar-link)",
                 fontWeight: 600,
                 fontSize: 16,
                 textDecoration: "none",
-                boxShadow: active ? "0 2px 8px #2276ff22" : "none",
+                boxShadow: active ? "0 2px 8px color-mix(in srgb, var(--sidebar-link-active) 18%, transparent)" : "none",
                 transition: "all .18s"
             }}
         >
             <span style={{ fontSize: 18 }}>{icon}</span>
             {children}
-            {active && <FaChevronRight size={15} style={{ marginLeft: "auto", color: "#43c8ff" }} />}
+            {active && <FaChevronRight size={15} style={{ marginLeft: "auto", color: "var(--sidebar-link-active)" }} />}
         </Link>
     );
 }

@@ -48,6 +48,10 @@ export default async function handler(req, res) {
         const isSameHost = rawHost && upstreamHost === rawHost;
         const isApiPath =
           u.pathname === "/api" || u.pathname.startsWith("/api/");
+        // Если адрес совпадает с фронтовым доменом без явного api‑префикса,
+        // мы уйдём на Next‑страницу и вернём HTML вместо JSON → пустой список.
+        // Такой кандидат игнорируем, чтобы сразу брать настоящий backend.
+        if (isSameHost && !isApiPath) return false;
         if (isSameHost && isApiPath && loopGuard) return false;
 
         return true;
