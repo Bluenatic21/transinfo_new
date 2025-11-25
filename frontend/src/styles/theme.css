@@ -51,21 +51,29 @@
     --accent: 254 152 5;
 
     /* Messenger bubbles */
-    --chat-bubble-self-bg: #2361ae;
-    --chat-bubble-peer-bg: #233655;
-    --chat-bubble-self-text: #dff5fa;
-    --chat-bubble-peer-text: #e4eaf5;
-    --chat-bubble-meta: #a6bde6;
-    --chat-bubble-self-accent: #2e5c8a;
-    --chat-bubble-peer-accent: #264267;
-    --chat-bubble-self-border: #2f71bd;
-    --chat-bubble-peer-border: #314263;
+    --chat-bubble-self-bg: #123a72;
+    --chat-bubble-peer-bg: #101b2d;
+    --chat-bubble-self-text: #e6f2ff;
+    --chat-bubble-peer-text: #e8edf7;
+    --chat-bubble-meta: #9fb7d8;
+    --chat-bubble-self-accent: #3b82f6;
+    --chat-bubble-peer-accent: #3aa7c5;
+    --chat-bubble-self-border: #3b82f6;
+    --chat-bubble-peer-border: #2c3f61;
     --chat-translation-bg: rgba(0, 0, 0, 0.12);
     --chat-translation-text: #d7e8ff;
     --chat-reaction-shadow: 0 2px 12px #0002;
     --chat-input-bg: #232b3c;
     --chat-input-border: #364869;
     --chat-input-text: #e8f1ff;
+
+    /* Chat menus and action panels */
+    --chat-menu-panel-bg: #1e2a44;
+    --chat-menu-panel-border: rgba(59, 130, 246, 0.25);
+    --chat-menu-bg: #223153;
+    --chat-menu-active-bg: #27416b;
+    --chat-menu-fg: #e2f3ff;
+    --chat-menu-border: rgba(78, 114, 173, 0.55);
 }
 
 /* Светлая тема */
@@ -175,21 +183,29 @@
     --chat-item-selected-timestamp: #4f6581;
 
     /* Messenger bubbles */
-    --chat-bubble-self-bg: #d9edff;
-    --chat-bubble-peer-bg: #f1f5f9;
+    --chat-bubble-self-bg: #e5f2ff;
+    --chat-bubble-peer-bg: #f6f8fb;
     --chat-bubble-self-text: #0f172a;
     --chat-bubble-peer-text: #0f172a;
-    --chat-bubble-meta: #556375;
-    --chat-bubble-self-accent: #68b3ff;
-    --chat-bubble-peer-accent: #b4c5db;
-    --chat-bubble-self-border: #b9ddff;
-    --chat-bubble-peer-border: #d8e3ef;
+    --chat-bubble-meta: #5e6b7c;
+    --chat-bubble-self-accent: #3b82f6;
+    --chat-bubble-peer-accent: #6aa5d8;
+    --chat-bubble-self-border: #9ec7ff;
+    --chat-bubble-peer-border: #c8d3e2;
     --chat-translation-bg: #eef2f7;
     --chat-translation-text: #0f172a;
     --chat-reaction-shadow: 0 2px 12px rgba(15, 23, 42, 0.12);
     --chat-input-bg: #ffffff;
     --chat-input-border: #cbd5e1;
     --chat-input-text: #0f172a;
+
+    /* Chat menus and action panels */
+    --chat-menu-panel-bg: #3c424f;
+    --chat-menu-panel-border: rgba(60, 70, 82, 0.45);
+    --chat-menu-bg: #3c414c;
+    --chat-menu-active-bg: #464c59;
+    --chat-menu-fg: #f4f5f7;
+    --chat-menu-border: rgba(60, 70, 82, 0.35);
 }
 
 /* === Orders/Transport list shells === */

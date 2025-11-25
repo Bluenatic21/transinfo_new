@@ -420,7 +420,7 @@ export default function Home() {
             left: 0;
             right: 0;
             top: 0;
-            height: clamp(420px, 52vh, 620px);
+            height: clamp(720px, 82vh, 1200px);
             background: var(--home-top-bg, linear-gradient(180deg, #0a4c78 0%, #0b2f4d 100%));
             pointer-events: none;
             z-index: 0;

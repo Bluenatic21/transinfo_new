@@ -331,7 +331,7 @@ function ChatHeader({
   return (
     <div
       className={`${isMobile ? "sticky top-0" : "relative"
-        } z-20 flex items-center gap-4 px-5 py-3 border-b border-[#e7eaf1] dark:border-[#232c39] bg-[#f7fafe] dark:bg-[#1c2231]`}
+        } z-20 flex items-center gap-4 px-5 py-3 border-b border-[#e3e6ed] dark:border-[#232c39] bg-[#f5f6f8] dark:bg-[#1c2231]`}
       style={{
         position: isMobile ? "sticky" : "relative",
         top: 0,
@@ -911,11 +911,11 @@ function GpsRequestCard({
   return (
     <div
       style={{
-        background: "#1e2a44",
-        border: "1px solid rgba(134,239,172,.18)",
+        background: "var(--chat-menu-panel-bg)",
+        border: "1px solid var(--chat-menu-border)",
         borderRadius: 12,
         padding: "10px 14px",
-        color: "#e2f3ff",
+        color: "var(--chat-menu-fg)",
         marginBottom: 9,
         maxWidth: 520,
         alignSelf: msg.sender_id === user?.id ? "flex-end" : "flex-start",
@@ -4058,8 +4058,8 @@ export default function MessengerChat({
                   position: "absolute",
                   bottom: "48px",
                   left: 0,
-                  background: "#1e2a44",
-                  border: "1px solid rgba(59,130,246,.25)",
+                  background: "var(--chat-menu-panel-bg)",
+                  border: "1px solid var(--chat-menu-panel-border)",
                   borderRadius: 12,
                   padding: 8,
                   minWidth: 220,
@@ -4076,9 +4076,9 @@ export default function MessengerChat({
                     role="menuitem"
                     className="flex items-center gap-2 px-3 py-2 rounded-lg text-left text-sm"
                     style={{
-                      background: "#223153",
-                      color: "#e2f3ff",
-                      border: "1px solid rgba(78,114,173,.55)",
+                      background: "var(--chat-menu-bg)",
+                      color: "var(--chat-menu-fg)",
+                      border: "1px solid var(--chat-menu-border)",
                       opacity: action.disabled ? 0.6 : 1,
                       cursor: action.disabled ? "not-allowed" : "pointer",
                     }}
@@ -4103,11 +4103,11 @@ export default function MessengerChat({
                 {/* Автоперевод */}
                 <button
                   role="menuitem"
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-left text-sm ${autoTranslate ? "bg-[#27416b]" : "bg-[#223153]"
-                    }`}
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg text-left text-sm"
                   style={{
-                    color: "#e2f3ff",
-                    border: "1px solid rgba(78,114,173,.55)",
+                    background: autoTranslate ? "var(--chat-menu-active-bg)" : "var(--chat-menu-bg)",
+                    color: "var(--chat-menu-fg)",
+                    border: "1px solid var(--chat-menu-border)",
                   }}
                   onClick={() => {
                     setAutoTranslate((v) => !v);

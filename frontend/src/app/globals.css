@@ -1044,6 +1044,13 @@ html[data-booting] body> :not(#boot-loader) {
   --action-btn-ring: 0 4px 14px rgba(0, 0, 0, .25);
 }
 
+:root[data-theme="light"] {
+  --action-btn-bg: #3c424f;
+  --action-btn-fg: #f4f5f7;
+  --action-btn-bg-hover: #454c5a;
+  --action-btn-ring: 0 4px 14px rgba(0, 0, 0, .18);
+}
+
 .action-btn {
   inline-size: var(--action-btn-size);
   block-size: var(--action-btn-size);
