@@ -63,8 +63,8 @@ function TruckTypeDropdown({ value, onChange, options }) {
                     padding: "7px 12px",
                     borderRadius: 7,
                     cursor: "pointer",
-                    background: value === opt.value ? "#1b4e81" : "none",
-                    color: value === opt.value ? "#ffd600" : "#e3f2fd",
+                    background: value === opt.value ? `color-mix(in srgb, ${accent} 20%, ${controlBg})` : "none",
+                    color: value === opt.value ? highlight : textPrimary,
                     marginBottom: 2,
                     fontWeight: value === opt.value ? 600 : 400,
                     outline: "none",
@@ -81,12 +81,12 @@ function TruckTypeDropdown({ value, onChange, options }) {
             <div
                 tabIndex={0}
                 style={{
-                    border: "1.5px solid #244e78",
+                    border: `1.5px solid ${panelBorder}`,
                     borderRadius: 8,
                     padding: "9px 15px",
                     fontSize: 16,
-                    background: "#1e2746",
-                    color: value ? "#ffd600" : "#b0bcdc",
+                    background: controlBg,
+                    color: value ? highlight : textSecondary,
                     cursor: "pointer",
                     minHeight: 38,
                     transition: "border 0.14s",
@@ -107,7 +107,7 @@ function TruckTypeDropdown({ value, onChange, options }) {
                         style={{
                             marginLeft: 8,
                             fontSize: 22,
-                            color: "#fa7373",
+                            color: danger,
                             cursor: "pointer",
                             fontWeight: 700,
                             userSelect: "none"
@@ -128,8 +128,8 @@ function TruckTypeDropdown({ value, onChange, options }) {
                     zIndex: 99,
                     left: 0,
                     top: 41,
-                    background: "#202e4a",
-                    border: "1.5px solid #244e78",
+                    background: `color-mix(in srgb, ${controlBg} 92%, transparent)`,
+                    border: `1.5px solid ${panelBorder}`,
                     borderRadius: 9,
                     minWidth: "100%",
                     maxHeight: 320,
@@ -144,21 +144,22 @@ function TruckTypeDropdown({ value, onChange, options }) {
                         style={{
                             width: "97%",
                             borderRadius: 6,
-                            border: "1px solid #294c7a",
+                            border: `1px solid ${panelBorder}`,
                             padding: "7px 10px",
                             fontSize: 15,
                             marginBottom: 8,
-                            color: "#e3f2fd",
-                            background: "#192337"
+                            color: textPrimary,
+                            background: controlBg
                         }}
                     />
                     {filtered.length
                         ? filtered.map(opt => renderOpt(opt))
-                        : <div style={{ color: "#ffd600", padding: 6 }}>{t("common.noMatches", "Нет соответствий")}</div>
+                        : <div style={{ color: highlight, padding: 6 }}>{t("common.noMatches", "Нет соответствий")}</div>
                     }
                 </div>
-            )}
-        </div>
+            )
+            }
+        </div >
     );
 }
 
@@ -181,12 +182,12 @@ function TransportKindDropdown({ value, onChange, options }) {
             <div
                 tabIndex={0}
                 style={{
-                    border: "1.5px solid #244e78",
+                    border: `1.5px solid ${panelBorder}`,
                     borderRadius: 8,
                     padding: "9px 15px",
                     fontSize: 16,
-                    background: "#1e2746",
-                    color: value ? "#ffd600" : "#b0bcdc",
+                    background: controlBg,
+                    color: value ? highlight : textSecondary,
                     cursor: "pointer",
                     minHeight: 38,
                     transition: "border 0.14s",
@@ -207,7 +208,7 @@ function TransportKindDropdown({ value, onChange, options }) {
                         style={{
                             marginLeft: 8,
                             fontSize: 22,
-                            color: "#fa7373",
+                            color: danger,
                             cursor: "pointer",
                             fontWeight: 700,
                             userSelect: "none"
@@ -228,8 +229,8 @@ function TransportKindDropdown({ value, onChange, options }) {
                     zIndex: 99,
                     left: 0,
                     top: 41,
-                    background: "#202e4a",
-                    border: "1.5px solid #244e78",
+                    background: `color-mix(in srgb, ${controlBg} 92%, transparent)`,
+                    border: `1.5px solid ${panelBorder}`,
                     borderRadius: 9,
                     minWidth: "100%",
                     maxHeight: 320,
@@ -244,8 +245,8 @@ function TransportKindDropdown({ value, onChange, options }) {
                                 padding: "7px 12px",
                                 borderRadius: 7,
                                 cursor: "pointer",
-                                background: value === opt.value ? "#1b4e81" : "none",
-                                color: value === opt.value ? "#ffd600" : "#e3f2fd",
+                                background: value === opt.value ? `color-mix(in srgb, ${accent} 20%, ${controlBg})` : "none",
+                                color: value === opt.value ? highlight : textPrimary,
                                 marginBottom: 2,
                                 fontWeight: value === opt.value ? 600 : 400,
                                 outline: "none",
@@ -289,15 +290,15 @@ function LoadingTypeDropdown({ value, onChange, options, i18nMap }) {
                     flexWrap: "wrap",
                     gap: 7,
                     alignItems: "center",
-                    background: "#1e2746",
-                    border: "1.5px solid #244e78",
+                    background: controlBg,
+                    border: `1.5px solid ${panelBorder}`,
                     borderRadius: 7,
                     padding: "7px 12px",
                     cursor: "pointer"
                 }}
                 onClick={() => setOpened(v => !v)}
             >
-                {(!value || value.length === 0) && <span style={{ color: "#a8b9d7" }}>{t("order.loadingTypes", "Вид(ы) загрузки")}</span>}
+                {(!value || value.length === 0) && <span style={{ color: textSecondary }}>{t("order.loadingTypes", "Вид(ы) загрузки")}</span>}
                 {value && value.length > 0 && (
                     <div style={{
                         display: "flex",
@@ -311,8 +312,8 @@ function LoadingTypeDropdown({ value, onChange, options, i18nMap }) {
                     }}>
                         {value.map(v => (
                             <span key={v} style={{
-                                background: "#265b9c",
-                                color: "#b4e1fd",
+                                background: `color-mix(in srgb, ${accent} 18%, ${controlBg})`,
+                                color: accent,
                                 borderRadius: 7,
                                 padding: "2px 10px 2px 9px",
                                 fontSize: 15,
@@ -325,7 +326,7 @@ function LoadingTypeDropdown({ value, onChange, options, i18nMap }) {
                                     style={{
                                         marginLeft: 7,
                                         cursor: "pointer",
-                                        color: "#b6b6b6",
+                                        color: textSecondary,
                                         fontSize: 16
                                     }}
                                     onClick={e => {
@@ -343,10 +344,10 @@ function LoadingTypeDropdown({ value, onChange, options, i18nMap }) {
                     style={{
                         position: "absolute",
                         zIndex: 20,
-                        background: "#202e4a",
-                        border: "1.5px solid #244e78",
+                        background: `color-mix(in srgb, ${controlBg} 92%, transparent)`,
+                        border: `1.5px solid ${panelBorder}`,
                         borderRadius: 10,
-                        boxShadow: "0 2px 20px #193364cc",
+                        boxShadow: panelShadow,
                         marginTop: 3,
                         width: "100%",
                         maxHeight: 230,
@@ -360,8 +361,8 @@ function LoadingTypeDropdown({ value, onChange, options, i18nMap }) {
                         placeholder={t("common.search", "Поиск…")}
                         style={{
                             width: "100%",
-                            background: "#192337",
-                            color: "#b6d0e8",
+                            background: controlBg,
+                            color: textPrimary,
                             border: "none",
                             outline: "none",
                             borderRadius: "10px 10px 0 0",
@@ -371,7 +372,7 @@ function LoadingTypeDropdown({ value, onChange, options, i18nMap }) {
                         }}
                     />
                     {filtered.length === 0 && (
-                        <div style={{ color: "#b6b6b6", padding: 10 }}>{t("common.noOptions", "Нет вариантов")}</div>
+                        <div style={{ color: textSecondary, padding: 10 }}>{t("common.noOptions", "Нет вариантов")}</div>
                     )}
                     {filtered.map(opt => (
                         <label key={opt.value} style={{
@@ -380,14 +381,14 @@ function LoadingTypeDropdown({ value, onChange, options, i18nMap }) {
                             gap: 7,
                             padding: "8px 12px",
                             cursor: "pointer",
-                            background: value && value.includes(opt.value) ? "#265b9c44" : "",
+                            background: value && value.includes(opt.value) ? `color-mix(in srgb, ${accent} 16%, ${controlBg})` : "",
                             fontWeight: value && value.includes(opt.value) ? 700 : 400,
-                            color: value && value.includes(opt.value) ? "#b4e1fd" : "#e3f2fd"
+                            color: value && value.includes(opt.value) ? accent : textPrimary
                         }}>
                             <input
                                 type="checkbox"
                                 checked={!!(value && value.includes(opt.value))}
-                                style={{ accentColor: "#2dc7ff" }}
+                                style={{ accentColor: accent }}
                                 onChange={() => {
                                     if (value && value.includes(opt.value)) onChange(value.filter(x => x !== opt.value));
                                     else onChange([...(value || []), opt.value]);
@@ -450,12 +451,15 @@ export default function TransportFilter({ filters, setFilters, fetchTransports, 
             display: "flex",
             flexWrap: "wrap",
             alignItems: "center",
-            background: "rgba(30,41,59,0.97)",
+            background: panelBackground,
             borderRadius: 18,
             padding: "10px 10px 7px 10px",
             marginBottom: 22,
             gap: 10,
-            minHeight: 56
+            minHeight: 56,
+            border: `1px solid ${panelBorder}`,
+            boxShadow: panelShadow,
+            color: textPrimary
         }}>
             <LocationAutocomplete
                 value={filters.from_location || ""}
@@ -513,7 +517,7 @@ export default function TransportFilter({ filters, setFilters, fetchTransports, 
                     inputStyle={inputStyle} // ← обязательно использовать inputStyle!
                 />
             </div>
-            <span style={{ color: "#5da7e6", margin: "0 7px" }}>—</span>
+            <span style={{ color: textSecondary, margin: "0 7px" }}>—</span>
             <div className="filter-date-field">
                 <DateInput
                     value={filters.ready_date_to || ""}
@@ -623,43 +627,56 @@ export default function TransportFilter({ filters, setFilters, fetchTransports, 
     );
 }
 
+const panelBackground = "var(--orders-panel-bg, rgba(30,41,59,0.97))";
+const panelBorder = "var(--orders-panel-border, rgba(255,255,255,0.06))";
+const panelShadow = "var(--orders-panel-shadow, 0 4px 24px #00184455)";
+const controlBg = "var(--control-bg, #19223A)";
+const textPrimary = "var(--text-primary, #e3f2fd)";
+const textSecondary = "var(--text-secondary, #9fb3c8)";
+const accent = "var(--orders-heading, #8ecae6)";
+const accentBorder = "color-mix(in srgb, var(--orders-heading, #8ecae6) 42%, var(--orders-panel-border, #245085))";
+const buttonShadow = "0 1px 5px color-mix(in srgb, var(--orders-panel-border, #284f67) 30%, transparent)";
+const highlight = "var(--brand-orange, #ffd600)";
+const danger = "color-mix(in srgb, var(--brand-orange, #ff9f43) 70%, #ff6b6b)";
+
 const inputStyle = {
     fontSize: 15,
     padding: "7.5px 13px 7.5px 13px",
     borderRadius: 8,
-    border: "1.5px solid #244e78",
+    border: `1.5px solid ${panelBorder}`,
     outline: "none",
     minWidth: 120,
     width: 150,
     height: 38,
-    background: "#16233a",
-    color: "#e3f2fd",
+    background: controlBg,
+    color: textPrimary,
     marginRight: 4,
     marginBottom: 0,
-    boxShadow: "0 1px 5px #18264718",
+    boxShadow: buttonShadow,
     transition: "border 0.17s, background 0.13s"
 };
 const buttonResetStyle = {
     padding: "6px 17px",
-    background: "#1e2d3d",
-    color: "#e3f2fd",
+    background: controlBg,
+    color: textPrimary,
     fontWeight: 600,
     fontSize: 15,
-    border: "1.2px solid #284f67",
+    border: `1.2px solid ${panelBorder}`,
     borderRadius: 8,
     cursor: "pointer",
     height: 38,
-    marginLeft: 0
+    marginLeft: 0,
+    boxShadow: buttonShadow
 };
 const buttonMoreStyle = {
     ...buttonResetStyle,
-    background: "#183256",
-    border: "1.2px solid #245085",
-    color: "#8ecae6"
+    background: `color-mix(in srgb, ${accent} 18%, ${controlBg})`,
+    border: `1.2px solid ${accentBorder}`,
+    color: accent
 };
 const labelStyle = {
     fontSize: 15,
-    color: "#e3f2fd",
+    color: textPrimary,
     background: "none",
     padding: 0,
     display: "flex",

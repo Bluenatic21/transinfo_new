@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { useUser } from "../UserContext";
 import { api } from "@/config/env";
 import { motion } from "framer-motion";
-import { FiTruck, FiPackage } from "react-icons/fi";
 import { useLang } from "../i18n/LangProvider";
 import { useTheme } from "../providers/ThemeProvider";
 
@@ -105,45 +104,16 @@ export default function HomeMapsSection() {
             className="relative py-4 md:py-6"
             style={{ color: "var(--text-primary)" }}
         >
-            <div className="mx-auto max-w-4xl px-4 sm:px-5 md:px-6">
+            <div className="mx-auto max-w-4xl px-4 sm:px-5 md:px-6 flex justify-start">
                 {/* Общая карта: Грузы + Транспорт */}
                 <div
-                    className={`rounded-2xl overflow-hidden backdrop-blur-xl transition-colors duration-200 ${isLight
+                    className={`w-full lg:w-[80%] rounded-2xl overflow-hidden backdrop-blur-xl transition-colors duration-200 ${isLight
                         ? "bg-white border border-slate-200 shadow-[0_10px_30px_rgba(15,23,42,0.12)]"
                         : "bg-[#0b1528]/60 border border-white/8 shadow-[0_6px_24px_rgba(0,0,0,0.35)]"
                         }`}
                 >
-                    <div className="px-4 md:px-5 pt-14 md:pt-16 pb-6 md:pb-7">
+                    <div className="px-4 md:px-5 pt-6 md:pt-7 pb-6 md:pb-7">
                         <div className="relative px-1 sm:px-2 md:px-3">
-                            <div className="absolute -top-12 md:-top-14 left-4 md:left-5 flex items-center gap-3 md:gap-4">
-                                <button
-                                    type="button"
-                                    onClick={() => router.push("/orders")}
-                                    className={`${isLight
-                                        ? "bg-white text-slate-900 shadow-[0_6px_18px_rgba(15,23,42,0.12)] border border-slate-200"
-                                        : "bg-[#0f1930] text-white border border-white/10 shadow-[0_10px_25px_rgba(0,0,0,0.35)]"
-                                        } rounded-full px-5 md:px-6 py-2.5 md:py-3 text-sm md:text-base font-semibold hover:translate-y-[-2px] transition-transform duration-200`}
-                                >
-                                    <span className="inline-flex items-center gap-2">
-                                        <FiPackage className="text-lg" />
-                                        {t("home.map.findCargo", "Найти груз")}
-                                    </span>
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => router.push("/transport")}
-                                    className={`${isLight
-                                        ? "bg-white text-slate-900 shadow-[0_6px_18px_rgba(15,23,42,0.12)] border border-slate-200"
-                                        : "bg-[#0f1930] text-white border border-white/10 shadow-[0_10px_25px_rgba(0,0,0,0.35)]"
-                                        } rounded-full px-5 md:px-6 py-2.5 md:py-3 text-sm md:text-base font-semibold hover:translate-y-[-2px] transition-transform duration-200`}
-                                >
-                                    <span className="inline-flex items-center gap-2">
-                                        <FiTruck className="text-lg" />
-                                        {t("home.map.findTransport", "Найти транспорт")}
-                                    </span>
-                                </button>
-                            </div>
-
                             <div
                                 className={`rounded-xl overflow-hidden border h-[224px] md:h-[252px] ${isLight
                                     ? "bg-white border-slate-200 shadow-[0_6px_20px_rgba(15,23,42,0.08)]"

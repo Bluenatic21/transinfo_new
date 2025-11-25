@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { useLang } from "../i18n/LangProvider";
+import { FiPackage, FiTruck } from "react-icons/fi";
 
 export default function CompactHero({
     title,
@@ -66,6 +67,24 @@ export default function CompactHero({
                                     <Metric label={t("hero.metric.tenders", "Тендеры")} value={s.tenders} />
                                 </div>
                             </div>
+                        </div>
+                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 sm:gap-4 mt-4">
+                            <button
+                                type="button"
+                                onClick={onFindCargo}
+                                className="inline-flex items-center justify-center gap-2 rounded-full px-5 md:px-6 py-2.5 md:py-3 text-sm md:text-base font-semibold bg-white text-slate-900 shadow-[0_6px_18px_rgba(15,23,42,0.12)] ring-1 ring-slate-200 hover:-translate-y-[2px] transition-transform duration-200 dark:bg-[#0f1930] dark:text-white dark:ring-white/10 dark:shadow-[0_10px_25px_rgba(0,0,0,0.35)]"
+                            >
+                                <FiPackage className="text-lg" />
+                                {t("home.map.findCargo", "Найти груз")}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={onFindTransport}
+                                className="inline-flex items-center justify-center gap-2 rounded-full px-5 md:px-6 py-2.5 md:py-3 text-sm md:text-base font-semibold bg-white text-slate-900 shadow-[0_6px_18px_rgba(15,23,42,0.12)] ring-1 ring-slate-200 hover:-translate-y-[2px] transition-transform duration-200 dark:bg-[#0f1930] dark:text-white dark:ring-white/10 dark:shadow-[0_10px_25px_rgba(0,0,0,0.35)]"
+                            >
+                                <FiTruck className="text-lg" />
+                                {t("home.map.findTransport", "Найти транспорт")}
+                            </button>
                         </div>
                     </div>
                 </div>
