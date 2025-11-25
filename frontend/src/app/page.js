@@ -478,7 +478,7 @@ export default function Home() {
 
           .home-map-orders {
             display: grid;
-            grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+            grid-template-columns: minmax(0, 0.9fr) minmax(0, 2.1fr);
             grid-template-rows: auto auto;
             gap: clamp(14px, 2vw, 26px);
             align-items: stretch;

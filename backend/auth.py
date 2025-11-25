@@ -493,6 +493,7 @@ def register(user: UserRegister, request: Request, db: Session = Depends(get_db)
         )
     errors = []
     normalized_email = (user.email or "").strip().lower()
+    phone_norm = _normalize_phone_e164_digits((user.phone or "").strip())
     # дублирующийся email -> в список ошибок (422 detail)
     if db.query(User).filter(func.lower(User.email) == normalized_email).first():
         errors.append({
@@ -501,6 +502,20 @@ def register(user: UserRegister, request: Request, db: Session = Depends(get_db)
             "msg_ru": "Email уже зарегистрирован",
             "type": "value_error"
         })
+    if phone_norm:
+        # Ищем совпадение по телефону, очищая все номера от нецифровых символов
+        phone_exists = db.query(User).filter(
+            func.regexp_replace(func.coalesce(User.phone, ""), "[^0-9]", "", "g") == phone_norm
+        ).first()
+        if phone_exists:
+            errors.append({
+                "loc": ["body", "phone"],
+                "msg": "error.register.phoneExists",
+                "msg_ru": "Телефон уже зарегистрирован",
+                "type": "value_error",
+            })
+            
+        
     # Простейшие проверки на пустоту — чтобы вернуть список полей
     def _empty(v): return (v is None) or (isinstance(v, str) and not v.strip())
     if _empty(user.organization):
@@ -554,7 +569,7 @@ def register(user: UserRegister, request: Request, db: Session = Depends(get_db)
 
     # --- Требуем подтверждение телефона кодом до регистрации
     # Совпадаем с форматом, который сохраняем в PhoneVerification
-    phone_norm = _normalize_phone_e164_digits((user.phone or "").strip())
+   
     pv = db.query(PhoneVerification).filter(
         PhoneVerification.phone == phone_norm).first()
     if (not pv) or (not pv.verified_at) or expired(pv.expires_at):
