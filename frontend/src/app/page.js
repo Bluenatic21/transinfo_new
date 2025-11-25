@@ -13,41 +13,55 @@ import { useState, useEffect, useReducer } from "react";
 import { useRouter } from "next/navigation";
 import { FaTruck, FaClipboardCheck, FaUser } from "react-icons/fa6";
 import { FaSignInAlt, FaBox, FaPlus, FaInfoCircle } from "react-icons/fa";
-import CountUp from "react-countup";
-import { FaChartLine, FaUserTie, FaUsers, FaClipboardList } from "react-icons/fa6";
 import ServiceSection from "./components/ServiceSection";
 import CompactHero from "./components/CompactHero";
 import AuthModal from "./components/AuthModal";
 import HomeMapsSection from "./components/HomeMapsSection";
 import { useLang } from "./i18n/LangProvider";
 
-// --- Глобальное состояние для модалки регистрации ---
 const BASE_STATS = {
-    index: { key: "index", value: 217, label: "TransInfo-Индекс", color: "#5ee8c4", icon: <FaChartLine size={30} style={{ color: "#5ee8c4" }} /> },
-    cargos: { key: "cargos", value: 23000, label: "Грузы", color: "#fbbf24", icon: <FaClipboardList size={30} style={{ color: "#fbbf24" }} /> },
-    trucks: { key: "trucks", value: 10000, label: "Машины", color: "#34d399", icon: <FaTruck size={30} style={{ color: "#34d399" }} /> },
-    companies: { key: "companies", value: 80000, label: "Участники", color: "#60a5fa", icon: <FaUsers size={30} style={{ color: "#60a5fa" }} /> },
-    tenders: { key: "tenders", value: 121, label: "Тендеры", color: "#c084fc", icon: <FaUserTie size={30} style={{ color: "#c084fc" }} /> }
+    index: 217,
+    cargos: 23000,
+    trucks: 10000,
+    companies: 80000,
+    tenders: 121,
 };
+
 const PER_MINUTE = {
-    index: [0.03, 0.06],      // индекс — примерно 2–4 в час
-    cargos: [0.6, 1.2],       // грузы — примерно 36–72 в час
-    trucks: [0.15, 0.3],      // машины — примерно 9–18 в час
-    companies: [0.08, 0.18],  // участники — примерно 5–11 в час
-    tenders: [0.01, 0.03]     // тендеры — примерно 0.6–1.8 в час
+    index: [0.03, 0.06],
+    cargos: [0.6, 1.2],
+    trucks: [0.15, 0.3],
+    companies: [0.08, 0.18],
+    tenders: [0.01, 0.03],
 };
+
 const PROJECT_START_DATE = new Date("2025-07-08T07:17:00Z");
+const SPEED_DIVISOR = 3;
 
-const SPEED_DIVISOR = 3; // замедляем приращения в 3 раза
+function startOfMonth(d) {
+    return new Date(d.getFullYear(), d.getMonth(), 1);
+}
 
-// === Helpers for month-over-month index and 20x downscale ===
-function startOfMonth(d) { return new Date(d.getFullYear(), d.getMonth(), 1); }
-function minutesSinceStart(d) { return Math.max(0, Math.floor((d - PROJECT_START_DATE) / (1000 * 60))); }
+function minutesSinceStart(d) {
+    return Math.max(0, Math.floor((d - PROJECT_START_DATE) / (1000 * 60)));
+}
 
 const STAT_SEEDS = { cargos: 3, trucks: 4, companies: 5, tenders: 6 };
 
+function getStatGrowth(base, min, max, minutes, seed) {
+    function seededRand(i) {
+        return Math.abs(Math.sin(seed + i) * 10000) % 1;
+    }
+    let total = base;
+    for (let i = 0; i < minutes; i++) {
+        const inc = (seededRand(i) * (max - min) + min) / SPEED_DIVISOR;
+        total += inc;
+    }
+    return total;
+}
+
 function valueAtKeyAtMinutes(key, minutes) {
-    const base = BASE_STATS[key].value;
+    const base = BASE_STATS[key];
     const [min, max] = PER_MINUTE[key];
     const seed = STAT_SEEDS[key];
     return getStatGrowth(base, min, max, minutes, seed);
@@ -61,27 +75,16 @@ function sumPeriod(keys, startDate, endDate) {
     return total;
 }
 
-// Индекс = (текущий месяц / прошлый месяц) * 100
 function computeMoMIndex(now) {
     const currStart = startOfMonth(now);
     const prevStart = startOfMonth(new Date(now.getFullYear(), now.getMonth() - 1, 1));
     const keys = ["cargos", "trucks", "companies", "tenders"];
     const curr = sumPeriod(keys, currStart, now);
     const prev = sumPeriod(keys, prevStart, currStart);
-    if (prev <= 0) return 100; // базовый случай
+    if (prev <= 0) return 100;
     return +((curr / prev) * 100).toFixed(2);
 }
-function getStatGrowth(base, min, max, minutes, seed) {
-    function seededRand(i) {
-        return Math.abs(Math.sin(seed + i) * 10000) % 1;
-    }
-    let total = base;
-    for (let i = 0; i < minutes; i++) {
-        const inc = (seededRand(i) * (max - min) + min) / SPEED_DIVISOR;
-        total += inc;
-    }
-    return total;
-}
+
 function useForceUpdate() {
     const [, forceUpdate] = useReducer(x => x + 1, 0);
     useEffect(() => {
@@ -89,111 +92,35 @@ function useForceUpdate() {
         return () => clearInterval(timer);
     }, []);
 }
+
 function useLiveStats() {
     useForceUpdate();
-    const { t } = useLang?.() || { t: (_k, f) => f };
     const now = new Date();
     const minutes = Math.floor((now - PROJECT_START_DATE) / (1000 * 60));
     const indexMoM = computeMoMIndex(now);
 
     return [
+        { key: "index", value: indexMoM },
         {
-            ...BASE_STATS.index,
-            value: indexMoM,
-            sub: t("home.stats.indexSub", "текущий месяц / прошлый, %")
+            key: "cargos",
+            value: Math.floor(getStatGrowth(BASE_STATS.cargos, ...PER_MINUTE.cargos, minutes, 3) / 20),
         },
         {
-            ...BASE_STATS.cargos,
-            value: Math.floor(
-                getStatGrowth(BASE_STATS.cargos.value, ...PER_MINUTE.cargos, minutes, 3) / 20
-            ),
-            sub: `~${Math.round((PER_MINUTE.cargos[0] * 60) / SPEED_DIVISOR)} - ${Math.round((PER_MINUTE.cargos[1] * 60) / SPEED_DIVISOR)} ${t("home.stats.perHour", "/час")}`
+            key: "trucks",
+            value: Math.floor(getStatGrowth(BASE_STATS.trucks, ...PER_MINUTE.trucks, minutes, 4) / 20),
         },
         {
-            ...BASE_STATS.trucks,
-            value: Math.floor(
-                getStatGrowth(BASE_STATS.trucks.value, ...PER_MINUTE.trucks, minutes, 4) / 20
-            ),
-            sub: `~${Math.round((PER_MINUTE.trucks[0] * 60) / SPEED_DIVISOR)} - ${Math.round((PER_MINUTE.trucks[1] * 60) / SPEED_DIVISOR)} ${t("home.stats.perHour", "/час")}`
+            key: "companies",
+            value: Math.floor(getStatGrowth(BASE_STATS.companies, ...PER_MINUTE.companies, minutes, 5) / 20),
         },
         {
-            ...BASE_STATS.companies,
-            value: Math.floor(
-                getStatGrowth(BASE_STATS.companies.value, ...PER_MINUTE.companies, minutes, 5) / 20
-            ),
-            sub: `~${Math.round((PER_MINUTE.companies[0] * 60) / SPEED_DIVISOR)} - ${Math.round((PER_MINUTE.companies[1] * 60) / SPEED_DIVISOR)} ${t("home.stats.perHour", "/час")}`
+            key: "tenders",
+            value: Math.floor(getStatGrowth(BASE_STATS.tenders, ...PER_MINUTE.tenders, minutes, 6) / 20),
         },
-        {
-            ...BASE_STATS.tenders,
-            value: Math.floor(
-                getStatGrowth(BASE_STATS.tenders.value, ...PER_MINUTE.tenders, minutes, 6) / 20
-            ),
-            sub: `~${((PER_MINUTE.tenders[0] * 60) / SPEED_DIVISOR).toFixed(2)} - ${((PER_MINUTE.tenders[1] * 60) / SPEED_DIVISOR).toFixed(2)} ${t("home.stats.perHour", "/час")}`
-        }
     ];
 }
-function StatsBlock() {
-    const { t } = useLang?.() || { t: (_k, f) => f };
-    const stats = useLiveStats();
-    return (
-        <div
-            style={{
-                margin: "34px 0 26px 0",
-                background: "var(--bg-card, var(--surface, #22314a))",
-                borderRadius: 19,
-                display: "flex",
-                flexWrap: "nowrap",
-                gap: 34,
-                padding: "36px 16px 20px 16px",
-                justifyContent: "space-between",
-                alignItems: "stretch",
-                boxShadow: "var(--shadow-soft, 0 2px 14px #17418e18)",
-                border: "1px solid var(--border-subtle, rgba(23, 65, 142, 0.12))"
-            }}
-        >
-            {stats.map((stat) => (
-                <div
-                    key={stat.label}
-                    style={{
-                        minWidth: 130,
-                        flex: "1 1 150px",
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "center",
-                        gap: 6,
-                        color: "var(--text-primary, #eaf6ff)"
-                    }}
-                >
-                    <div style={{ marginBottom: 4 }}>{stat.icon}</div>
-                    <div style={{
-                        fontSize: 27,
-                        fontWeight: 900,
-                        letterSpacing: 1.2,
-                        color: stat.color,
-                        display: "flex",
-                        alignItems: "baseline"
-                    }}>
-                        <CountUp
-                            end={stat.value}
-                            duration={2.2}
-                            separator=" "
-                            decimals={stat.label === "TransInfo-Индекс" ? 2 : 0}
-                        />
-                    </div>
-                    <div style={{
-                        color: "var(--text-secondary, #9edfff)",
-                        fontSize: 17,
-                        fontWeight: 700,
-                        marginBottom: 2,
-                        marginTop: 4,
-                        textAlign: "center"
-                    }}>{t(`home.stats.${stat.key}`, stat.label)}</div>
-                </div>
-            ))}
-        </div>
-    );
-}
 
+// --- Глобальное состояние для модалки регистрации ---
 const ROLES = [
     {
         key: "OWNER",
@@ -466,10 +393,6 @@ export default function Home() {
             margin-top: clamp(6px, 1.2vw, 16px);
           }
 
-          .home-stats-wrapper {
-            margin-top: clamp(10px, 1.8vw, 22px);
-          }
-
           @media (max-width: 1100px) {
             .home-hero-shell {
               gap: 18px;
@@ -633,9 +556,6 @@ export default function Home() {
                 <div className="home-content">
                     <HeroCompactBridge />
                     <NavigationBoard />
-                    <div className="home-stats-wrapper">
-                        <StatsBlock />
-                    </div>
                     <MapOrdersSection />
 
                     {showAuth && (
@@ -768,9 +688,6 @@ export default function Home() {
                         </div>
                         <div className="home-nav-prime">
                             <NavigationBoard />
-                        </div>
-                        <div className="home-stats-wrapper">
-                            <StatsBlock />
                         </div>
                         <MapOrdersSection />
                     </div>

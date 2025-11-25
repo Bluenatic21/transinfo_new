@@ -66,9 +66,9 @@ export default function ServiceSection({ compact = false }) {
                                 <Image
                                     src={it.img}
                                     alt={it.title}
-                                    width={340}
-                                    height={220}
-                                    sizes="(max-width: 768px) 100vw, 340px"
+                                    width={110}
+                                    height={73}
+                                    sizes="110px"
                                     className="rounded-lg"
                                     loading={i === 0 ? "eager" : "lazy"}
                                 />
@@ -89,14 +89,14 @@ export default function ServiceSection({ compact = false }) {
                     }
                     .service-compact-card {
                         display: grid;
-                        grid-template-columns: 110px 1fr;
+                        grid-template-columns: minmax(90px, 110px) 1fr;
                         align-items: center;
-                        gap: 12px;
-                        padding: 12px 14px;
-                        border-radius: 14px;
+                        gap: 10px;
+                        padding: 10px 12px;
+                        border-radius: 12px;
                         background: linear-gradient(145deg, rgba(255,255,255,0.02), rgba(255,255,255,0));
                         border: 1px solid rgba(255,255,255,0.05);
-                        box-shadow: 0 10px 28px rgba(0, 0, 0, 0.18);
+                        box-shadow: 0 8px 22px rgba(0, 0, 0, 0.16);
                         backdrop-filter: blur(4px);
                     }
                     :global([data-theme="light"]) .service-compact-card {
@@ -109,6 +109,7 @@ export default function ServiceSection({ compact = false }) {
                         overflow: hidden;
                         border-radius: 10px;
                         isolation: isolate;
+                        min-height: 90px;
                     }
                     .service-compact-visual :global(img) {
                         object-fit: cover;
@@ -117,17 +118,17 @@ export default function ServiceSection({ compact = false }) {
                     }
                     .service-compact-text {
                         display: grid;
-                        gap: 6px;
+                        gap: 5px;
                     }
                     .service-compact-title {
-                        font-size: 15px;
+                        font-size: 14px;
                         line-height: 1.2;
                         font-weight: 700;
                         color: var(--text-primary);
                     }
                     .service-compact-desc {
-                        font-size: 13px;
-                        line-height: 1.45;
+                        font-size: 12.5px;
+                        line-height: 1.4;
                         color: var(--text-secondary);
                         margin: 0;
                     }
