@@ -18,6 +18,7 @@ import { FaChartLine, FaUserTie, FaUsers, FaClipboardList } from "react-icons/fa
 import ServiceSection from "./components/ServiceSection";
 import CompactHero from "./components/CompactHero";
 import AuthModal from "./components/AuthModal";
+import HomeMapsSection from "./components/HomeMapsSection";
 import { useLang } from "./i18n/LangProvider";
 
 // --- Глобальное состояние для модалки регистрации ---
@@ -438,6 +439,43 @@ export default function Home() {
             padding-top: clamp(10px, 3vh, 42px);
           }
 
+          .home-hero-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+            gap: clamp(14px, 2vw, 28px);
+            align-items: stretch;
+          }
+
+          .home-hero-column {
+            display: flex;
+            flex-direction: column;
+            gap: clamp(10px, 1.2vw, 16px);
+          }
+
+          .home-map-column {
+            display: flex;
+            flex-direction: column;
+            min-height: 100%;
+          }
+
+          .home-nav-prime {
+            margin-top: clamp(6px, 1.2vw, 16px);
+          }
+
+          .home-stats-wrapper {
+            margin-top: clamp(10px, 1.8vw, 22px);
+          }
+
+          @media (max-width: 1100px) {
+            .home-hero-grid {
+              grid-template-columns: 1fr;
+            }
+
+            .home-map-column {
+              order: -1;
+            }
+          }
+
           .home-nav-board {
             position: relative;
             padding: clamp(8px, 1.6vw, 20px) clamp(4px, 1vw, 14px) 0;
@@ -526,7 +564,13 @@ export default function Home() {
                 {homeStyles}
                 <div className="home-content">
                     <HeroCompactBridge />
+                    <div className="home-map-prime">
+                        <HomeMapsSection hideTransportPins={isTransportRole} />
+                    </div>
                     <NavigationBoard />
+                    <div className="home-stats-wrapper">
+                        <StatsBlock />
+                    </div>
                     <ServiceSection />
 
                     {showAuth && (
@@ -654,12 +698,19 @@ export default function Home() {
                 )}
                 {mode === "main" && (
                     <div className="home-main-stack">
-                        <div className="home-map-prime">
+                        <div className="home-hero-grid">
+                            <div className="home-hero-column">
+                                <HeroCompactBridge />
+                            </div>
+                            <div className="home-map-column home-map-prime">
+                                <HomeMapsSection hideTransportPins={isTransportRole} />
+                            </div>
+                        </div>
+                        <div className="home-nav-prime">
                             <NavigationBoard />
                         </div>
-                        {/* Компактный первый экран: ниже по высоте, сразу видно блок «О сервисе» */}
-                        <div className="home-hero-after-map">
-                            <HeroCompactBridge />
+                        <div className="home-stats-wrapper">
+                            <StatsBlock />
                         </div>
                         <ServiceSection />
                     </div>

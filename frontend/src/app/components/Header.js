@@ -15,7 +15,7 @@ import LangSwitcher from "./LangSwitcher";
 import { useLang } from "../i18n/LangProvider";
 import ThemeToggle from "./ThemeToggle"; // путь поправь, если Header в другой папке
 import getAvatarUrl from "./getAvatarUrl";
-import HomeMapsSection from "./HomeMapsSection";
+
 
 // ——— media‑hook для брейкпоинтов (работает и в старых браузерах)
 function useMedia(query) {
@@ -1068,23 +1068,7 @@ export default function Header({ setShowRegisterModal }) {
                 </div>
             </header>
 
-            {isHome ? (
-                <div
-                    className="header-nav-row"
-                    style={{
-                        display: "flex",
-                        alignItems: "stretch",
-                        gap: isCompact ? 10 : 14,
-                        width: "100%",
-                        padding: `${isCompact ? 4 : 6}px ${headerPadding.right}px ${isCompact ? 4 : 6}px ${headerPadding.left}px`,
-                        background: "var(--surface)"
-                    }}
-                >
-                    <div style={{ width: "100%" }}>
-                        <HomeMapsSection hideTransportPins={isTransportRole} />
-                    </div>
-                </div>
-            ) : (
+            {!isHome && (
                 <div
                     className="header-nav-row"
                     style={{
