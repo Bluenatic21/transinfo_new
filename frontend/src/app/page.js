@@ -399,11 +399,11 @@ export default function Home() {
             }
           }
 
-        .home-map-orders {
+          .home-map-orders {
             display: grid;
             grid-template-columns: minmax(0, 0.9fr) minmax(0, 2.1fr);
             grid-template-rows: auto auto;
-            gap: clamp(14px, 2vw, 26px);
+            gap: 0;
             align-items: stretch;
             margin-top: clamp(6px, 1.8vw, 20px);
             background: linear-gradient(135deg,
@@ -419,11 +419,11 @@ export default function Home() {
           .home-map-block,
           .home-orders-block,
           .home-info-block {
-            background: color-mix(in srgb, var(--bg-card, #22314a) 90%, transparent);
+            background: transparent;
             border-radius: 18px;
-            border: 1px solid color-mix(in srgb, var(--border-subtle, rgba(23, 65, 142, 0.12)) 80%, transparent);
+            border: none;
             padding: clamp(12px, 1.6vw, 18px);
-            box-shadow: 0 10px 34px rgba(0, 0, 0, 0.22);
+            box-shadow: none;
           }
 
           .home-map-block {
@@ -443,12 +443,14 @@ export default function Home() {
 
           .home-info-block {
             grid-row: 2;
-            grid-column: 1 / -1;
-            background: none;
-            border: none;
-            box-shadow: none;
-            padding: 4px;
-            margin-top: -4px;
+            grid-column: 1;
+            align-self: start;
+            background: color-mix(in srgb, var(--bg-card, #22314a) 90%, transparent);
+            border-radius: 18px;
+            border: 1px solid color-mix(in srgb, var(--border-subtle, rgba(23, 65, 142, 0.12)) 80%, transparent);
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
+            padding: clamp(12px, 1.6vw, 18px);
+            margin-top: -2px;
           }
 
           .home-orders-block .section-title {
@@ -464,6 +466,11 @@ export default function Home() {
             .home-orders-block {
               grid-row: auto;
               grid-column: 1;
+            }
+
+            .home-info-block {
+              grid-column: 1;
+              margin-top: 0;
             }
           }
 

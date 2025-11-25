@@ -49,14 +49,25 @@ export default function OrderListMobile({
         import("../leaflet-fix");
     }, []);
 
+    const surface = "var(--surface, #182337)";
+    const headerBg = "var(--header-bg, #212c46)";
+    const accent = "var(--brand-blue, #43c8ff)";
+    const textPrimary = "var(--text-primary, #0f172a)";
+    const textSecondary = "var(--text-secondary, #8fb3d9)";
+    const textMuted = "var(--text-muted, #9ca3af)";
+    const controlBg = "var(--control-bg, #ffffff)";
+    const controlBorder = "var(--border-subtle, rgba(255,255,255,.15))";
+
     const toolbarBtnStyle = {
-        border: "1px solid rgba(255,255,255,.15)",
-        background: "transparent",
-        color: "#cfe7ff",
+        border: `1px solid ${controlBorder}`,
+        background: controlBg,
+        color: textPrimary,
         padding: "8px 12px",
         borderRadius: 12,
         fontWeight: 800,
         fontSize: 13,
+        boxShadow: "var(--shadow-soft, none)",
+        transition: "transform var(--transition-fast, 150ms ease-out)",
     };
 
     const [mapOpen, setMapOpen] = useState(false);
@@ -150,13 +161,13 @@ export default function OrderListMobile({
     }, [orders, visibleIds]);
 
     return (
-        <div style={{ background: "#182337", minHeight: "100vh", paddingBottom: 64 }}>
+        <div style={{ background: surface, minHeight: "100vh", paddingBottom: 64 }}>
             {/* шапка */}
             <div
                 style={{
                     position: "sticky",
                     top: 0,
-                    background: "#212c46",
+                    background: headerBg,
                     zIndex: 10,
                     padding: "18px 16px 10px 16px",
                     display: "flex",
@@ -164,7 +175,7 @@ export default function OrderListMobile({
                     justifyContent: "space-between",
                 }}
             >
-                <span style={{ fontWeight: 800, fontSize: 21, color: "#43c8ff" }}>
+                <span style={{ fontWeight: 800, fontSize: 21, color: accent }}>
                     {t("orders.title", "Заявки")}
                 </span>
                 <div style={{ display: "flex", gap: 8 }}>
@@ -179,7 +190,7 @@ export default function OrderListMobile({
 
             <div style={{ padding: "12px 0 0 0" }}>
                 {filtered.length === 0 ? (
-                    <div style={{ textAlign: "center", color: "#aaa", marginTop: 30 }}>
+                    <div style={{ textAlign: "center", color: textMuted, marginTop: 30 }}>
                         {t("orders.emptyByFilter", "Нет заявок по выбранным фильтрам.")}
                     </div>
                 ) : (
@@ -208,7 +219,7 @@ export default function OrderListMobile({
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    color: "#8fb3d9",
+                    color: textSecondary,
                     fontWeight: 700,
                     letterSpacing: 0.2,
                 }}

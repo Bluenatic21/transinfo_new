@@ -47,7 +47,7 @@ export default function ServiceSection({ compact = false }) {
         },
     ];
 
-    const visibleItems = compact ? items.slice(0, 3) : items;
+    const visibleItems = items;
 
     if (compact) {
         return (
@@ -66,9 +66,10 @@ export default function ServiceSection({ compact = false }) {
                                 <Image
                                     src={it.img}
                                     alt={it.title}
-                                    width={110}
-                                    height={73}
-                                    sizes="110px"
+                                    width={240}
+                                    height={160}
+                                    quality={95}
+                                    sizes="240px"
                                     className="rounded-lg"
                                     loading={i === 0 ? "eager" : "lazy"}
                                 />
@@ -84,15 +85,15 @@ export default function ServiceSection({ compact = false }) {
                 <style jsx>{`
                     .service-compact-grid {
                         display: grid;
-                        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-                        gap: clamp(10px, 1.5vw, 16px);
+                        grid-template-columns: 1fr;
+                        gap: clamp(12px, 1.5vw, 18px);
                     }
                     .service-compact-card {
-                        display: grid;
-                        grid-template-columns: minmax(90px, 110px) 1fr;
-                        align-items: center;
-                        gap: 10px;
-                        padding: 10px 12px;
+                        display: flex;
+                        flex-direction: column;
+                        align-items: stretch;
+                        gap: 12px;
+                        padding: 12px 14px;
                         border-radius: 12px;
                         background: linear-gradient(145deg, rgba(255,255,255,0.02), rgba(255,255,255,0));
                         border: 1px solid rgba(255,255,255,0.05);
@@ -109,37 +110,30 @@ export default function ServiceSection({ compact = false }) {
                         overflow: hidden;
                         border-radius: 10px;
                         isolation: isolate;
-                        min-height: 90px;
+                        max-width: 240px;
+                        margin: 0 auto;
                     }
                     .service-compact-visual :global(img) {
-                        object-fit: cover;
+                        object-fit: contain;
                         width: 100%;
-                        height: 100%;
+                        height: auto;
+                        display: block;
                     }
                     .service-compact-text {
                         display: grid;
-                        gap: 5px;
+                        gap: 6px;
                     }
                     .service-compact-title {
                         font-size: 14px;
-                        line-height: 1.2;
+                        line-height: 1.3;
                         font-weight: 700;
                         color: var(--text-primary);
                     }
                     .service-compact-desc {
-                        font-size: 12.5px;
-                        line-height: 1.4;
+                        font-size: 13px;
+                        line-height: 1.5;
                         color: var(--text-secondary);
                         margin: 0;
-                    }
-                    @media (max-width: 640px) {
-                        .service-compact-card {
-                            grid-template-columns: 1fr;
-                            text-align: left;
-                        }
-                        .service-compact-visual {
-                            max-height: 150px;
-                        }
                     }
                 `}</style>
             </section>
@@ -159,55 +153,100 @@ export default function ServiceSection({ compact = false }) {
                 className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-slate-200 dark:bg-[rgba(255,255,255,0.06)]"
             />
 
-            <div className="relative mx-auto max-w-7xl px-6 space-y-28">
+            <div className="relative mx-auto max-w-5xl px-6 space-y-12 service-vertical-grid">
                 {visibleItems.map((it, i) => (
                     <motion.div
                         key={it.title}
-                        initial={{ opacity: 0, y: 48, scale: 0.96 }}
+                        initial={{ opacity: 0, y: 32, scale: 0.98 }}
                         whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                        viewport={{ once: true, amount: 0.25 }}
-                        transition={{ duration: 0.6, ease: "easeOut" }}
-                        className={`grid items-center gap-10 md:gap-14 md:grid-cols-2 ${i % 2 ? "md:[&>div:first-child]:order-2" : ""
-                            }`}
+                        viewport={{ once: true, amount: 0.3 }}
+                        transition={{ duration: 0.55, ease: "easeOut" }}
+                        className="service-vertical-card"
                     >
-                        {/* Текст */}
-                        <div className="text-slate-900 dark:text-white">
-                            <h3
-                                className="text-2xl md:text-3xl font-bold mb-3"
-                                style={{ color: "var(--text-primary)" }}
-                            >
-                                {it.title}
-                            </h3>
-                            <p
-                                className="text-[15px] leading-relaxed"
-                                style={{ color: "var(--text-secondary)" }}
-                            >
-                                {it.text}
-                            </p>
-                        </div>
-
-                        {/* Иллюстрация с мягким приближением при появлении */}
+                        {/* Иллюстрация */}
                         <motion.div
-                            initial={{ opacity: 0, scale: 0.92 }}
+                            initial={{ opacity: 0, scale: 0.94 }}
                             whileInView={{ opacity: 1, scale: 1 }}
                             viewport={{ once: true, amount: 0.35 }}
-                            transition={{ duration: 0.7, ease: "easeOut" }}
-                            className="relative flex justify-center"
+                            transition={{ duration: 0.6, ease: "easeOut" }}
+                            className="service-visual"
                         >
                             <Image
                                 src={it.img}
                                 alt={it.title}
-                                width={720}
-                                height={480}
+                                width={260}
+                                height={180}
+                                quality={95}
                                 priority={i < 2}
                                 {...(i >= 2 ? { loading: "lazy" } : {})}
-                                sizes="(max-width: 768px) 100vw, 720px"
-                                className="rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.35)]"
+                                sizes="(max-width: 768px) 90vw, 320px"
+                                className="rounded-xl"
                             />
                         </motion.div>
+
+                        {/* Текст */}
+                        <div className="service-text">
+                            <h3 className="service-title">{it.title}</h3>
+                            <p className="service-desc">{it.text}</p>
+                        </div>
                     </motion.div>
                 ))}
             </div>
+
+            <style jsx>{`
+                .service-vertical-grid {
+                    display: grid;
+                    grid-template-columns: 1fr;
+                    gap: clamp(14px, 1.8vw, 22px);
+                }
+                .service-vertical-card {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 12px;
+                    align-items: flex-start;
+                    padding: clamp(12px, 1.4vw, 18px);
+                    border-radius: 16px;
+                    border: 1px solid rgba(255,255,255,0.06);
+                    background: linear-gradient(140deg, rgba(255,255,255,0.02), rgba(255,255,255,0));
+                    box-shadow: 0 12px 34px rgba(0,0,0,0.18);
+                    backdrop-filter: blur(6px);
+                }
+                :global([data-theme="light"]) .service-vertical-card {
+                    background: linear-gradient(140deg, rgba(255,255,255,0.9), rgba(255,255,255,0.75));
+                    border-color: rgba(10, 30, 69, 0.08);
+                    box-shadow: 0 18px 40px rgba(12, 48, 96, 0.14);
+                }
+                .service-visual {
+                    width: 100%;
+                    display: flex;
+                    justify-content: center;
+                }
+                .service-visual :global(img) {
+                    height: auto;
+                    width: 100%;
+                    max-width: 320px;
+                    object-fit: contain;
+                    background: rgba(255,255,255,0.02);
+                    padding: clamp(6px, 0.8vw, 10px);
+                }
+                .service-text {
+                    display: grid;
+                    gap: 6px;
+                }
+                .service-title {
+                    font-size: clamp(18px, 2vw, 22px);
+                    line-height: 1.3;
+                    font-weight: 800;
+                    color: var(--text-primary);
+                    margin: 0;
+                }
+                .service-desc {
+                    margin: 0;
+                    font-size: 14px;
+                    line-height: 1.55;
+                    color: var(--text-secondary);
+                }
+            `}</style>
         </section>
     );
 }

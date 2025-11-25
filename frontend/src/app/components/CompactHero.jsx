@@ -55,10 +55,12 @@ export default function CompactHero({
                 )}
 
                 {/* Метрики — компактный блок сразу под навигацией, центрированный в ширине карты */}
-                <div className="mt-5 md:mt-6 xl:mt-7 mb-1">
+                <div className="mt-3 md:mt-4 xl:mt-5 mb-1">
                     <div className="max-w-5xl mx-auto w-full px-4 sm:px-6">
-                        <div className="flex justify-center">
-                            <div className="w-full rounded-xl bg-white shadow-[0_8px_28px_rgba(0,0,0,0.12)] ring-1 ring-slate-200 px-3 py-2 md:px-5 md:py-4 backdrop-blur-[2px] dark:bg-white/[0.04] dark:ring-white/5 dark:shadow-[0_8px_28px_rgba(0,0,0,0.35)]">
+                        <div className="flex justify-start">
+                            <div
+                                className="hero-metrics-card rounded-xl bg-white shadow-[0_8px_28px_rgba(0,0,0,0.12)] ring-1 ring-slate-200 px-3 py-2 md:px-5 md:py-4 backdrop-blur-[2px] dark:bg-white/[0.04] dark:ring-white/5 dark:shadow-[0_8px_28px_rgba(0,0,0,0.35)]"
+                            >
                                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-x-3 gap-y-1.5 text-left md:text-center">
                                     <Metric label={t("hero.metric.index", "TransInfo-Индекс")} value={s.index} />
                                     <Metric label={t("hero.metric.cargos", "Грузы")} value={s.cargos} />
@@ -94,6 +96,18 @@ export default function CompactHero({
             {/* Деликатные разделители для ровного стыка секций */}
             <div aria-hidden className="absolute inset-x-0 bottom-0 h-px bg-slate-200 dark:bg-white/5" />
             <div aria-hidden className="absolute inset-x-0 top-0 h-px bg-slate-200 dark:bg-white/5" />
+
+            <style jsx>{`
+              .hero-metrics-card {
+                width: min(760px, 100%);
+              }
+
+              @media (max-width: 980px) {
+                .hero-metrics-card {
+                  width: 100%;
+                }
+              }
+            `}</style>
         </section>
     );
 }
