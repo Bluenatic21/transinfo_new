@@ -139,6 +139,15 @@
     --text: var(--text-primary);
 }
 
+/* === Footer tokens === */
+:root {
+    --footer-brand-color: var(--accent);
+}
+
+:root[data-theme="light"] {
+    --footer-brand-color: #ffffff;
+}
+
 /* === Sidebar tokens === */
 :root[data-theme="dark"] {
     --sidebar-bg: rgba(24, 38, 60, 0.97);

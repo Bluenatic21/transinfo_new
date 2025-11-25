@@ -32,7 +32,7 @@ export default function Footer() {
                         style={{
                             fontWeight: 900,
                             fontSize: 22,
-                            color: "var(--accent)",
+                            color: "var(--footer-brand-color, var(--accent))",
                             letterSpacing: ".02em",
                             textShadow: "0 1px 10px #11417080",
                             marginBottom: 6,

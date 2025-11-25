@@ -339,6 +339,23 @@ export default function Home() {
         );
     }
 
+    function MapOrdersSection() {
+        return (
+            <section className="home-map-orders">
+                <div className="home-map-block">
+                    <HomeMapsSection hideTransportPins={isTransportRole} />
+                </div>
+                <div className="home-orders-block">
+                    <div className="section-title">{t("home.sections.latestOrders", "Последние заявки")}</div>
+                    <OrderList reload={reload} setMessage={setMessage} user={user} />
+                </div>
+                <div className="home-info-block">
+                    <ServiceSection />
+                </div>
+            </section>
+        );
+    }
+
     function CreateSection() {
         return (
             <div className="section">
@@ -439,23 +456,10 @@ export default function Home() {
             padding-top: clamp(10px, 3vh, 42px);
           }
 
-          .home-hero-grid {
-            display: grid;
-            grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
-            gap: clamp(14px, 2vw, 28px);
-            align-items: stretch;
-          }
-
-          .home-hero-column {
+          .home-hero-shell {
             display: flex;
             flex-direction: column;
             gap: clamp(10px, 1.2vw, 16px);
-          }
-
-          .home-map-column {
-            display: flex;
-            flex-direction: column;
-            min-height: 100%;
           }
 
           .home-nav-prime {
@@ -467,12 +471,65 @@ export default function Home() {
           }
 
           @media (max-width: 1100px) {
-            .home-hero-grid {
+            .home-hero-shell {
+              gap: 18px;
+            }
+          }
+
+          .home-map-orders {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+            grid-template-rows: auto auto;
+            gap: clamp(14px, 2vw, 26px);
+            align-items: stretch;
+            margin-top: clamp(6px, 1.8vw, 20px);
+          }
+
+          .home-map-block,
+          .home-orders-block,
+          .home-info-block {
+            background: var(--bg-card, var(--surface, #22314a));
+            border-radius: 18px;
+            border: 1px solid var(--border-subtle, rgba(23, 65, 142, 0.12));
+            padding: clamp(12px, 1.6vw, 18px);
+            box-shadow: var(--shadow-soft, 0 2px 14px #17418e18);
+          }
+
+          .home-map-block {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            grid-row: 1;
+            grid-column: 1;
+          }
+
+          .home-orders-block {
+            grid-column: 2;
+            grid-row: 1 / span 2;
+          }
+
+          .home-info-block {
+            grid-row: 2;
+            grid-column: 1 / -1;
+            padding: 0;
+            background: none;
+            border: none;
+            box-shadow: none;
+          }
+
+          .home-orders-block .section-title {
+            margin-bottom: 10px;
+          }
+
+          @media (max-width: 1100px) {
+            .home-map-orders {
               grid-template-columns: 1fr;
+              grid-template-rows: auto;
             }
 
-            .home-map-column {
-              order: -1;
+            .home-orders-block {
+              grid-row: auto;
+              grid-column: 1;
             }
           }
 
@@ -564,14 +621,11 @@ export default function Home() {
                 {homeStyles}
                 <div className="home-content">
                     <HeroCompactBridge />
-                    <div className="home-map-prime">
-                        <HomeMapsSection hideTransportPins={isTransportRole} />
-                    </div>
                     <NavigationBoard />
                     <div className="home-stats-wrapper">
                         <StatsBlock />
                     </div>
-                    <ServiceSection />
+                    <MapOrdersSection />
 
                     {showAuth && (
                         <AuthModal
@@ -698,13 +752,8 @@ export default function Home() {
                 )}
                 {mode === "main" && (
                     <div className="home-main-stack">
-                        <div className="home-hero-grid">
-                            <div className="home-hero-column">
-                                <HeroCompactBridge />
-                            </div>
-                            <div className="home-map-column home-map-prime">
-                                <HomeMapsSection hideTransportPins={isTransportRole} />
-                            </div>
+                        <div className="home-hero-shell">
+                            <HeroCompactBridge />
                         </div>
                         <div className="home-nav-prime">
                             <NavigationBoard />
@@ -712,7 +761,7 @@ export default function Home() {
                         <div className="home-stats-wrapper">
                             <StatsBlock />
                         </div>
-                        <ServiceSection />
+                        <MapOrdersSection />
                     </div>
                 )}
                 {mode === "orders" && !isOwnerRole && <OrdersSection />}
