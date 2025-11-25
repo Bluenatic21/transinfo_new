@@ -350,7 +350,7 @@ export default function Home() {
                     <OrderList reload={reload} setMessage={setMessage} user={user} />
                 </div>
                 <div className="home-info-block">
-                    <ServiceSection />
+                    <ServiceSection compact />
                 </div>
             </section>
         );
@@ -476,23 +476,31 @@ export default function Home() {
             }
           }
 
-          .home-map-orders {
+        .home-map-orders {
             display: grid;
             grid-template-columns: minmax(0, 0.9fr) minmax(0, 2.1fr);
             grid-template-rows: auto auto;
             gap: clamp(14px, 2vw, 26px);
             align-items: stretch;
             margin-top: clamp(6px, 1.8vw, 20px);
+            background: linear-gradient(135deg,
+              color-mix(in srgb, var(--surface, #22314a) 90%, transparent),
+              color-mix(in srgb, var(--surface, #22314a) 82%, transparent));
+            border-radius: 22px;
+            padding: clamp(12px, 1.8vw, 18px);
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.28);
+            position: relative;
+            overflow: hidden;
           }
 
           .home-map-block,
           .home-orders-block,
           .home-info-block {
-            background: var(--bg-card, var(--surface, #22314a));
+            background: color-mix(in srgb, var(--bg-card, #22314a) 90%, transparent);
             border-radius: 18px;
-            border: 1px solid var(--border-subtle, rgba(23, 65, 142, 0.12));
+            border: 1px solid color-mix(in srgb, var(--border-subtle, rgba(23, 65, 142, 0.12)) 80%, transparent);
             padding: clamp(12px, 1.6vw, 18px);
-            box-shadow: var(--shadow-soft, 0 2px 14px #17418e18);
+            box-shadow: 0 10px 34px rgba(0, 0, 0, 0.22);
           }
 
           .home-map-block {
@@ -501,20 +509,23 @@ export default function Home() {
             gap: 10px;
             grid-row: 1;
             grid-column: 1;
+            backdrop-filter: blur(3px);
           }
 
           .home-orders-block {
             grid-column: 2;
             grid-row: 1 / span 2;
+            backdrop-filter: blur(3px);
           }
 
           .home-info-block {
             grid-row: 2;
             grid-column: 1 / -1;
-            padding: 0;
             background: none;
             border: none;
             box-shadow: none;
+            padding: 4px;
+            margin-top: -4px;
           }
 
           .home-orders-block .section-title {

@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { useLang } from "../i18n/LangProvider";
 import { useTheme } from "../providers/ThemeProvider";
 
-export default function ServiceSection() {
+export default function ServiceSection({ compact = false }) {
     const { t } = useLang();
     const { resolvedTheme } = useTheme();
     const isLight = resolvedTheme === "light";
@@ -47,6 +47,104 @@ export default function ServiceSection() {
         },
     ];
 
+    const visibleItems = compact ? items.slice(0, 3) : items;
+
+    if (compact) {
+        return (
+            <section id="service" className="relative" style={{ color: "var(--text-primary)" }}>
+                <div className="service-compact-grid">
+                    {visibleItems.map((it, i) => (
+                        <motion.div
+                            key={it.title}
+                            initial={{ opacity: 0, y: 14 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true, amount: 0.3 }}
+                            transition={{ duration: 0.35, ease: "easeOut", delay: i * 0.04 }}
+                            className="service-compact-card"
+                        >
+                            <div className="service-compact-visual">
+                                <Image
+                                    src={it.img}
+                                    alt={it.title}
+                                    width={340}
+                                    height={220}
+                                    sizes="(max-width: 768px) 100vw, 340px"
+                                    className="rounded-lg"
+                                    loading={i === 0 ? "eager" : "lazy"}
+                                />
+                            </div>
+                            <div className="service-compact-text">
+                                <h3 className="service-compact-title">{it.title}</h3>
+                                <p className="service-compact-desc">{it.text}</p>
+                            </div>
+                        </motion.div>
+                    ))}
+                </div>
+
+                <style jsx>{`
+                    .service-compact-grid {
+                        display: grid;
+                        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+                        gap: clamp(10px, 1.5vw, 16px);
+                    }
+                    .service-compact-card {
+                        display: grid;
+                        grid-template-columns: 110px 1fr;
+                        align-items: center;
+                        gap: 12px;
+                        padding: 12px 14px;
+                        border-radius: 14px;
+                        background: linear-gradient(145deg, rgba(255,255,255,0.02), rgba(255,255,255,0));
+                        border: 1px solid rgba(255,255,255,0.05);
+                        box-shadow: 0 10px 28px rgba(0, 0, 0, 0.18);
+                        backdrop-filter: blur(4px);
+                    }
+                    :global([data-theme="light"]) .service-compact-card {
+                        background: linear-gradient(145deg, rgba(255,255,255,0.9), rgba(255,255,255,0.78));
+                        border-color: rgba(10, 30, 69, 0.06);
+                        box-shadow: 0 14px 40px rgba(12, 48, 96, 0.14);
+                    }
+                    .service-compact-visual {
+                        position: relative;
+                        overflow: hidden;
+                        border-radius: 10px;
+                        isolation: isolate;
+                    }
+                    .service-compact-visual :global(img) {
+                        object-fit: cover;
+                        width: 100%;
+                        height: 100%;
+                    }
+                    .service-compact-text {
+                        display: grid;
+                        gap: 6px;
+                    }
+                    .service-compact-title {
+                        font-size: 15px;
+                        line-height: 1.2;
+                        font-weight: 700;
+                        color: var(--text-primary);
+                    }
+                    .service-compact-desc {
+                        font-size: 13px;
+                        line-height: 1.45;
+                        color: var(--text-secondary);
+                        margin: 0;
+                    }
+                    @media (max-width: 640px) {
+                        .service-compact-card {
+                            grid-template-columns: 1fr;
+                            text-align: left;
+                        }
+                        .service-compact-visual {
+                            max-height: 150px;
+                        }
+                    }
+                `}</style>
+            </section>
+        );
+    }
+
     return (
         // Наследуем фон страницы, чтобы не было скачков␊
         <section id="service" className="relative py-24" style={{ color: "var(--text-primary)" }}>
@@ -61,7 +159,7 @@ export default function ServiceSection() {
             />
 
             <div className="relative mx-auto max-w-7xl px-6 space-y-28">
-                {items.map((it, i) => (
+                {visibleItems.map((it, i) => (
                     <motion.div
                         key={it.title}
                         initial={{ opacity: 0, y: 48, scale: 0.96 }}
