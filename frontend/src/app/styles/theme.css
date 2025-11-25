@@ -49,6 +49,23 @@
     --border: 36 51 66;
     --primary: 129 202 255;
     --accent: 254 152 5;
+
+    /* Messenger bubbles */
+    --chat-bubble-self-bg: #123a72;
+    --chat-bubble-peer-bg: #101b2d;
+    --chat-bubble-self-text: #e6f2ff;
+    --chat-bubble-peer-text: #e8edf7;
+    --chat-bubble-meta: #9fb7d8;
+    --chat-bubble-self-accent: #3b82f6;
+    --chat-bubble-peer-accent: #3aa7c5;
+    --chat-bubble-self-border: #3b82f6;
+    --chat-bubble-peer-border: #2c3f61;
+    --chat-translation-bg: rgba(0, 0, 0, 0.12);
+    --chat-translation-text: #d7e8ff;
+    --chat-reaction-shadow: 0 2px 12px #0002;
+    --chat-input-bg: #232b3c;
+    --chat-input-border: #364869;
+    --chat-input-text: #e8f1ff;
 }
 
 /* Светлая тема */
@@ -81,6 +98,23 @@
     --border: 215 222 234;
     --primary: 129 202 255;
     --accent: 254 152 5;
+
+    /* Messenger bubbles */
+    --chat-bubble-self-bg: #e5f2ff;
+    --chat-bubble-peer-bg: #f6f8fb;
+    --chat-bubble-self-text: #0f172a;
+    --chat-bubble-peer-text: #0f172a;
+    --chat-bubble-meta: #5e6b7c;
+    --chat-bubble-self-accent: #3b82f6;
+    --chat-bubble-peer-accent: #6aa5d8;
+    --chat-bubble-self-border: #9ec7ff;
+    --chat-bubble-peer-border: #c8d3e2;
+    --chat-translation-bg: #eef2f7;
+    --chat-translation-text: #0f172a;
+    --chat-reaction-shadow: 0 2px 12px rgba(15, 23, 42, 0.12);
+    --chat-input-bg: #ffffff;
+    --chat-input-border: #cbd5e1;
+    --chat-input-text: #0f172a;
 }
 
 /* === Header design tokens === */

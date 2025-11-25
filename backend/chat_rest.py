@@ -1028,11 +1028,21 @@ async def send_chat_message(
             } if chat_msg.file else None),
         }
 
-        # ✅ Мгновенная доставка в канал чата (без ожидания уведомлений/REST)
+ # ✅ Мгновенная доставка в канал чата (без ожидания уведомлений/REST)
         try:
             await ws_emit_to_chat(chat_id, "message.new", {**out, "chat_id": chat_id})
         except Exception as e:
             print("[WARN] ws_emit_to_chat(message.new) failed:", e)
+
+        # SUPPORT: гарантируем, что все активные агенты состоят в чате
+        if st:
+            try:
+                for uid in _active_support_user_ids(db):
+                    if not db.query(ChatParticipant).filter_by(chat_id=chat_id, user_id=uid).first():
+                        db.add(ChatParticipant(chat_id=chat_id, user_id=uid))
+                db.commit()
+            except Exception:
+                db.rollback()
 
         # Push в WS всем участникам (кроме отправителя), уважая mute для групп
         participants = db.query(ChatParticipant).filter_by(
