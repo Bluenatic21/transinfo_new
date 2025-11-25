@@ -104,10 +104,10 @@ export default function HomeMapsSection() {
             className="relative py-4 md:py-6"
             style={{ color: "var(--text-primary)" }}
         >
-            <div className="mx-auto max-w-4xl px-4 sm:px-5 md:px-6 flex justify-start">
+            <div className="w-full px-4 sm:px-5 md:px-6 flex justify-start">
                 {/* Общая карта: Грузы + Транспорт */}
                 <div
-                    className={`w-full lg:w-[80%] rounded-2xl overflow-hidden backdrop-blur-xl transition-colors duration-200 ${isLight
+                    className={`w-full lg:w-[34%] xl:w-[32%] rounded-2xl overflow-hidden backdrop-blur-xl transition-colors duration-200 ${isLight
                         ? "bg-white border border-slate-200 shadow-[0_10px_30px_rgba(15,23,42,0.12)]"
                         : "bg-[#0b1528]/60 border border-white/8 shadow-[0_6px_24px_rgba(0,0,0,0.35)]"
                         }`}
