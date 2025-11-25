@@ -105,7 +105,7 @@ export default function HomeMapsSection() {
             className="relative py-4 md:py-6"
             style={{ color: "var(--text-primary)" }}
         >
-            <div className="mx-auto max-w-5xl px-6">
+            <div className="mx-auto max-w-4xl px-4 sm:px-5 md:px-6">
                 {/* Общая карта: Грузы + Транспорт */}
                 <div
                     className={`rounded-2xl overflow-hidden backdrop-blur-xl transition-colors duration-200 ${isLight
@@ -114,7 +114,7 @@ export default function HomeMapsSection() {
                         }`}
                 >
                     <div className="px-4 md:px-5 pt-14 md:pt-16 pb-6 md:pb-7">
-                        <div className="relative">
+                        <div className="relative px-1 sm:px-2 md:px-3">
                             <div className="absolute -top-12 md:-top-14 left-4 md:left-5 flex items-center gap-3 md:gap-4">
                                 <button
                                     type="button"
@@ -145,7 +145,7 @@ export default function HomeMapsSection() {
                             </div>
 
                             <div
-                                className={`rounded-xl overflow-hidden border h-[320px] md:h-[360px] ${isLight
+                                className={`rounded-xl overflow-hidden border h-[224px] md:h-[252px] ${isLight
                                     ? "bg-white border-slate-200 shadow-[0_6px_20px_rgba(15,23,42,0.08)]"
                                     : "bg-[#0a1426] border-white/8"
                                     }`}

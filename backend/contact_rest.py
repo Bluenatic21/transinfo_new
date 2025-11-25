@@ -39,8 +39,13 @@ def _emit_contacts_update(*user_ids: int):
                 push_notification(uid, {"event": "contacts_update"})
             )
     except RuntimeError:
-        # нет активного event loop (например, в фоновой задаче) — молча пропускаем
-        pass
+        # нет активного event loop (например, в фоновой задаче) — попробуем отправить
+        # уведомления через отдельный цикл, чтобы фронт получил сигнал сразу
+        try:
+            for uid in ids:
+                asyncio.run(push_notification(uid, {"event": "contacts_update"}))
+        except Exception:
+            pass
     except Exception:
         # безопасность прежде всего: уведомление эфемерное, не роняем запрос
         pass

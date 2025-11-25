@@ -25,29 +25,70 @@ import ContactRequests from "../components/ContactRequests";
 import EmployeeRegisterModal from "../components/EmployeeRegisterModal";
 import BlockedUsersList from "../components/BlockedUsersList";
 import { useLang } from "@/app/i18n/LangProvider";
+import { useTheme } from "../providers/ThemeProvider";
 
 const MonitoringSection = dynamic(() => import("../components/MonitoringSection"), { ssr: false });
 
+const useProfileThemeColors = () => {
+    const { resolvedTheme } = useTheme();
+    const isLight = resolvedTheme === "light";
+
+    return useMemo(() => ({
+        cardBg: isLight ? "#f6f8fb" : "#182033",
+        cardShadow: isLight ? "0 2px 14px rgba(25,57,105,0.1)" : "0 2px 14px #19396922",
+        cardBorder: isLight ? "#dbe4f3" : "#233a5a",
+        textPrimary: isLight ? "#0f1b2a" : "#e3f2fd",
+        textMuted: isLight ? "#4b5563" : "#b3d5fa",
+        accentBlue: "#43c8ff",
+        accentGreen: "#34c759",
+        highlightDot: isLight ? "#0284c7" : "#72ebff",
+        pillBg: isLight ? "#e9f1fb" : "#0f1a2b",
+        pillBorder: isLight ? "#dbe4f3" : "#233a5a",
+        toggleActiveBg: isLight ? "#d7eafe" : "#20325a",
+        toggleActiveText: isLight ? "#0b5cab" : "#43c8ff",
+        toggleInactiveText: isLight ? "#4b5563" : "#9cc4e7",
+        searchBg: isLight ? "#ffffff" : "#0f1a2b",
+        searchBorder: isLight ? "#dbe4f3" : "#233a5a",
+        searchText: isLight ? "#0f1b2a" : "#e3f2fd",
+        searchIcon: isLight ? "#6b7280" : "#9cc4e7",
+        segmentedBg: isLight ? "#e9f1fb" : "#0f1b34",
+        segmentedBorder: isLight ? "#dbe4f3" : "#2a4872",
+        segmentedActiveText: isLight ? "#0f1b2a" : "#0c223a",
+        stickyBg: isLight ? "rgba(246,248,251,0.95)" : "rgba(10,16,28,0.94)",
+        stickyBorder: isLight ? "1px solid rgba(209,213,219,.8)" : "1px solid rgba(40,70,110,.25)",
+    }), [isLight]);
+};
 
 const ContactsTabs = ({ active, onChange }) => {
     const { t } = useLang?.() || { t: (_k, f) => f };
+    const colors = useProfileThemeColors();
     return (
         <div className="flex items-center gap-2 mb-3">
             <button
                 onClick={() => onChange("contacts")}
-                className={`px-3 py-1.5 rounded-xl text-sm transition ${active === "contacts"
-                    ? "bg-sky-700 text-white"
-                    : "bg-white/5 text-white/70 hover:text-white"
-                    }`}
+                style={{
+                    padding: "6px 12px",
+                    borderRadius: 12,
+                    fontSize: 14,
+                    background: active === "contacts" ? colors.accentBlue : colors.pillBg,
+                    color: active === "contacts" ? "#fff" : colors.toggleInactiveText,
+                    border: `1px solid ${colors.pillBorder}`,
+                    transition: "all .2s ease",
+                }}
             >
                 {t("contacts.my", "Мои контакты")}
             </button>
             <button
                 onClick={() => onChange("contact_requests")}
-                className={`px-3 py-1.5 rounded-xl text-sm transition ${active === "contact_requests"
-                    ? "bg-sky-700 text-white"
-                    : "bg-white/5 text-white/70 hover:text-white"
-                    }`}
+                style={{
+                    padding: "6px 12px",
+                    borderRadius: 12,
+                    fontSize: 14,
+                    background: active === "contact_requests" ? colors.accentBlue : colors.pillBg,
+                    color: active === "contact_requests" ? "#fff" : colors.toggleInactiveText,
+                    border: `1px solid ${colors.pillBorder}`,
+                    transition: "all .2s ease",
+                }}
             >
                 {t("profile.contacts.requests", "Запросы")}
             </button>
@@ -60,6 +101,7 @@ const ContactsOnePane = ({ isMobile }) => {
     const router = useRouter();
     const searchParams = useSearchParams();
     const pathname = usePathname();
+    const colors = useProfileThemeColors();
 
     const active =
         searchParams.get("contact_requests") ? "contact_requests" : "contacts";
@@ -77,7 +119,14 @@ const ContactsOnePane = ({ isMobile }) => {
     };
 
     return (
-        <div className="bg-[#0f1b2a] rounded-2xl p-4 shadow-md">
+        <div
+            className="rounded-2xl p-4 shadow-md"
+            style={{
+                background: colors.cardBg,
+                boxShadow: colors.cardShadow,
+                border: `1px solid ${colors.cardBorder}`,
+            }}
+        >
             <ContactsTabs active={active} onChange={setActive} />
             {active === "contacts" ? <ContactsList /> : <ContactRequests />}
         </div>
@@ -85,6 +134,7 @@ const ContactsOnePane = ({ isMobile }) => {
 };
 export default function ProfilePage() {
     const { t } = useLang?.() || { t: (_k, f) => f };
+    const colors = useProfileThemeColors();
     const [managerOrdersScope, setManagerOrdersScope] = useState("account"); // 'account' | 'my'
     const [managerTransportsScope, setManagerTransportsScope] = useState("account"); // 'account' | 'my'
     const [accountOrders, setAccountOrders] = useState([]);
@@ -738,9 +788,9 @@ export default function ProfilePage() {
             flex: "1 1 50%",
             minWidth: 0,
             maxWidth: "100%",
-            background: "#182033",
+            background: colors.cardBg,
             borderRadius: 18,
-            boxShadow: "0 2px 14px #19396922",
+            boxShadow: colors.cardShadow,
             padding: "26px 24px 24px 24px",
             height: "calc(100vh - 160px)",
             overflowY: "auto",
@@ -753,9 +803,9 @@ export default function ProfilePage() {
             flex: "1 1 50%",
             minWidth: 0,
             maxWidth: "100%",
-            background: "#182033",
+            background: colors.cardBg,
             borderRadius: 18,
-            boxShadow: "0 2px 14px #19396922",
+            boxShadow: colors.cardShadow,
             padding: "26px 24px 24px 24px",
             height: "calc(100vh - 160px)",
             overflowY: "auto",
@@ -801,21 +851,21 @@ export default function ProfilePage() {
                             flex: "1 1 100%",
                             minWidth: 0,
                             maxWidth: "100%",
-                            background: "#182033",
+                            background: colors.cardBg,
                             borderRadius: 18,
-                            boxShadow: "0 2px 14px #19396922",
+                            boxShadow: colors.cardShadow,
                             padding: "26px 24px 24px 24px",
                             height: "calc(100vh - 160px)",
                             overflowY: "auto",
                             display: "flex",
                             flexDirection: "column",
                             gap: 16,
-                            border: "1px solid #233a5a",
+                            border: `1px solid ${colors.cardBorder}`,
                         }}
                     >
                         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
-                            <span style={{ width: 10, height: 10, borderRadius: 999, background: "#72ebff" }} />
-                            <span style={{ fontWeight: 700, fontSize: 18, color: "#e3f2fd", letterSpacing: ".01em" }}>{t("reviews.title", "Отзывы")}</span>
+                            <span style={{ width: 10, height: 10, borderRadius: 999, background: colors.highlightDot }} />
+                            <span style={{ fontWeight: 700, fontSize: 18, color: colors.textPrimary, letterSpacing: ".01em" }}>{t("reviews.title", "Отзывы")}</span>
                         </div>
                         <UserReviewsList userId={user?.id} />
                     </div>
@@ -833,12 +883,12 @@ export default function ProfilePage() {
                             <>
                                 <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
                                     <FaFileAlt color="#43c8ff" size={22} />
-                                    <span style={{ fontWeight: 700, fontSize: 18, color: "#e3f2fd", letterSpacing: ".01em" }}>
+                                    <span style={{ fontWeight: 700, fontSize: 18, color: colors.textPrimary, letterSpacing: ".01em" }}>
                                         История моих заявок
                                     </span>
                                 </div>
                                 {ordersLoading ? (
-                                    <span style={{ color: "#b3d5fa" }}>{t("common.loading", "Загрузка...")}</span>
+                                    <span style={{ color: colors.textMuted }}>{t("common.loading", "Загрузка...")}</span>
                                 ) : (myOrders && myOrders.length > 0
                                     ? (
                                         <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(2, minmax(0, 1fr))", gap: 16 }}>
@@ -867,7 +917,7 @@ export default function ProfilePage() {
                                                 ))}
                                         </div>
                                     )
-                                    : <span style={{ color: "#b3d5fa" }}>У вас пока нет заявок.</span>
+                                    : <span style={{ color: colors.textMuted }}>У вас пока нет заявок.</span>
                                 )}
                             </>
                         ) : (
@@ -932,9 +982,9 @@ export default function ProfilePage() {
                                     <div>
                                         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
                                             <FaFileAlt color="#43c8ff" size={22} />
-                                            <span style={{ fontWeight: 700, fontSize: 18, color: "#e3f2fd", letterSpacing: ".01em" }}>
+                                            <span style={{ fontWeight: 700, fontSize: 18, color: colors.textPrimary, letterSpacing: ".01em" }}>
                                                 {t("orders.title", "Заявки")}</span>
-                                            <div style={{ marginLeft: 10, display: "inline-flex", gap: 8, padding: 4, borderRadius: 10, background: "#0f1a2b", border: "1px solid #233a5a" }}>
+                                            <div style={{ marginLeft: 10, display: "inline-flex", gap: 8, padding: 4, borderRadius: 10, background: colors.pillBg, border: `1px solid ${colors.pillBorder}` }}>
                                                 <button
                                                     onClick={() => {
                                                         setManagerOrdersScope("account");
@@ -947,8 +997,8 @@ export default function ProfilePage() {
                                                         borderRadius: 8,
                                                         border: "none",
                                                         cursor: "pointer",
-                                                        background: managerOrdersScope === "account" ? "#20325a" : "transparent",
-                                                        color: managerOrdersScope === "account" ? "#43c8ff" : "#9cc4e7",
+                                                        background: managerOrdersScope === "account" ? colors.toggleActiveBg : "transparent",
+                                                        color: managerOrdersScope === "account" ? colors.toggleActiveText : colors.toggleInactiveText,
                                                         fontWeight: 800
                                                     }}>
                                                     {t("common.all", "Все")}
@@ -965,28 +1015,28 @@ export default function ProfilePage() {
                                                         borderRadius: 8,
                                                         border: "none",
                                                         cursor: "pointer",
-                                                        background: managerOrdersScope === "my" ? "#20325a" : "transparent",
-                                                        color: managerOrdersScope === "my" ? "#43c8ff" : "#9cc4e7",
+                                                        background: managerOrdersScope === "my" ? colors.toggleActiveBg : "transparent",
+                                                        color: managerOrdersScope === "my" ? colors.toggleActiveText : colors.toggleInactiveText,
                                                         fontWeight: 800
                                                     }}>
                                                     {t("common.my", "Мои")}
                                                 </button>
                                                 <div style={{ marginLeft: "auto" }}>
                                                     <div style={{ position: "relative", display: "inline-flex", width: 420, maxWidth: "36vw" }}>
-                                                        <FiSearch size={18} color="#9cc4e7"
+                                                        <FiSearch size={18} color={colors.searchIcon}
                                                             style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
                                                         <input
                                                             value={ordersQuery}
                                                             onChange={(e) => setOrdersQuery(e.target.value)}
                                                             placeholder={t("orders.searchPlaceholder", "Поиск по заявкам (маршрут, груз, коммент, №.)")}
-                                                            style={{ padding: "10px 12px 10px 34px", background: "#0f1a2b", border: "1px solid #233a5a", borderRadius: 10, color: "#e3f2fd", fontSize: 14, outline: "none", width: "100%" }}
+                                                            style={{ padding: "10px 12px 10px 34px", background: colors.searchBg, border: `1px solid ${colors.searchBorder}`, borderRadius: 10, color: colors.searchText, fontSize: 14, outline: "none", width: "100%" }}
                                                         />
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
                                         {(managerOrdersScope === "my" ? ordersLoading : accountOrdersLoading)
-                                            ? (<span style={{ color: "#b3d5fa" }}>{t("common.loading", "Загрузка...")}</span>)
+                                            ? (<span style={{ color: colors.textMuted }}>{t("common.loading", "Загрузка...")}</span>)
                                             : (
                                                 (managerOrdersScope === "my" ? myOrders : accountOrders)?.length
                                                     ? (
@@ -1021,7 +1071,7 @@ export default function ProfilePage() {
                                                                 ))}
                                                         </div>
                                                     )
-                                                    : <span style={{ color: "#b3d5fa" }}>
+                                                    : <span style={{ color: colors.textMuted }}>
                                                         {managerOrdersScope === "my" ? t("orders.empty.mine", "У вас пока нет заявок.") : t("orders.empty.account", "В аккаунте пока нет заявок.")}
                                                     </span>
                                             )
@@ -1034,10 +1084,10 @@ export default function ProfilePage() {
                                     <div>
                                         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
                                             <FaTruck color="#43c8ff" size={22} />
-                                            <span style={{ fontWeight: 700, fontSize: 18, color: "#e3f2fd", letterSpacing: ".01em" }}>
+                                            <span style={{ fontWeight: 700, fontSize: 18, color: colors.textPrimary, letterSpacing: ".01em" }}>
                                                 {t("transports.title", "Транспорт")}
                                             </span>
-                                            <div style={{ marginLeft: 10, display: "inline-flex", gap: 8, padding: 4, borderRadius: 10, background: "#0f1a2b", border: "1px solid #233a5a" }}>
+                                            <div style={{ marginLeft: 10, display: "inline-flex", gap: 8, padding: 4, borderRadius: 10, background: colors.pillBg, border: `1px solid ${colors.pillBorder}` }}>
                                                 <button
                                                     disabled={onlySelfScope}
                                                     onClick={() => { if (!onlySelfScope) setManagerTransportsScope("account"); }}
@@ -1046,8 +1096,8 @@ export default function ProfilePage() {
                                                         borderRadius: 8,
                                                         border: "none",
                                                         cursor: onlySelfScope ? "not-allowed" : "pointer",
-                                                        background: managerTransportsScope === "account" ? "#20325a" : "transparent",
-                                                        color: managerTransportsScope === "account" ? "#43c8ff" : "#9cc4e7",
+                                                        background: managerTransportsScope === "account" ? colors.toggleActiveBg : "transparent",
+                                                        color: managerTransportsScope === "account" ? colors.toggleActiveText : colors.toggleInactiveText,
                                                         fontWeight: 800,
                                                         opacity: onlySelfScope ? .45 : 1
                                                     }}>
@@ -1065,28 +1115,28 @@ export default function ProfilePage() {
                                                         borderRadius: 8,
                                                         border: "none",
                                                         cursor: "pointer",
-                                                        background: managerTransportsScope === "my" ? "#20325a" : "transparent",
-                                                        color: managerTransportsScope === "my" ? "#43c8ff" : "#9cc4e7",
+                                                        background: managerTransportsScope === "my" ? colors.toggleActiveBg : "transparent",
+                                                        color: managerTransportsScope === "my" ? colors.toggleActiveText : colors.toggleInactiveText,
                                                         fontWeight: 800
                                                     }}>
                                                     {t("common.my", "Мои")}
                                                 </button>
                                                 <div style={{ marginLeft: "auto" }}>
                                                     <div style={{ position: "relative", display: "inline-flex", width: 420, maxWidth: "36vw" }}>
-                                                        <FiSearch size={18} color="#9cc4e7"
+                                                        <FiSearch size={18} color={colors.searchIcon}
                                                             style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
                                                         <input
                                                             value={transportsQuery}
                                                             onChange={(e) => setTransportsQuery(e.target.value)}
                                                             placeholder={t("transports.searchPlaceholder", "Поиск по транспорту (маршрут, тип, контакт, №.)")}
-                                                            style={{ padding: "10px 12px 10px 34px", background: "#0f1a2b", border: "1px solid #233a5a", borderRadius: 10, color: "#e3f2fd", fontSize: 14, outline: "none", width: "100%" }}
+                                                            style={{ padding: "10px 12px 10px 34px", background: colors.pillBg, border: `1px solid ${colors.pillBorder}`, borderRadius: 10, color: colors.textPrimary, fontSize: 14, outline: "none", width: "100%" }}
                                                         />
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
                                         {(managerTransportsScope === "my" ? transportsLoading : accountTransportsLoading)
-                                            ? (<span style={{ color: "#b3d5fa" }}>{t("common.loading", "Загрузка...")}</span>)
+                                            ? (<span style={{ color: colors.textMuted }}>{t("common.loading", "Загрузка...")}</span>)
                                             : (
                                                 (managerTransportsScope === "my" ? myTransports : accountTransports)?.length
                                                     ? (
@@ -1121,7 +1171,7 @@ export default function ProfilePage() {
                                                                 ))}
                                                         </div>
                                                     )
-                                                    : <span style={{ color: "#b3d5fa" }}>
+                                                    : <span style={{ color: colors.textMuted }}>
                                                         {managerTransportsScope === "my" ? t("transports.empty.mine", "У вас пока нет транспортов.") : t("transports.empty.account", "В аккаунте пока нет транспорта.")}
                                                     </span>
                                             )
@@ -1146,52 +1196,52 @@ export default function ProfilePage() {
                                                 // мобильные улучшения:
                                                 position: isMobile ? "sticky" : "static",
                                                 top: isMobile ? 60 : "auto",           // под Header
-                                                background: isMobile ? "rgba(10,16,28,0.94)" : "transparent",
+                                                background: isMobile ? colors.stickyBg : "transparent",
                                                 backdropFilter: isMobile ? "blur(4px)" : undefined,
                                                 zIndex: 5,
                                                 padding: isMobile ? "8px 0 6px" : 0,
-                                                borderBottom: isMobile ? "1px solid rgba(40,70,110,.25)" : "none",
+                                                borderBottom: isMobile ? colors.stickyBorder : "none",
                                             }}
                                         >
                                             <FaFileAlt color="#34c759" size={22} />
-                                            <span style={{ fontWeight: 700, fontSize: 18, color: "#e3f2fd", letterSpacing: ".01em" }}>
+                                            <span style={{ fontWeight: 700, fontSize: 18, color: colors.textPrimary, letterSpacing: ".01em" }}>
                                                 {t("bids.title", "Ставки")}
                                             </span>
                                             {(user?.role || "").toLowerCase() === "manager" && (
-                                                <div style={{ marginLeft: 10, display: "inline-flex", gap: 8, padding: 4, borderRadius: 10, background: "#0f1a2b", border: "1px solid #233a5a" }}>
+                                                <div style={{ marginLeft: 10, display: "inline-flex", gap: 8, padding: 4, borderRadius: 10, background: colors.pillBg, border: `1px solid ${colors.pillBorder}` }}>
                                                     <button
                                                         onClick={() => setBidsScope("account")}
                                                         style={{
                                                             padding: "6px 10px", borderRadius: 8, border: "none", cursor: "pointer",
-                                                            background: bidsScope === "account" ? "#20325a" : "transparent",
-                                                            color: bidsScope === "account" ? "#43c8ff" : "#9cc4e7", fontWeight: 800
+                                                            background: bidsScope === "account" ? colors.toggleActiveBg : "transparent",
+                                                            color: bidsScope === "account" ? colors.toggleActiveText : colors.toggleInactiveText, fontWeight: 800
                                                         }}
                                                     >{t("common.all", "Все")}</button>
                                                     <button
                                                         onClick={() => setBidsScope("my")}
                                                         style={{
                                                             padding: "6px 10px", borderRadius: 8, border: "none", cursor: "pointer",
-                                                            background: bidsScope === "my" ? "#20325a" : "transparent",
-                                                            color: bidsScope === "my" ? "#43c8ff" : "#9cc4e7", fontWeight: 800
+                                                            background: bidsScope === "my" ? colors.toggleActiveBg : "transparent",
+                                                            color: bidsScope === "my" ? colors.toggleActiveText : colors.toggleInactiveText, fontWeight: 800
                                                         }}
                                                     >{t("common.my", "Мои")}</button>
                                                 </div>
                                             )}
                                             <div style={{ marginLeft: "auto" }}>
                                                 <div style={{ position: "relative", display: "inline-flex", width: 420, maxWidth: "36vw" }}>
-                                                    <FiSearch size={18} color="#9cc4e7"
+                                                    <FiSearch size={18} color={colors.searchIcon}
                                                         style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
                                                     <input
                                                         value={bidsQuery}
                                                         onChange={(e) => setBidsQuery(e.target.value)}
                                                         placeholder={t("bids.searchPlaceholder", "Поиск по ставкам (заявка, сумма, статус.)")}
-                                                        style={{ padding: "10px 12px 10px 34px", background: "#0f1a2b", border: "1px solid #233a5a", borderRadius: 10, color: "#e3f2fd", fontSize: 14, outline: "none", width: "100%" }}
+                                                        style={{ padding: "10px 12px 10px 34px", background: colors.pillBg, border: `1px solid ${colors.pillBorder}`, borderRadius: 10, color: colors.textPrimary, fontSize: 14, outline: "none", width: "100%" }}
                                                     />
                                                 </div>
                                             </div>
                                         </div>
                                         {(bidsScope === "account" ? accountBidsLoading : bidsLoading) ? (
-                                            <span style={{ color: "#b3d5fa" }}>{t("common.loading", "Загрузка...")}</span>
+                                            <span style={{ color: colors.textMuted }}>{t("common.loading", "Загрузка...")}</span>
                                         ) : ((bidsScope === "account" ? accountBids : myBids)?.length > 0
                                             ? (
                                                 <div
@@ -1233,7 +1283,7 @@ export default function ProfilePage() {
                                                         ))}
                                                 </div>
                                             )
-                                            : <span style={{ color: "#b3d5fa" }}>
+                                            : <span style={{ color: colors.textMuted }}>
                                                 {bidsScope === "account"
                                                     ? t("bids.empty.account", "В аккаунте пока нет ставок.")
                                                     : t("bids.empty.my", "У вас пока нет ставок.")}
@@ -1299,24 +1349,24 @@ export default function ProfilePage() {
                                     <div>
                                         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
                                             <FaTruck color="#43c8ff" size={22} />
-                                            <span style={{ fontWeight: 700, fontSize: 18, color: "#e3f2fd", letterSpacing: ".01em" }}>
+                                            <span style={{ fontWeight: 700, fontSize: 18, color: colors.textPrimary, letterSpacing: ".01em" }}>
                                                 {t("transports.myFleetTitle", "Мой автопарк / История транспорта")}
                                             </span>
                                             <div style={{ marginLeft: "auto" }}>
                                                 <div style={{ position: "relative", display: "inline-flex", width: 420, maxWidth: "36vw" }}>
-                                                    <FiSearch size={18} color="#9cc4e7"
+                                                    <FiSearch size={18} color={colors.searchIcon}
                                                         style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
                                                     <input
                                                         value={transportsQuery}
                                                         onChange={(e) => setTransportsQuery(e.target.value)}
                                                         placeholder={t("transports.searchPlaceholder", "Поиск по транспорту (маршрут, тип, контакт, №.)")}
-                                                        style={{ padding: "10px 12px 10px 34px", background: "#0f1a2b", border: "1px solid #233a5a", borderRadius: 10, color: "#e3f2fd", fontSize: 14, outline: "none", width: "100%" }}
+                                                        style={{ padding: "10px 12px 10px 34px", background: colors.pillBg, border: `1px solid ${colors.pillBorder}`, borderRadius: 10, color: colors.textPrimary, fontSize: 14, outline: "none", width: "100%" }}
                                                     />
                                                 </div>
                                             </div>
                                         </div>
                                         {transportsLoading ? (
-                                            <span style={{ color: "#b3d5fa" }}>{t("common.loading", "Загрузка...")}</span>
+                                            <span style={{ color: colors.textMuted }}>{t("common.loading", "Загрузка...")}</span>
                                         ) : (myTransports && myTransports.length > 0
                                             ? (
                                                 <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(2, minmax(0, 1fr))", gap: 16 }}>
@@ -1345,7 +1395,7 @@ export default function ProfilePage() {
                                                         ))}
                                                 </div>
                                             )
-                                            : <span style={{ color: "#b3d5fa" }}>{t("transports.empty.mine", "У вас пока нет транспортов.")}</span>
+                                            : <span style={{ color: colors.textMuted }}>{t("transports.empty.mine", "У вас пока нет транспортов.")}</span>
                                         )}
                                     </div>
                                 </motion.div>
@@ -1361,24 +1411,24 @@ export default function ProfilePage() {
                                     <div>
                                         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
                                             <FaFileAlt color="#34c759" size={22} />
-                                            <span style={{ fontWeight: 700, fontSize: 18, color: "#e3f2fd", letterSpacing: ".01em" }}>
+                                            <span style={{ fontWeight: 700, fontSize: 18, color: colors.textPrimary, letterSpacing: ".01em" }}>
                                                 {t("bids.my.title", "Мои ставки")}
                                             </span>
                                             <div style={{ marginLeft: "auto" }}>
                                                 <div style={{ position: "relative", display: "inline-flex", width: 420, maxWidth: "36vw" }}>
-                                                    <FiSearch size={18} color="#9cc4e7"
+                                                    <FiSearch size={18} color={colors.searchIcon}
                                                         style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
                                                     <input
                                                         value={bidsQuery}
                                                         onChange={(e) => setBidsQuery(e.target.value)}
                                                         placeholder={t("bids.searchPlaceholder", "Поиск по ставкам (заявка, сумма, статус.)")}
-                                                        style={{ padding: "10px 12px 10px 34px", background: "#0f1a2b", border: "1px solid #233a5a", borderRadius: 10, color: "#e3f2fd", fontSize: 14, outline: "none", width: "100%" }}
+                                                        style={{ padding: "10px 12px 10px 34px", background: colors.pillBg, border: `1px solid ${colors.pillBorder}`, borderRadius: 10, color: colors.textPrimary, fontSize: 14, outline: "none", width: "100%" }}
                                                     />
                                                 </div>
                                             </div>
                                         </div>
                                         {bidsLoading ? (
-                                            <span style={{ color: "#b3d5fa" }}>{t("common.loading", "Загрузка...")}</span>
+                                            <span style={{ color: colors.textMuted }}>{t("common.loading", "Загрузка...")}</span>
                                         ) : (myBids && myBids.length > 0
                                             ? (
                                                 <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(2, minmax(0, 1fr))", gap: 16 }}>
@@ -1410,7 +1460,7 @@ export default function ProfilePage() {
                                                         ))}
                                                 </div>
                                             )
-                                            : <span style={{ color: "#b3d5fa" }}>{t("bids.empty.my", "У вас пока нет ставок.")}</span>
+                                            : <span style={{ color: colors.textMuted }}>{t("bids.empty.my", "У вас пока нет ставок.")}</span>
                                         )}
                                         <ConfirmModal open={showNoOrderModal} text={t("bids.orderMissing", "Заявка, на которую была сделана эта ставка, больше не существует.")} onConfirm={() => setShowNoOrderModal(false)} onCancel={() => setShowNoOrderModal(false)} />
                                         <MatchedOrdersModal open={showMatchedOrdersModal} onClose={() => setShowMatchedOrdersModal(false)} matches={selectedTransportMatches} myOrderId={matchedOrderId} />
@@ -1496,12 +1546,12 @@ export default function ProfilePage() {
                 >
                     <div style={{
                         display: "flex", alignItems: "center", gap: 10, marginBottom: 12,
-                        position: "sticky", top: 60, background: "rgba(10,16,28,0.94)",
+                        position: "sticky", top: 60, background: colors.stickyBg,
                         backdropFilter: "blur(4px)", zIndex: 5, padding: "8px 0 6px",
-                        borderBottom: "1px solid rgba(40,70,110,0.35)"
+                        borderBottom: colors.stickyBorder
                     }}>
-                        <span style={{ width: 10, height: 10, borderRadius: 999, background: "#72ebff" }} />
-                        <span style={{ fontWeight: 700, fontSize: 18, color: "#e3f2fd", letterSpacing: ".01em" }}>{t("reviews.title", "Отзывы")}</span>
+                        <span style={{ width: 10, height: 10, borderRadius: 999, background: colors.highlightDot }} />
+                        <span style={{ fontWeight: 700, fontSize: 18, color: colors.textPrimary, letterSpacing: ".01em" }}>{t("reviews.title", "Отзывы")}</span>
                     </div>
                     <UserReviewsList userId={user?.id} />
                 </div>
@@ -1530,12 +1580,12 @@ export default function ProfilePage() {
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, marginBottom: 12 }}>
                         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                             <FaFileAlt color="#43c8ff" size={18} />
-                            <span style={{ fontWeight: 700, fontSize: 16, color: "#e3f2fd", letterSpacing: ".01em" }}>
+                            <span style={{ fontWeight: 700, fontSize: 16, color: colors.textPrimary, letterSpacing: ".01em" }}>
                                 {t("orders.title", "Заявки")}
                             </span>
                         </div>
                         {showManagerToggleMobile && (
-                            <div style={{ display: "inline-flex", background: "#0f1b34", border: "1px solid #2a4872", borderRadius: 12, padding: 3 }}>
+                            <div style={{ display: "inline-flex", background: colors.segmentedBg, border: `1px solid ${colors.segmentedBorder}`, borderRadius: 12, padding: 3 }}>
                                 <button
                                     type="button"
                                     onClick={() => setManagerOrdersScope("account")}
@@ -1544,8 +1594,8 @@ export default function ProfilePage() {
                                         borderRadius: 9,
                                         fontSize: 13,
                                         fontWeight: 800,
-                                        background: managerOrdersScope === "account" ? "#43c8ff" : "transparent",
-                                        color: managerOrdersScope === "account" ? "#0c223a" : "#b3d5fa"
+                                        background: managerOrdersScope === "account" ? colors.accentBlue : "transparent",
+                                        color: managerOrdersScope === "account" ? colors.segmentedActiveText : colors.textMuted
                                     }}
                                 >
                                     {t("common.all", "Все")}
@@ -1558,8 +1608,8 @@ export default function ProfilePage() {
                                         borderRadius: 9,
                                         fontSize: 13,
                                         fontWeight: 800,
-                                        background: managerOrdersScope === "my" ? "#43c8ff" : "transparent",
-                                        color: managerOrdersScope === "my" ? "#0c223a" : "#b3d5fa"
+                                        background: managerOrdersScope === "my" ? colors.accentBlue : "transparent",
+                                        color: managerOrdersScope === "my" ? colors.segmentedActiveText : colors.textMuted
                                     }}
                                 >
                                     {t("common.my", "Мои")}
@@ -1572,7 +1622,7 @@ export default function ProfilePage() {
                         <div style={{ position: "relative" }}>
                             <FiSearch
                                 size={18}
-                                color="#9cc4e7"
+                                color={colors.searchIcon}
                                 style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}
                             />
                             <input
@@ -1582,10 +1632,10 @@ export default function ProfilePage() {
                                 inputMode="search"
                                 style={{
                                     padding: "10px 12px 10px 34px",
-                                    background: "#0f1a2b",
-                                    border: "1px solid #233a5a",
+                                    background: colors.searchBg,
+                                    border: `1px solid ${colors.searchBorder}`,
                                     borderRadius: 10,
-                                    color: "#e3f2fd",
+                                    color: colors.searchText,
                                     fontSize: 14,
                                     outline: "none",
                                     width: "100%"
@@ -1594,7 +1644,7 @@ export default function ProfilePage() {
                         </div>
                     </div>
                     {(managerOrdersScope === "my" ? ordersLoading : accountOrdersLoading) ? (
-                        <span style={{ color: "#b3d5fa" }}>{t("common.loading", "Загрузка...")}</span>
+                        <span style={{ color: colors.textMuted }}>{t("common.loading", "Загрузка...")}</span>
                     ) : (
                         ((managerOrdersScope === "my" ? myOrders : accountOrders)?.length ? (
                             <div className="compact-grid" style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(2, minmax(0, 1fr))", gap: 12 }}>
@@ -1618,7 +1668,7 @@ export default function ProfilePage() {
                                     ))}
                             </div>
                         ) : (
-                            <span style={{ color: "#b3d5fa" }}>
+                            <span style={{ color: colors.textMuted }}>
                                 {managerOrdersScope === "my" ? t("orders.empty.mine", "У вас пока нет заявок.") : t("orders.empty.account", "В аккаунте пока нет заявок.")}
                             </span>
                         ))
@@ -1631,12 +1681,12 @@ export default function ProfilePage() {
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, marginBottom: 12 }}>
                         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                             <FaTruck color="#43c8ff" size={18} />
-                            <span style={{ fontWeight: 700, fontSize: 16, color: "#e3f2fd", letterSpacing: ".01em" }}>
+                            <span style={{ fontWeight: 700, fontSize: 16, color: colors.textPrimary, letterSpacing: ".01em" }}>
                                 {t("transports.title", "Транспорт")}
                             </span>
                         </div>
                         {showManagerToggleMobile && (
-                            <div style={{ display: "inline-flex", background: "#0f1b34", border: "1px solid #2a4872", borderRadius: 12, padding: 3 }}>
+                            <div style={{ display: "inline-flex", background: colors.segmentedBg, border: `1px solid ${colors.segmentedBorder}`, borderRadius: 12, padding: 3 }}>
                                 <button
                                     type="button"
                                     onClick={() => {
@@ -1650,8 +1700,8 @@ export default function ProfilePage() {
                                         borderRadius: 9,
                                         fontSize: 13,
                                         fontWeight: 800,
-                                        background: managerTransportsScope === "account" ? "#43c8ff" : "transparent",
-                                        color: managerTransportsScope === "account" ? "#0c223a" : "#b3d5fa"
+                                        background: managerTransportsScope === "account" ? colors.accentBlue : "transparent",
+                                        color: managerTransportsScope === "account" ? colors.segmentedActiveText : colors.textMuted
                                     }}
                                 >
                                     {t("common.all", "Все")}
@@ -1664,8 +1714,8 @@ export default function ProfilePage() {
                                         borderRadius: 9,
                                         fontSize: 13,
                                         fontWeight: 800,
-                                        background: managerTransportsScope === "my" ? "#43c8ff" : "transparent",
-                                        color: managerTransportsScope === "my" ? "#0c223a" : "#b3d5fa"
+                                        background: managerTransportsScope === "my" ? colors.accentBlue : "transparent",
+                                        color: managerTransportsScope === "my" ? colors.segmentedActiveText : colors.textMuted
                                     }}
                                 >
                                     {t("common.my", "Мои")}
@@ -1678,7 +1728,7 @@ export default function ProfilePage() {
                         <div style={{ position: "relative" }}>
                             <FiSearch
                                 size={18}
-                                color="#9cc4e7"
+                                color={colors.searchIcon}
                                 style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}
                             />
                             <input
@@ -1688,10 +1738,10 @@ export default function ProfilePage() {
                                 inputMode="search"
                                 style={{
                                     padding: "10px 12px 10px 34px",
-                                    background: "#0f1a2b",
-                                    border: "1px solid #233a5a",
+                                    background: colors.searchBg,
+                                    border: `1px solid ${colors.searchBorder}`,
                                     borderRadius: 10,
-                                    color: "#e3f2fd",
+                                    color: colors.searchText,
                                     fontSize: 14,
                                     outline: "none",
                                     width: "100%"
@@ -1701,7 +1751,7 @@ export default function ProfilePage() {
                     </div>
 
                     {(managerTransportsScope === "my" ? transportsLoading : accountTransportsLoading) ? (
-                        <span style={{ color: "#b3d5fa" }}>{t("common.loading", "Загрузка...")}</span>
+                        <span style={{ color: colors.textMuted }}>{t("common.loading", "Загрузка...")}</span>
                     ) : (
                         ((managerTransportsScope === "my" ? myTransports : accountTransports)?.length ? (
                             <div className="compact-grid" style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(2, minmax(0, 1fr))", gap: 12 }}>
@@ -1725,7 +1775,7 @@ export default function ProfilePage() {
                                     ))}
                             </div>
                         ) : (
-                            <span style={{ color: "#b3d5fa" }}>
+                            <span style={{ color: colors.textMuted }}>
                                 {managerTransportsScope === "my" ? t("profile.noTransportYou", "У вас пока нет транспорта.") : t("profile.noTransportAccount", "В аккаунте пока нет транспорта.")}
                             </span>
 
@@ -1743,30 +1793,30 @@ export default function ProfilePage() {
                             marginBottom: 12,
                             position: "sticky",
                             top: 60,                          // под верхним header
-                            background: "rgba(10,16,28,0.94)",
+                            background: colors.stickyBg,
                             backdropFilter: "blur(4px)",
                             zIndex: 5,
                             padding: "8px 0 6px",
-                            borderBottom: "1px solid rgba(40,70,110,.25)",
+                            borderBottom: colors.stickyBorder,
                         }}
                     >
                         <FaFileAlt color="#34c759" size={18} />
-                        <span style={{ fontWeight: 700, fontSize: 16, color: "#e3f2fd", letterSpacing: ".01em" }}>
+                        <span style={{ fontWeight: 700, fontSize: 16, color: colors.textPrimary, letterSpacing: ".01em" }}>
                             {t("bids.title", "Ставки")}
                         </span>
 
                         {/* переключатель "Все/Мои" показываем только менеджеру */}
                         {(user?.role || "").toLowerCase() === "manager" && (
                             <div style={{
-                                marginLeft: "auto", display: "inline-flex", background: "#0f1b34",
-                                border: "1px solid #2a4872", borderRadius: 12, padding: 3
+                                marginLeft: "auto", display: "inline-flex", background: colors.segmentedBg,
+                                border: `1px solid ${colors.segmentedBorder}`, borderRadius: 12, padding: 3
                             }}>
                                 <button type="button"
                                     onClick={() => setBidsScope("account")}
                                     style={{
                                         padding: "6px 10px", borderRadius: 9, fontSize: 13, fontWeight: 800,
-                                        background: bidsScope === "account" ? "#43c8ff" : "transparent",
-                                        color: bidsScope === "account" ? "#0c223a" : "#b3d5fa"
+                                        background: bidsScope === "account" ? colors.accentBlue : "transparent",
+                                        color: bidsScope === "account" ? colors.segmentedActiveText : colors.textMuted
                                     }}>
                                     {t("common.all", "Все")}
                                 </button>
@@ -1774,8 +1824,8 @@ export default function ProfilePage() {
                                     onClick={() => setBidsScope("my")}
                                     style={{
                                         padding: "6px 10px", borderRadius: 9, fontSize: 13, fontWeight: 800,
-                                        background: bidsScope === "my" ? "#43c8ff" : "transparent",
-                                        color: bidsScope === "my" ? "#0c223a" : "#b3d5fa"
+                                        background: bidsScope === "my" ? colors.accentBlue : "transparent",
+                                        color: bidsScope === "my" ? colors.segmentedActiveText : colors.textMuted
                                     }}>
                                     {t("common.my", "Мои")}
                                 </button>
@@ -1784,7 +1834,7 @@ export default function ProfilePage() {
                     </div>
 
                     {(bidsScope === "account" ? accountBidsLoading : bidsLoading) ? (
-                        <span style={{ color: "#b3d5fa" }}>{t("common.loading", "Загрузка...")}</span>
+                        <span style={{ color: colors.textMuted }}>{t("common.loading", "Загрузка...")}</span>
                     ) : ((bidsScope === "account" ? accountBids : myBids)?.length > 0 ? (
                         <div
                             style={{
@@ -1822,7 +1872,7 @@ export default function ProfilePage() {
                                 ))}
                         </div>
                     ) : (
-                        <span style={{ color: "#b3d5fa" }}>
+                        <span style={{ color: colors.textMuted }}>
                             {bidsScope === "account" ? t("profile.noBidsAccount", "В аккаунте пока нет ставок.") : t("profile.noBidsYou", "У вас пока нет ставок.")}
                         </span>
                     ))}

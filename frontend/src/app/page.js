@@ -359,6 +359,23 @@ export default function Home() {
             z-index: 1;
           }
 
+          .home-main-stack {
+            display: flex;
+            flex-direction: column;
+            gap: clamp(18px, 2.8vw, 38px);
+            padding-top: clamp(10px, 3vh, 42px);
+          }
+
+          .home-map-prime {
+            position: relative;
+            padding-top: clamp(6px, 2vh, 26px);
+          }
+
+          .home-hero-after-map {
+            position: relative;
+            padding-top: clamp(4px, 1.4vh, 18px);
+          }
+
           [data-theme="light"] .home-top-band,
           [data-theme="dark"] .home-top-band {
             --home-top-bg:
@@ -502,12 +519,16 @@ export default function Home() {
                     </div>
                 )}
                 {mode === "main" && (
-                    <>
+                    <div className="home-main-stack">
+                        <div className="home-map-prime">
+                            <HomeMapsSection hideTransportPins={isTransportRole} />
+                        </div>
                         {/* Компактный первый экран: ниже по высоте, сразу видно блок «О сервисе» */}
-                        <HeroCompactBridge />
-                        <HomeMapsSection hideTransportPins={isTransportRole} />
+                        <div className="home-hero-after-map">
+                            <HeroCompactBridge />
+                        </div>
                         <ServiceSection />
-                    </>
+                    </div>
                 )}
                 {mode === "orders" && !isOwnerRole && <OrdersSection />}
                 {mode === "create" && <CreateSection />}

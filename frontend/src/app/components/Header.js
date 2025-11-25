@@ -377,6 +377,41 @@ export default function Header({ setShowRegisterModal }) {
     const userSearchRef = useRef(null);
     const router = useRouter();
 
+    const searchPanelStyle = {
+        background: "var(--surface)",
+        border: "1px solid var(--border-subtle)",
+        borderRadius: 12,
+        padding: 12,
+        boxShadow: "var(--shadow-soft)",
+        color: "var(--text-primary)",
+    };
+
+    const searchInputStyle = {
+        padding: "8px 14px",
+        borderRadius: 8,
+        border: "1px solid var(--border-subtle)",
+        width: "100%",
+        fontSize: 15,
+        marginBottom: 5,
+        background: "var(--control-bg)",
+        color: "var(--text-primary)",
+        outline: "none"
+    };
+
+    const searchListStyle = {
+        background: "var(--surface)",
+        borderRadius: 9,
+        marginTop: 0,
+        boxShadow: "var(--shadow-soft)",
+        minWidth: 200,
+        maxHeight: 260,
+        overflowY: "auto",
+        zIndex: 120,
+        border: "1px solid var(--border-subtle)"
+    };
+
+    const searchItemHoverBg = "color-mix(in srgb, var(--control-bg-hover) 92%, transparent)";
+
     // Mobile detection
     const [isMobile, setIsMobile] = useState(false);
     useEffect(() => {
@@ -592,15 +627,12 @@ export default function Header({ setShowRegisterModal }) {
                                 }
                             }}
                             style={{
+                                ...searchPanelStyle,
                                 position: "absolute",
-                                left: 0, top: "110%",
+                                left: 0,
+                                top: "110%",
                                 zIndex: 100,
                                 width: "min(520px, 100%)",
-                                background: "#172236",
-                                border: "1px solid #22364f",
-                                borderRadius: 12,
-                                padding: 12,
-                                boxShadow: "0 10px 30px rgba(0,0,0,.35)"
                             }}
                             onMouseDown={e => e.stopPropagation()}
                         >
@@ -608,34 +640,15 @@ export default function Header({ setShowRegisterModal }) {
                                 value={userIdInput}
                                 onChange={e => setUserIdInput(e.target.value)}
                                 placeholder={t("search.placeholder.user", "ID, имя или компания")}
-                                style={{
-                                    padding: "8px 14px",
-                                    borderRadius: 8,
-                                    border: "1px solid #4472c4",
-                                    width: "100%",
-                                    fontSize: 15,
-                                    marginBottom: 5,
-                                    background: "#222e46",
-                                    color: "#e3f2fd",
-                                    outline: "none"
-                                }}
+                                style={searchInputStyle}
                                 autoFocus
                             />
-                            {loading && <div style={{ padding: 9, color: "#69e" }}>{t("common.loading", "Загрузка...")}</div>}
+                            {loading && <div style={{ padding: 9, color: "var(--brand-blue)" }}>{t("common.loading", "Загрузка...")}</div>}
                             {!loading && userIdInput && (
                                 <div
-                                    style={{
-                                        background: "#273550",
-                                        borderRadius: 9,
-                                        marginTop: 0,
-                                        boxShadow: "0 2px 12px #0004",
-                                        minWidth: 200,
-                                        maxHeight: 260,
-                                        overflowY: "auto",
-                                        zIndex: 120
-                                    }}>
+                                    style={searchListStyle}>
                                     {notFound
-                                        ? <div style={{ padding: 13, color: "#888" }}>{t("common.notFound", "Не найдено")}</div>
+                                        ? <div style={{ padding: 13, color: "var(--text-secondary)" }}>{t("common.notFound", "Не найдено")}</div>
                                         : results.map(u => (
                                             <div key={u.id} onClick={() => {
                                                 router.push(`/profile/${u.id}`);
@@ -645,13 +658,13 @@ export default function Header({ setShowRegisterModal }) {
                                             }} style={{
                                                 display: "flex", alignItems: "center", gap: 11,
                                                 cursor: "pointer", padding: "10px 13px",
-                                                borderBottom: "1px solid #222e",
+                                                borderBottom: "1px solid var(--border-subtle)",
                                                 transition: "background 0.13s",
                                             }} onMouseDown={e => e.preventDefault()}
-                                                onMouseOver={e => e.currentTarget.style.background = "#23303e"}
-                                                onMouseOut={e => e.currentTarget.style.background = "none"}>
+                                                onMouseOver={e => e.currentTarget.style.background = searchItemHoverBg}
+                                                onMouseOut={e => e.currentTarget.style.background = "transparent"}>
                                                 <div style={{
-                                                    width: 36, height: 36, borderRadius: 18, background: "#314060",
+                                                    width: 36, height: 36, borderRadius: 18, background: "var(--control-bg)",
                                                     overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center"
                                                 }}>
                                                     <img src={u.avatar ? abs(u.avatar) : "/default-avatar.png"}
@@ -660,10 +673,10 @@ export default function Header({ setShowRegisterModal }) {
                                                         onError={e => { e.currentTarget.src = "/default-avatar.png"; }} />
                                                 </div>
                                                 <div>
-                                                    <div style={{ fontWeight: 700, color: "#fff" }}>
+                                                    <div style={{ fontWeight: 700, color: "var(--text-primary)" }}>
                                                         {u.organization || u.name}
                                                     </div>
-                                                    <div style={{ fontSize: 13, color: "#bfe6fa" }}>{t("common.id", "ID")}: {u.id}</div>
+                                                    <div style={{ fontSize: 13, color: "var(--text-secondary)" }}>{t("common.id", "ID")}: {u.id}</div>
                                                 </div>
                                             </div>
                                         ))
@@ -798,14 +811,13 @@ export default function Header({ setShowRegisterModal }) {
                                             }
                                         }}
                                         style={{
+                                            ...searchPanelStyle,
                                             position: "absolute",
-                                            left: 0, top: "110%",
+                                            left: 0,
+                                            top: "110%",
                                             zIndex: 100,
                                             minWidth: 250,
-                                            background: "#22314a",
                                             padding: 10,
-                                            borderRadius: 12,
-                                            boxShadow: "0 3px 12px #0002"
                                         }}
                                     >
                                         <input
@@ -814,33 +826,17 @@ export default function Header({ setShowRegisterModal }) {
                                             onChange={e => setUserIdInput(e.target.value)}
                                             placeholder={t("search.placeholder.user", "ID, имя или компания")}
                                             style={{
-                                                padding: "8px 14px",
-                                                borderRadius: 8,
-                                                border: "1px solid #4472c4",
-                                                width: 220,
-                                                fontSize: 15,
-                                                marginBottom: 5,
-                                                background: "#222e46",
-                                                color: "#e3f2fd",
-                                                outline: "none"
+                                                ...searchInputStyle,
+                                                width: 220
                                             }}
                                             autoFocus
                                         />
-                                        {loading && <div style={{ padding: 9, color: "#69e" }}>{t("common.loading", "Загрузка...")}</div>}
+                                        {loading && <div style={{ padding: 9, color: "var(--brand-blue)" }}>{t("common.loading", "Загрузка...")}</div>}
                                         {!loading && userIdInput && (
                                             <div
-                                                style={{
-                                                    background: "#273550",
-                                                    borderRadius: 9,
-                                                    marginTop: 0,
-                                                    boxShadow: "0 2px 12px #0004",
-                                                    minWidth: 200,
-                                                    maxHeight: 260,
-                                                    overflowY: "auto",
-                                                    zIndex: 120
-                                                }}>
+                                                style={searchListStyle}>
                                                 {notFound
-                                                    ? <div style={{ padding: 13, color: "#888" }}>{t("common.notFound", "Не найдено")}</div>
+                                                    ? <div style={{ padding: 13, color: "var(--text-secondary)" }}>{t("common.notFound", "Не найдено")}</div>
                                                     : results.map(u => (
                                                         <div
                                                             key={u.id}
@@ -853,15 +849,15 @@ export default function Header({ setShowRegisterModal }) {
                                                             style={{
                                                                 display: "flex", alignItems: "center", gap: 11,
                                                                 cursor: "pointer", padding: "10px 13px",
-                                                                borderBottom: "1px solid #222e",
+                                                                borderBottom: "1px solid var(--border-subtle)",
                                                                 transition: "background 0.13s",
                                                             }}
                                                             onMouseDown={e => e.preventDefault()}
-                                                            onMouseOver={e => e.currentTarget.style.background = "#23303e"}
-                                                            onMouseOut={e => e.currentTarget.style.background = "none"}
+                                                            onMouseOver={e => e.currentTarget.style.background = searchItemHoverBg}
+                                                            onMouseOut={e => e.currentTarget.style.background = "transparent"}
                                                         >
                                                             <div style={{
-                                                                width: 36, height: 36, borderRadius: 18, background: "#314060",
+                                                                width: 36, height: 36, borderRadius: 18, background: "var(--control-bg)",
                                                                 overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center"
                                                             }}>
                                                                 <img src={u.avatar ? abs(u.avatar) : "/default-avatar.png"}
@@ -870,10 +866,10 @@ export default function Header({ setShowRegisterModal }) {
                                                                     onError={e => { e.currentTarget.src = "/default-avatar.png"; }} />
                                                             </div>
                                                             <div>
-                                                                <div style={{ fontWeight: 700, color: "#fff" }}>
+                                                                <div style={{ fontWeight: 700, color: "var(--text-primary)" }}>
                                                                     {u.organization || u.name}
                                                                 </div>
-                                                                <div style={{ fontSize: 13, color: "#bfe6fa" }}>{t("common.id", "ID")}: {u.id}</div>
+                                                                <div style={{ fontSize: 13, color: "var(--text-secondary)" }}>{t("common.id", "ID")}: {u.id}</div>
                                                             </div>
                                                         </div>
                                                     ))
