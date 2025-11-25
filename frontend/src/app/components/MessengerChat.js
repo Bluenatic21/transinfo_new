@@ -3257,6 +3257,9 @@ export default function MessengerChat({
             background: isMine
               ? "var(--chat-bubble-self-bg)"
               : "var(--chat-bubble-peer-bg)",
+            border: isMine
+              ? "1px solid var(--chat-bubble-self-border)"
+              : "1px solid var(--chat-bubble-peer-border)",
             borderRadius: 13,
             padding: "8px 14px",
             marginBottom: 9,
@@ -3424,6 +3427,9 @@ export default function MessengerChat({
             background: isMine
               ? "var(--chat-bubble-self-bg)"
               : "var(--chat-bubble-peer-bg)",
+            border: isMine
+              ? "1px solid var(--chat-bubble-self-border)"
+              : "1px solid var(--chat-bubble-peer-border)",
             borderRadius: 13,
             padding: "8px 14px",
             marginBottom: 9,
@@ -3519,6 +3525,9 @@ export default function MessengerChat({
             background: isMine
               ? "var(--chat-bubble-self-bg)"
               : "var(--chat-bubble-peer-bg)",
+            border: isMine
+              ? "1px solid var(--chat-bubble-self-border)"
+              : "1px solid var(--chat-bubble-peer-border)",
             borderRadius: 13,
             padding: "8px 14px",
             color: isMine

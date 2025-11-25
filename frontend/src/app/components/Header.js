@@ -15,6 +15,7 @@ import LangSwitcher from "./LangSwitcher";
 import { useLang } from "../i18n/LangProvider";
 import ThemeToggle from "./ThemeToggle"; // путь поправь, если Header в другой папке
 import getAvatarUrl from "./getAvatarUrl";
+import HomeMapsSection from "./HomeMapsSection";
 
 // ——— media‑hook для брейкпоинтов (работает и в старых браузерах)
 function useMedia(query) {
@@ -313,6 +314,7 @@ export default function Header({ setShowRegisterModal }) {
     const { user, handleLogoutClick, setShowAuth, isAdmin, isActive } = useUser();
     const { t } = useLang();
     const pathname = usePathname();
+    const isHome = pathname === "/";
     // роль пользователя (нужно, чтобы скрыть пункты меню для TRANSPORT)
     const role = (user?.role || "").toUpperCase();
     const isTransportRole = role === "TRANSPORT";
@@ -1066,95 +1068,113 @@ export default function Header({ setShowRegisterModal }) {
                 </div>
             </header>
 
-            <div
-                className="header-nav-row"
-                style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: isCompact ? 10 : 14,
-                    width: "100%",
-                    padding: `${isCompact ? 4 : 6}px ${headerPadding.right}px ${isCompact ? 4 : 6}px ${headerPadding.left}px`,
-                    background: "var(--surface)"
-                }}
-            >
+            {isHome ? (
                 <div
-                    className="header-nav-shell"
+                    className="header-nav-row"
                     style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        background: "linear-gradient(180deg, color-mix(in srgb, var(--header-bg) 96%, transparent), var(--surface))",
-                        border: "1px solid var(--border-strong)",
-                        borderTop: "1px solid var(--border-strong)",
-                        borderRadius: isTight ? "0 0 12px 12px" : "0 0 16px 16px",
-                        boxShadow: "var(--header-shadow)",
-                        padding: isCompact ? "7px 11px" : "8px 12px",
-                        gap: NAV_GAP,
-                        marginTop: 0
+                        display: "flex",
+                        alignItems: "stretch",
+                        gap: isCompact ? 10 : 14,
+                        width: "100%",
+                        padding: `${isCompact ? 4 : 6}px ${headerPadding.right}px ${isCompact ? 4 : 6}px ${headerPadding.left}px`,
+                        background: "var(--surface)"
                     }}
                 >
-                    <nav
-                        className="header-nav"
+                    <div style={{ width: "100%" }}>
+                        <HomeMapsSection hideTransportPins={isTransportRole} />
+                    </div>
+                </div>
+            ) : (
+                <div
+                    className="header-nav-row"
+                    style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: isCompact ? 10 : 14,
+                        width: "100%",
+                        padding: `${isCompact ? 4 : 6}px ${headerPadding.right}px ${isCompact ? 4 : 6}px ${headerPadding.left}px`,
+                        background: "var(--surface)"
+                    }}
+                >
+                    <div
+                        className="header-nav-shell"
                         style={{
-                            display: "flex", alignItems: "center",
-                            gap: NAV_GAP, minWidth: 0
+                            display: "inline-flex",
+                            alignItems: "center",
+                            background: "linear-gradient(180deg, color-mix(in srgb, var(--header-bg) 96%, transparent), var(--surface))",
+                            border: "1px solid var(--border-strong)",
+                            borderTop: "1px solid var(--border-strong)",
+                            borderRadius: isTight ? "0 0 12px 12px" : "0 0 16px 16px",
+                            boxShadow: "var(--header-shadow)",
+                            padding: isCompact ? "7px 11px" : "8px 12px",
+                            gap: NAV_GAP,
+                            marginTop: 0
                         }}
                     >
-                        {!isTransportRole && (
-                            <Link className="nav-link" href="/transport"
-                                onClick={() => { try { sessionStorage.setItem("openMobileFilterOnEntry", "1"); } catch { } }}
+                        <nav
+                            className="header-nav"
+                            style={{
+                                display: "flex", alignItems: "center",
+                                gap: NAV_GAP, minWidth: 0
+                            }}
+                        >
+                            {!isTransportRole && (
+                                <Link className="nav-link" href="/transport"
+                                    onClick={() => { try { sessionStorage.setItem("openMobileFilterOnEntry", "1"); } catch { } }}
+                                    style={{ fontSize: NAV_FONT, fontWeight: 700, padding: NAV_PAD }}>
+                                    <FaTruck className="nav-icon" style={{ fontSize: isTight ? 18 : 20 }} />
+                                    {!isTight && <span className="nav-text">{t("nav.transport", "Транспорт")}</span>}
+                                </Link>
+                            )}
+                            {!isOwnerRole && (
+                                <Link className="nav-link" href="/orders"
+                                    onClick={() => { try { sessionStorage.setItem("openMobileFilterOnEntry", "1"); } catch { } }}
+                                    style={{ fontSize: NAV_FONT, fontWeight: 700, padding: NAV_PAD }}>
+                                    <FaBox className="nav-icon" style={{ fontSize: isTight ? 18 : 20 }} />
+                                    {!isTight && <span className="nav-text">{t("nav.cargo", "Груз")}</span>}
+                                </Link>
+                            )}
+                            {!isOwnerRole && (
+                                <button
+                                    className="nav-link"
+                                    onClick={() => {
+                                        if (!isActive) { alert(t("error.account.blocked", "Аккаунт заблокирован")); return; }
+                                        router.push("/create-transport");
+                                    }}
+                                    style={{
+                                        fontSize: NAV_FONT, fontWeight: 700, padding: NAV_PAD,
+                                        opacity: isActive ? 1 : .5, cursor: "pointer", background: "none", border: "none"
+                                    }}
+                                >
+                                    {isTight ? <FaTruck className="nav-icon" style={{ fontSize: 18 }} /> : <FaPlus className="nav-icon" style={{ fontSize: 20 }} />}
+                                    {!isTight && <span className="nav-text">{t("nav.addTransport", "Добавить Транспорт")}</span>}
+                                </button>
+                            )}
+                            {!isTransportRole && (
+                                <button
+                                    className="nav-link"
+                                    onClick={() => {
+                                        if (!isActive) { alert(t("error.account.blocked", "Аккаунт заблокирован")); return; }
+                                        router.push("/create");
+                                    }}
+                                    style={{
+                                        fontSize: NAV_FONT, fontWeight: 700, padding: NAV_PAD,
+                                        opacity: isActive ? 1 : .5, cursor: "pointer", background: "none", border: "none"
+                                    }}
+                                >
+                                    {isTight ? <FaBox className="nav-icon" style={{ fontSize: 18 }} /> : <FaPlus className="nav-icon" style={{ fontSize: 20 }} />}
+                                    {!isTight && <span className="nav-text">{t("nav.addCargo", "Добавить Груз")}</span>}
+                                </button>
+                            )}
+                            <Link className="nav-link" href="/#service"
                                 style={{ fontSize: NAV_FONT, fontWeight: 700, padding: NAV_PAD }}>
-                                <FaTruck className="nav-icon" style={{ fontSize: isTight ? 18 : 20 }} />
-                                {!isTight && <span className="nav-text">{t("nav.transport", "Транспорт")}</span>}
+                                <FaInfoCircle className="nav-icon" style={{ fontSize: isTight ? 18 : 20 }} />
+                                {!isTight && <span className="nav-text">{t("nav.about", "О Сервисе")}</span>}
                             </Link>
-                        )}
-                        {!isOwnerRole && (
-                            <Link className="nav-link" href="/orders"
-                                onClick={() => { try { sessionStorage.setItem("openMobileFilterOnEntry", "1"); } catch { } }}
-                                style={{ fontSize: NAV_FONT, fontWeight: 700, padding: NAV_PAD }}>
-                                <FaBox className="nav-icon" style={{ fontSize: isTight ? 18 : 20 }} />
-                                {!isTight && <span className="nav-text">{t("nav.cargo", "Груз")}</span>}
-                            </Link>
-                        )}
-                        {!isOwnerRole && (
-                            <button
-                                className="nav-link"
-                                onClick={() => {
-                                    if (!isActive) { alert(t("error.account.blocked", "Аккаунт заблокирован")); return; }
-                                    router.push("/create-transport");
-                                }}
-                                style={{
-                                    fontSize: NAV_FONT, fontWeight: 700, padding: NAV_PAD,
-                                    opacity: isActive ? 1 : .5, cursor: "pointer", background: "none", border: "none"
-                                }}
-                            >
-                                {isTight ? <FaTruck className="nav-icon" style={{ fontSize: 18 }} /> : <FaPlus className="nav-icon" style={{ fontSize: 20 }} />}
-                                {!isTight && <span className="nav-text">{t("nav.addTransport", "Добавить Транспорт")}</span>}
-                            </button>
-                        )}
-                        {!isTransportRole && (
-                            <button
-                                className="nav-link"
-                                onClick={() => {
-                                    if (!isActive) { alert(t("error.account.blocked", "Аккаунт заблокирован")); return; }
-                                    router.push("/create");
-                                }}
-                                style={{
-                                    fontSize: NAV_FONT, fontWeight: 700, padding: NAV_PAD,
-                                    opacity: isActive ? 1 : .5, cursor: "pointer", background: "none", border: "none"
-                                }}
-                            >
-                                {isTight ? <FaBox className="nav-icon" style={{ fontSize: 18 }} /> : <FaPlus className="nav-icon" style={{ fontSize: 20 }} />}
-                                {!isTight && <span className="nav-text">{t("nav.addCargo", "Добавить Груз")}</span>}
-                            </button>
-                        )}
-                        <Link className="nav-link" href="/#service"
-                            style={{ fontSize: NAV_FONT, fontWeight: 700, padding: NAV_PAD }}>
-                            <FaInfoCircle className="nav-icon" style={{ fontSize: isTight ? 18 : 20 }} />
-                            {!isTight && <span className="nav-text">{t("nav.about", "О Сервисе")}</span>}
-                        </Link>
-                    </nav>
+                        </nav>
+                    </div>
                 </div>
-            </div>
+            )}
         </div>
     );
 }

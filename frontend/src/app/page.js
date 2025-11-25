@@ -12,13 +12,12 @@ import { useIsMobile } from "../hooks/useIsMobile";
 import { useState, useEffect, useReducer } from "react";
 import { useRouter } from "next/navigation";
 import { FaTruck, FaClipboardCheck, FaUser } from "react-icons/fa6";
-import { FaSignInAlt } from "react-icons/fa";
+import { FaSignInAlt, FaBox, FaPlus, FaInfoCircle } from "react-icons/fa";
 import CountUp from "react-countup";
 import { FaChartLine, FaUserTie, FaUsers, FaClipboardList } from "react-icons/fa6";
 import ServiceSection from "./components/ServiceSection";
 import CompactHero from "./components/CompactHero";
 import AuthModal from "./components/AuthModal";
-import HomeMapsSection from "./components/HomeMapsSection";
 import { useLang } from "./i18n/LangProvider";
 
 // --- Глобальное состояние для модалки регистрации ---
@@ -257,6 +256,79 @@ export default function Home() {
         );
     }
 
+    function NavigationBoard() {
+        const navItems = [
+            {
+                key: "transport",
+                label: t("nav.transport", "Транспорт"),
+                description: t("home.nav.transport", "Поиск свободных машин и маршрутов"),
+                icon: <FaTruck />, hide: isTransportRole,
+                onClick: () => {
+                    try { sessionStorage.setItem("openMobileFilterOnEntry", "1"); } catch { }
+                    router.push("/transport");
+                }
+            },
+            {
+                key: "orders",
+                label: t("nav.cargo", "Груз"),
+                description: t("home.nav.cargo", "Свежие предложения от грузовладельцев"),
+                icon: <FaBox />, hide: isOwnerRole,
+                onClick: () => {
+                    try { sessionStorage.setItem("openMobileFilterOnEntry", "1"); } catch { }
+                    router.push("/orders");
+                }
+            },
+            {
+                key: "add-transport",
+                label: t("nav.addTransport", "Добавить транспорт"),
+                description: t("home.nav.addTransport", "Разместить машину и получить отклики"),
+                icon: <FaPlus />, hide: isOwnerRole,
+                onClick: () => {
+                    if (!user?.email) { setShowAuth(true); return; }
+                    router.push("/create-transport");
+                }
+            },
+            {
+                key: "add-cargo",
+                label: t("nav.addCargo", "Добавить груз"),
+                description: t("home.nav.addCargo", "Создать заявку и найти перевозчика"),
+                icon: <FaPlus />, hide: isTransportRole,
+                onClick: () => {
+                    if (!user?.email) { setShowAuth(true); return; }
+                    router.push("/create");
+                }
+            },
+            {
+                key: "about",
+                label: t("nav.about", "О сервисе"),
+                description: t("home.nav.about", "Преимущества платформы и возможности"),
+                icon: <FaInfoCircle />, hide: false,
+                onClick: () => router.push("/#service"),
+            },
+        ].filter(item => !item.hide);
+
+        return (
+            <section className="home-nav-board" aria-label={t("home.nav.title", "Навигация по сервису")}>
+                <div className="home-nav-grid">
+                    {navItems.map((item) => (
+                        <button
+                            key={item.key}
+                            className="home-nav-card"
+                            onClick={item.onClick}
+                        >
+                            <span className="home-nav-icon">{item.icon}</span>
+                            <div className="home-nav-text">
+                                <span className="home-nav-label">{item.label}</span>
+                                <span className="home-nav-desc">{item.description}</span>
+                            </div>
+                            <span aria-hidden className="home-nav-chevron">→</span>
+                        </button>
+                    ))}
+                </div>
+            </section>
+        );
+    }
+
     function OrdersSection() {
         return (
             <div className="section">
@@ -366,6 +438,68 @@ export default function Home() {
             padding-top: clamp(10px, 3vh, 42px);
           }
 
+          .home-nav-board {
+            position: relative;
+            padding: clamp(8px, 1.6vw, 20px) clamp(4px, 1vw, 14px) 0;
+          }
+          .home-nav-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: clamp(10px, 1.6vw, 18px);
+          }
+          .home-nav-card {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 16px 18px;
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.08);
+            background: radial-gradient(circle at 18% 20%, rgba(255,255,255,0.10), transparent 45%),
+              linear-gradient(150deg, color-mix(in srgb, var(--surface) 90%, transparent), color-mix(in srgb, var(--surface) 70%, transparent));
+            color: var(--text-primary);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.10);
+            transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+          }
+          .home-nav-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 34px rgba(0,0,0,0.14);
+            border-color: color-mix(in srgb, var(--accent, #1fb6ff) 40%, transparent);
+          }
+          .home-nav-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 46px;
+            height: 46px;
+            border-radius: 12px;
+            background: color-mix(in srgb, var(--accent, #1fb6ff) 18%, transparent);
+            color: var(--accent, #1fb6ff);
+            font-size: 20px;
+            flex-shrink: 0;
+          }
+          .home-nav-text {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            text-align: left;
+          }
+          .home-nav-label {
+            font-weight: 800;
+            font-size: 15px;
+            letter-spacing: .01em;
+          }
+          .home-nav-desc {
+            color: var(--text-secondary);
+            font-size: 13px;
+            line-height: 1.4;
+          }
+          .home-nav-chevron {
+            margin-left: auto;
+            font-weight: 800;
+            font-size: 18px;
+            color: var(--accent, #1fb6ff);
+          }
+
           .home-map-prime {
             position: relative;
             padding-top: clamp(6px, 2vh, 26px);
@@ -392,7 +526,7 @@ export default function Home() {
                 {homeStyles}
                 <div className="home-content">
                     <HeroCompactBridge />
-                    <HomeMapsSection hideTransportPins={isTransportRole} />
+                    <NavigationBoard />
                     <ServiceSection />
 
                     {showAuth && (
@@ -521,7 +655,7 @@ export default function Home() {
                 {mode === "main" && (
                     <div className="home-main-stack">
                         <div className="home-map-prime">
-                            <HomeMapsSection hideTransportPins={isTransportRole} />
+                            <NavigationBoard />
                         </div>
                         {/* Компактный первый экран: ниже по высоте, сразу видно блок «О сервисе» */}
                         <div className="home-hero-after-map">

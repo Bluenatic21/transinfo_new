@@ -212,14 +212,42 @@ export default function ProfileCard({ user: initialUser, readOnly, onUserUpdate,
     const title = getDisplayName(user, t);
     const place = [user?.city, user?.country].filter(Boolean).join(", ") || user?.location || "";
     const ratingValue = Number(user?.final_rating) || 0;
+    const isLight = resolvedTheme === "light";
+
+    const themeColors = {
+        cardBg: isLight ? "var(--bg-card)" : "#172135",
+        cardShadow: isLight ? "0 8px 24px rgba(15,23,42,0.08)" : "0 2px 8px rgba(60,130,255,0.08)",
+        cardBorder: isLight ? `1px solid var(--border-subtle)` : "none",
+        title: isLight ? "#0f172a" : "#e4f1ff",
+        roleBg: isLight ? "#edf2ff" : "#0f2449",
+        roleBorder: isLight ? "1px solid #d4ddf6" : "1px solid #254985",
+        roleText: isLight ? "#1d4ed8" : "#a7ccff",
+        avatarBg: isLight ? "var(--bg-card-soft)" : "#21304d",
+        avatarRing: isLight ? "0 0 0 3px #e2e8f0 inset" : "0 0 0 3px #243a62 inset",
+        badgePositiveBg: isLight ? "#e8fff2" : "#12301f",
+        badgePositiveBorder: isLight ? "1px solid #b7efcd" : "1px solid #1e6b3d",
+        badgePositiveText: isLight ? "#1f8a4d" : "#9ff1bd",
+        badgeWarningBg: isLight ? "#fff7e6" : "#2b2a1b",
+        badgeWarningBorder: isLight ? "1px solid #f3d08a" : "1px solid #665f28",
+        badgeWarningText: isLight ? "#b7791f" : "#ffe89e",
+        badgeDangerBg: isLight ? "#fff0f3" : "#2a2130",
+        badgeDangerBorder: isLight ? "1px solid #f3b1c6" : "1px solid #6a3b53",
+        badgeDangerText: isLight ? "#b83265" : "#ffb2d1",
+        controlBg: isLight ? "var(--control-bg)" : "#11284e",
+        controlBorder: isLight ? `1px solid var(--border-subtle)` : "1px solid #27539a",
+        controlText: isLight ? "#1d4ed8" : "#acd2ff",
+        logoutBg: isLight ? "#d92d20" : "#c62828",
+        logoutShadow: isLight ? "0 4px 14px rgba(217,45,32,0.25)" : "0 2px 8px rgba(198,40,40,0.35)",
+    };
 
     return (
         <div
             className="profile-block"
             style={{
-                background: "#172135",
+                background: themeColors.cardBg,
                 borderRadius: 18,
-                boxShadow: "0 2px 8px rgba(60,130,255,0.08)",
+                boxShadow: themeColors.cardShadow,
+                border: themeColors.cardBorder,
                 padding: isMobile ? "14px 12px" : "18px 20px",
                 width: "100%",
             }}
@@ -240,8 +268,8 @@ export default function ProfileCard({ user: initialUser, readOnly, onUserUpdate,
                             width: isMobile ? 88 : 108,
                             height: isMobile ? 88 : 108,
                             borderRadius: "50%",
-                            background: "#21304d",
-                            boxShadow: "0 0 0 3px #243a62 inset",
+                            background: themeColors.avatarBg,
+                            boxShadow: themeColors.avatarRing,
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
@@ -264,19 +292,23 @@ export default function ProfileCard({ user: initialUser, readOnly, onUserUpdate,
                             gap: 8,
                             padding: isMobile ? "5px 8px" : "6px 9px",
                             background:
-                                status === verifStatus.pending ? "#2b2a1b" : status === verifStatus.rejected ? "#2a2130" : "#12301f",
+                                status === verifStatus.pending
+                                    ? themeColors.badgeWarningBg
+                                    : status === verifStatus.rejected
+                                        ? themeColors.badgeDangerBg
+                                        : themeColors.badgePositiveBg,
                             border:
                                 status === verifStatus.pending
-                                    ? "1px solid #665f28"
+                                    ? themeColors.badgeWarningBorder
                                     : status === verifStatus.rejected
-                                        ? "1px solid #6a3b53"
-                                        : "1px solid #1e6b3d",
+                                        ? themeColors.badgeDangerBorder
+                                        : themeColors.badgePositiveBorder,
                             color:
                                 status === verifStatus.pending
-                                    ? "#ffe89e"
+                                    ? themeColors.badgeWarningText
                                     : status === verifStatus.rejected
-                                        ? "#ffb2d1"
-                                        : "#9ff1bd",
+                                        ? themeColors.badgeDangerText
+                                        : themeColors.badgePositiveText,
                             borderRadius: 999,
                             fontSize: isMobile ? 11 : 12,
                             fontWeight: 700,
@@ -291,7 +323,7 @@ export default function ProfileCard({ user: initialUser, readOnly, onUserUpdate,
                 <div style={{ display: "flex", flexDirection: "column", gap: isMobile ? 10 : 14, minWidth: 0 }}>
                     {/* header */}
                     {!isMobile ? (
-                        // desktop: name + rating on the right␊
+                        // desktop: name + rating on the right
                         <div style={{ display: "grid", gridTemplateColumns: "1fr 200px", gap: 14, alignItems: "center" }}>
                             <div style={{ minWidth: 0 }}>
                                 <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
@@ -301,9 +333,9 @@ export default function ProfileCard({ user: initialUser, readOnly, onUserUpdate,
                                             display: "inline-flex",
                                             alignItems: "center",
                                             gap: 8,
-                                            background: "#0f2449",
-                                            border: "1px solid #254985",
-                                            color: "#a7ccff",
+                                            background: themeColors.roleBg,
+                                            border: themeColors.roleBorder,
+                                            color: themeColors.roleText,
                                             borderRadius: 999,
                                             padding: "4px 9px",
                                             fontSize: 12,
@@ -319,7 +351,7 @@ export default function ProfileCard({ user: initialUser, readOnly, onUserUpdate,
                                             margin: 0,
                                             fontSize: 20,
                                             fontWeight: 800,
-                                            color: "#e4f1ff",
+                                            color: themeColors.title,
                                             letterSpacing: ".01em",
                                             overflow: "hidden",
                                             textOverflow: "ellipsis",
@@ -341,9 +373,9 @@ export default function ProfileCard({ user: initialUser, readOnly, onUserUpdate,
                                                     width: 32,
                                                     height: 32,
                                                     borderRadius: 8,
-                                                    background: palette.control,
-                                                    border: `1px solid ${palette.border}`,
-                                                    color: palette.text,
+                                                    background: themeColors.controlBg,
+                                                    border: themeColors.controlBorder,
+                                                    color: themeColors.controlText,
                                                     cursor: "pointer",
                                                 }}
                                             >
@@ -360,7 +392,7 @@ export default function ProfileCard({ user: initialUser, readOnly, onUserUpdate,
                                     <FaStar />
                                     <span style={{ fontWeight: 700 }}>{t("profile.rating", "Рейтинг")}</span>
                                 </div>
-                                <TenStars value={ratingValue} t={t} />
+                                <TenStars value={ratingValue} t={t} theme={resolvedTheme} />
                             </Box>
                         </div>
                     ) : (
@@ -374,9 +406,9 @@ export default function ProfileCard({ user: initialUser, readOnly, onUserUpdate,
                                             display: "inline-flex",
                                             alignItems: "center",
                                             gap: 8,
-                                            background: palette.control,
-                                            border: `1px solid ${palette.border}`,
-                                            color: palette.text,
+                                            background: themeColors.roleBg,
+                                            border: themeColors.roleBorder,
+                                            color: themeColors.roleText,
                                             borderRadius: 999,
                                             padding: "4px 10px",
                                             fontSize: 12,
@@ -415,9 +447,9 @@ export default function ProfileCard({ user: initialUser, readOnly, onUserUpdate,
                                                     width: 30,
                                                     height: 30,
                                                     borderRadius: 8,
-                                                    background: "#11284e",
-                                                    border: "1px solid #27539a",
-                                                    color: "#acd2ff",
+                                                    background: themeColors.controlBg,
+                                                    border: themeColors.controlBorder,
+                                                    color: themeColors.controlText,
                                                 }}
                                             >
                                                 <FaRegEdit size={16} />
@@ -433,9 +465,9 @@ export default function ProfileCard({ user: initialUser, readOnly, onUserUpdate,
                                                     width: 30,
                                                     height: 30,
                                                     borderRadius: 8,
-                                                    background: "#11284e",
-                                                    border: "1px solid #27539a",
-                                                    color: "#acd2ff",
+                                                    background: themeColors.controlBg,
+                                                    border: themeColors.controlBorder,
+                                                    color: themeColors.controlText,
                                                 }}
                                             >
                                                 <FaLock size={16} />
@@ -451,7 +483,7 @@ export default function ProfileCard({ user: initialUser, readOnly, onUserUpdate,
                                     <FaStar />
                                     <span style={{ fontWeight: 700 }}>{t("profile.rating", "Рейтинг")}</span>
                                 </div>
-                                <TenStars value={ratingValue} t={t} />
+                                <TenStars value={ratingValue} t={t} theme={resolvedTheme} />
                             </Box>
                         </>
                     )}
@@ -491,10 +523,10 @@ export default function ProfileCard({ user: initialUser, readOnly, onUserUpdate,
                                     height: 48,
                                     borderRadius: 14,
                                     border: "none",
-                                    background: "#c62828",
+                                    background: themeColors.logoutBg,
                                     color: "#fff",
                                     fontWeight: 800,
-                                    boxShadow: "0 2px 8px rgba(198,40,40,0.35)",
+                                    boxShadow: themeColors.logoutShadow,
                                     cursor: "pointer",
                                 }}
                             >
