@@ -64,72 +64,99 @@ export default function PhoneWithOtp({
       : lang === "ru"
       ? "Введите код"
       : "Enter code";
-
+  const labelChannel =
+    lang === "ka"
+      ? "სად გავაგზავნოთ"
+      : lang === "ru"
+      ? "Куда отправить"
+      : "Where to send";
+  const optionLabel = (key: "sms" | "whatsapp" | "viber") => {
+    if (lang === "ru")
+      return key === "sms" ? "SMS" : key === "whatsapp" ? "WhatsApp" : "Viber";
+    if (lang === "ka")
+      return key === "sms" ? "SMS" : key === "whatsapp" ? "WhatsApp" : "Viber";
+    return key === "sms" ? "SMS" : key === "whatsapp" ? "WhatsApp" : "Viber";
+  };
   const send = async () => {
     try {
       setErr(null);
-      await apiSendPhoneCode(controlled ? (value as string) : phone, lang);
+      await apiSendPhoneCode(
+        controlled ? (value as string) : phone,
+        lang,
+        channel
+      );
       setSent(true);
       setCooldown(60);
     } catch (e: any) {
       setErr(e?.message ?? "send_failed");
     }
-  };
 
-  const onCodeChange = async (v: string) => {
-    setCode(v);
-    const d = v.replace(/\D/g, "");
-    if (d.length >= 6) {
-      try {
-        const { verified } = await apiVerifyPhoneCode(
-          controlled ? (value as string) : phone,
-          d
-        );
-        if (verified) {
-          setVerified(true);
-          onVerified(controlled ? (value as string) : phone);
+    const onCodeChange = async (v: string) => {
+      setCode(v);
+      const d = v.replace(/\D/g, "");
+      if (d.length >= 6) {
+        try {
+          const { verified } = await apiVerifyPhoneCode(
+            controlled ? (value as string) : phone,
+            d
+          );
+          if (verified) {
+            setVerified(true);
+            onVerified(controlled ? (value as string) : phone);
+          }
+        } catch {
+          // оставим поле активным, пользователь снова попробует
         }
-      } catch {
-        // оставим поле активным, пользователь снова попробует
       }
-    }
-  };
+    };
 
-  return (
-    <div className="space-y-2">
-      <div className="flex gap-2 items-center">
-        {!controlled && (
-          <input
-            className="input input-bordered flex-1"
-            placeholder="+9955XXXXXXXX"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
+    return (
+      <div className="space-y-2">
+        <div className="flex gap-2 items-center">
+          {!controlled && (
+            <input
+              className="input input-bordered flex-1"
+              placeholder="+9955XXXXXXXX"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              disabled={verified}
+            />
+          )}
+          <select
+            className="select select-bordered"
+            value={channel}
+            onChange={(e) => setChannel(e.target.value as any)}
             disabled={verified}
+            aria-label={labelChannel}
+          >
+            <option value="sms">{optionLabel("sms")}</option>
+            <option value="whatsapp">{optionLabel("whatsapp")}</option>
+            <option value="viber">{optionLabel("viber")}</option>
+          </select>
+          <button
+            className="btn"
+            type="button"
+            onClick={send}
+            disabled={!(controlled ? value : phone) || cooldown > 0 || verified}
+          >
+            {cooldown > 0 ? `${cooldown}s` : labelCode}
+          </button>
+          {verified && (
+            <span className="text-green-600" title="Verified">
+              ✔
+            </span>
+          )}
+        </div>
+        {sent && !verified && (
+          <input
+            className="input input-bordered"
+            placeholder={labelEnter}
+            value={code}
+            onChange={(e) => onCodeChange(e.target.value)}
           />
         )}
-        <button
-          className="btn"
-          type="button"
-          onClick={send}
-          disabled={!(controlled ? value : phone) || cooldown > 0 || verified}
-        >
-          {cooldown > 0 ? `${cooldown}s` : labelCode}
-        </button>
-        {verified && (
-          <span className="text-green-600" title="Verified">
-            ✔
-          </span>
-        )}
+        {err && <div className="text-red-600 text-sm">{err}</div>}
       </div>
-      {sent && !verified && (
-        <input
-          className="input input-bordered"
-          placeholder={labelEnter}
-          value={code}
-          onChange={(e) => onCodeChange(e.target.value)}
-        />
-      )}
-      {err && <div className="text-red-600 text-sm">{err}</div>}
-    </div>
-  );
+    );
+  };
 }

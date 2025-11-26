@@ -380,7 +380,7 @@ export default function Home() {
         <style jsx global>{`
           html { scroll-behavior: smooth; }
 
-          .home-shell {
+             .home-shell {
             position: relative;
             isolation: isolate;
           }
@@ -399,21 +399,21 @@ export default function Home() {
           .home-network-figure {
             position: absolute;
             left: 50%;
-            top: clamp(180px, 30vh, 340px);
-            width: min(780px, 90vw);
+            top: clamp(140px, 26vh, 320px);
+            width: min(860px, 92vw);
             aspect-ratio: 1 / 1;
             background: url("/main_web.png") center / contain no-repeat;
-            opacity: 0.76;
+            opacity: 0.82;
             transform: translateX(-50%);
             filter: drop-shadow(0 22px 52px rgba(0, 0, 0, 0.35));
             pointer-events: none;
-            z-index: 0;
+            z-index: 1;
             mix-blend-mode: screen;
           }
 
           .home-content {
             position: relative;
-            z-index: 1;
+            z-index: 2;
           }
 
           .home-main-stack {
@@ -487,6 +487,12 @@ export default function Home() {
             .home-cta-btn {
               width: 100%;
               justify-content: center;
+            }
+          }
+
+          @media (max-width: 960px) {
+            .home-network-figure {
+              display: none;
             }
           }
 
@@ -659,6 +665,8 @@ export default function Home() {
         return (
             <div className="home-shell">
                 {homeStyles}
+                <div className="home-top-band" aria-hidden="true" />
+                <div className="home-network-figure" aria-hidden="true" />
                 <div className="home-content">
                     <HeroCompactBridge />
                     <NavigationBoard />
@@ -730,6 +738,8 @@ export default function Home() {
     return (
         <div className="home-shell">
             {homeStyles}
+            <div className="home-top-band" aria-hidden="true" />
+            <div className="home-network-figure" aria-hidden="true" />
             <div className="home-content">
                 <FlashMessage message={message} setMessage={setMessage} />
                 {showAuth && (
