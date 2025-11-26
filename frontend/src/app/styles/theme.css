@@ -137,6 +137,33 @@
     --surface: var(--bg-card);
     --surface-soft: var(--bg-card-soft);
     --text: var(--text-primary);
+
+    /* Compact cards (orders + transport) */
+    --compact-card-bg: #19233b;
+    --compact-card-shadow: 0 2px 8px #121e3844;
+    --compact-card-border-strong: #50e2ff;
+    --compact-card-chip-bg: #193158cc;
+    --compact-card-chip-border: #2a4872;
+    --compact-card-chip-text: #cfe9ff;
+    --compact-card-timestamp-bg: #193158bb;
+    --compact-card-timestamp-text: #8ecae6cc;
+    --compact-card-text-primary: #e3f2fd;
+    --compact-card-text-secondary: #8dbef7;
+    --compact-card-accent: #6dd6ff;
+    --compact-card-pill-bg: #23385a;
+    --compact-card-pill-border: #2a4872;
+    --compact-card-pill-text: #d6e9ff;
+    --compact-card-pill-danger-bg: rgba(239, 68, 68, .12);
+    --compact-card-pill-danger-border: #ef4444;
+    --compact-card-pill-danger-text: #fecaca;
+    --compact-card-owner-mine-bg: #123524;
+    --compact-card-owner-mine-border: #29d17d;
+    --compact-card-owner-mine-text: #0f3d2c;
+    --compact-card-owner-mine-strong: #a9f5cd;
+    --compact-card-owner-other-bg: #162846;
+    --compact-card-owner-other-border: #2a4872;
+    --compact-card-owner-other-text: #9ecbff;
+    --compact-card-owner-other-strong: #cfe9ff;
 }
 
 /* === Footer tokens === */
@@ -146,6 +173,35 @@
 
 :root[data-theme="light"] {
     --footer-brand-color: #ffffff;
+}
+
+/* Light overrides for compact cards */
+:root[data-theme="light"] {
+    --compact-card-bg: #ffffff;
+    --compact-card-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
+    --compact-card-border-strong: #38bdf8;
+    --compact-card-chip-bg: #e7f1ff;
+    --compact-card-chip-border: #cbd5e1;
+    --compact-card-chip-text: #0f172a;
+    --compact-card-timestamp-bg: #edf2f7;
+    --compact-card-timestamp-text: #475569;
+    --compact-card-text-primary: #0f172a;
+    --compact-card-text-secondary: #334155;
+    --compact-card-accent: #0ea5e9;
+    --compact-card-pill-bg: #eef2f7;
+    --compact-card-pill-border: #d7deea;
+    --compact-card-pill-text: #0f172a;
+    --compact-card-pill-danger-bg: rgba(239, 68, 68, .12);
+    --compact-card-pill-danger-border: #ef4444;
+    --compact-card-pill-danger-text: #991b1b;
+    --compact-card-owner-mine-bg: #ecfdf3;
+    --compact-card-owner-mine-border: #bbf7d0;
+    --compact-card-owner-mine-text: #065f46;
+    --compact-card-owner-mine-strong: #0f172a;
+    --compact-card-owner-other-bg: #e0e7ff;
+    --compact-card-owner-other-border: #c7d2fe;
+    --compact-card-owner-other-text: #1f2937;
+    --compact-card-owner-other-strong: #1d4ed8;
 }
 
 /* === Sidebar tokens === */

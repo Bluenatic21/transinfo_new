@@ -8,6 +8,7 @@ import { NAV_BY_ROLE, getBadgeCount } from "../config/mobileNav";
 import { FaPlusCircle } from "react-icons/fa";
 import { FaRightToBracket } from "react-icons/fa6";
 import { useLang } from "../i18n/LangProvider";
+import { useTheme } from "../providers/ThemeProvider";
 
 
 // i18n-ключ по маршруту (чтобы не зависеть от raw label из конфигов)
@@ -48,6 +49,8 @@ const KEY_FALLBACK_RU = {
  */
 export default function BottomNavBar() {
     const { t } = useLang();
+    const { resolvedTheme } = useTheme();
+    const isLight = resolvedTheme === "light";
     const router = useRouter();
     const pathname = usePathname();
     const { user, contactReq, setShowAuth } = useUser();
@@ -149,6 +152,13 @@ export default function BottomNavBar() {
 
     const [sheetOpen, setSheetOpen] = useState(false);
     const [sheetMode, setSheetMode] = useState("add"); // "add" | "auth"
+    const sheetButtonBase = "w-full rounded-xl px-4 py-3 transition";
+    const sheetButtonTone = isLight
+        ? "bg-slate-100 hover:bg-slate-200 text-slate-800"
+        : "bg-white/5 hover:bg-white/10 text-slate-100";
+    const sheetCancelTone = isLight
+        ? "bg-slate-200 hover:bg-slate-300 text-slate-800"
+        : "bg-white/5 hover:bg-white/10 text-slate-100";
 
     // автоскрытие на скролле (вниз — прячем, вверх — показываем)
     const [hidden, setHidden] = useState(false);
@@ -288,9 +298,11 @@ export default function BottomNavBar() {
         <>
             <nav
                 className={[
-                    "md:hidden fixed inset-x-0 bottom-0 z-[20] border-t border-white/10",
-                    "bg-[#0f172a]/95 backdrop-blur supports-[backdrop-filter]:bg-[#0f172a]/70",
-                    "pb-[env(safe-area-inset-bottom)] transition-all duration-200",
+                    "mobile-bottom-nav md:hidden fixed inset-x-0 bottom-0 z-[20] border-t",
+                    "pb-[env(safe-area-inset-bottom)] transition-all duration-200 backdrop-blur",
+                    isLight
+                        ? "bg-white/90 supports-[backdrop-filter]:bg-white/75 border-slate-200/90 shadow-[0_-10px_26px_rgba(15,23,42,0.08)]"
+                        : "bg-[#0f172a]/95 supports-[backdrop-filter]:bg-[#0f172a]/70 border-white/10",
                     hidden ? "translate-y-full opacity-0" : "translate-y-0 opacity-100",
                 ].join(" ")}
             >
@@ -305,6 +317,12 @@ export default function BottomNavBar() {
                             (pathname === hrefNorm || (hrefNorm !== "/" && pathname?.startsWith(hrefNorm + "/")));
                         const count = getBadgeCount(badgeKey, counters);
                         const isAdd = href === "__add__";
+                        const labelClass = active
+                            ? (isLight ? "text-sky-600" : "text-cyan-400")
+                            : (isLight ? "text-slate-600" : "text-slate-400");
+                        const iconClass = active
+                            ? (isLight ? "text-sky-600" : "text-cyan-200")
+                            : (isLight ? "text-slate-500" : "text-slate-200");
                         // Локализация подписи: приоритет — ключ по href; иначе используем label как ключ/фолбэк
                         const keyByHref = NAV_HREF_TO_KEY[hrefNorm];
                         const displayLabel = MY_HREFS.has(hrefNorm)
@@ -319,14 +337,18 @@ export default function BottomNavBar() {
                                     <button
                                         onClick={(e) => handleNav(e, href)}
                                         className={[
-                                            "mx-auto -translate-y-2 rounded-full ring-1 ring-white/10",
-                                            "shadow-lg shadow-cyan-500/10",
-                                            "grid place-items-center w-14 h-14",
+                                            "mx-auto -translate-y-2 rounded-full grid place-items-center w-14 h-14",
+                                            isLight
+                                                ? "bg-white text-sky-600 ring-1 ring-slate-200 shadow-lg shadow-sky-200/70"
+                                                : "bg-[#0f172a] ring-1 ring-white/10 shadow-lg shadow-cyan-500/10 text-cyan-400",
                                         ].join(" ")}
                                         aria-label={t("common.add", "Добавить")}
                                     >
                                         {FaPlusCircle ? (
-                                            <FaPlusCircle size={28} className="text-cyan-400" />
+                                            <FaPlusCircle
+                                                size={28}
+                                                className={isLight ? "text-sky-600" : "text-cyan-400"}
+                                            />
                                         ) : (
                                             <span className="text-cyan-400 text-2xl leading-none">＋</span>
                                         )}
@@ -339,9 +361,9 @@ export default function BottomNavBar() {
                                         className="flex flex-col items-center py-3 text-[11px] font-semibold select-none"
                                     >
                                         {Icon ? (
-                                            <Icon className={active ? "opacity-100" : "opacity-60"} size={18} />
+                                            <Icon className={`${iconClass} ${active ? "opacity-100" : "opacity-70"}`} size={18} />
                                         ) : null}
-                                        <span className={active ? "text-cyan-400" : "text-slate-400"}>
+                                        <span className={labelClass}>
                                             {displayLabel}
                                         </span>
                                     </Link>
@@ -367,28 +389,31 @@ export default function BottomNavBar() {
                         onClick={() => setSheetOpen(false)}
                     />
                     <div
-                        className="fixed inset-x-0 bottom-0 z-[22] md:hidden
-                       bg-[#0b1220] border-t border-white/10
-                       rounded-t-2xl p-4 space-y-2
-                       pb-[calc(env(safe-area-inset-bottom)+12px)]"
+                        className={[
+                            "fixed inset-x-0 bottom-0 z-[22] md:hidden rounded-t-2xl p-4 space-y-2",
+                            "pb-[calc(env(safe-area-inset-bottom)+12px)]",
+                            isLight
+                                ? "bg-white border-t border-slate-200 shadow-[0_-10px_28px_rgba(15,23,42,0.12)]"
+                                : "bg-[#0b1220] border-t border-white/10",
+                        ].join(" ")}
                     >
                         {sheetMode === "matches" ? (
                             <>
                                 <button
                                     onClick={() => { setSheetOpen(false); router.push("/orders?matches_only=1"); }}
-                                    className="w-full rounded-xl px-4 py-3 text-left bg-white/5 hover:bg-white/10 transition"
+                                    className={`${sheetButtonBase} text-left ${sheetButtonTone}`}
                                 >
                                     {t("nav.matches.cargo", "Грузы — соответствия")}
                                 </button>
                                 <button
                                     onClick={() => { setSheetOpen(false); router.push("/transport?matches_only=1"); }}
-                                    className="w-full rounded-xl px-4 py-3 text-left bg-white/5 hover:bg-white/10 transition"
+                                    className={`${sheetButtonBase} text-left ${sheetButtonTone}`}
                                 >
                                     {t("nav.matches.transport", "Транспорт — соответствия")}
                                 </button>
                                 <button
                                     onClick={() => setSheetOpen(false)}
-                                    className="w-full rounded-xl px-4 py-3 text-center bg-white/5 hover:bg-white/10 transition"
+                                    className={`${sheetButtonBase} text-center ${sheetCancelTone}`}
                                 >
                                     {t("common.cancel", "Отмена")}
                                 </button>
@@ -397,19 +422,19 @@ export default function BottomNavBar() {
                             <>
                                 <button
                                     onClick={() => { setSheetOpen(false); router.push("/profile?orders=1&openFilter=1"); }}
-                                    className="w-full rounded-xl px-4 py-3 text-left bg-white/5 hover:bg-white/10 transition"
+                                    className={`${sheetButtonBase} text-left ${sheetButtonTone}`}
                                 >
                                     {t("nav.my.cargo", "Мои грузы")}
                                 </button>
                                 <button
                                     onClick={() => { setSheetOpen(false); router.push("/profile?transports=1&openFilter=1"); }}
-                                    className="w-full rounded-xl px-4 py-3 text-left bg-white/5 hover:bg-white/10 transition"
+                                    className={`${sheetButtonBase} text-left ${sheetButtonTone}`}
                                 >
                                     {t("nav.my.transport", "Мой транспорт")}
                                 </button>
                                 <button
                                     onClick={() => setSheetOpen(false)}
-                                    className="w-full rounded-xl px-4 py-3 text-center bg-white/5 hover:bg-white/10 transition"
+                                    className={`${sheetButtonBase} text-center ${sheetCancelTone}`}
                                 >
                                     {t("common.cancel", "Отмена")}
                                 </button>
@@ -418,21 +443,21 @@ export default function BottomNavBar() {
                             <>
                                 <button
                                     onClick={() => { setSheetOpen(false); router.push("/create"); }}
-                                    className="w-full rounded-xl px-4 py-3 text-left bg-white/5 hover:bg-white/10 transition"
+                                    className={`${sheetButtonBase} text-left ${sheetButtonTone}`}
                                 >
                                     {t("order.create", "Создать Заявку")}
                                 </button>
                                 {!isOwnerRole && (
                                     <button
                                         onClick={() => { setSheetOpen(false); router.push("/create-transport"); }}
-                                        className="w-full rounded-xl px-4 py-3 text-left bg-white/5 hover:bg-white/10 transition"
+                                        className={`${sheetButtonBase} text-left ${sheetButtonTone}`}
                                     >
                                         {t("transport.add", "Добавить Транспорт")}
                                     </button>
                                 )}
                                 <button
                                     onClick={() => setSheetOpen(false)}
-                                    className="w-full rounded-xl px-4 py-3 text-center bg-white/5 hover:bg-white/10 transition"
+                                    className={`${sheetButtonBase} text-center ${sheetCancelTone}`}
                                 >
                                     {t("common.cancel", "Отмена")}
                                 </button>
@@ -441,19 +466,19 @@ export default function BottomNavBar() {
                             <>
                                 <button
                                     onClick={() => { setSheetOpen(false); setShowAuth?.(true); }}
-                                    className="w-full rounded-xl px-4 py-3 text-left bg-white/5 hover:bg-white/10 transition"
+                                    className={`${sheetButtonBase} text-left ${sheetButtonTone}`}
                                 >
                                     {t("auth.login", "Войти")}
                                 </button>
                                 <button
                                     onClick={() => { setSheetOpen(false); router.push("/register"); }}
-                                    className="w-full rounded-xl px-4 py-3 text-left bg-white/5 hover:bg-white/10 transition"
+                                    className={`${sheetButtonBase} text-left ${sheetButtonTone}`}
                                 >
                                     {t("auth.register", "Регистрация")}
                                 </button>
                                 <button
                                     onClick={() => setSheetOpen(false)}
-                                    className="w-full rounded-xl px-4 py-3 text-center bg-white/5 hover:bg-white/10 transition"
+                                    className={`${sheetButtonBase} text-center ${sheetCancelTone}`}
                                 >
                                     {t("common.cancel", "Отмена")}
                                 </button>

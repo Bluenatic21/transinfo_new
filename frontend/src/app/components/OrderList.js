@@ -1475,7 +1475,7 @@ function OrderCard({
                             ) : null,
                             order.truck_type ? (
                                 <span key="bodytype" style={isGuest ? { position: "relative", zIndex: 31 } : undefined}>
-                                    <span style={{ color: cardColors.label }}>{t("order.truckType", "Тип кузова:")}</span> <b>{findBodyLabelByValue(order.truck_type)}</b>
+                                    <span style={{ color: isLimited ? "#fff" : cardColors.label }}>{t("order.truckType", "Тип кузова:")}</span> <b style={{ color: isLimited ? "#fff" : undefined }}>{findBodyLabelByValue(order.truck_type)}</b>
                                 </span>
                             ) : null,
                         ].filter(Boolean)}

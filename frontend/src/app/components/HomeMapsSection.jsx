@@ -98,6 +98,10 @@ export default function HomeMapsSection() {
         };
     }, [authFetchWithRefresh]);
 
+    const legendClasses = isLight
+        ? "bg-white/90 border border-slate-200 text-slate-700 shadow-[0_6px_20px_rgba(15,23,42,0.08)]"
+        : "bg-[#0b1528]/85 border border-white/8 text-slate-100 shadow-[0_6px_20px_rgba(0,0,0,0.35)]";
+
     return (
         <section
             aria-label={t("home.map.aria", "Карта предложений")}
@@ -114,6 +118,21 @@ export default function HomeMapsSection() {
                 >
                     <div className="px-4 md:px-5 pt-6 md:pt-7 pb-6 md:pb-7">
                         <div className="relative px-1 sm:px-2 md:px-3">
+                            <div className="flex justify-end mb-3 md:mb-4">
+                                <div
+                                    className={`${legendClasses} flex items-center gap-4 rounded-xl px-3 py-2 text-sm leading-5 backdrop-blur`}
+                                    style={{ pointerEvents: "auto" }}
+                                >
+                                    <div className="flex items-center gap-2">
+                                        <span className="inline-block h-[10px] w-[10px] rounded-full" style={{ background: "#53b7ff" }} />
+                                        {t("map.legend.transport", "Транспорт")}
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <span className="inline-block h-[10px] w-[10px] rounded-full" style={{ background: "#ffb020" }} />
+                                        {t("map.legend.cargo", "Груз")}
+                                    </div>
+                                </div>
+                            </div>
                             <div
                                 className={`rounded-xl overflow-hidden border h-[224px] md:h-[252px] ${isLight
                                     ? "bg-white border-slate-200 shadow-[0_6px_20px_rgba(15,23,42,0.08)]"

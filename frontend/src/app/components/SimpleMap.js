@@ -1726,6 +1726,9 @@ export default function SimpleMap({
                 >
                     <div
                         style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 12,
                             background: "rgba(11,21,40,0.85)",
                             backdropFilter: "blur(8px)",
                             border: "1px solid rgba(255,255,255,0.12)",
@@ -1735,19 +1738,76 @@ export default function SimpleMap({
                             fontSize: 12,
                             lineHeight: "16px",
                             boxShadow: "0 4px 14px rgba(0,0,0,.35)",
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 14,
                             pointerEvents: "auto",
                         }}
                     >
-                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                            <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: 999, background: "#53b7ff" }} />
-                            {t("map.legend.transport", "Транспорт")}
-                        </div>
-                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                            <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: 999, background: "#ffb020" }} />
-                            {t("map.legend.cargo", "Груз")}
+                        {/* Селектор стран — показываем именно на главной, где hideSearch = true */}
+                        {hideSearch && (
+                            <div
+                                style={{
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    gap: 4,
+                                    marginRight: 8,
+                                }}
+                            >
+                                <span style={{ fontSize: 11, opacity: 0.8 }}>
+                                    {t("map.country.label", "Быстрый выбор страны")}
+                                </span>
+                                <select
+                                    value={selectedCountry}
+                                    onChange={(e) => handleCountrySelect(e.target.value)}
+                                    style={{
+                                        minWidth: 150,
+                                        maxWidth: 220,
+                                        padding: "6px 10px",
+                                        borderRadius: 8,
+                                        border: "1px solid rgba(148,163,184,0.8)",
+                                        background: "rgba(15,23,42,0.95)",
+                                        color: "#e2e8f0",
+                                        fontSize: 13,
+                                        outline: "none",
+                                        cursor: "pointer",
+                                    }}
+                                >
+                                    <option value="">
+                                        {t("map.country.placeholder", "Выберите страну")}
+                                    </option>
+                                    {COUNTRY_PRESETS.map((country) => (
+                                        <option key={country.code} value={country.code}>
+                                            {country.flag} {country.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        )}
+
+                        {/* Легенда Транспорт / Груз */}
+                        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                <span
+                                    style={{
+                                        display: "inline-block",
+                                        width: 10,
+                                        height: 10,
+                                        borderRadius: 999,
+                                        background: "#53b7ff",
+                                    }}
+                                />
+                                {t("map.legend.transport", "Транспорт")}
+                            </div>
+                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                <span
+                                    style={{
+                                        display: "inline-block",
+                                        width: 10,
+                                        height: 10,
+                                        borderRadius: 999,
+                                        background: "#ffb020",
+                                    }}
+                                />
+                                {t("map.legend.cargo", "Груз")}
+                            </div>
                         </div>
                     </div>
                 </div>

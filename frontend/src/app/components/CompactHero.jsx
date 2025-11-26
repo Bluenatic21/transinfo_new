@@ -56,7 +56,7 @@ export default function CompactHero({
 
                 {/* Метрики — компактный блок сразу под навигацией, центрированный в ширине карты */}
                 <div className="mt-3 md:mt-4 xl:mt-5 mb-1">
-                    <div className="max-w-5xl mx-auto w-full px-4 sm:px-6">
+                    <div className="max-w-5xl w-full px-4 sm:px-6">
                         <div className="flex justify-start">
                             <div
                                 className="hero-metrics-card rounded-xl bg-white shadow-[0_8px_28px_rgba(0,0,0,0.12)] ring-1 ring-slate-200 px-3 py-2 md:px-5 md:py-4 backdrop-blur-[2px] dark:bg-white/[0.04] dark:ring-white/5 dark:shadow-[0_8px_28px_rgba(0,0,0,0.35)]"

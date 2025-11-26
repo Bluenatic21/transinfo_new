@@ -436,13 +436,13 @@ export default function TransportCompactCard({
     };
 
     const cardStyle = inModal ? {
-        background: "#19233b",
+        background: "var(--compact-card-bg)",
         borderRadius: 14,
         boxShadow: (isFocused || hoveredItemId === transport.id)
             ? "0 0 0 8px #41cfff22"
-            : "0 2px 8px #121e3844",
+            : "var(--compact-card-shadow)",
         border: (isFocused || hoveredItemId === transport.id)
-            ? "2.5px solid #50e2ff"
+            ? "2.5px solid var(--compact-card-border-strong)"
             : "2px solid transparent",
         marginBottom: 17,
         padding: 18,
@@ -463,13 +463,13 @@ export default function TransportCompactCard({
         display: "flex",
         flexDirection: "row",
         alignItems: "center",
-        background: "#19233b",
+        background: "var(--compact-card-bg)",
         borderRadius: 14,
         boxShadow: (isFocused || hoveredItemId === transport.id)
             ? "0 0 0 8px #41cfff22"
-            : "0 2px 8px #121e3844",
+            : "var(--compact-card-shadow)",
         border: (isFocused || hoveredItemId === transport.id)
-            ? "2.5px solid #50e2ff"
+            ? "2.5px solid var(--compact-card-border-strong)"
             : "2px solid transparent",
         // На десктопе убираем ограничение ширины — карточка должна заполнять всю строку
         maxWidth: isMobile ? 960 : "none", // было: 960
@@ -511,7 +511,7 @@ export default function TransportCompactCard({
                     ? "0 0 0 8px #41cfff33, 0 2px 8px #121e3844"
                     : cardStyle.boxShadow,
                 border: (hoveredItemId === transport.id || isFocused)
-                    ? "2.5px solid #50e2ff"
+                    ? "2.5px solid var(--compact-card-border-strong)"
                     : "2px solid transparent",
                 transition: "box-shadow .23s, border-color .17s",
                 // Одна карточка в ряд: занимаем всю строку родительского grid/flex
@@ -542,9 +542,9 @@ export default function TransportCompactCard({
                         gap: 6,
                         padding: "3px 9px",
                         borderRadius: 999,
-                        background: "#193158cc",
-                        border: "1px solid #2a4872",
-                        color: "#cfe9ff",
+                        background: "var(--compact-card-chip-bg)",
+                        border: "1px solid var(--compact-card-chip-border)",
+                        color: "var(--compact-card-chip-text)",
                         fontWeight: 700,
                         fontSize: 12
                     }}
@@ -581,8 +581,8 @@ export default function TransportCompactCard({
                         bottom: 11,
                         right: 16,
                         fontSize: 12,
-                        color: "#8ecae6cc",
-                        background: "#193158bb",
+                        color: "var(--compact-card-timestamp-text)",
+                        background: "var(--compact-card-timestamp-bg)",
                         padding: "2px 10px",
                         borderRadius: 11,
                         fontWeight: 500,
@@ -624,9 +624,9 @@ export default function TransportCompactCard({
                             margin: "0 0 6px",
                             padding: "3px 8px",
                             borderRadius: 10,
-                            background: isMine ? "#123524" : "#162846",
-                            border: isMine ? "1px solid #29d17d" : "1px solid #2a4872",
-                            color: isMine ? "#a9f5cd" : "#9ecbff",
+                            background: isMine ? "var(--compact-card-owner-mine-bg)" : "var(--compact-card-owner-other-bg)",
+                            border: isMine ? "1px solid var(--compact-card-owner-mine-border)" : "1px solid var(--compact-card-owner-other-border)",
+                            color: isMine ? "var(--compact-card-owner-mine-strong)" : "var(--compact-card-owner-other-text)",
                             fontWeight: 800,
                             fontSize: 12,
                             letterSpacing: ".01em"
@@ -634,14 +634,14 @@ export default function TransportCompactCard({
                     >
                         {derivedIsMine
                             ? t("transport.mine", "Ваш транспорт")
-                            : <>{t("transport.ownerPrefix", "Транспорт")}: <span style={{ color: "#cfe9ff" }}>{derivedOwnerLabel}</span></>}
+                            : <>{t("transport.ownerPrefix", "Транспорт")}: <span style={{ color: "var(--compact-card-owner-other-strong)" }}>{derivedOwnerLabel}</span></>}
                     </div>
                 )}
                 {/* Заголовок (тип кузова) — ОСТАЁТСЯ видимым */}
                 <div style={{
                     fontWeight: 800,
                     fontSize: isMobile ? 15 : 18,
-                    color: "#43c8ff",
+                    color: "var(--compact-card-accent)",
                     marginBottom: 3,
                     display: "flex",
                     alignItems: "center",
@@ -715,24 +715,24 @@ export default function TransportCompactCard({
                     <div style={{ display: "grid", gridTemplateColumns: "auto 1fr", alignItems: "start", gap: 9, marginTop: 4 }}>
                         <div style={{ width: 16 }} />
                         <div style={{ display: "flex", flexDirection: "column", minWidth: 0 }}>
-                            <span style={{ fontWeight: 700, fontSize: isMobile ? 15 : 17, color: "#e3f2fd", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                            <span style={{ fontWeight: 700, fontSize: isMobile ? 15 : 17, color: "var(--compact-card-text-primary)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                                 <Flag place={fromStr} />{fromStr}
                             </span>
-                            <span style={{ fontWeight: 700, fontSize: isMobile ? 15 : 17, color: "#e3f2fd", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                                <span style={{ color: "#6dd6ff", fontWeight: 400, marginRight: 4 }}>→</span>
+                            <span style={{ fontWeight: 700, fontSize: isMobile ? 15 : 17, color: "var(--compact-card-text-primary)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                                <span style={{ color: "var(--compact-card-accent)", fontWeight: 400, marginRight: 4 }}>→</span>
                                 <Flag place={toText} />{toText}
                             </span>
                         </div>
                     </div>
                 ) : (
-                    <div style={{ fontSize: 13, color: "#8dbef7", fontWeight: 400, overflow: "visible", whiteSpace: "normal", textOverflow: "clip", lineHeight: 1.25, marginTop: 2, minWidth: 0 }}>
+                    <div style={{ fontSize: 13, color: "var(--compact-card-text-secondary)", fontWeight: 400, overflow: "visible", whiteSpace: "normal", textOverflow: "clip", lineHeight: 1.25, marginTop: 2, minWidth: 0 }}>
                         {hasFrom && <><Flag place={fromStr} />{fromStr}</>}
                         {hasFrom && hasTo && " → "}
                         {hasTo && <><Flag place={toText} />{toText}</>}
                     </div>
                 )}
                 {/* Доступность — дата/периодичность — ОСТАЁТСЯ видимой */}
-                <div style={{ fontSize: 12.5, color: "#cfe9ff", whiteSpace: "nowrap", marginTop: 2 }}>
+                <div style={{ fontSize: 12.5, color: "var(--compact-card-text-primary)", whiteSpace: "nowrap", marginTop: 2 }}>
                     <FaClock style={{ marginRight: 3, verticalAlign: -2 }} />
                     {availText}
                 </div>
@@ -749,8 +749,8 @@ export default function TransportCompactCard({
                 {showTransportBadges && (
                     <div className={limited ? "pw-blur pw-overlay pw-noevents" : ""} style={{ marginTop: 8, display: "flex", gap: 8, flexWrap: "wrap" }}>
                         {(() => {
-                            const pill = { display: "inline-flex", alignItems: "center", padding: "3px 8px", borderRadius: 10, border: "1px solid #2a4872", background: "#23385a", color: "#d6e9ff", fontWeight: 800, fontSize: 12, lineHeight: 1 };
-                            const pillDanger = { ...pill, border: "1.5px solid #ef4444", background: "rgba(239,68,68,.12)", color: "#fecaca" };
+                            const pill = { display: "inline-flex", alignItems: "center", padding: "3px 8px", borderRadius: 10, border: "1px solid var(--compact-card-pill-border)", background: "var(--compact-card-pill-bg)", color: "var(--compact-card-pill-text)", fontWeight: 800, fontSize: 12, lineHeight: 1 };
+                            const pillDanger = { ...pill, border: "1.5px solid var(--compact-card-pill-danger-border)", background: "var(--compact-card-pill-danger-bg)", color: "var(--compact-card-pill-danger-text)" };
                             const adr = !!(transport.adr || transport.ADR || transport.hazmat);
                             const tFrom = transport.temp_from ?? transport.temperature_from ?? null;
                             const tTo = transport.temp_to ?? transport.temperature_to ?? null;
@@ -1199,7 +1199,7 @@ export default function TransportCompactCard({
                         <div style={{ display: "flex", gap: 10, marginTop: 18, justifyContent: "flex-end" }}>
                             <button
                                 onClick={() => setShowSoon(false)}
-                                style={{ background: "#43c8ff", color: "#fff", border: "none", borderRadius: 9, padding: "8px 18px", fontWeight: 800, cursor: "pointer" }}
+                                style={{ background: "var(--compact-card-accent)", color: "var(--text-on-brand)", border: "none", borderRadius: 9, padding: "8px 18px", fontWeight: 800, cursor: "pointer" }}
                             >
                                 {t("common.ok", "Понятно")}
                             </button>
@@ -1222,18 +1222,18 @@ export default function TransportCompactCard({
                         onClick={(e) => e.stopPropagation()}
                         style={{
                             position: "absolute", left: 0, right: 0, bottom: 0,
-                            background: "#19233b",
+                            background: "var(--compact-card-bg)",
                             borderTopLeftRadius: 16, borderTopRightRadius: 16,
                             boxShadow: "0 -10px 30px #00184577",
                             padding: "12px 14px 20px",
                             zIndex: 9999
                         }}
                     >
-                        <div style={{ width: 38, height: 4, background: "#2a4872", borderRadius: 999, margin: "6px auto 12px" }} />
+                        <div style={{ width: 38, height: 4, background: "var(--compact-card-pill-border)", borderRadius: 999, margin: "6px auto 12px" }} />
                         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                             <button
                                 onClick={() => { setMobileActionsOpen(false); handleCardClick(); }}
-                                style={{ padding: "12px 14px", borderRadius: 12, border: "1px solid #2a4872", background: "#0f1a2b", color: "#e3f2fd", fontWeight: 800, textAlign: "left" }}
+                                style={{ padding: "12px 14px", borderRadius: 12, border: "1px solid var(--compact-card-pill-border)", background: "var(--compact-card-bg)", color: "var(--compact-card-text-primary)", fontWeight: 800, textAlign: "left" }}
                             >{t("card.open", "Открыть карточку")}</button>
 
 
@@ -1247,9 +1247,9 @@ export default function TransportCompactCard({
                                     style={{
                                         padding: "12px 14px",
                                         borderRadius: 12,
-                                        border: "1px solid #2a4872",
-                                        background: "#0f1a2b",
-                                        color: "#e3f2fd",
+                                        border: "1px solid var(--compact-card-pill-border)",
+                                        background: "var(--compact-card-bg)",
+                                        color: "var(--compact-card-text-primary)",
                                         fontWeight: 800,
                                         textAlign: "left"
                                     }}
@@ -1280,80 +1280,83 @@ export default function TransportCompactCard({
                     </div>
                 </div>,
                 document.body
-            )}
+            )
+            }
 
             {/* Модалка блокировки активации */}
-            {showOverdueModal && ReactDOM.createPortal(
-                <div
-                    style={{
-                        position: "fixed",
-                        left: 0, top: 0, width: "100vw", height: "100vh",
-                        background: "#001a", zIndex: 9999,
-                        display: "flex", alignItems: "center", justifyContent: "center"
-                    }}
-                    onClick={e => {
-                        e.stopPropagation();
-                        setShowOverdueModal(false);
-                    }}
-                >
+            {
+                showOverdueModal && ReactDOM.createPortal(
                     <div
                         style={{
-                            background: "#22304b",
-                            color: "#fff",
-                            borderRadius: 18,
-                            padding: "32px 28px",
-                            fontSize: 18,
-                            boxShadow: "0 8px 42px #00184499",
-                            maxWidth: 400,
-                            minWidth: 220,
-                            textAlign: "center",
-                            position: "relative"
+                            position: "fixed",
+                            left: 0, top: 0, width: "100vw", height: "100vh",
+                            background: "#001a", zIndex: 9999,
+                            display: "flex", alignItems: "center", justifyContent: "center"
                         }}
-                        onClick={e => e.stopPropagation()}
+                        onClick={e => {
+                            e.stopPropagation();
+                            setShowOverdueModal(false);
+                        }}
                     >
-                        <button
-                            onClick={() => setShowOverdueModal(false)}
+                        <div
                             style={{
-                                position: "absolute",
-                                top: 12, right: 15,
-                                background: "none", border: "none",
-                                color: "#7aa3cc",
-                                fontSize: 23,
-                                cursor: "pointer",
-                                padding: 0,
-                                lineHeight: 1,
-                                zIndex: 1
-                            }}
-                            title={t("common.close", "Закрыть")}
-                        >×</button>
-                        <b>{t("transport.overdue.title", "Заявка просрочена!")}</b>
-                        <div style={{ margin: "18px 0 8px 0", fontSize: 17 }}>
-                            {t("transport.overdue.body1", "Для повторной активации транспорта")}<br />
-                            <b>{t("transport.overdue.bodyBold", "обновите дату")}</b> {t("transport.overdue.body2", "на актуальную.")}
-                        </div>
-                        <button
-                            onClick={() => {
-                                setShowOverdueModal(false);
-                                onEdit && onEdit();
-                            }}
-                            style={{
-                                background: "#43c8ff",
+                                background: "#22304b",
                                 color: "#fff",
-                                border: "none",
-                                borderRadius: 9,
-                                padding: "8px 22px",
-                                fontWeight: 700,
-                                fontSize: 15,
-                                marginTop: 12,
-                                cursor: "pointer"
+                                borderRadius: 18,
+                                padding: "32px 28px",
+                                fontSize: 18,
+                                boxShadow: "0 8px 42px #00184499",
+                                maxWidth: 400,
+                                minWidth: 220,
+                                textAlign: "center",
+                                position: "relative"
                             }}
+                            onClick={e => e.stopPropagation()}
                         >
-                            {t("transport.overdue.updateBtn", "Обновить дату")}
-                        </button>
-                    </div>
-                </div>,
-                document.body
-            )}
-        </div>
+                            <button
+                                onClick={() => setShowOverdueModal(false)}
+                                style={{
+                                    position: "absolute",
+                                    top: 12, right: 15,
+                                    background: "none", border: "none",
+                                    color: "#7aa3cc",
+                                    fontSize: 23,
+                                    cursor: "pointer",
+                                    padding: 0,
+                                    lineHeight: 1,
+                                    zIndex: 1
+                                }}
+                                title={t("common.close", "Закрыть")}
+                            >×</button>
+                            <b>{t("transport.overdue.title", "Заявка просрочена!")}</b>
+                            <div style={{ margin: "18px 0 8px 0", fontSize: 17 }}>
+                                {t("transport.overdue.body1", "Для повторной активации транспорта")}<br />
+                                <b>{t("transport.overdue.bodyBold", "обновите дату")}</b> {t("transport.overdue.body2", "на актуальную.")}
+                            </div>
+                            <button
+                                onClick={() => {
+                                    setShowOverdueModal(false);
+                                    onEdit && onEdit();
+                                }}
+                                style={{
+                                    background: "#43c8ff",
+                                    color: "#fff",
+                                    border: "none",
+                                    borderRadius: 9,
+                                    padding: "8px 22px",
+                                    fontWeight: 700,
+                                    fontSize: 15,
+                                    marginTop: 12,
+                                    cursor: "pointer"
+                                }}
+                            >
+                                {t("transport.overdue.updateBtn", "Обновить дату")}
+                            </button>
+                        </div>
+                    </div>,
+                    document.body
+                )
+            }
+        </div >
     );
 }

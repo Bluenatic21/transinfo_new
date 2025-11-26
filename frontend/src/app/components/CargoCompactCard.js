@@ -579,8 +579,8 @@ const CargoCompactCard = forwardRef(function CargoCompactCard(
     const W = mainItem?.width ?? cargo?.width_m ?? cargo?.width;
     const H = mainItem?.height ?? cargo?.height_m ?? cargo?.height;
     const dims = (L && W && H) ? `${L}×${W}×${H} ${t("units.meterShort", "м")}` : null;
-    const pill = { display: "inline-flex", alignItems: "center", padding: "3px 8px", borderRadius: 10, border: "1px solid #2a4872", background: "#23385a", color: "#d6e9ff", fontWeight: 800, fontSize: 12, lineHeight: 1 };
-    const pillDanger = { ...pill, border: "1.5px solid #ef4444", background: "rgba(239,68,68,.12)", color: "#fecaca" };
+    const pill = { display: "inline-flex", alignItems: "center", padding: "3px 8px", borderRadius: 10, border: "1px solid var(--compact-card-pill-border)", background: "var(--compact-card-pill-bg)", color: "var(--compact-card-pill-text)", fontWeight: 800, fontSize: 12, lineHeight: 1 };
+    const pillDanger = { ...pill, border: "1.5px solid var(--compact-card-pill-danger-border)", background: "var(--compact-card-pill-danger-bg)", color: "var(--compact-card-pill-danger-text)" };
     const iconS = { marginRight: 6, verticalAlign: -2 };
     const iconLoadType = (t = "") => {
         const s = String(t).toLowerCase();
@@ -640,16 +640,16 @@ const CargoCompactCard = forwardRef(function CargoCompactCard(
                 }
             }}
             style={{
-                background: "#19233b",
+                background: "var(--compact-card-bg)",
                 borderRadius: 14,
                 boxSizing: "border-box",
                 boxShadow:
                     hoveredItemId === (hoverKey ?? cargo.id) || focusFlash
                         ? "0 0 0 8px #41cfff33, 0 2px 8px #121e3844"
-                        : "0 2px 8px #121e3844",
+                        : "var(--compact-card-shadow)",
                 border:
                     hoveredItemId === (hoverKey ?? cargo.id) || focusFlash
-                        ? "2.5px solid #50e2ff"
+                        ? "2.5px solid var(--compact-card-border-strong)"
                         : "2px solid transparent",
                 marginBottom: 17,
                 padding: isMobile ? "18px 14px 16px 14px" : 18,
@@ -685,9 +685,9 @@ const CargoCompactCard = forwardRef(function CargoCompactCard(
                         gap: 6,
                         padding: "3px 9px",
                         borderRadius: 999,
-                        background: "#193158cc",
-                        border: "1px solid #2a4872",
-                        color: "#cfe9ff",
+                        background: "var(--compact-card-chip-bg)",
+                        border: "1px solid var(--compact-card-chip-border)",
+                        color: "var(--compact-card-chip-text)",
                         fontWeight: 700,
                         fontSize: 12
                     }}
@@ -724,8 +724,8 @@ const CargoCompactCard = forwardRef(function CargoCompactCard(
                         bottom: isMobile ? 8 : 11,
                         right: isMobile ? 10 : 16,
                         fontSize: 12,
-                        color: "#8ecae6cc",
-                        background: "#193158bb",
+                        color: "var(--compact-card-timestamp-text)",
+                        background: "var(--compact-card-timestamp-bg)",
                         padding: "2px 10px",
                         borderRadius: 11,
                         fontWeight: 500,
@@ -774,16 +774,16 @@ const CargoCompactCard = forwardRef(function CargoCompactCard(
                             margin: isMobile ? "6px 0 10px" : "2px 0 8px",
                             padding: "3px 8px",
                             borderRadius: 10,
-                            background: isMine ? "#123524" : "#162846",
-                            border: isMine ? "1px solid #29d17d" : "1px solid #2a4872",
-                            color: isMine ? "#a9f5cd" : "#9ecbff",
+                            background: isMine ? "var(--compact-card-owner-mine-bg)" : "var(--compact-card-owner-other-bg)",
+                            border: isMine ? "1px solid var(--compact-card-owner-mine-border)" : "1px solid var(--compact-card-owner-other-border)",
+                            color: isMine ? "var(--compact-card-owner-mine-strong)" : "var(--compact-card-owner-other-text)",
                             fontWeight: 800,
                             fontSize: 12,
                             letterSpacing: ".01em",
                         }}
                     >
                         {derivedIsMine ? t("card.yourOrder", "Ваша заявка") : (
-                            <>{t("card.orderOf", "Заявка:")} <span style={{ color: "#cfe9ff" }}>{derivedOwnerLabel}</span></>
+                            <>{t("card.orderOf", "Заявка:")} <span style={{ color: "var(--compact-card-owner-other-strong)" }}>{derivedOwnerLabel}</span></>
                         )}
                     </div>
                 )}
@@ -799,13 +799,13 @@ const CargoCompactCard = forwardRef(function CargoCompactCard(
                             marginTop: isMobile ? 8 : 6
                         }}
                     >
-                        <FaMapMarkerAlt color="#43c8ff" style={{ marginTop: 2 }} />
+                        <FaMapMarkerAlt color="var(--compact-card-accent)" style={{ marginTop: 2 }} />
                         <div style={{ display: "flex", flexDirection: "column", minWidth: 0 }}>
                             <span
                                 style={{
                                     fontWeight: 700,
                                     fontSize: isMobile ? 15 : 17,
-                                    color: "#e3f2fd",
+                                    color: "var(--compact-card-text-primary)",
                                     whiteSpace: "nowrap",
                                     textOverflow: "ellipsis",
                                     overflow: "hidden"
@@ -818,13 +818,13 @@ const CargoCompactCard = forwardRef(function CargoCompactCard(
                                 style={{
                                     fontWeight: 700,
                                     fontSize: isMobile ? 15 : 17,
-                                    color: "#e3f2fd",
+                                    color: "var(--compact-card-text-primary)",
                                     whiteSpace: "nowrap",
                                     textOverflow: "ellipsis",
                                     overflow: "hidden"
                                 }}
                             >
-                                <span style={{ color: "#6dd6ff", fontWeight: 400, marginRight: 4 }}>→</span>
+                                <span style={{ color: "var(--compact-card-accent)", fontWeight: 400, marginRight: 4 }}>→</span>
                                 <Flag place={toStr} />
                                 {toStr}
                             </span>
@@ -833,11 +833,11 @@ const CargoCompactCard = forwardRef(function CargoCompactCard(
                 ) : (
                     // Обычный горизонтальный вариант
                     <div style={{ display: "flex", alignItems: "center", gap: 9, marginTop: isMobile ? 8 : 6 }}>
-                        <FaMapMarkerAlt color="#43c8ff" />
-                        <span style={{ fontWeight: 700, fontSize: isMobile ? 15 : 17, color: "#e3f2fd", whiteSpace: "nowrap", textOverflow: "ellipsis", overflow: "hidden", flex: 1, minWidth: 0 }}>
+                        <FaMapMarkerAlt color="var(--compact-card-accent)" />
+                        <span style={{ fontWeight: 700, fontSize: isMobile ? 15 : 17, color: "var(--compact-card-text-primary)", whiteSpace: "nowrap", textOverflow: "ellipsis", overflow: "hidden", flex: 1, minWidth: 0 }}>
                             <Flag place={fromStr} />
                             {fromStr}
-                            <span style={{ color: "#6dd6ff", fontWeight: 400 }}>→</span>
+                            <span style={{ color: "var(--compact-card-accent)", fontWeight: 400 }}>→</span>
                             <Flag place={toStr} />
                             {toStr}
                         </span>
@@ -846,7 +846,7 @@ const CargoCompactCard = forwardRef(function CargoCompactCard(
 
                 <div
                     style={{
-                        color: "#9cc4e7",
+                        color: "var(--compact-card-text-secondary)",
                         fontSize: isMobile ? 12 : 15,
                         marginTop: isMobile ? 10 : 6,
                         display: "flex",
@@ -1396,7 +1396,7 @@ const CargoCompactCard = forwardRef(function CargoCompactCard(
                                                 }}
                                             >
                                                 {/* хэндл */}
-                                                <div style={{ width: 44, height: 4, background: "#2a4872", borderRadius: 999, margin: "4px auto 12px" }} />
+                                                <div style={{ width: 44, height: 4, background: "var(--compact-card-pill-border)", borderRadius: 999, margin: "4px auto 12px" }} />
                                                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
                                                     <div style={{ fontWeight: 800, color: "#43c8ff", fontSize: 16 }}>
                                                         {t("bids.title", "Полученные предложения")}
@@ -1666,7 +1666,7 @@ const CargoCompactCard = forwardRef(function CargoCompactCard(
                                         fontSize: 12,
                                         whiteSpace: "nowrap",
                                         cursor: "pointer",
-                                        boxShadow: isActive ? "0 1px 5px #33de7b55" : "0 0 0 1px #2a4872"
+                                        boxShadow: isActive ? "0 1px 5px #33de7b55" : "0 0 0 1px var(--compact-card-pill-border)"
                                     }}
                                 >
                                     <span style={{ fontSize: 14 }}>{isActive ? "✓" : "—"}</span>
@@ -1683,10 +1683,10 @@ const CargoCompactCard = forwardRef(function CargoCompactCard(
                                         ...chipBase,
                                         width: chipWidth || undefined,
                                         justifyContent: "space-between",
-                                        background: "#23385a",
-                                        color: "#d6e9ff",
+                                        background: "var(--compact-card-pill-bg)",
+                                        color: "var(--compact-card-pill-text)",
                                         cursor: "pointer",
-                                        boxShadow: "0 0 0 1px #2a4872"
+                                        boxShadow: "0 0 0 1px var(--compact-card-pill-border)"
                                     }}
                                 >
                                     <FaShareAlt size={14} />
@@ -1702,10 +1702,10 @@ const CargoCompactCard = forwardRef(function CargoCompactCard(
                                     ...chipBase,
                                     width: chipWidth || undefined,
                                     justifyContent: "space-between",
-                                    background: "#23385a",
-                                    color: "#d6e9ff",
+                                    background: "var(--compact-card-pill-bg)",
+                                    color: "var(--compact-card-pill-text)",
                                     cursor: "pointer",
-                                    boxShadow: "0 0 0 1px #2a4872"
+                                    boxShadow: "0 0 0 1px var(--compact-card-pill-border)"
                                 }}
                             >
                                 <FaEllipsisH size={14} />
@@ -1729,7 +1729,7 @@ const CargoCompactCard = forwardRef(function CargoCompactCard(
                             pointerEvents: "none"
                         }}
                     />
-                    : <FaChevronRight color="#43c8ff" style={{ marginLeft: 14, fontSize: 22 }} />
+                    : <FaChevronRight color="var(--compact-card-accent)" style={{ marginLeft: 14, fontSize: 22 }} />
             )}
             {/* Mobile actions bottom-sheet */}
             {isMobile && mobileActionsOpen && ReactDOM.createPortal(
@@ -1744,18 +1744,18 @@ const CargoCompactCard = forwardRef(function CargoCompactCard(
                         onClick={(e) => e.stopPropagation()}
                         style={{
                             position: "absolute", left: 0, right: 0, bottom: 0,
-                            background: "#19233b",
+                            background: "var(--compact-card-bg)",
                             borderTopLeftRadius: 16, borderTopRightRadius: 16,
                             boxShadow: "0 -10px 30px #00184577",
                             padding: "12px 14px 20px",
                             zIndex: 9999
                         }}
                     >
-                        <div style={{ width: 38, height: 4, background: "#2a4872", borderRadius: 999, margin: "6px auto 12px" }} />
+                        <div style={{ width: 38, height: 4, background: "var(--compact-card-pill-border)", borderRadius: 999, margin: "6px auto 12px" }} />
                         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                             <button
                                 onClick={() => { setMobileActionsOpen(false); handleOpenCard(); }}
-                                style={{ padding: "12px 14px", borderRadius: 12, border: "1px solid #2a4872", background: "#0f1a2b", color: "#e3f2fd", fontWeight: 800, textAlign: "left" }}
+                                style={{ padding: "12px 14px", borderRadius: 12, border: "1px solid var(--compact-card-pill-border)", background: "var(--compact-card-bg)", color: "var(--compact-card-text-primary)", fontWeight: 800, textAlign: "left" }}
                             >{t("card.open", "Открыть карточку")}</button>
 
 
@@ -1768,9 +1768,9 @@ const CargoCompactCard = forwardRef(function CargoCompactCard(
                                     style={{
                                         padding: "12px 14px",
                                         borderRadius: 12,
-                                        border: "1px solid #2a4872",
-                                        background: "#0f1a2b",
-                                        color: "#e3f2fd",
+                                        border: "1px solid var(--compact-card-pill-border)",
+                                        background: "var(--compact-card-bg)",
+                                        color: "var(--compact-card-text-primary)",
                                         fontWeight: 800,
                                         textAlign: "left"
                                     }}
@@ -1783,20 +1783,20 @@ const CargoCompactCard = forwardRef(function CargoCompactCard(
                             {/* Ставки оставляем в листе, «Соответствия» вынесены наружу */}
                             <button
                                 onClick={openBidsFromSheet}
-                                style={{ padding: "12px 14px", borderRadius: 12, border: "1px solid #2a4872", background: "#0f1a2b", color: "#e3f2fd", fontWeight: 800, textAlign: "left" }}
+                                style={{ padding: "12px 14px", borderRadius: 12, border: "1px solid var(--compact-card-pill-border)", background: "var(--compact-card-bg)", color: "var(--compact-card-text-primary)", fontWeight: 800, textAlign: "left" }}
                             >{t("bids.label", "Ставки")}</button>
 
                             {typeof onEdit === "function" && allowActions && (
                                 <button
                                     onClick={() => { setMobileActionsOpen(false); onEdit && onEdit(); }}
-                                    style={{ padding: "12px 14px", borderRadius: 12, border: "1px solid #2a4872", background: "#0f1a2b", color: "#e3f2fd", fontWeight: 800, textAlign: "left" }}
+                                    style={{ padding: "12px 14px", borderRadius: 12, border: "1px solid var(--compact-card-pill-border)", background: "var(--compact-card-bg)", color: "var(--compact-card-text-primary)", fontWeight: 800, textAlign: "left" }}
                                 >{t("common.edit", "Редактировать")}</button>
                             )}
 
                             {typeof onDelete === "function" && allowActions && (
                                 <button
                                     onClick={() => { setMobileActionsOpen(false); onDelete && onDelete(); }}
-                                    style={{ padding: "12px 14px", borderRadius: 12, border: "1px solid #5a2030", background: "#2a1420", color: "#ffd6e0", fontWeight: 800, textAlign: "left" }}
+                                    style={{ padding: "12px 14px", borderRadius: 12, border: "1px solid var(--compact-card-pill-border)", background: "var(--compact-card-bg)", color: "var(--compact-card-text-primary)", fontWeight: 800, textAlign: "left" }}
                                 >{t("common.delete", "Удалить")}</button>
                             )}
 

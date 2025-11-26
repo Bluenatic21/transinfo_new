@@ -161,7 +161,7 @@ export default function ServiceSection({ compact = false }) {
                         whileInView={{ opacity: 1, y: 0, scale: 1 }}
                         viewport={{ once: true, amount: 0.3 }}
                         transition={{ duration: 0.55, ease: "easeOut" }}
-                        className="service-vertical-card"
+                        className={`service-vertical-card ${i % 2 === 1 ? "reverse" : ""}`}
                     >
                         {/* Иллюстрация */}
                         <motion.div
@@ -245,6 +245,30 @@ export default function ServiceSection({ compact = false }) {
                     font-size: 14px;
                     line-height: 1.55;
                     color: var(--text-secondary);
+                }
+
+                @media (min-width: 900px) {
+                    .service-vertical-card {
+                        flex-direction: row;
+                        align-items: center;
+                        gap: clamp(16px, 2vw, 32px);
+                    }
+                    .service-vertical-card.reverse {
+                        flex-direction: row-reverse;
+                    }
+                    .service-visual,
+                    .service-text {
+                        flex: 1;
+                    }
+                    .service-visual {
+                        justify-content: flex-start;
+                    }
+                    .service-vertical-card.reverse .service-visual {
+                        justify-content: flex-end;
+                    }
+                    .service-visual :global(img) {
+                        max-width: 360px;
+                    }
                 }
             `}</style>
         </section>

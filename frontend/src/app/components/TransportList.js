@@ -1474,7 +1474,7 @@ function TransportCard({ transport, expanded, onToggle }) {
                             }}
                         >
                             <span>
-                                <span style={{ color: cardColors.label }}>{t("truck.bodyType", "Тип кузова")}:</span> <b>{findBodyLabelByValue(transport.truck_type)}</b>
+                                <span style={{ color: isLimited ? "#fff" : cardColors.label }}>{t("truck.bodyType", "Тип кузова")}:</span> <b style={{ color: isLimited ? "#fff" : undefined }}>{findBodyLabelByValue(transport.truck_type)}</b>
                             </span>
                         </div>
                     )}

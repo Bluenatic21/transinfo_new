@@ -463,11 +463,16 @@ export default function Home() {
               grid-template-rows: auto;
             }
 
+            .home-nav-grid {
+              width: 100%;
+              max-width: none;
+              grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            }
+
             .home-orders-block {
               grid-row: auto;
               grid-column: 1;
             }
-
             .home-info-block {
               grid-column: 1;
               margin-top: 0;
@@ -480,14 +485,14 @@ export default function Home() {
           }
           .home-nav-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: clamp(10px, 1.6vw, 18px);
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: clamp(14px, 2vw, 24px);
           }
           .home-nav-card {
             display: flex;
             align-items: center;
             gap: 14px;
-            padding: 16px 18px;
+            padding: 18px 22px;
             border-radius: 16px;
             border: 1px solid rgba(255,255,255,0.08);
             background: radial-gradient(circle at 18% 20%, rgba(255,255,255,0.10), transparent 45%),
@@ -505,12 +510,12 @@ export default function Home() {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 46px;
-            height: 46px;
+            width: 34px;
+            height: 34px;
             border-radius: 12px;
             background: color-mix(in srgb, var(--accent, #1fb6ff) 18%, transparent);
             color: var(--accent, #1fb6ff);
-            font-size: 20px;
+            font-size: 19px;
             flex-shrink: 0;
           }
           .home-nav-text {
@@ -521,13 +526,13 @@ export default function Home() {
           }
           .home-nav-label {
             font-weight: 800;
-            font-size: 15px;
-            letter-spacing: .01em;
+            font-size: 14px;
+            letter-spacing: .005em;
           }
           .home-nav-desc {
             color: var(--text-secondary);
-            font-size: 13px;
-            line-height: 1.4;
+            font-size: 12.5px;
+            line-height: 1.45;
           }
           .home-nav-chevron {
             margin-left: auto;
