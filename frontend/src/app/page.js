@@ -275,7 +275,6 @@ export default function Home() {
                                 <span className="home-nav-label">{item.label}</span>
                                 <span className="home-nav-desc">{item.description}</span>
                             </div>
-                            <span aria-hidden className="home-nav-chevron">→</span>
                         </button>
                     ))}
                 </div>
@@ -444,19 +443,19 @@ export default function Home() {
             gap: 10px;
             padding: 12px 16px;
             border-radius: 14px;
-            border: 1px solid rgba(255,255,255,0.10);
+            border: none;
             background: linear-gradient(150deg, #fff, #eaf6ff);
             color: #0f172a;
             font-weight: 700;
             font-size: 15px;
-            box-shadow: 0 10px 24px rgba(0,0,0,0.12);
-            transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+            box-shadow: 0 10px 24px rgba(0,0,0,0.12);␊
+            outline: none;
+            transition: transform 0.18s ease, box-shadow 0.18s ease;
           }
 
           .home-cta-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 14px 30px rgba(0,0,0,0.16);
-            border-color: color-mix(in srgb, var(--accent, #1fb6ff) 38%, transparent);
           }
 
           .home-cta-btn svg {
@@ -578,7 +577,7 @@ export default function Home() {
             display: flex;
             align-items: center;
             gap: 14px;
-            padding: 14px 18px;
+            padding: 10px 16px;
             border-radius: 16px;
             border: 1px solid rgba(255,255,255,0.08);
             background: radial-gradient(circle at 18% 20%, rgba(255,255,255,0.10), transparent 45%),
@@ -596,12 +595,12 @@ export default function Home() {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 34px;
-            height: 34px;
-            border-radius: 12px;
+            width: 30px;
+            height: 30px;
+            border-radius: 10px;
             background: color-mix(in srgb, var(--accent, #1fb6ff) 18%, transparent);
             color: var(--accent, #1fb6ff);
-            font-size: 19px;
+            font-size: 18px;
             flex-shrink: 0;
           }
           .home-nav-text {
@@ -619,12 +618,6 @@ export default function Home() {
             color: var(--text-secondary);
             font-size: 12.5px;
             line-height: 1.45;
-          }
-          .home-nav-chevron {
-            margin-left: auto;
-            font-weight: 800;
-            font-size: 18px;
-            color: var(--accent, #1fb6ff);
           }
 
           .home-map-prime {

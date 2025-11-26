@@ -330,13 +330,12 @@ function ChatHeader({
 
   return (
     <div
-      className={`${isMobile ? "sticky top-0" : "relative"
-        } z-20 flex items-center gap-4 px-5 py-3 border-b border-[#e3e6ed] dark:border-[#232c39] bg-[#f5f6f8] dark:bg-[#1c2231]`}
+      className={`${isMobile ? "sticky top-0" : "relative"} z-20 flex items-center gap-4 px-5 py-3 border-b`}
       style={{
         position: isMobile ? "sticky" : "relative",
         top: 0,
-        background: isMobile ? "var(--bg-card)" : undefined,
-        borderBottom: isMobile ? "1px solid var(--border-subtle)" : undefined,
+        background: "var(--surface)",
+        borderBottom: `1px solid var(--border-subtle)`,
         zIndex: 25,
       }}
     >
@@ -420,11 +419,11 @@ function ChatHeader({
       >
         <div className="flex items-center gap-2">
           <span
-            className="font-semibold text-lg text-[#232a36] dark:text-white truncate"
+            className="font-semibold text-lg truncate"
             /* На мобилке поверх тёмного хедера цвет уходит в тёмный — форсим светлый */
             style={{
               cursor: !isGroup && !isSupport ? "pointer" : "default",
-              color: isMobile ? "#e6f0ff" : undefined,
+              color: "var(--text-primary)",
             }}
             onClick={(e) => {
               if (!isGroup && !isSupport && peer?.id) {
@@ -478,7 +477,10 @@ function ChatHeader({
             </button>
           )}
         </div>
-        <span className="text-xs text-[#7c8ca7] dark:text-[#91a6be] mt-1 truncate">
+        <span
+          className="text-xs mt-1 truncate"
+          style={{ color: "var(--text-secondary)" }}
+        >
           {isSupport
             ? chat?.display_subtitle
               ? t(chat.display_subtitle, chat.display_subtitle)
@@ -3296,7 +3298,9 @@ export default function MessengerChat({
                 style={{
                   marginLeft: 8,
                   fontSize: 15,
-                  color: msg.is_read ? "#48ff78" : "#95b0d2",
+                  color: msg.is_read
+                    ? "var(--chat-seen-color-read)"
+                    : "#95b0d2",
                   verticalAlign: "middle",
                   display: "inline-flex",
                   alignItems: "center",
@@ -3333,13 +3337,14 @@ export default function MessengerChat({
         <div
           key={mkey}
           style={{
-            background: "#29395b",
+            background: "var(--chat-info-card-bg)",
             borderRadius: 13,
             padding: "10px 16px",
             marginBottom: 9,
             maxWidth: 480,
-            color: "#caf7e4",
-            boxShadow: "0 1px 7px #22535b16",
+            color: "var(--chat-info-card-text)",
+            border: "1px solid var(--chat-info-card-border)",
+            boxShadow: "var(--chat-info-card-shadow)",
             fontSize: 16,
             alignSelf: isMine ? "flex-end" : "flex-start",
             position: "relative",
@@ -3364,7 +3369,7 @@ export default function MessengerChat({
           <div
             style={{
               fontWeight: 700,
-              color: "#43c8ff",
+              color: "var(--chat-info-card-title)",
               fontSize: 16,
               marginBottom: 4,
               display: "flex",
@@ -3379,7 +3384,11 @@ export default function MessengerChat({
                 : t("info.order", "Инфо по заявке")}
           </div>
           <div
-            style={{ color: "#fff", whiteSpace: "pre-line", fontWeight: 500 }}
+            style={{
+              color: "var(--chat-info-card-text)",
+              whiteSpace: "pre-line",
+              fontWeight: 500,
+            }}
           >
             {msg.content}
           </div>
@@ -3468,7 +3477,9 @@ export default function MessengerChat({
                 style={{
                   marginLeft: 8,
                   fontSize: 15,
-                  color: msg.is_read ? "#48ff78" : "#95b0d2",
+                  color: msg.is_read
+                    ? "var(--chat-seen-color-read)"
+                    : "#95b0d2",
                   verticalAlign: "middle",
                   display: "inline-flex",
                   alignItems: "center",
@@ -3632,7 +3643,9 @@ export default function MessengerChat({
                 style={{
                   marginLeft: 8,
                   fontSize: 15,
-                  color: msg.is_read ? "#48ff78" : "#95b0d2",
+                  color: msg.is_read
+                    ? "var(--chat-seen-color-read)"
+                    : "#95b0d2",
                   verticalAlign: "middle",
                   display: "inline-flex",
                   alignItems: "center",
@@ -3989,10 +4002,10 @@ export default function MessengerChat({
         onSubmit={handleSend}
         onKeyDown={handleKeyDown}
         style={{
-          background: "#203154",
+          background: "var(--bg-card)",
           padding: "18px 16px",
           paddingBottom: "calc(18px + env(safe-area-inset-bottom))",
-          borderTop: "1px solid #234",
+          borderTop: "1px solid var(--border-subtle)",
           display: "flex",
           flexDirection: shouldStackInput ? "column" : "row",
           alignItems: shouldStackInput ? "stretch" : "center",

@@ -4,10 +4,13 @@ import { useUser } from "../UserContext";
 import { getAvatarUrl } from "./getAvatarUrl";
 import { useLang } from "../i18n/LangProvider";
 import { api } from "@/config/env";
+import { useTheme } from "../providers/ThemeProvider";
 
 export default function CreateGroupModal({ onClose }) {
     const { chatList, fetchChatList } = useMessenger();
     const { user, contacts, fetchContacts } = useUser();
+    const { resolvedTheme } = useTheme?.() || { resolvedTheme: "dark" };
+    const isLight = resolvedTheme === "light";
     const [name, setName] = useState("");
     const [selected, setSelected] = useState([]);
     const [users, setUsers] = useState([]);
@@ -69,31 +72,69 @@ export default function CreateGroupModal({ onClose }) {
         onClose();
     }
 
+    const palette = {
+        overlay: isLight
+            ? "color-mix(in srgb, #0f172a 32%, transparent)"
+            : "rgba(33, 47, 70, 0.85)",
+        shellBg: isLight
+            ? "linear-gradient(150deg, #ffffff 0%, #f2f6fd 100%)"
+            : "linear-gradient(120deg, #212f46 70%, #203154 100%)",
+        shellBorder: isLight ? "var(--border-subtle)" : "#223650",
+        shellShadow: isLight ? "0 18px 48px rgba(15, 23, 42, 0.14)" : "0 22px 48px rgba(0,0,0,0.55)",
+        headerBg: isLight
+            ? "linear-gradient(150deg, #ffffff 0%, #e8edf7 100%)"
+            : "linear-gradient(120deg, #222f44 60%, #25375e 100%)",
+        heading: isLight ? "#0e8fd2" : "#35b6ff",
+        inputBg: isLight ? "var(--control-bg)" : "#1e2840",
+        inputBorder: isLight ? "var(--border-subtle)" : "#355481",
+        inputText: isLight ? "var(--text-primary)" : "#e4f0ff",
+        rowSelected: isLight ? "var(--surface-soft)" : "#232c42",
+        rowBorder: isLight ? "var(--border-subtle)" : "transparent",
+        avatarBorder: isLight ? "var(--border-subtle)" : "#4b89da",
+        avatarBg: isLight ? "var(--control-bg)" : "#202c44",
+        subtitle: isLight ? "var(--text-secondary)" : "#7c8ca7",
+        footerBg: isLight ? "var(--bg-card-soft)" : "#23385a",
+        footerBorder: isLight ? "var(--border-subtle)" : "#264068",
+        cta: "#35b6ff",
+        ctaHover: isLight ? "#0f9ad6" : "#2092d8",
+        cancel: isLight ? "var(--text-secondary)" : "#b9c5d8",
+    };
+
     return (
-        <div className="fixed inset-0 z-[11000] flex items-center justify-center bg-[#212f46cc] backdrop-blur-[2px]">
+        <div
+            className="fixed inset-0 z-[11000] flex items-center justify-center backdrop-blur-[2px] px-3"
+            style={{ background: palette.overlay }}
+        >
             <div
-                className="w-full max-w-lg rounded-2xl shadow-2xl"
+                className="w-full max-w-lg rounded-2xl"
                 style={{
-                    background: "linear-gradient(120deg, #212f46 70%, #203154 100%)",
+                    background: palette.shellBg,
                     padding: 0,
-                    border: "1.5px solid #223650",
+                    border: `1.5px solid ${palette.shellBorder}`,
+                    boxShadow: palette.shellShadow,
+                    color: "var(--text-primary)",
                 }}
             >
-                <div style={{
-                    padding: "34px 34px 24px 34px",
-                    borderRadius: "22px 22px 0 0",
-                    background: "linear-gradient(120deg, #222f44 60%, #25375e 100%)"
-                }}>
-                    <h2 className="text-xl font-bold mb-3 text-[#35b6ff] tracking-tight">
+                <div
+                    style={{
+                        padding: "34px 34px 24px 34px",
+                        borderRadius: "22px 22px 0 0",
+                        background: palette.headerBg,
+                    }}
+                >
+                    <h2
+                        className="text-xl font-bold mb-3 tracking-tight"
+                        style={{ color: palette.heading }}
+                    >
                         {t("group.create.title", "Создать группу")}
                     </h2>
                     <div className="mb-4">
                         <input
                             className="w-full border p-2 rounded"
                             style={{
-                                background: "#1e2840",
-                                border: "1px solid #355481",
-                                color: "#e4f0ff",
+                                background: palette.inputBg,
+                                border: `1px solid ${palette.inputBorder}`,
+                                color: palette.inputText,
                                 fontSize: 17,
                             }}
                             value={name}
@@ -128,15 +169,20 @@ export default function CreateGroupModal({ onClose }) {
                                 title = t("common.user", "Пользователь");
                             }
                             const avatarUrl = getAvatarUrl(u);
+                            const isSelected = selected.includes(u.id);
                             return (
                                 <label
                                     key={u.id}
-                                    className={`flex items-center gap-3 py-2 px-2 rounded-lg cursor-pointer font-medium transition ${selected.includes(u.id) ? "bg-[#232c42]" : "hover:bg-[#1c273e]"} `}
-                                    style={{ userSelect: "none" }}
+                                    className={`flex items-center gap-3 py-2 px-2 rounded-lg cursor-pointer font-medium transition ${!isSelected ? "hover:bg-[var(--control-bg-hover)]" : ""}`}
+                                    style={{
+                                        userSelect: "none",
+                                        background: isSelected ? palette.rowSelected : undefined,
+                                        border: `1px solid ${palette.rowBorder}`,
+                                    }}
                                 >
                                     <input
                                         type="checkbox"
-                                        checked={selected.includes(u.id)}
+                                        checked={isSelected}
                                         onChange={() => toggleUser(u.id)}
                                         className="mr-1 accent-[#35b6ff]"
                                         style={{ width: 17, height: 17 }}
@@ -146,30 +192,44 @@ export default function CreateGroupModal({ onClose }) {
                                         alt="avatar"
                                         className="w-9 h-9 rounded-full object-cover border"
                                         style={{
-                                            border: "1.5px solid #4b89da",
-                                            background: "#202c44"
+                                            border: `1.5px solid ${palette.avatarBorder}`,
+                                            background: palette.avatarBg,
                                         }}
                                         onError={e => { e.currentTarget.src = "/default-avatar.png"; }}
                                     />
                                     <div className="flex-1 min-w-0 flex flex-col">
-                                        <span className="truncate font-semibold text-base text-[#d7eeff]">{title}</span>
-                                        {subtitle && <span className="truncate text-xs text-[#7c8ca7]">{subtitle}</span>}
+                                        <span className="truncate font-semibold text-base" style={{ color: "var(--text-primary)" }}>{title}</span>
+                                        {subtitle && <span className="truncate text-xs" style={{ color: palette.subtitle }}>{subtitle}</span>}
                                     </div>
                                 </label>
                             )
                         })}
                     </div>
                 </div>
-                <div className="flex gap-2 px-8 py-4 border-t border-[#264068] bg-[#23385a] rounded-b-2xl justify-end">
+                <div
+                    className="flex gap-2 px-8 py-4 rounded-b-2xl justify-end"
+                    style={{ borderTop: `1px solid ${palette.footerBorder}`, background: palette.footerBg }}
+                >
                     <button
-                        className="bg-[#35b6ff] hover:bg-[#2092d8] text-white px-5 py-2 rounded font-semibold transition"
+                        className="text-white px-5 py-2 rounded font-semibold transition"
                         onClick={handleCreate}
                         disabled={selected.length === 0}
-                        style={{ boxShadow: "0 2px 12px #3bc7ff24" }}
+                        style={{
+                            background: palette.cta,
+                            boxShadow: "0 2px 12px #3bc7ff24",
+                        }}
+                        onMouseEnter={e => e.currentTarget.style.background = palette.ctaHover}
+                        onMouseLeave={e => e.currentTarget.style.background = palette.cta}
                     >
                         {t("common.create", "Создать")}
                     </button>
-                    <button className="text-[#b9c5d8] hover:text-white font-semibold px-4" onClick={onClose}>
+                    <button
+                        className="font-semibold px-4 transition"
+                        style={{ color: palette.cancel }}
+                        onClick={onClose}
+                        onMouseEnter={e => e.currentTarget.style.color = "var(--text-primary)"}
+                        onMouseLeave={e => e.currentTarget.style.color = palette.cancel}
+                    >
                         {t("common.cancel", "Отмена")}
                     </button>
                 </div>

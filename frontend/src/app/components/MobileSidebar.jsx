@@ -50,8 +50,11 @@ export default function MobileSidebar() {
                     height: 40,
                     width: 40,
                     borderRadius: 12,
-                    border: "1px solid #22364f",
-                    background: "rgba(255,255,255,0.04)",
+                    border: "1px solid var(--border-subtle)",
+                    background: "var(--control-bg)",
+                    color: "var(--text-primary)",
+                    boxShadow: "var(--shadow-soft)",
+                    transition: "background var(--transition-fast), border-color var(--transition-fast)",
                 }}
                 onClick={() => setOpen(true)}
             >
@@ -70,7 +73,14 @@ export default function MobileSidebar() {
                     <aside
                         role="dialog" aria-modal="true"
                         className="absolute right-0 top-0 h-full w-[86%] max-w-[360px] shadow-2xl z-[12050]"
-                        style={{ background: "#0f172a" }}
+                        style={{
+                            background: "var(--sidebar-bg)",
+                            color: "var(--sidebar-link)",
+                            borderLeft: "1px solid var(--sidebar-border)",
+                            boxShadow: "var(--sidebar-shadow)",
+                            transition:
+                                "background var(--transition-normal), color var(--transition-normal), border-color var(--transition-normal)",
+                        }}
                         onClickCapture={(e) => {
                             const t = e.target;
                             const el = t && typeof t.closest === "function" ? t.closest("a,button[data-close]") : null;
@@ -80,12 +90,19 @@ export default function MobileSidebar() {
                         onTouchMoveCapture={(e) => e.stopPropagation()}
                     >
                         <div style={{ display: "flex", alignItems: "center", gap: 8, justifyContent: "space-between", padding: 10 }}>
-                            <span style={{ color: "#cfe8ff", fontSize: 14 }}>{t("menu.title", "მენიუ")}</span>
+                            <span style={{ color: "var(--sidebar-link)", fontSize: 14 }}>{t("menu.title", "მენიუ")}</span>
                             <button
                                 aria-label={t("menu.close", "Закрыть меню")}
                                 onClick={close}
                                 className="inline-grid place-items-center"
-                                style={{ height: 36, width: 36, borderRadius: 10, border: "1px solid #22364f" }}
+                                style={{
+                                    height: 36,
+                                    width: 36,
+                                    borderRadius: 10,
+                                    border: "1px solid var(--border-subtle)",
+                                    background: "var(--control-bg)",
+                                    color: "var(--text-primary)",
+                                }}
                             >
                                 <FaTimes />
                             </button>
@@ -107,7 +124,7 @@ export default function MobileSidebar() {
                                         className="flex items-center gap-2 mb-2"
                                         style={{ padding: "2px 2px 6px 2px" }}
                                     >
-                                        <div style={{ fontWeight: 800, fontSize: 18, color: "#e3f2fd" }}>
+                                        <div style={{ fontWeight: 800, fontSize: 18, color: "var(--sidebar-link)" }}>
                                             {t("language.choose", "язык")}
                                         </div>
                                         <div className="ml-auto">
@@ -124,9 +141,11 @@ export default function MobileSidebar() {
                                             width: "100%",
                                             borderRadius: 12,
                                             padding: "12px 14px",
-                                            background: "rgba(255,255,255,0.08)",
-                                            color: "#fff",
+                                            background: "var(--sidebar-link-active-bg)",
+                                            color: "var(--sidebar-link)",
                                             fontWeight: 700,
+                                            border: "1px solid var(--sidebar-border)",
+                                            boxShadow: "var(--sidebar-shadow)",
                                         }}
                                     >
                                         {t("auth.loginRegister", "შესვლა / რეგისტრაცია")}

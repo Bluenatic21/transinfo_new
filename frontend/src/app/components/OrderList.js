@@ -1470,7 +1470,6 @@ function OrderCard({
                         {[
                             order.truck_quantity ? (
                                 <span key="quantity">
-                                    <div style={{ fontSize: 14, fontWeight: 700, color: cardColors.heading, marginBottom: 1 }}>{t("order.params", "ПАРАМЕТРЫ")}</div>
                                 </span>
                             ) : null,
                             order.truck_type ? (

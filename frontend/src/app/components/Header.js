@@ -210,9 +210,8 @@ function MiniProfile({ user, onClick, mode = "full" }) {
   };
   // Заголовок как в ProfileCard: company/organization → orgName → companyName → name → F+L → username → "Профиль"
   function getDisplayName(u) {
-    const fullFL = `${u?.first_name ?? u?.firstname ?? u?.firstName ?? ""} ${
-      u?.last_name ?? u?.lastname ?? u?.lastName ?? ""
-    }`.trim();
+    const fullFL = `${u?.first_name ?? u?.firstname ?? u?.firstName ?? ""} ${u?.last_name ?? u?.lastname ?? u?.lastName ?? ""
+      }`.trim();
     return (
       pick(
         u?.company,
@@ -230,9 +229,8 @@ function MiniProfile({ user, onClick, mode = "full" }) {
   // Подпись (имя человека) как в ProfileCard: person_name → full_name → contact_person → director → F+L → username.
   // Если совпадает с заголовком (компанией), не показываем дубликат.
   function getPersonName(u, displayName) {
-    const fullFL = `${u?.first_name ?? u?.firstname ?? u?.firstName ?? ""} ${
-      u?.last_name ?? u?.lastname ?? u?.lastName ?? ""
-    }`.trim();
+    const fullFL = `${u?.first_name ?? u?.firstname ?? u?.firstName ?? ""} ${u?.last_name ?? u?.lastname ?? u?.lastName ?? ""
+      }`.trim();
     const person = pick(
       u?.person_name,
       u?.full_name,
@@ -300,12 +298,12 @@ function MiniProfile({ user, onClick, mode = "full" }) {
         }}
         onClick={onClick}
         onMouseOver={(e) =>
-          (e.currentTarget.style.boxShadow =
-            "var(--header-shadow-hover, var(--shadow-soft))")
+        (e.currentTarget.style.boxShadow =
+          "var(--header-shadow-hover, var(--shadow-soft))")
         }
         onMouseOut={(e) =>
-          (e.currentTarget.style.boxShadow =
-            "var(--header-shadow, var(--shadow-soft))")
+        (e.currentTarget.style.boxShadow =
+          "var(--header-shadow, var(--shadow-soft))")
         }
       >
         <div
@@ -366,12 +364,12 @@ function MiniProfile({ user, onClick, mode = "full" }) {
       }}
       onClick={onClick}
       onMouseOver={(e) =>
-        (e.currentTarget.style.boxShadow =
-          "var(--header-shadow-hover, var(--shadow-soft))")
+      (e.currentTarget.style.boxShadow =
+        "var(--header-shadow-hover, var(--shadow-soft))")
       }
       onMouseOut={(e) =>
-        (e.currentTarget.style.boxShadow =
-          "var(--header-shadow, var(--shadow-soft))")
+      (e.currentTarget.style.boxShadow =
+        "var(--header-shadow, var(--shadow-soft))")
       }
     >
       <div
@@ -467,7 +465,7 @@ function MiniProfile({ user, onClick, mode = "full" }) {
                 1,
                 Math.floor(
                   (Date.now() - new Date(user.created_at)) /
-                    (1000 * 60 * 60 * 24)
+                  (1000 * 60 * 60 * 24)
                 )
               )}{" "}
               {t("unit.days.short", "дн.")}
@@ -531,7 +529,7 @@ export default function Header({ setShowRegisterModal }) {
     if (user?.email) {
       try {
         setShowAuth(false);
-      } catch {}
+      } catch { }
     }
   }, [user?.email, setShowAuth]);
 
@@ -539,7 +537,7 @@ export default function Header({ setShowRegisterModal }) {
   useEffect(() => {
     try {
       setShowAuth(false);
-    } catch {}
+    } catch { }
   }, [pathname, setShowAuth]);
 
   /**
@@ -556,10 +554,10 @@ export default function Header({ setShowRegisterModal }) {
       e.stopPropagation();
       try {
         setShowAuth(true);
-      } catch {}
+      } catch { }
       try {
         window.scrollTo({ top: 0, behavior: "smooth" });
-      } catch {}
+      } catch { }
     };
     document.addEventListener("click", onDocClick, true);
     return () => document.removeEventListener("click", onDocClick, true);
@@ -733,7 +731,7 @@ export default function Header({ setShowRegisterModal }) {
         setHeaderHeight(h);
         try {
           document.documentElement.style.setProperty("--header-h", `${h}px`);
-        } catch {}
+        } catch { }
       }
     };
 
@@ -1210,12 +1208,12 @@ export default function Header({ setShowRegisterModal }) {
                               }}
                               onMouseDown={(e) => e.preventDefault()}
                               onMouseOver={(e) =>
-                                (e.currentTarget.style.background =
-                                  searchItemHoverBg)
+                              (e.currentTarget.style.background =
+                                searchItemHoverBg)
                               }
                               onMouseOut={(e) =>
-                                (e.currentTarget.style.background =
-                                  "transparent")
+                              (e.currentTarget.style.background =
+                                "transparent")
                               }
                             >
                               <div
@@ -1376,8 +1374,8 @@ export default function Header({ setShowRegisterModal }) {
                       }}
                       onClick={() => setProfileMenuOpen(false)}
                       onMouseOver={(e) =>
-                        (e.currentTarget.style.background =
-                          "var(--control-bg-hover)")
+                      (e.currentTarget.style.background =
+                        "var(--control-bg-hover)")
                       }
                       onMouseOut={(e) =>
                         (e.currentTarget.style.background = "transparent")
@@ -1400,8 +1398,8 @@ export default function Header({ setShowRegisterModal }) {
                         }}
                         onClick={() => setProfileMenuOpen(false)}
                         onMouseOver={(e) =>
-                          (e.currentTarget.style.background =
-                            "var(--control-bg-hover)")
+                        (e.currentTarget.style.background =
+                          "var(--control-bg-hover)")
                         }
                         onMouseOut={(e) =>
                           (e.currentTarget.style.background = "transparent")
@@ -1433,7 +1431,7 @@ export default function Header({ setShowRegisterModal }) {
                         setProfileMenuOpen(false);
                         try {
                           await handleLogoutClick?.();
-                        } catch {}
+                        } catch { }
                       }}
                       style={{
                         background: "none",
@@ -1538,10 +1536,9 @@ export default function Header({ setShowRegisterModal }) {
             alignItems: "center",
             gap: isCompact ? 10 : 14,
             width: "100%",
-            padding: `${isCompact ? 4 : 6}px ${headerPadding.right}px ${
-              isCompact ? 4 : 6
-            }px ${headerPadding.left}px`,
-            background: "var(--surface)",
+            padding: `${isCompact ? 0 : 2}px ${headerPadding.right}px ${isCompact ? 4 : 6
+              }px ${headerPadding.left}px`,
+            background: "var(--header-bg)",
           }}
         >
           <div
@@ -1576,7 +1573,7 @@ export default function Header({ setShowRegisterModal }) {
                   onClick={() => {
                     try {
                       sessionStorage.setItem("openMobileFilterOnEntry", "1");
-                    } catch {}
+                    } catch { }
                   }}
                   style={{
                     fontSize: NAV_FONT,
@@ -1602,7 +1599,7 @@ export default function Header({ setShowRegisterModal }) {
                   onClick={() => {
                     try {
                       sessionStorage.setItem("openMobileFilterOnEntry", "1");
-                    } catch {}
+                    } catch { }
                   }}
                   style={{
                     fontSize: NAV_FONT,

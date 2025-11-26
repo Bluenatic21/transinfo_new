@@ -25,7 +25,7 @@ export default function CompactHero({
             aria-label="Hero"
             style={{ color: "var(--text-primary)" }}
         >
-            <div className="mx-auto max-w-7xl px-6">
+            <div className="w-full px-3 sm:px-6">
                 {!hideText && (
                     <div className="text-center text-slate-900 dark:text-white">
                         <motion.h1
@@ -76,7 +76,7 @@ export default function CompactHero({
                                 <button
                                     type="button"
                                     onClick={onFindCargo}
-                                    className="inline-flex items-center justify-center gap-2 rounded-full px-5 md:px-6 py-2.5 md:py-3 text-sm md:text-base font-semibold bg-white text-slate-900 shadow-[0_6px_18px_rgba(15,23,42,0.12)] ring-1 ring-slate-200 hover:-translate-y-[2px] transition-transform duration-200 dark:bg-[#0f1930] dark:text-white dark:ring-white/10 dark:shadow-[0_10px_25px_rgba(0,0,0,0.35)]"
+                                    className="inline-flex items-center justify-center gap-2 rounded-full px-5 md:px-6 py-2.5 md:py-3 text-sm md:text-base font-semibold bg-white text-slate-900 shadow-[0_6px_18px_rgba(15,23,42,0.12)] hover:-translate-y-[2px] transition-transform duration-200 dark:bg-[#0f1930] dark:text-white dark:shadow-[0_10px_25px_rgba(0,0,0,0.35)] focus:outline-none"
                                 >
                                     <FiPackage className="text-lg" />
                                     {t("home.map.findCargo", "Найти груз")}
@@ -84,7 +84,7 @@ export default function CompactHero({
                                 <button
                                     type="button"
                                     onClick={onFindTransport}
-                                    className="inline-flex items-center justify-center gap-2 rounded-full px-5 md:px-6 py-2.5 md:py-3 text-sm md:text-base font-semibold bg-white text-slate-900 shadow-[0_6px_18px_rgba(15,23,42,0.12)] ring-1 ring-slate-200 hover:-translate-y-[2px] transition-transform duration-200 dark:bg-[#0f1930] dark:text-white dark:ring-white/10 dark:shadow-[0_10px_25px_rgba(0,0,0,0.35)]"
+                                    className="inline-flex items-center justify-center gap-2 rounded-full px-5 md:px-6 py-2.5 md:py-3 text-sm md:text-base font-semibold bg-white text-slate-900 shadow-[0_6px_18px_rgba(15,23,42,0.12)] hover:-translate-y-[2px] transition-transform duration-200 dark:bg-[#0f1930] dark:text-white dark:shadow-[0_10px_25px_rgba(0,0,0,0.35)] focus:outline-none"
                                 >
                                     <FiTruck className="text-lg" />
                                     {t("home.map.findTransport", "Найти транспорт")}

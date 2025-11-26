@@ -56,6 +56,7 @@
     --chat-bubble-self-text: #e6f2ff;
     --chat-bubble-peer-text: #e8edf7;
     --chat-bubble-meta: #9fb7d8;
+    --chat-seen-color-read: #48ff78;
     --chat-bubble-self-accent: #3b82f6;
     --chat-bubble-peer-accent: #3aa7c5;
     --chat-bubble-self-border: #3b82f6;
@@ -109,6 +110,11 @@
     --chat-bubble-peer-accent: #6aa5d8;
     --chat-bubble-self-border: #9ec7ff;
     --chat-bubble-peer-border: #c8d3e2;
+    --chat-info-card-bg: #eef4ff;
+    --chat-info-card-text: #0f172a;
+    --chat-info-card-title: #1d4ed8;
+    --chat-info-card-border: #c7d7ef;
+    --chat-info-card-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
     --chat-translation-bg: #eef2f7;
     --chat-translation-text: #0f172a;
     --chat-reaction-shadow: 0 2px 12px rgba(15, 23, 42, 0.12);

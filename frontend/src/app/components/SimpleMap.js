@@ -150,15 +150,6 @@ injectStyle(
 const MAX_CLUSTER_FIT_KM = 800;
 const HOVER_HIDE_DELAY = 160; // было 80 — из-за этого оверлей «мигал»
 
-const COUNTRY_PRESETS = [
-    { code: "ge", name: "Грузия", flag: "🇬🇪", center: [42.3208, 43.3713], zoom: 7 },
-    { code: "az", name: "Азербайджан", flag: "🇦🇿", center: [40.2804, 47.7042], zoom: 7 },
-    { code: "am", name: "Армения", flag: "🇦🇲", center: [40.0691, 45.0382], zoom: 8 },
-    { code: "ru", name: "Россия", flag: "🇷🇺", center: [55.7558, 37.6176], zoom: 5 },
-    { code: "ua", name: "Украина", flag: "🇺🇦", center: [49.0, 31.0], zoom: 6 },
-    { code: "tr", name: "Турция", flag: "🇹🇷", center: [39.0, 35.0], zoom: 6 },
-];
-
 const packBounds = (b) => (b ? [b.getSouth(), b.getWest(), b.getNorth(), b.getEast()] : null);
 const eqBounds = (a, b) => !!a && !!b && a[0] === b[0] && a[1] === b[1] && a[2] === b[2] && a[3] === b[3];
 
@@ -521,7 +512,6 @@ export default function SimpleMap({
     hoveredItemId,
     setHoveredItemId,
     fullscreenModal = false,
-    showLegend = false,
     mixed = false,
     zoomPreset = undefined,
     refreshKey = undefined,
@@ -553,7 +543,6 @@ export default function SimpleMap({
     /* ---------------------------- Map state ---------------------------- */
     const [mapZoom, setMapZoom] = useState(5);
     const [mapViewCenter, setMapViewCenter] = useState([52.2, 21.0]);
-    const [selectedCountry, setSelectedCountry] = useState("");
     const [leafletMap, setLeafletMap] = useState(null);
     const [boundsArr, setBoundsArr] = useState(null);
 
@@ -1521,22 +1510,6 @@ export default function SimpleMap({
         return <div style={{ position: "relative", width: "100%", height: mapHeight, minHeight: 340, minWidth: 250 }} />;
     }
 
-    const handleCountrySelect = (code) => {
-        const preset = COUNTRY_PRESETS.find((c) => c.code === code);
-        if (!preset) return;
-        setSelectedCountry(code);
-        userDrivenRef.current = true;
-        setMapViewCenter(preset.center);
-        setMapZoom(preset.zoom);
-        if (leafletMap) {
-            try {
-                leafletMap.flyTo(preset.center, preset.zoom, { animate: true, duration: 0.45 });
-            } catch { }
-        }
-    };
-
-
-
     return (
         <div style={{ position: "relative", width: "100%", height: mapHeight, minHeight: 340, minWidth: 250 }}>
             {!hideSearch && (
@@ -1558,42 +1531,6 @@ export default function SimpleMap({
                                 setMapZoom(isMobile() ? 13 : 12);
                             }}
                         />
-                        <div
-                            style={{
-                                marginTop: 10,
-                                background: "rgba(11,21,40,0.9)",
-                                border: "1px solid rgba(255,255,255,0.08)",
-                                borderRadius: 12,
-                                padding: "8px 10px",
-                                color: "#dbeafe",
-                                boxShadow: "0 6px 16px rgba(0,0,0,0.25)",
-                            }}
-                        >
-                            <label style={{ display: "block", fontSize: 13, opacity: 0.8, marginBottom: 6 }}>
-                                {t("map.country.label", "Быстрый выбор страны")}
-                            </label>
-                            <select
-                                value={selectedCountry}
-                                onChange={(e) => handleCountrySelect(e.target.value)}
-                                style={{
-                                    width: "100%",
-                                    padding: "10px 12px",
-                                    borderRadius: 10,
-                                    border: "1px solid rgba(255,255,255,0.12)",
-                                    background: "rgba(21,31,54,0.9)",
-                                    color: "#e2e8f0",
-                                    fontSize: 15,
-                                    outline: "none",
-                                }}
-                            >
-                                <option value="">{t("map.country.placeholder", "Выберите страну")}</option>
-                                {COUNTRY_PRESETS.map((country) => (
-                                    <option key={country.code} value={country.code}>
-                                        {country.flag} {country.name}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
                     </div>
                     <RadiusButton radiusMode={radiusMode} setRadiusMode={setRadiusMode} setRadiusCenter={setRadiusCenter} />
                     <ClearRadiusButton
@@ -1710,107 +1647,6 @@ export default function SimpleMap({
                     pointer-events: none !important;
                   }
                 `}</style>
-            )}
-
-            {showLegend && (
-                <div
-                    style={{
-                        position: "absolute",
-                        top: isMobile() ? 10 : 16,
-                        right: isMobile() ? 10 : 16,
-                        zIndex: 1200,
-                        display: "flex",
-                        justifyContent: "flex-end",
-                        pointerEvents: "none",
-                    }}
-                >
-                    <div
-                        style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 12,
-                            background: "rgba(11,21,40,0.85)",
-                            backdropFilter: "blur(8px)",
-                            border: "1px solid rgba(255,255,255,0.12)",
-                            borderRadius: 12,
-                            padding: "8px 12px",
-                            color: "#cfe3ff",
-                            fontSize: 12,
-                            lineHeight: "16px",
-                            boxShadow: "0 4px 14px rgba(0,0,0,.35)",
-                            pointerEvents: "auto",
-                        }}
-                    >
-                        {/* Селектор стран — показываем именно на главной, где hideSearch = true */}
-                        {hideSearch && (
-                            <div
-                                style={{
-                                    display: "flex",
-                                    flexDirection: "column",
-                                    gap: 4,
-                                    marginRight: 8,
-                                }}
-                            >
-                                <span style={{ fontSize: 11, opacity: 0.8 }}>
-                                    {t("map.country.label", "Быстрый выбор страны")}
-                                </span>
-                                <select
-                                    value={selectedCountry}
-                                    onChange={(e) => handleCountrySelect(e.target.value)}
-                                    style={{
-                                        minWidth: 150,
-                                        maxWidth: 220,
-                                        padding: "6px 10px",
-                                        borderRadius: 8,
-                                        border: "1px solid rgba(148,163,184,0.8)",
-                                        background: "rgba(15,23,42,0.95)",
-                                        color: "#e2e8f0",
-                                        fontSize: 13,
-                                        outline: "none",
-                                        cursor: "pointer",
-                                    }}
-                                >
-                                    <option value="">
-                                        {t("map.country.placeholder", "Выберите страну")}
-                                    </option>
-                                    {COUNTRY_PRESETS.map((country) => (
-                                        <option key={country.code} value={country.code}>
-                                            {country.flag} {country.name}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                        )}
-
-                        {/* Легенда Транспорт / Груз */}
-                        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                                <span
-                                    style={{
-                                        display: "inline-block",
-                                        width: 10,
-                                        height: 10,
-                                        borderRadius: 999,
-                                        background: "#53b7ff",
-                                    }}
-                                />
-                                {t("map.legend.transport", "Транспорт")}
-                            </div>
-                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                                <span
-                                    style={{
-                                        display: "inline-block",
-                                        width: 10,
-                                        height: 10,
-                                        borderRadius: 999,
-                                        background: "#ffb020",
-                                    }}
-                                />
-                                {t("map.legend.cargo", "Груз")}
-                            </div>
-                        </div>
-                    </div>
-                </div>
             )}
 
             {/* Overlay */}
