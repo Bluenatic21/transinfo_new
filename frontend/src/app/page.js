@@ -467,6 +467,7 @@ export default function Home() {
               width: 100%;
               max-width: none;
               grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+              margin: 0;
             }
 
             .home-orders-block {
@@ -485,14 +486,16 @@ export default function Home() {
           }
           .home-nav-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: clamp(14px, 2vw, 24px);
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: clamp(12px, 1.8vw, 20px);
+            max-width: 1120px;
+            margin: 0 auto;
           }
           .home-nav-card {
             display: flex;
             align-items: center;
             gap: 14px;
-            padding: 18px 22px;
+            padding: 14px 18px;
             border-radius: 16px;
             border: 1px solid rgba(255,255,255,0.08);
             background: radial-gradient(circle at 18% 20%, rgba(255,255,255,0.10), transparent 45%),
