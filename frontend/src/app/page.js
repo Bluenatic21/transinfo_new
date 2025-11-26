@@ -444,12 +444,12 @@ export default function Home() {
             display: flex;
             flex-wrap: wrap;
             gap: 12px;
-            background: color-mix(in srgb, var(--surface, #22314a) 92%, transparent);
-            border: 1px solid color-mix(in srgb, var(--border-subtle, rgba(255,255,255,0.08)) 90%, transparent);
-            border-radius: 18px;
-            box-shadow: 0 12px 32px rgba(0,0,0,0.18);
+            background: transparent;
+            border: none;
+            border-radius: 0;
+            box-shadow: none;
             padding: clamp(10px, 1.4vw, 16px);
-            backdrop-filter: blur(4px);
+            backdrop-filter: none;
           }
 
           .home-cta-btn {

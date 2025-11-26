@@ -176,13 +176,13 @@ function TruckTypeDropdown({ value, onChange, options, error, focused }) {
           border: error
             ? `2px solid ${palette.accentStrong}`
             : focused
-            ? `2px solid ${palette.accent}`
-            : `1.5px solid ${palette.border}`,
+              ? `2px solid ${palette.accent}`
+              : `1.5px solid ${palette.border}`,
           boxShadow: error
             ? "0 0 0 2px #ffd60044"
             : focused
-            ? "0 0 0 2px #4fd4fd33"
-            : "var(--shadow-soft)",
+              ? "0 0 0 2px #4fd4fd33"
+              : "var(--shadow-soft)",
           borderRadius: 8,
           padding: "9px 15px",
           fontSize: 16,
@@ -569,8 +569,8 @@ export default function TransportForm({
     border: error
       ? `2px solid ${palette.accentStrong}`
       : focused
-      ? `2px solid ${palette.accent}`
-      : `1.5px solid ${palette.border}`,
+        ? `2px solid ${palette.accent}`
+        : `1.5px solid ${palette.border}`,
     boxShadow: focused ? "0 0 0 2px #4fd4fd33" : "var(--shadow-soft)",
     background: palette.controlBg,
     color: palette.text,
@@ -598,8 +598,8 @@ export default function TransportForm({
         adr_classes: Array.isArray(initialData.adr_class)
           ? initialData.adr_class
           : Array.isArray(initialData.adr_classes)
-          ? initialData.adr_classes
-          : [],
+            ? initialData.adr_classes
+            : [],
         to_locations: Array.isArray(initialData.to_locations)
           ? initialData.to_locations
           : [{ location: "", coords: null }],
@@ -639,7 +639,7 @@ export default function TransportForm({
   useEffect(() => {
     if (shouldAutoSubmitRegularity && form.mode === "постоянно") {
       setShouldAutoSubmitRegularity(false);
-      handleSubmit({ preventDefault: () => {} });
+      handleSubmit({ preventDefault: () => { } });
     }
     // eslint-disable-next-line
   }, [shouldAutoSubmitRegularity, form.mode]);
@@ -1041,25 +1041,25 @@ export default function TransportForm({
         from_radius: form.from_radius || undefined,
         from_location_coords:
           form.from_location_coords &&
-          typeof form.from_location_coords.lat === "number" &&
-          typeof form.from_location_coords.lng === "number"
+            typeof form.from_location_coords.lat === "number" &&
+            typeof form.from_location_coords.lng === "number"
             ? {
-                lat: form.from_location_coords.lat,
-                lng: form.from_location_coords.lng,
-              }
+              lat: form.from_location_coords.lat,
+              lng: form.from_location_coords.lng,
+            }
             : null,
         to_locations: Array.isArray(form.to_locations)
           ? form.to_locations
-              .map((x) => ({
-                location: x.location,
-                coords:
-                  x.coords &&
+            .map((x) => ({
+              location: x.location,
+              coords:
+                x.coords &&
                   typeof x.coords.lat === "number" &&
                   typeof x.coords.lng === "number"
-                    ? { lat: x.coords.lat, lng: x.coords.lng }
-                    : null,
-              }))
-              .filter((x) => x.location && x.coords)
+                  ? { lat: x.coords.lat, lng: x.coords.lng }
+                  : null,
+            }))
+            .filter((x) => x.location && x.coords)
           : [],
         ready_date_from: form.ready_date_from || undefined,
         ready_date_to: form.ready_date_to || undefined,
@@ -1516,9 +1516,9 @@ export default function TransportForm({
                     style={{
                       border:
                         idx === 0 &&
-                        !!item.location && // что-то введено!
-                        !item.coords &&
-                        wasTriedSubmit
+                          !!item.location && // что-то введено!
+                          !item.coords &&
+                          wasTriedSubmit
                           ? `2px solid ${palette.error}`
                           : `1.5px solid ${palette.border}`,
                       borderRadius: 7,
@@ -1778,14 +1778,14 @@ export default function TransportForm({
                     !form.transport_kind && wasTriedSubmit
                       ? "2px solid #ffd600"
                       : transportKindFocused
-                      ? "2px solid #5fd8ff"
-                      : "1.5px solid #294c7a",
+                        ? "2px solid #5fd8ff"
+                        : "1.5px solid #294c7a",
                   boxShadow:
                     !form.transport_kind && wasTriedSubmit
                       ? "0 0 0 2px #ffd60044"
                       : transportKindFocused
-                      ? "0 0 0 2px #4fd4fd33"
-                      : "0 1px 6px #1b334d22",
+                        ? "0 0 0 2px #4fd4fd33"
+                        : "0 1px 6px #1b334d22",
                   transition: "border .2s, box-shadow .22s",
                 }}
               >
@@ -1939,10 +1939,10 @@ export default function TransportForm({
           <label style={{ ...label, marginBottom: 6 }}>
             {t("common.add", "Добавить:")}
           </label>
-          <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
+          <div className="add-options">
             {SPECIAL.map((s) =>
               s === "Экипаж" ? (
-                <span key={s} style={{ display: "flex", alignItems: "center" }}>
+                <span key={s} className="add-option crew-option">
                   <label style={{ fontWeight: 400 }}>
                     <input
                       type="checkbox"
@@ -1960,7 +1960,6 @@ export default function TransportForm({
                       value={form.crew}
                       onChange={handleChange}
                       style={{
-                        marginLeft: 7,
                         borderRadius: 6,
                         border: `1.5px solid ${palette.border}`,
                         padding: "4px 9px",
@@ -1978,14 +1977,7 @@ export default function TransportForm({
                   )}
                 </span>
               ) : s === "ADR" ? (
-                <label
-                  key="ADR"
-                  style={{
-                    fontWeight: 400,
-                    display: "flex",
-                    alignItems: "center",
-                  }}
-                >
+                <label key="ADR" className="add-option" style={{ fontWeight: 400 }}>
                   <input
                     type="checkbox"
                     name="adr"
@@ -2002,7 +1994,7 @@ export default function TransportForm({
                   ADR
                 </label>
               ) : (
-                <label key={s} style={{ fontWeight: 400 }}>
+                <label key={s} className="add-option" style={{ fontWeight: 400 }}>
                   <input
                     type="checkbox"
                     name="special"
@@ -2346,200 +2338,200 @@ export default function TransportForm({
             {form.attachments.filter(
               (f) => f.__type === "images" && isFile(f.file)
             ).length > 0 && (
-              <div
-                style={{
-                  display: "flex",
-                  overflowX: "auto",
-                  gap: 9,
-                  paddingBottom: 6,
-                  marginBottom: 9,
-                }}
-              >
-                {form.attachments
-                  .map((att, idx) => ({ att, idx }))
-                  .filter(
-                    ({ att }) => att.__type === "images" && isFile(att.file)
-                  )
-                  .map(({ att, idx }) => (
-                    <div
-                      key={idx}
-                      style={{
-                        minWidth: 78,
-                        minHeight: 60,
-                        background: palette.controlBg,
-                        borderRadius: 10,
-                        overflow: "hidden",
-                        border: `1px solid ${palette.border}`,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        position: "relative",
-                      }}
-                      className="preview-img-item"
-                    >
+                <div
+                  style={{
+                    display: "flex",
+                    overflowX: "auto",
+                    gap: 9,
+                    paddingBottom: 6,
+                    marginBottom: 9,
+                  }}
+                >
+                  {form.attachments
+                    .map((att, idx) => ({ att, idx }))
+                    .filter(
+                      ({ att }) => att.__type === "images" && isFile(att.file)
+                    )
+                    .map(({ att, idx }) => (
                       <div
-                        style={{ display: "block", cursor: "zoom-in" }}
-                        onClick={() =>
-                          setPreviewImage(URL.createObjectURL(att.file))
-                        }
-                        title="Открыть предпросмотр"
-                      >
-                        <img
-                          src={URL.createObjectURL(att.file)}
-                          alt={"img" + idx}
-                          style={{
-                            width: 78,
-                            height: 60,
-                            objectFit: "cover",
-                            cursor: "zoom-in",
-                          }}
-                        />
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setForm((f) => ({
-                            ...f,
-                            attachments: f.attachments.filter(
-                              (_, i) => i !== idx
-                            ),
-                          }))
-                        }
+                        key={idx}
                         style={{
-                          position: "absolute",
-                          top: 5,
-                          right: 5,
-                          background: palette.surface,
-                          color: "#ff5e5e",
-                          border: "none",
-                          borderRadius: "50%",
-                          width: 22,
-                          height: 22,
-                          fontWeight: 900,
-                          fontSize: 17,
-                          lineHeight: "19px",
-                          cursor: "pointer",
-                          opacity: 0,
-                          transition: "opacity .18s",
-                          zIndex: 1,
+                          minWidth: 78,
+                          minHeight: 60,
+                          background: palette.controlBg,
+                          borderRadius: 10,
+                          overflow: "hidden",
+                          border: `1px solid ${palette.border}`,
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
-                          padding: 0,
+                          position: "relative",
                         }}
-                        className="img-remove-btn"
-                        tabIndex={-1}
+                        className="preview-img-item"
                       >
-                        ×
-                      </button>
-                      <style>{`
+                        <div
+                          style={{ display: "block", cursor: "zoom-in" }}
+                          onClick={() =>
+                            setPreviewImage(URL.createObjectURL(att.file))
+                          }
+                          title="Открыть предпросмотр"
+                        >
+                          <img
+                            src={URL.createObjectURL(att.file)}
+                            alt={"img" + idx}
+                            style={{
+                              width: 78,
+                              height: 60,
+                              objectFit: "cover",
+                              cursor: "zoom-in",
+                            }}
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setForm((f) => ({
+                              ...f,
+                              attachments: f.attachments.filter(
+                                (_, i) => i !== idx
+                              ),
+                            }))
+                          }
+                          style={{
+                            position: "absolute",
+                            top: 5,
+                            right: 5,
+                            background: palette.surface,
+                            color: "#ff5e5e",
+                            border: "none",
+                            borderRadius: "50%",
+                            width: 22,
+                            height: 22,
+                            fontWeight: 900,
+                            fontSize: 17,
+                            lineHeight: "19px",
+                            cursor: "pointer",
+                            opacity: 0,
+                            transition: "opacity .18s",
+                            zIndex: 1,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            padding: 0,
+                          }}
+                          className="img-remove-btn"
+                          tabIndex={-1}
+                        >
+                          ×
+                        </button>
+                        <style>{`
                                 .preview-img-item:hover .img-remove-btn { opacity: 1 !important; }
                             `}</style>
-                    </div>
-                  ))}
-              </div>
-            )}
+                      </div>
+                    ))}
+                </div>
+              )}
             {/* Остальные файлы */}
             {form.attachments.filter(
               (f) => f.__type === "files" && isFile(f.file)
             ).length > 0 && (
-              <div
-                style={{
-                  display: "flex",
-                  gap: 14,
-                  alignItems: "center",
-                  flexWrap: "wrap",
-                }}
-              >
-                {form.attachments
-                  .map((att, idx) => ({ att, idx }))
-                  .filter(
-                    ({ att }) => att.__type === "files" && isFile(att.file)
-                  )
-                  .map(({ att, idx }) => (
-                    <div
-                      key={idx}
-                      style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "center",
-                        background: palette.controlBg,
-                        borderRadius: 9,
-                        padding: "9px 13px",
-                        minWidth: 56,
-                        marginBottom: 4,
-                        border: `1px solid ${palette.border}`,
-                        position: "relative",
-                      }}
-                      className="preview-file-item"
-                    >
-                      <span
-                        style={{ fontSize: 28, color: palette.accentStrong }}
-                      >
-                        📄
-                      </span>
-                      <a
-                        href={URL.createObjectURL(att.file)}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                <div
+                  style={{
+                    display: "flex",
+                    gap: 14,
+                    alignItems: "center",
+                    flexWrap: "wrap",
+                  }}
+                >
+                  {form.attachments
+                    .map((att, idx) => ({ att, idx }))
+                    .filter(
+                      ({ att }) => att.__type === "files" && isFile(att.file)
+                    )
+                    .map(({ att, idx }) => (
+                      <div
+                        key={idx}
                         style={{
-                          fontSize: 13,
-                          color: palette.text,
-                          marginTop: 3,
-                          maxWidth: 60,
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          textDecoration: "underline dotted",
-                          cursor: "pointer",
-                        }}
-                        title="Открыть файл"
-                      >
-                        {att.file.name}
-                      </a>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setForm((f) => ({
-                            ...f,
-                            attachments: f.attachments.filter(
-                              (_, i) => i !== idx
-                            ),
-                          }))
-                        }
-                        style={{
-                          position: "absolute",
-                          top: 4,
-                          right: 4,
-                          background: palette.surface,
-                          color: "#ff5e5e",
-                          border: "none",
-                          borderRadius: "50%",
-                          width: 20,
-                          height: 20,
-                          fontWeight: 900,
-                          fontSize: 15,
-                          lineHeight: "17px",
-                          cursor: "pointer",
-                          opacity: 0,
-                          transition: "opacity .18s",
-                          zIndex: 1,
                           display: "flex",
+                          flexDirection: "column",
                           alignItems: "center",
-                          justifyContent: "center",
-                          padding: 0,
+                          background: palette.controlBg,
+                          borderRadius: 9,
+                          padding: "9px 13px",
+                          minWidth: 56,
+                          marginBottom: 4,
+                          border: `1px solid ${palette.border}`,
+                          position: "relative",
                         }}
-                        className="file-remove-btn"
-                        tabIndex={-1}
+                        className="preview-file-item"
                       >
-                        ×
-                      </button>
-                      <style>{`
+                        <span
+                          style={{ fontSize: 28, color: palette.accentStrong }}
+                        >
+                          📄
+                        </span>
+                        <a
+                          href={URL.createObjectURL(att.file)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{
+                            fontSize: 13,
+                            color: palette.text,
+                            marginTop: 3,
+                            maxWidth: 60,
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            textDecoration: "underline dotted",
+                            cursor: "pointer",
+                          }}
+                          title="Открыть файл"
+                        >
+                          {att.file.name}
+                        </a>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setForm((f) => ({
+                              ...f,
+                              attachments: f.attachments.filter(
+                                (_, i) => i !== idx
+                              ),
+                            }))
+                          }
+                          style={{
+                            position: "absolute",
+                            top: 4,
+                            right: 4,
+                            background: palette.surface,
+                            color: "#ff5e5e",
+                            border: "none",
+                            borderRadius: "50%",
+                            width: 20,
+                            height: 20,
+                            fontWeight: 900,
+                            fontSize: 15,
+                            lineHeight: "17px",
+                            cursor: "pointer",
+                            opacity: 0,
+                            transition: "opacity .18s",
+                            zIndex: 1,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            padding: 0,
+                          }}
+                          className="file-remove-btn"
+                          tabIndex={-1}
+                        >
+                          ×
+                        </button>
+                        <style>{`
                                 .preview-file-item:hover .file-remove-btn { opacity: 1 !important; }
                             `}</style>
-                    </div>
-                  ))}
-              </div>
-            )}
+                      </div>
+                    ))}
+                </div>
+              )}
           </div>
         )}
       </div>
@@ -2593,8 +2585,8 @@ export default function TransportForm({
             ? "Сохраняем изменения..."
             : t("adding.transport", "Добавляем...")
           : mode === "edit"
-          ? "Сохранить изменения"
-          : t("tf.addTransport", "Добавить транспорт")}
+            ? "Сохранить изменения"
+            : t("tf.addTransport", "Добавить транспорт")}
       </button>
       {previewImage && (
         <div

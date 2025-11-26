@@ -685,6 +685,21 @@ export default function RegisterForm({ onSuccess }) {
         "register.verify.error.smsFailed",
         "Не удалось отправить SMS. Попробуйте позже."
       );
+    if (detail.includes("whatsapp_failed"))
+      return t(
+        "register.verify.error.whatsappFailed",
+        "Не удалось отправить код в WhatsApp. Попробуйте позже."
+      );
+    if (detail.includes("viber_failed"))
+      return t(
+        "register.verify.error.viberFailed",
+        "Не удалось отправить код в Viber. Попробуйте позже."
+      );
+    if (detail.includes("channel_not_supported"))
+      return t(
+        "register.verify.error.channelUnsupported",
+        "Выберите доступный способ доставки кода."
+      );
     if (detail.includes("phone_required"))
       return t(
         "register.verify.error.phoneRequired",
@@ -778,7 +793,7 @@ export default function RegisterForm({ onSuccess }) {
     if (phoneResendLeft > 0) return;
     const phone = pendingRegisterPayload?.phone || form.phone;
     if (!phone) return;
-    const sent = await sendPhoneCode(phone);
+    const sent = await sendPhoneCode(phone, phoneChannel);
     if (sent) {
       setPhoneResendLeft(60);
       setPhoneVerifyMsg("");
@@ -1410,6 +1425,35 @@ export default function RegisterForm({ onSuccess }) {
             {errors.phone.length > 0 && (
               <div style={errorStyle}>{errors.phone[0]}</div>
             )}
+            <div style={{ marginTop: 10 }}>
+              <div style={{ marginBottom: 6, color: palette.textIdle }}>
+                {phoneChannelLabel}
+              </div>
+              <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                {Object.entries(phoneChannelOptions).map(([key, label]) => (
+                  <label
+                    key={key}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 6,
+                      cursor: "pointer",
+                      color:
+                        phoneChannel === key ? palette.text : palette.textIdle,
+                    }}
+                  >
+                    <input
+                      type="radio"
+                      name="phone_channel"
+                      value={key}
+                      checked={phoneChannel === key}
+                      onChange={() => setPhoneChannel(key)}
+                    />
+                    <span>{label}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
           </div>
 
           <div id="field-email">
