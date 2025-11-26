@@ -481,9 +481,7 @@ export default function TransportList({ transports: propTransports }) {
       }
       if (thisRequest === lastRequestId.current) {
         const incoming = Array.isArray(items) ? items : [];
-        const shouldAppend = Boolean(
-          isMobile && appendModeRef.current && page > 1
-        );
+        const shouldAppend = isAppend;
         const merged = shouldAppend
           ? (() => {
               const prev = Array.isArray(transportsRef.current)
@@ -515,6 +513,7 @@ export default function TransportList({ transports: propTransports }) {
       setTimeout(() => setDisplayedTransports([]), 80);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
       appendModeRef.current = false;
     }
   }, [filters, isMobile, page, pageSize, propTransports]);
@@ -539,11 +538,12 @@ export default function TransportList({ transports: propTransports }) {
   }, [transports]);
 
   const loadMoreMobile = useCallback(() => {
-    if (loading || !hasMoreMobile || appendModeRef.current) return;
+    if (loading || loadingMore || !hasMoreMobile || appendModeRef.current)
+      return;
     appendModeRef.current = true;
+    setLoadingMore(true);
     setPage((p) => p + 1);
-  }, [hasMoreMobile, loading]);
-
+  }, [hasMoreMobile, loading, loadingMore]);
   // --- Фильтрация транспорта по радиусу и дате ---
   function intervalsIntersect(a_from, a_to, b_from, b_to) {
     if (!a_from || !a_to || !b_from || !b_to) return true;
@@ -597,14 +597,20 @@ export default function TransportList({ transports: propTransports }) {
   });
 
   // 2) затем режем списком id, пришедшим с карты (они уже учитывают: пин в круге ИЛИ пересечение кругов)
-  const filteredTransports = Array.isArray(visibleIds)
-    ? baseTransports.filter((t) => visibleIds.includes(t.id))
-    : baseTransports;
+  const mapFilterActive =
+    Number(filters?.map_radius) > 0 &&
+    Array.isArray(filters?.map_center) &&
+    filters.map_center.length === 2;
 
-  const foundCount = visibleIds
-    ? filteredTransports.length
-    : total || filteredTransports.length;
+  const filteredTransports =
+    mapFilterActive && Array.isArray(visibleIds)
+      ? baseTransports.filter((t) => visibleIds.includes(t.id))
+      : baseTransports;
 
+  const foundCount =
+    mapFilterActive && Array.isArray(visibleIds)
+      ? filteredTransports.length
+      : total || filteredTransports.length;
   // --- Локализация regularity (рус. → i18n) ---
   // Единый локализатор регулярности
   const localizeRegularity = useCallback((reg) => mapRegularity(t, reg), [t]);
@@ -776,14 +782,14 @@ export default function TransportList({ transports: propTransports }) {
   const showFilter = !propTransports;
 
   useEffect(() => {
-    if (!Array.isArray(visibleIds)) return;
+    if (!mapFilterActive || !Array.isArray(visibleIds)) return;
     const visibleStr = JSON.stringify(visibleIds);
     if (prevVisibleIdsRef.current !== visibleStr) {
       prevVisibleIdsRef.current = visibleStr;
       const arr = Array.isArray(transports) ? transports : [];
       setDisplayedTransports(arr.filter((t) => visibleIds.includes(t.id)));
     }
-  }, [visibleIds, transports]);
+  }, [mapFilterActive, transports, visibleIds]);
 
   // --- Плавный список транспортов ---
   function renderTransportCards(filtered) {
@@ -906,7 +912,7 @@ export default function TransportList({ transports: propTransports }) {
               {t("search.found", "Найдено:")}{" "}
               {loading
                 ? "..."
-                : Array.isArray(visibleIds)
+                : mapFilterActive && Array.isArray(visibleIds)
                 ? filteredTransports.length
                 : total || filteredTransports.length}
             </div>
@@ -919,7 +925,7 @@ export default function TransportList({ transports: propTransports }) {
           transports={Array.isArray(transports) ? transports : []}
           filters={filters}
           setFilters={setFiltersPaged}
-          loading={loading}
+          loading={loading || loadingMore}
           fetchTransports={fetchTransports}
           handleResetFilters={handleResetFilters}
           /* карта/фильтр для мобилки */
@@ -929,7 +935,7 @@ export default function TransportList({ transports: propTransports }) {
           estimatedCount={
             loading
               ? undefined
-              : Array.isArray(visibleIds)
+              : mapFilterActive && Array.isArray(visibleIds)
               ? filteredTransports.length
               : total || filteredTransports.length
           }

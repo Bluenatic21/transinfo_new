@@ -171,6 +171,7 @@ export default function Home() {
         return (
             <CompactHero
                 hideText
+                hideActions
                 stats={stats}
                 onFindCargo={() => {
                     setMode("main");
@@ -181,6 +182,31 @@ export default function Home() {
                     router.push("/transport");
                 }}
             />
+        );
+    }
+
+    function HeroActionsRow() {
+        return (
+            <div className="home-cta-row" aria-label={t("home.actions.title", "Быстрый поиск грузов и транспорта")}>
+                <div className="home-cta-inner">
+                    <button
+                        type="button"
+                        onClick={() => { setMode("main"); router.push("/transport"); }}
+                        className="home-cta-btn"
+                    >
+                        <FaTruck />
+                        {t("home.map.findTransport", "Найти транспорт")}
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => { setMode("main"); router.push("/orders"); }}
+                        className="home-cta-btn"
+                    >
+                        <FaBox />
+                        {t("home.map.findCargo", "Найти груз")}
+                    </button>
+                </div>
+            </div>
         );
     }
 
@@ -383,7 +409,7 @@ export default function Home() {
             padding-top: clamp(10px, 3vh, 42px);
           }
 
-          .home-hero-shell {
+.home-hero-shell {
             display: flex;
             flex-direction: column;
             gap: clamp(10px, 1.2vw, 16px);
@@ -391,6 +417,63 @@ export default function Home() {
 
           .home-nav-prime {
             margin-top: clamp(6px, 1.2vw, 16px);
+          }
+
+          .home-cta-row {
+            display: flex;
+            justify-content: center;
+            margin-top: -6px;
+            padding: 0 clamp(10px, 2vw, 26px);
+          }
+
+          .home-cta-inner {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            background: color-mix(in srgb, var(--surface, #22314a) 92%, transparent);
+            border: 1px solid color-mix(in srgb, var(--border-subtle, rgba(255,255,255,0.08)) 90%, transparent);
+            border-radius: 18px;
+            box-shadow: 0 12px 32px rgba(0,0,0,0.18);
+            padding: clamp(10px, 1.4vw, 16px);
+            backdrop-filter: blur(4px);
+          }
+
+          .home-cta-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            border-radius: 14px;
+            border: 1px solid rgba(255,255,255,0.10);
+            background: linear-gradient(150deg, #fff, #eaf6ff);
+            color: #0f172a;
+            font-weight: 700;
+            font-size: 15px;
+            box-shadow: 0 10px 24px rgba(0,0,0,0.12);
+            transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+          }
+
+          .home-cta-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 30px rgba(0,0,0,0.16);
+            border-color: color-mix(in srgb, var(--accent, #1fb6ff) 38%, transparent);
+          }
+
+          .home-cta-btn svg {
+            font-size: 17px;
+            color: var(--accent, #1fb6ff);
+          }
+
+          @media (max-width: 640px) {
+            .home-cta-inner {
+              width: 100%;
+              justify-content: center;
+            }
+
+            .home-cta-btn {
+              width: 100%;
+              justify-content: center;
+            }
           }
 
           @media (max-width: 1100px) {
@@ -704,6 +787,7 @@ export default function Home() {
                         <div className="home-nav-prime">
                             <NavigationBoard />
                         </div>
+                        <HeroActionsRow />
                         <MapOrdersSection />
                     </div>
                 )}

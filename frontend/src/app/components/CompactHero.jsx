@@ -11,6 +11,7 @@ export default function CompactHero({
     onFindCargo,
     onFindTransport,
     hideText = false,
+    hideActions = false,
 }) {
     const { t } = useLang();
     const s = stats || {};
@@ -70,32 +71,30 @@ export default function CompactHero({
                                 </div>
                             </div>
                         </div>
-                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 sm:gap-4 mt-4">
-                            <button
-                                type="button"
-                                onClick={onFindCargo}
-                                className="inline-flex items-center justify-center gap-2 rounded-full px-5 md:px-6 py-2.5 md:py-3 text-sm md:text-base font-semibold bg-white text-slate-900 shadow-[0_6px_18px_rgba(15,23,42,0.12)] ring-1 ring-slate-200 hover:-translate-y-[2px] transition-transform duration-200 dark:bg-[#0f1930] dark:text-white dark:ring-white/10 dark:shadow-[0_10px_25px_rgba(0,0,0,0.35)]"
-                            >
-                                <FiPackage className="text-lg" />
-                                {t("home.map.findCargo", "Найти груз")}
-                            </button>
-                            <button
-                                type="button"
-                                onClick={onFindTransport}
-                                className="inline-flex items-center justify-center gap-2 rounded-full px-5 md:px-6 py-2.5 md:py-3 text-sm md:text-base font-semibold bg-white text-slate-900 shadow-[0_6px_18px_rgba(15,23,42,0.12)] ring-1 ring-slate-200 hover:-translate-y-[2px] transition-transform duration-200 dark:bg-[#0f1930] dark:text-white dark:ring-white/10 dark:shadow-[0_10px_25px_rgba(0,0,0,0.35)]"
-                            >
-                                <FiTruck className="text-lg" />
-                                {t("home.map.findTransport", "Найти транспорт")}
-                            </button>
-                        </div>
+                        {!hideActions && (
+                            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 sm:gap-4 mt-4">
+                                <button
+                                    type="button"
+                                    onClick={onFindCargo}
+                                    className="inline-flex items-center justify-center gap-2 rounded-full px-5 md:px-6 py-2.5 md:py-3 text-sm md:text-base font-semibold bg-white text-slate-900 shadow-[0_6px_18px_rgba(15,23,42,0.12)] ring-1 ring-slate-200 hover:-translate-y-[2px] transition-transform duration-200 dark:bg-[#0f1930] dark:text-white dark:ring-white/10 dark:shadow-[0_10px_25px_rgba(0,0,0,0.35)]"
+                                >
+                                    <FiPackage className="text-lg" />
+                                    {t("home.map.findCargo", "Найти груз")}
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={onFindTransport}
+                                    className="inline-flex items-center justify-center gap-2 rounded-full px-5 md:px-6 py-2.5 md:py-3 text-sm md:text-base font-semibold bg-white text-slate-900 shadow-[0_6px_18px_rgba(15,23,42,0.12)] ring-1 ring-slate-200 hover:-translate-y-[2px] transition-transform duration-200 dark:bg-[#0f1930] dark:text-white dark:ring-white/10 dark:shadow-[0_10px_25px_rgba(0,0,0,0.35)]"
+                                >
+                                    <FiTruck className="text-lg" />
+                                    {t("home.map.findTransport", "Найти транспорт")}
+                                </button>
+                            </div>
+                        )}
                     </div>
                 </div>
 
             </div>
-
-            {/* Деликатные разделители для ровного стыка секций */}
-            <div aria-hidden className="absolute inset-x-0 bottom-0 h-px bg-slate-200 dark:bg-white/5" />
-            <div aria-hidden className="absolute inset-x-0 top-0 h-px bg-slate-200 dark:bg-white/5" />
 
             <style jsx>{`
               .hero-metrics-card {
