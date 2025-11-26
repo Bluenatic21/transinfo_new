@@ -165,6 +165,7 @@ export default function RegisterForm({ onSuccess }) {
   const [phoneCode, setPhoneCode] = useState("");
   const [phoneVerifyMsg, setPhoneVerifyMsg] = useState("");
   const [phoneResendLeft, setPhoneResendLeft] = useState(0);
+  const [phoneChannel, setPhoneChannel] = useState("sms");
   const [pendingRegisterPayload, setPendingRegisterPayload] = useState(null);
   const [isPhoneCodeSending, setIsPhoneCodeSending] = useState(false);
   // одно состояние для проверки кода
@@ -251,6 +252,15 @@ export default function RegisterForm({ onSuccess }) {
     "register.verify.codeInputPlaceholder",
     "Введите 6-значный код"
   );
+  const phoneChannelLabel = t(
+    "register.verify.channel.label",
+    "Куда отправить код"
+  );
+  const phoneChannelOptions = {
+    sms: t("register.verify.channel.sms", "SMS"),
+    whatsapp: t("register.verify.channel.whatsapp", "WhatsApp"),
+    viber: t("register.verify.channel.viber", "Viber"),
+  };
   const verifySubmitLabel = t("register.verify.submit", "Подтвердить");
   const verifyResendLabel = t("register.verify.resend", "Отправить ещё раз");
   const verifyCancelLabel = t("register.verify.cancel", "Отмена");
@@ -621,7 +631,7 @@ export default function RegisterForm({ onSuccess }) {
     setIsPhoneCodeSending(true);
     setPhoneVerifyMsg("");
     setPendingRegisterPayload(payload);
-    const sent = await sendPhoneCode(payload.phone);
+    const sent = await sendPhoneCode(payload.phone, phoneChannel);
     setIsPhoneCodeSending(false);
     if (!sent) {
       setPendingRegisterPayload(null);
@@ -632,12 +642,12 @@ export default function RegisterForm({ onSuccess }) {
     setShowPhoneVerify(true); // <-- показываем модалку ввода кода
   }
 
-  async function sendPhoneCode(phone) {
+  async function sendPhoneCode(phone, channel = "sms") {
     try {
       const res = await fetch(api(`/phone/send-code`), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone, lang: uiLang }),
+        body: JSON.stringify({ phone, lang: uiLang, channel }),
       });
       if (!res.ok) {
         let detail = await res.text();

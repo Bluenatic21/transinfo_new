@@ -396,6 +396,21 @@ export default function Home() {
             z-index: 0;
           }
 
+          .home-network-figure {
+            position: absolute;
+            left: 50%;
+            top: clamp(180px, 30vh, 340px);
+            width: min(780px, 90vw);
+            aspect-ratio: 1 / 1;
+            background: url("/main_web.png") center / contain no-repeat;
+            opacity: 0.76;
+            transform: translateX(-50%);
+            filter: drop-shadow(0 22px 52px rgba(0, 0, 0, 0.35));
+            pointer-events: none;
+            z-index: 0;
+            mix-blend-mode: screen;
+          }
+
           .home-content {
             position: relative;
             z-index: 1;

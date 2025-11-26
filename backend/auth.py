@@ -69,6 +69,8 @@ ALGORITHM = "HS256"
 # Лучше согласовать с max-age куки (30 минут по твоему коду логина)
 
 _ensure_env_loaded()  # подхватить /opt/transinfo/backend/.env
+PHONE_CODE_CHANNELS = {"sms", "whatsapp", "viber"}
+
 
 # === Feature flag: полностью выключить email‑верификацию (не отправлять коды) ===
 # Поддерживаем оба имени переменной: EMAIL_VERIFICATION_ENABLED и (на всякий случай) SEND_EMAIL_VERIFICATION.
@@ -113,6 +115,20 @@ def _sms_text(lang: str, code: str) -> str:
     if lang == "en":
         return f"[Transinfo] Your code: {code}"
     return f"[Transinfo] Ваш код: {code}"
+async def _send_phone_code(channel: str, phone: str, code: str) -> tuple[bool, str]:
+    """Отправка кода выбранным каналом.
+
+    Для WhatsApp и Viber временно используем SMS-гейт, чтобы UX был единым;
+    как только появится интеграция мессенджеров, её можно подключить здесь.
+    """
+
+    channel = (channel or "sms").lower()
+    if channel != "sms" and channel in PHONE_CODE_CHANNELS:
+        return await send_sms(phone, code, use_unicode=False)
+
+    # ВАЖНО: для OTP-URL msg должен быть ТОЛЬКО цифры; unicode не нужен
+    return await send_sms(phone, code, use_unicode=False)
+
 
 
 def _send_verification_code(db: Session, user: User):
@@ -302,6 +318,10 @@ async def phone_send_code(payload: SendPhoneCodeIn, db: Session = Depends(get_db
     phone = _normalize_phone_e164_digits(payload.phone.strip())
     if not phone:
         raise HTTPException(status_code=422, detail="phone_required")
+        channel = (payload.channel or "sms").lower()
+    if channel not in PHONE_CODE_CHANNELS:
+        raise HTTPException(status_code=422, detail="channel_not_supported")
+
 
     EXPIRES_MIN = int(os.getenv("PHONE_VERIFY_EXPIRES_MIN", "10"))
     COOLDOWN_SEC = int(os.getenv("PHONE_VERIFY_COOLDOWN_SEC", "60"))
@@ -315,10 +335,9 @@ async def phone_send_code(payload: SendPhoneCodeIn, db: Session = Depends(get_db
         raise HTTPException(status_code=429, detail="cooldown")
 
     code = gen_code()                      # генерим цифры (4–8)
-    # ВАЖНО: для OTP-URL msg должен быть ТОЛЬКО цифры; unicode не нужен
-    ok, raw = await send_sms(phone, code, use_unicode=False)
+    ok, raw = await _send_phone_code(channel, phone, code)
     if not ok:
-        raise HTTPException(status_code=502, detail=f"sms_failed:{raw}")
+        raise HTTPException(status_code=502, detail=f"{channel}_failed:{raw}")
 
     if not pv:
         pv = PhoneVerification(
@@ -337,7 +356,7 @@ async def phone_send_code(payload: SendPhoneCodeIn, db: Session = Depends(get_db
         pv.attempts = 0
         pv.verified_at = None
     db.commit()
-    return {"sent": True}
+    return {"sent": True, "channel": channel}
 
 
 @router.post("/phone/verify")

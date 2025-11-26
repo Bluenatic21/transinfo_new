@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { FaUserShield, FaTruck, FaUser, FaUserCog, FaRegEdit, FaStar, FaRegStar, FaLock } from "react-icons/fa";
-import { FiCheckCircle, FiClock, FiAlertCircle } from "react-icons/fi";
 import EditProfileForm from "./EditProfileForm";
 import {
     FaComments,
@@ -176,15 +175,6 @@ export default function ProfileCard({ user: initialUser, readOnly, onUserUpdate,
         EMPLOYEE: t("role.employee", "Экспедитор"),
     };
 
-    const verifStatus = {
-        approved: { text: t("profile.verified", "Профиль верифицирован"), icon: <FiCheckCircle color="#2ecc40" /> },
-        pending: { text: t("profile.verificationPending", "Верификация на проверке"), icon: <FiClock color="#f1c40f" /> },
-        rejected: { text: t("profile.verificationRejected", "Верификация отклонена"), icon: <FiAlertCircle color="#ff5e57" /> },
-        not_sent: { text: t("profile.notVerified", "Не верифицирован"), icon: <FiAlertCircle color="#b0bec5" /> },
-        verified: { text: t("profile.verified", "Профиль верифицирован"), icon: <FiCheckCircle color="#2ecc40" /> },
-    };
-    const status = verifStatus[user?.verification_status] || verifStatus.not_sent;
-
     const avatarUrl = user?.avatar ? abs(user.avatar) : "/default-avatar.png";
 
     const handleProfileSave = (updatedUser) => {
@@ -224,15 +214,6 @@ export default function ProfileCard({ user: initialUser, readOnly, onUserUpdate,
         roleText: isLight ? "#1d4ed8" : "#a7ccff",
         avatarBg: isLight ? "var(--bg-card-soft)" : "#21304d",
         avatarRing: isLight ? "0 0 0 3px #e2e8f0 inset" : "0 0 0 3px #243a62 inset",
-        badgePositiveBg: isLight ? "#e8fff2" : "#12301f",
-        badgePositiveBorder: isLight ? "1px solid #b7efcd" : "1px solid #1e6b3d",
-        badgePositiveText: isLight ? "#1f8a4d" : "#9ff1bd",
-        badgeWarningBg: isLight ? "#fff7e6" : "#2b2a1b",
-        badgeWarningBorder: isLight ? "1px solid #f3d08a" : "1px solid #665f28",
-        badgeWarningText: isLight ? "#b7791f" : "#ffe89e",
-        badgeDangerBg: isLight ? "#fff0f3" : "#2a2130",
-        badgeDangerBorder: isLight ? "1px solid #f3b1c6" : "1px solid #6a3b53",
-        badgeDangerText: isLight ? "#b83265" : "#ffb2d1",
         controlBg: isLight ? "var(--control-bg)" : "#11284e",
         controlBorder: isLight ? `1px solid var(--border-subtle)` : "1px solid #27539a",
         controlText: isLight ? "#1d4ed8" : "#acd2ff",
@@ -261,7 +242,7 @@ export default function ProfileCard({ user: initialUser, readOnly, onUserUpdate,
                     alignItems: "start",
                 }}
             >
-                {/* left: avatar + verify */}
+                {/* left: avatar */}
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
                     <div
                         style={{
@@ -282,40 +263,6 @@ export default function ProfileCard({ user: initialUser, readOnly, onUserUpdate,
                             style={{ width: "100%", height: "100%", objectFit: "cover" }}
                             onError={(e) => { e.currentTarget.src = "/default-avatar.png"; }}
                         />
-                    </div>
-
-                    {/* verification pill */}
-                    <div
-                        style={{
-                            display: "inline-flex",
-                            alignItems: "center",
-                            gap: 8,
-                            padding: isMobile ? "5px 8px" : "6px 9px",
-                            background:
-                                status === verifStatus.pending
-                                    ? themeColors.badgeWarningBg
-                                    : status === verifStatus.rejected
-                                        ? themeColors.badgeDangerBg
-                                        : themeColors.badgePositiveBg,
-                            border:
-                                status === verifStatus.pending
-                                    ? themeColors.badgeWarningBorder
-                                    : status === verifStatus.rejected
-                                        ? themeColors.badgeDangerBorder
-                                        : themeColors.badgePositiveBorder,
-                            color:
-                                status === verifStatus.pending
-                                    ? themeColors.badgeWarningText
-                                    : status === verifStatus.rejected
-                                        ? themeColors.badgeDangerText
-                                        : themeColors.badgePositiveText,
-                            borderRadius: 999,
-                            fontSize: isMobile ? 11 : 12,
-                            fontWeight: 700,
-                            whiteSpace: "nowrap",
-                        }}
-                    >
-                        {status.icon} <span>{status.text}</span>
                     </div>
                 </div>
 
