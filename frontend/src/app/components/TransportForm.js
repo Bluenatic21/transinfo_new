@@ -2010,11 +2010,14 @@ export default function TransportForm({
           </div>
           {/* ВЫВОД СПИСКА ADR */}
           {form.adr && (
-            <div className="choice-grid" style={{ marginTop: 9, fontSize: 15 }}>
+            <div
+              className={isMobile ? "adr-list-mobile" : "choice-grid"}
+              style={{ marginTop: 9, fontSize: 15 }}
+            >
               {ADR_CLASSES.map(({ value, label }) => (
                 <label
                   key={value}
-                  className="choice-tile"
+                  className={isMobile ? "adr-list-item" : "choice-tile"}
                   style={{ fontWeight: 500, cursor: "pointer" }}
                 >
                   <input
@@ -2292,7 +2295,7 @@ export default function TransportForm({
           <label
             style={{
               background: palette.controlBg,
-              color: palette.accent,
+              color: "color-mix(in srgb, var(--brand-blue) 78%, var(--text-primary) 22%)",
               padding: "8px 18px",
               borderRadius: 10,
               cursor: "pointer",
@@ -2312,7 +2315,8 @@ export default function TransportForm({
           <label
             style={{
               background: palette.controlBg,
-              color: palette.accentStrong,
+              color:
+                "color-mix(in srgb, var(--brand-orange) 72%, var(--text-primary) 28%)",
               padding: "8px 18px",
               borderRadius: 10,
               cursor: "pointer",

@@ -665,10 +665,18 @@ body {
 }
 
 :root {
-  --bg-app: #0b0f19;
+  --bg-app: var(--background, #0b0f19);
   /* твой базовый фон */
-  --loader-backdrop: #0b0f19;
+  --loader-backdrop: var(--bg-app);
   /* подложка для первого экрана (можешь поменять) */
+  --loader-dot: rgba(255, 255, 255, .9);
+  --loader-text: rgba(255, 255, 255, .7);
+}
+
+:root[data-theme="light"] {
+  --loader-backdrop: var(--bg-app, #f4f6fb);
+  --loader-dot: rgba(15, 23, 42, .85);
+  --loader-text: rgba(51, 65, 85, .85);
 }
 
 /* 1) До гидратации (ставим в <head> data-booting) — прячем контент, чтобы не мигал десктоп */
@@ -707,7 +715,7 @@ html[data-booting] body> :not(#boot-loader) {
   width: 10px;
   height: 10px;
   border-radius: 9999px;
-  background: rgba(255, 255, 255, .9);
+  background: var(--loader-dot, rgba(255, 255, 255, .9));
   animation: boot-bounce 1s infinite ease-in-out;
 }
 
@@ -722,7 +730,7 @@ html[data-booting] body> :not(#boot-loader) {
 .boot-text {
   margin-top: 8px;
   font-size: 13px;
-  color: rgba(255, 255, 255, .7);
+  color: var(--loader-text, rgba(255, 255, 255, .7));
   text-align: center;
 }
 

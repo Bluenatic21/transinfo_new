@@ -380,7 +380,12 @@ export default function Home() {
         <style jsx global>{`
           html { scroll-behavior: smooth; }
 
-             .home-shell {
+  .home-shell {
+            position: relative;
+            isolation: isolate;
+          }
+
+         .home-shell {
             position: relative;
             isolation: isolate;
           }
@@ -398,13 +403,12 @@ export default function Home() {
 
           .home-network-figure {
             position: absolute;
-            left: 50%;
-            top: clamp(140px, 26vh, 320px);
-            width: min(860px, 92vw);
+            right: clamp(-60px, 18vw, 360px);
+            top: clamp(-360px, -16vh, -20px);
+            width: min(860px, 78vw);
             aspect-ratio: 1 / 1;
-            background: url("/main_web.png") center / contain no-repeat;
+            background: url("/main_web.png") top right / contain no-repeat;
             opacity: 0.82;
-            transform: translateX(-50%);
             filter: drop-shadow(0 22px 52px rgba(0, 0, 0, 0.35));
             pointer-events: none;
             z-index: 1;
@@ -463,7 +467,7 @@ export default function Home() {
             color: #0f172a;
             font-weight: 700;
             font-size: 15px;
-            box-shadow: 0 10px 24px rgba(0,0,0,0.12);␊
+            box-shadow: 0 10px 24px rgba(0,0,0,0.12);
             outline: none;
             transition: transform 0.18s ease, box-shadow 0.18s ease;
           }
@@ -485,7 +489,7 @@ export default function Home() {
             }
 
             .home-cta-btn {
-              width: 100%;
+           width: 100%;
               justify-content: center;
             }
           }

@@ -318,7 +318,7 @@ async def phone_send_code(payload: SendPhoneCodeIn, db: Session = Depends(get_db
     phone = _normalize_phone_e164_digits(payload.phone.strip())
     if not phone:
         raise HTTPException(status_code=422, detail="phone_required")
-        channel = (payload.channel or "sms").lower()
+    Shannel = (payload.channel or "sms").lower()
     if channel not in PHONE_CODE_CHANNELS:
         raise HTTPException(status_code=422, detail="channel_not_supported")
 
