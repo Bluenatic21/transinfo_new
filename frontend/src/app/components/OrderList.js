@@ -27,8 +27,10 @@ import { api, abs } from "@/config/env";
 import SaveToggleButton from "./SaveToggleButton";
 import { useMapHover } from "./MapHoverContext";
 import OrderShareButtons from "./OrderShareButtons";
+import CargoCompactCard from "./CargoCompactCard";
 import IconLabel from "./ui/IconLabel";
 import { FiMap as MapIcon, FiList as ListIcon } from "react-icons/fi";
+import { useTheme } from "../providers/ThemeProvider";
 
 import MobileFilterSheet from "./mobile/MobileFilterSheet";
 import MobileMapSheet from "./mobile/MobileMapSheet"; // если у грузов тоже одна и та же SimpleMap
@@ -156,7 +158,11 @@ export default function OrderList() {
     const [placeLabels, setPlaceLabels] = useState(null); // { [id]: {label,country_iso2} }
     const [displayedOrders, setDisplayedOrders] = useState([]);
     const { t } = useLang?.() || { t: (k, f) => f || k };
+    const { resolvedTheme } = useTheme?.() || { resolvedTheme: "dark" };
+    const isLight = resolvedTheme === "light";
     const [filters, setFilters] = useState({});
+    const CARD_SIZE_STORAGE_KEY = "ordersCardSize";
+    const [cardSize, setCardSize] = useState("large");
     // Reset to page 1 on any filter change
     const setFiltersPaged = useCallback((updater) => {
         setPage(1);
@@ -173,6 +179,20 @@ export default function OrderList() {
             return next;
         });
     }, [searchParams, setFiltersPaged]);
+
+    useEffect(() => {
+        try {
+            const saved = localStorage.getItem(CARD_SIZE_STORAGE_KEY);
+            if (saved === "compact" || saved === "large") {
+                setCardSize(saved);
+            }
+        } catch { }
+    }, []);
+
+    useEffect(() => {
+        try { localStorage.setItem(CARD_SIZE_STORAGE_KEY, cardSize); } catch { }
+    }, [cardSize]);
+
 
     const ADR_CLASS_INFO = {
         "1": t("adr.1", "Взрывчатые вещества и изделия"),
@@ -557,6 +577,39 @@ export default function OrderList() {
     }
 
     function renderTabs() {
+        const tabButtonStyle = (tab) => {
+            const isActive = activeTab === tab;
+            const base = {
+                fontWeight: 700,
+                fontSize: 16,
+                padding: "8px 25px",
+                borderRadius: 10,
+                cursor: "pointer",
+                transition: "all .14s",
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+            };
+
+            if (isLight) {
+                return {
+                    ...base,
+                    background: isActive ? "var(--bg-card)" : "var(--control-bg)",
+                    color: isActive ? "var(--text-primary)" : "var(--text-secondary)",
+                    border: `1px solid ${isActive ? "var(--border-strong)" : "var(--border-subtle)"}`,
+                    boxShadow: isActive
+                        ? "0 6px 18px rgba(15, 23, 42, 0.08)"
+                        : "0 4px 12px rgba(15, 23, 42, 0.04)",
+                };
+            }
+
+            return {
+                ...base,
+                background: isActive ? "#11284a" : "#19223a",
+                color: isActive ? "#43c8ff" : "#8ecae6",
+                border: "none",
+            };
+        };
         return (
             <div
                 style={{
@@ -567,38 +620,55 @@ export default function OrderList() {
                 }}
             >
                 <button
-                    style={{
-                        fontWeight: 700,
-                        fontSize: 16,
-                        padding: "8px 25px",
-                        background: activeTab === "list" ? "#11284a" : "#19223a",
-                        color: activeTab === "list" ? "#43c8ff" : "#8ecae6",
-                        borderRadius: 10,
-                        border: "none",
-                        cursor: "pointer",
-                        transition: "all .14s",
-                    }}
+                    style={tabButtonStyle("list")}
                     onClick={() => setActiveTab("list")}
                     aria-label={t("common.list", "Список")}
                 >
                     <IconLabel icon={ListIcon} label={t("common.list", "Список")} />
                 </button>
                 <button
-                    style={{
-                        fontWeight: 700,
-                        fontSize: 16,
-                        padding: "8px 25px",
-                        background: activeTab === "map" ? "#11284a" : "#19223a",
-                        color: activeTab === "map" ? "#43c8ff" : "#8ecae6",
-                        borderRadius: 10,
-                        border: "none",
-                        cursor: "pointer",
-                        transition: "all .14s",
-                    }}
+                    style={tabButtonStyle("map")}
                     onClick={() => setActiveTab("map")}
                     aria-label={t("common.map", "Карта")}
                 >
                     <IconLabel icon={MapIcon} label={t("common.map", "Карта")} />
+                </button>
+            </div>
+        );
+    }
+
+    function renderCardSizeToggle() {
+        const baseStyle = {
+            fontWeight: 700,
+            fontSize: 15,
+            padding: "8px 16px",
+            background: "#19223a",
+            color: "#8ecae6",
+            borderRadius: 10,
+            border: "none",
+            cursor: "pointer",
+            transition: "all .14s",
+        };
+        const activeStyle = {
+            background: "#11284a",
+            color: "#43c8ff",
+            boxShadow: "0 4px 14px #0b1a2f55",
+        };
+        return (
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                <button
+                    style={{ ...baseStyle, ...(cardSize === "large" ? activeStyle : null) }}
+                    onClick={() => setCardSize("large")}
+                    aria-label={t("view.largeCards", "Крупные карточки")}
+                >
+                    {t("view.largeCards", "Крупные")}
+                </button>
+                <button
+                    style={{ ...baseStyle, ...(cardSize === "compact" ? activeStyle : null) }}
+                    onClick={() => setCardSize("compact")}
+                    aria-label={t("view.compactCards", "Компактные карточки")}
+                >
+                    {t("view.compactCards", "Компактные")}
                 </button>
             </div>
         );
@@ -663,19 +733,23 @@ export default function OrderList() {
                             transition={{ duration: 0.37, ease: [0.42, 1.3, 0.5, 1] }}
                             style={{ width: "100%" }}
                         >
-                            <OrderCard
-                                order={order}
-                                expanded={expandedId === order.id}
-                                onToggle={(id) => setExpandedId(expandedId === id ? null : id)}
-                                isManagerAccount={isManagerAccount}
-                                commentOpenId={commentOpenId}
-                                setCommentOpenId={setCommentOpenId}
-                                loadInternalComments={loadInternalComments}
-                                commentsMap={commentsMap}
-                                commentText={commentText}
-                                setCommentText={setCommentText}
-                                saveInternalComment={saveInternalComment}
-                            />
+                            {cardSize === "compact" ? (
+                                <CargoCompactCard cargo={order} />
+                            ) : (
+                                <OrderCard
+                                    order={order}
+                                    expanded={expandedId === order.id}
+                                    onToggle={(id) => setExpandedId(expandedId === id ? null : id)}
+                                    isManagerAccount={isManagerAccount}
+                                    commentOpenId={commentOpenId}
+                                    setCommentOpenId={setCommentOpenId}
+                                    loadInternalComments={loadInternalComments}
+                                    commentsMap={commentsMap}
+                                    commentText={commentText}
+                                    setCommentText={setCommentText}
+                                    saveInternalComment={saveInternalComment}
+                                />
+                            )}
                         </motion.div>
                     ))}
                 </AnimatePresence>
@@ -706,19 +780,23 @@ export default function OrderList() {
                         transition={{ duration: 0.37, ease: [0.42, 1.3, 0.5, 1] }}
                         style={{ width: "100%" }}
                     >
-                        <OrderCard
-                            order={order}
-                            expanded={expandedId === order.id}
-                            onToggle={(id) => setExpandedId(expandedId === id ? null : id)}
-                            isManagerAccount={isManagerAccount}
-                            commentOpenId={commentOpenId}
-                            setCommentOpenId={setCommentOpenId}
-                            loadInternalComments={loadInternalComments}
-                            commentsMap={commentsMap}
-                            commentText={commentText}
-                            setCommentText={setCommentText}
-                            saveInternalComment={saveInternalComment}
-                        />
+                        {cardSize === "compact" ? (
+                            <CargoCompactCard cargo={order} />
+                        ) : (
+                            <OrderCard
+                                order={order}
+                                expanded={expandedId === order.id}
+                                onToggle={(id) => setExpandedId(expandedId === id ? null : id)}
+                                isManagerAccount={isManagerAccount}
+                                commentOpenId={commentOpenId}
+                                setCommentOpenId={setCommentOpenId}
+                                loadInternalComments={loadInternalComments}
+                                commentsMap={commentsMap}
+                                commentText={commentText}
+                                setCommentText={setCommentText}
+                                saveInternalComment={saveInternalComment}
+                            />
+                        )}
                     </motion.div>
                 ))}
             </AnimatePresence>
@@ -738,7 +816,10 @@ export default function OrderList() {
                     flexWrap: "wrap",
                 }}
             >
-                <div>{renderTabs()}</div>
+                <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+                    {renderTabs()}
+                    {renderCardSizeToggle()}
+                </div>
                 {hasActiveFilter && (
                     <div
                         style={{

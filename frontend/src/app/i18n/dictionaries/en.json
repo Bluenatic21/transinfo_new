@@ -1632,5 +1632,7 @@
   "reset.saving": "Saving...",
   "reset.save": "Save password",
   "reset.error.min8": "At least 8 characters",
-  "reset.error.mismatch": "Passwords do not match"
+  "reset.error.mismatch": "Passwords do not match",
+  "view.largeCards": "Large cards",
+  "view.compactCards": "Compact cards"
 }

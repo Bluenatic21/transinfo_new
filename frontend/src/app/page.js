@@ -401,11 +401,11 @@ export default function Home() {
             z-index: 0;
           }
 
-          .home-network-figure {
+ .home-network-figure {
             position: absolute;
-            right: clamp(-60px, -16vw, -280px);
-            top: clamp(-160px, -6vh, 80px);
-            width: min(1280px, 108vw);
+            right: clamp(-320px, -18vw, -60px);
+            top: clamp(-320px, -16vh, 20px);
+            width: min(1380px, 118vw);
             aspect-ratio: 1 / 1;
             background: url("/main_web.png") top right / contain no-repeat;
             opacity: 0.82;

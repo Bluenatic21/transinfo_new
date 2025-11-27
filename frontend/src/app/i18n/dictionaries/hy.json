@@ -1631,5 +1631,7 @@
   "reset.saving": "Պահպանում է...",
   "reset.save": "Պահպանել գաղտնաբառը",
   "reset.error.min8": "Առնվազն 8 նիշ",
-  "reset.error.mismatch": "Գաղտնաբառերը չեն համընկնում"
+  "reset.error.mismatch": "Գաղտնաբառերը չեն համընկնում",
+  "view.largeCards": "Մեծ քարտեր",
+  "view.compactCards": "Կոմպակտ քարտեր"
 }

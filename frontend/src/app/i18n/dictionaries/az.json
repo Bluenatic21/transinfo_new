@@ -1630,5 +1630,7 @@
   "reset.saving": "Yazılır...",
   "reset.save": "Parolu saxla",
   "reset.error.min8": "Ən azı 8 simvol",
-  "reset.error.mismatch": "Parollar uyğun gəlmir"
+  "reset.error.mismatch": "Parollar uyğun gəlmir",
+  "view.largeCards": "Böyük kartlar",
+  "view.compactCards": "Kompakt kartlar"
 }

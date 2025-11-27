@@ -56,11 +56,15 @@
     --chat-bubble-self-text: #e6f2ff;
     --chat-bubble-peer-text: #e8edf7;
     --chat-bubble-meta: #9fb7d8;
-    --chat-seen-color-read: #48ff78;
     --chat-bubble-self-accent: #3b82f6;
     --chat-bubble-peer-accent: #3aa7c5;
     --chat-bubble-self-border: #3b82f6;
     --chat-bubble-peer-border: #2c3f61;
+    --chat-info-card-bg: #29395b;
+    --chat-info-card-text: #caf7e4;
+    --chat-info-card-title: #43c8ff;
+    --chat-info-card-border: #3b82f633;
+    --chat-info-card-shadow: 0 1px 7px #22535b16;
     --chat-translation-bg: rgba(0, 0, 0, 0.12);
     --chat-translation-text: #d7e8ff;
     --chat-reaction-shadow: 0 2px 12px #0002;
@@ -223,8 +227,8 @@
 }
 
 :root[data-theme="light"] {
-    --sidebar-bg: #ffffff;
-    --sidebar-border: var(--border-strong);
+    --sidebar-bg: #E1F2FF;
+    --sidebar-border: color-mix(in srgb, #E1F2FF 55%, #a3b7c9);
     --sidebar-title: var(--brand-navy);
     --sidebar-title-shadow: none;
     --sidebar-link: var(--text-primary);
@@ -257,8 +261,8 @@
 }
 
 :root[data-theme="light"] {
-    --orders-panel-bg: #ffffff;
-    --orders-panel-border: var(--border-subtle);
+    --orders-panel-bg: #E1F2FF;
+    --orders-panel-border: color-mix(in srgb, #E1F2FF 55%, #a3b7c9);
     --orders-panel-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
     --orders-heading: var(--brand-navy);
     --orders-muted: var(--text-secondary);

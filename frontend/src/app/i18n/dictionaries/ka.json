@@ -1634,5 +1634,7 @@
   "reset.saving": "ინახება...",
   "reset.save": "პაროლის შენახვა",
   "reset.error.min8": "მინიმუმ 8 სიმბოლო",
-  "reset.error.mismatch": "პაროლები არ ემთხვევა"
+  "reset.error.mismatch": "პაროლები არ ემთხვევა",
+  "view.largeCards": "დიდი ბარათები",
+  "view.compactCards": "კომპაქტური ბარათები"
 }

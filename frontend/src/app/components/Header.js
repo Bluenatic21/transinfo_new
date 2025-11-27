@@ -1537,6 +1537,7 @@ export default function Header({ setShowRegisterModal }) {
           style={{
             display: "flex",
             alignItems: "center",
+            justifyContent: "center",
             gap: isCompact ? 10 : 14,
             width: "100%",
             padding: `${isCompact ? 0 : 2}px ${headerPadding.right}px ${isCompact ? 4 : 6

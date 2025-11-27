@@ -124,7 +124,6 @@
   "register.verify.resend": "Tekrar gönder",
   "register.verify.cancel": "İptal",
   "register.verify.error.phoneRequired": "Telefon numarası girin.",
-  "register.verify.error.phoneRequired": "Telefon numarası girin.",
   "register.verify.error.enterCode": "Lütfen 6 haneli kodu girin.",
   "register.verify.error.invalidCode": "Kod hatalı.",
   "register.verify.error.phoneCodeExpired": "Kodun süresi doldu. Yeni bir kod isteyin.",
@@ -1622,5 +1621,7 @@
   "reset.saving": "Kaydediliyor...",
   "reset.save": "Parolayı kaydet",
   "reset.error.min8": "En az 8 karakter",
-  "reset.error.mismatch": "Parolalar eşleşmiyor"
+  "reset.error.mismatch": "Parolalar eşleşmiyor",
+  "view.largeCards": "Büyük kartlar",
+  "view.compactCards": "Kompakt kartlar"
 }
