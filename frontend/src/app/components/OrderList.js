@@ -642,29 +642,55 @@ export default function OrderList() {
             fontWeight: 700,
             fontSize: 15,
             padding: "8px 16px",
-            background: "#19223a",
-            color: "#8ecae6",
             borderRadius: 10,
-            border: "none",
             cursor: "pointer",
             transition: "all .14s",
         };
-        const activeStyle = {
-            background: "#11284a",
-            color: "#43c8ff",
-            boxShadow: "0 4px 14px #0b1a2f55",
+
+        const getStyle = (active) => {
+            if (isLight) {
+                const lightBase = {
+                    ...baseStyle,
+                    background: "var(--control-bg)",
+                    color: "var(--text-secondary)",
+                    border: `1px solid var(--border-subtle)`,
+                };
+
+                if (active) {
+                    return {
+                        ...lightBase,
+                        background: "var(--bg-card)",
+                        color: "var(--text-primary)",
+                        border: `1px solid var(--border-strong)`,
+                        boxShadow: "0 6px 18px rgba(15, 23, 42, 0.08)",
+                    };
+                }
+
+                return {
+                    ...lightBase,
+                    boxShadow: "0 4px 12px rgba(15, 23, 42, 0.04)",
+                };
+            }
+
+            return {
+                ...baseStyle,
+                background: active ? "#11284a" : "#19223a",
+                color: active ? "#43c8ff" : "#8ecae6",
+                border: "none",
+                boxShadow: active ? "0 4px 14px #0b1a2f55" : undefined,
+            };
         };
         return (
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                 <button
-                    style={{ ...baseStyle, ...(cardSize === "large" ? activeStyle : null) }}
+                    style={getStyle(cardSize === "large")}
                     onClick={() => setCardSize("large")}
                     aria-label={t("view.largeCards", "Крупные карточки")}
                 >
                     {t("view.largeCards", "Крупные")}
                 </button>
                 <button
-                    style={{ ...baseStyle, ...(cardSize === "compact" ? activeStyle : null) }}
+                    style={getStyle(cardSize === "compact")}
                     onClick={() => setCardSize("compact")}
                     aria-label={t("view.compactCards", "Компактные карточки")}
                 >
@@ -818,25 +844,27 @@ export default function OrderList() {
             >
                 <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
                     {renderTabs()}
-                    {renderCardSizeToggle()}
                 </div>
-                {hasActiveFilter && (
-                    <div
-                        style={{
-                            fontSize: 15,
-                            fontWeight: 600,
-                            color: orders.length ? "#43c8ff" : "#ff6868",
-                            background: "rgba(22,35,53,0.97)",
-                            borderRadius: 8,
-                            padding: "4px 15px",
-                            marginLeft: 18,
-                            minWidth: 105,
-                            textAlign: "right",
-                        }}
-                    >
-                        {t("pager.found", "Найдено")}: {loading ? "." : foundCount}
-                    </div>
-                )}
+                <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap", marginLeft: "auto" }}>
+                    {renderCardSizeToggle()}
+                    {hasActiveFilter && (
+                        <div
+                            style={{
+                                fontSize: 15,
+                                fontWeight: 600,
+                                color: orders.length ? "#43c8ff" : "#ff6868",
+                                background: "rgba(22,35,53,0.97)",
+                                borderRadius: 8,
+                                padding: "4px 15px",
+                                minWidth: 105,
+                                textAlign: "right",
+                            }}
+                        >
+                            {t("pager.found", "Найдено")}: {loading ? "." : foundCount}
+                        </div>
+                    )}
+                </div>
+
             </div>
             {activeTab === "list" && <div key="orders-list">{renderOrderCards(filteredOrders)}</div>}
             {renderPagination()}
