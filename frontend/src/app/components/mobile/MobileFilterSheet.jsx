@@ -7,6 +7,7 @@ import DateInput from "../DateInput";
 import LocationAutocomplete from "../LocationAutocomplete";
 import { useLang } from "../../i18n/LangProvider";
 import { normalize, denormalize, num, countActive } from "../../filters/shared";
+import { useTheme } from "../providers/ThemeProvider";
 
 // ----------------- ВНУТРЕННИЕ УТИЛИТЫ UI -----------------
 const field = {
@@ -14,18 +15,17 @@ const field = {
     gap: 6,
 };
 const label = {
-    color: "#bcd1e6",
+    color: "var(--text-secondary)",
     fontSize: 12,
     fontWeight: 700,
 };
 const input = {
     width: "100%",
-    background: "#16243c",
-    border: "1px solid #2b4b75",
-    borderRadius: 10,
+    background: "var(--control-bg)",
+    border: "1px solid var(--border-subtle)",
     borderRadius: 10,
     padding: "9px 12px",
-    color: "#e3f2fd",
+    color: "var(--text-primary)",
     outline: "none",
 };
 
@@ -76,6 +76,8 @@ export default function MobileFilterSheet({
     onPreview,                // (normalizedPayload) => void
 }) {
     const { t } = useLang();
+    const { resolvedTheme } = useTheme?.() || { resolvedTheme: "dark" };
+    const isLight = resolvedTheme === "light";
 
     // локальное состояние полей (в "человеческом" виде)
     const [local, setLocal] = useState(normalize(initialFilters, type));
@@ -118,6 +120,31 @@ export default function MobileFilterSheet({
     const [dragging, setDragging] = useState(false);
     const [offset, setOffset] = useState(0);
     const startRef = useRef({ y: 0, t: 0, start: 0 });
+
+    const colors = useMemo(
+        () => ({
+            overlay: isLight ? "rgba(15, 23, 42, 0.28)" : "rgba(0,10,20,.45)",
+            sheetBg: isLight ? "rgba(255,255,255,0.98)" : "rgba(18,32,52,0.98)",
+            sheetShadow: isLight ? "0 -10px 26px rgba(15,23,42,0.1)" : "0 -10px 30px rgba(0,0,0,.35)",
+            title: isLight ? "var(--text-primary)" : "#e3f2fd",
+            handle: dragging ? (isLight ? "#60a5fa" : "#57b5ff") : isLight ? "#cbd5e1" : "#446b9e",
+            badgeBg: isLight ? "var(--control-bg)" : "#1b3d66",
+            badgeBorder: isLight ? "var(--border-subtle)" : "#2e5a8e",
+            badgeColor: isLight ? "var(--text-secondary)" : "#9cd1ff",
+            resetBg: isLight ? "var(--control-bg)" : "#23395b",
+            resetBorder: isLight ? "var(--border-subtle)" : "#2b4f85",
+            resetColor: isLight ? "var(--text-secondary)" : "#9ad3ff",
+            checkboxLabel: isLight ? "var(--text-primary)" : "#e3f2fd",
+            footerGradient: isLight
+                ? "linear-gradient(180deg, rgba(244,246,251,0) 0%, rgba(244,246,251,0.9) 30%, rgba(244,246,251,0.98) 80%)"
+                : "linear-gradient(180deg, rgba(18,32,52,0) 0%, rgba(18,32,52,0.9) 30%, rgba(18,32,52,0.98) 80%)",
+            closeBg: isLight ? "var(--control-bg)" : "#283e62",
+            closeBorder: isLight ? "var(--border-subtle)" : "#355a8b",
+            closeColor: isLight ? "var(--text-secondary)" : "#c6e4ff",
+        }),
+        [dragging, isLight]
+    );
+
 
     const [SNAP, setSNAP] = useState({ HALF: 300, CLOSED: 700 });
     useEffect(() => {
@@ -182,7 +209,7 @@ export default function MobileFilterSheet({
                 position: "fixed",
                 inset: 0,
                 zIndex: 99999,
-                background: "rgba(0,10,20,.45)",
+                background: colors.overlay,
                 backdropFilter: "blur(2px)",
             }}
             aria-modal="true"
@@ -203,8 +230,8 @@ export default function MobileFilterSheet({
                     overflow: "auto",
                     borderTopLeftRadius: 18,
                     borderTopRightRadius: 18,
-                    background: "rgba(18,32,52,0.98)",
-                    boxShadow: "0 -10px 30px rgba(0,0,0,.35)",
+                    background: colors.sheetBg,
+                    boxShadow: colors.sheetShadow,
                     transform: `translateY(${offset}px)`,
                     transition: dragging ? "none" : "transform 180ms cubic-bezier(.2,.8,.2,1)",
                     willChange: "transform",
@@ -218,7 +245,7 @@ export default function MobileFilterSheet({
                             width: 36,
                             height: 4,
                             borderRadius: 999,
-                            background: dragging ? "#57b5ff" : "#446b9e",
+                            background: colors.handle,
                             transition: "background 160ms",
                         }}
                     />
@@ -234,15 +261,15 @@ export default function MobileFilterSheet({
                     }}
                 >
                     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <span style={{ color: "#e3f2fd", fontWeight: 800, fontSize: 16 }}>
+                        <span style={{ color: colors.title, fontWeight: 800, fontSize: 16 }}>
                             {t("filter.title", "Фильтры")}
                         </span>
                         {activeCount > 0 && (
                             <span
                                 style={{
-                                    background: "#1b3d66",
-                                    color: "#9cd1ff",
-                                    border: "1px solid #2e5a8e",
+                                    background: colors.badgeBg,
+                                    color: colors.badgeColor,
+                                    border: `1px solid ${colors.badgeBorder}`,
                                     padding: "2px 7px",
                                     borderRadius: 999,
                                     fontSize: 12,
@@ -256,9 +283,9 @@ export default function MobileFilterSheet({
                     <button
                         onClick={reset}
                         style={{
-                            background: "#23395b",
-                            color: "#9ad3ff",
-                            border: "1px solid #2b4f85",
+                            background: colors.resetBg,
+                            color: colors.resetColor,
+                            border: `1px solid ${colors.resetBorder}`,
                             padding: "7px 12px",
                             borderRadius: 10,
                             fontSize: 13,
@@ -410,7 +437,7 @@ export default function MobileFilterSheet({
                                 checked={!!local.adr}
                                 onChange={(e) => setLocal((s) => ({ ...s, adr: !!e.target.checked }))}
                             />
-                            <span style={{ color: "#e3f2fd", fontSize: 14, userSelect: "none" }}>ADR</span>
+                            <span style={{ color: colors.checkboxLabel, fontSize: 14, userSelect: "none" }}>ADR</span>
                         </label>
                     </div>
                 </div>
@@ -422,8 +449,7 @@ export default function MobileFilterSheet({
                         bottom: 0,
                         marginTop: 14,
                         paddingTop: 12,
-                        background:
-                            "linear-gradient(180deg, rgba(18,32,52,0) 0%, rgba(18,32,52,0.9) 30%, rgba(18,32,52,0.98) 80%)",
+                        background: colors.footerGradient,
                     }}
                 >
                     <div style={{ display: "flex", gap: 10 }}>
@@ -448,9 +474,9 @@ export default function MobileFilterSheet({
                         <button
                             onClick={onClose}
                             style={{
-                                background: "#283e62",
-                                color: "#c6e4ff",
-                                border: "1px solid #355a8b",
+                                background: colors.closeBg,
+                                color: colors.closeColor,
+                                border: `1px solid ${colors.closeBorder}`,
                                 padding: "12px 14px",
                                 borderRadius: 12,
                                 fontSize: 15,
