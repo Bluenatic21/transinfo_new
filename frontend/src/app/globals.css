@@ -363,6 +363,38 @@ html[data-theme="light"] {
   border-bottom: 1px dotted #71bfff;
 }
 
+.mobile-form .adr-list-mobile {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mobile-form .adr-list-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #16233c;
+  border: 1.5px solid #2c3f62;
+  color: #c8d7ef;
+  box-shadow: 0 3px 16px rgba(12, 19, 35, .28);
+}
+
+.mobile-form .adr-list-item input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent, #5fd8ff);
+  flex-shrink: 0;
+}
+
+.mobile-form .adr-list-item .choice-label {
+  color: #c9def6;
+  border-bottom: 1px dotted #71bfff;
+  font-size: 15px;
+}
+
 @media (max-width: 540px) {
 
   .mobile-form .form-section,

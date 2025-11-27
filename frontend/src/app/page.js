@@ -404,8 +404,8 @@ export default function Home() {
           .home-network-figure {
             position: absolute;
             right: clamp(-60px, -16vw, -280px);
-            top: clamp(-360px, -16vh, -20px);
-            width: min(860px, 78vw);
+            top: clamp(-160px, -6vh, 80px);
+            width: min(1280px, 108vw);
             aspect-ratio: 1 / 1;
             background: url("/main_web.png") top right / contain no-repeat;
             opacity: 0.82;

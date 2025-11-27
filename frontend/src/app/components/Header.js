@@ -27,6 +27,7 @@ import { useLang } from "../i18n/LangProvider";
 import ThemeToggle from "./ThemeToggle"; // путь поправь, если Header в другой папке
 import getAvatarUrl from "./getAvatarUrl";
 import { abs } from "@/config/env";
+import { useTheme } from "../providers/ThemeProvider";
 
 // ——— media‑hook для брейкпоинтов (работает и в старых браузерах)
 function useMedia(query) {
@@ -499,6 +500,7 @@ function MiniProfile({ user, onClick, mode = "full" }) {
 export default function Header({ setShowRegisterModal }) {
   const { user, handleLogoutClick, setShowAuth, isAdmin, isActive } = useUser();
   const { t } = useLang();
+  const { resolvedTheme } = useTheme();
   const pathname = usePathname();
   const isHome = pathname === "/";
   // роль пользователя (нужно, чтобы скрыть пункты меню для TRANSPORT)
@@ -709,6 +711,7 @@ export default function Header({ setShowRegisterModal }) {
   const WORD = isTight ? 16 : isCompact ? 19 : 21; // размер надписи Transinfo.ge
   const HEADER_H = isTight ? 66 : isCompact ? 78 : 88;
   const LOGO_OVERSCAN = 1.18; // «дозум» > 1.0, чтобы отсечь невидимые поля PNG
+  const wordColor = resolvedTheme === "light" ? "#0b5cab" : "#7CC3FF";
 
   const NAV_GAP = isTight ? 10 : isCompact ? 16 : 22;
   const NAV_FONT = isTight ? 13 : isCompact ? 14 : 16;
@@ -1081,7 +1084,7 @@ export default function Header({ setShowRegisterModal }) {
               letterSpacing: ".01em",
               fontSize: WORD,
               lineHeight: 1,
-              color: "#7CC3FF",
+              color: wordColor,
               textShadow: "0 1px 8px rgba(30,160,255,.22)",
             }}
           >
