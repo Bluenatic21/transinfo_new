@@ -72,13 +72,13 @@ export default function OrdersTabs({ mode = "route" }) {
 
     return (
         <div
-            className="sticky top-0 z-20 px-3 pt-3 pb-2"
+            className="sticky top-0 z-20 px-3"
             style={{
-                background: "var(--orders-tabs-bg)",
-                borderBottom: "1px solid var(--orders-tabs-border)",
-                boxShadow: "var(--orders-tabs-shadow)",
-                backdropFilter: "blur(14px)",
-                WebkitBackdropFilter: "blur(14px)",
+                paddingTop: 0,
+                paddingBottom: 12,
+                background: "transparent",
+                borderBottom: "none",
+                boxShadow: "none",
             }}
         >
             <div className="flex gap-2">

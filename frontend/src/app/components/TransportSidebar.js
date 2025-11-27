@@ -27,7 +27,7 @@ export default function TransportSidebar() {
                 width: 232,
                 background: "var(--sidebar-bg)",
                 borderRight: "1.5px solid var(--sidebar-border)",
-                padding: "42px 0 0 0",
+                padding: "24px 0 0 0",
                 minHeight: "100vh",
                 display: "flex",
                 flexDirection: "column",
@@ -36,6 +36,9 @@ export default function TransportSidebar() {
                 backdropFilter: "blur(4px)",                    // размытый фон
                 position: "sticky",
                 top: 0,
+                marginTop: 24,
+                borderTopLeftRadius: 18,
+                borderTopRightRadius: 18,
             }}
         >
             <div

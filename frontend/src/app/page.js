@@ -291,6 +291,23 @@ export default function Home() {
         );
     }
 
+    function MapOrdersSection() {
+        return (
+            <section className="home-map-orders">
+                <div className="home-map-block">
+                    <HomeMapsSection hideTransportPins={isTransportRole} />
+                </div>
+                <div className="home-orders-block">
+                    <div className="section-title">{t("home.sections.latestOrders", "Последние заявки")}</div>
+                    <OrderList reload={reload} setMessage={setMessage} user={user} />
+                </div>
+                <div className="home-info-block">
+                    <ServiceSection compact />
+                </div>
+            </section>
+        );
+    }
+
     function CreateSection() {
         return (
             <div className="section">
