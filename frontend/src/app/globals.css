@@ -3847,3 +3847,15 @@ body {
   opacity: .65;
   cursor: not-allowed;
 }
+
+/* Desktop hover lift for compact cards */
+@media (hover: hover) and (pointer: fine) and (min-width: 1024px) {
+  .compact-hover-lift {
+    transition: box-shadow .23s ease, border-color .17s ease, transform .2s ease;
+  }
+
+  .compact-hover-lift:hover:not(.disable-hover):not(.disable-all-hover) {
+    transform: translateY(-4px);
+    box-shadow: 0 14px 34px rgba(18, 30, 56, 0.24), var(--compact-card-shadow);
+  }
+}

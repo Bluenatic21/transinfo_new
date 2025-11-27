@@ -455,7 +455,7 @@ export default function TransportCompactCard({
         maxWidth: "100%",
         minWidth: 0,
         width: "100%",
-        transform: (enableHoverLift && hoveredItemId === transport.id) ? "scale(1.012)" : "none",
+        transform: enableHoverLift && hoveredItemId === transport.id ? "scale(1.012)" : undefined,
         zIndex: (hoveredItemId === transport.id) ? 20 : 1,
         opacity: isActive ? 1 : 0.72,
         transition: "box-shadow .23s, border-color .17s, transform .19s"
@@ -484,7 +484,7 @@ export default function TransportCompactCard({
         padding: isMobile ? 10 : 18,
         cursor: onClick ? "pointer" : "default",
         cursor: "pointer",
-        transform: (enableHoverLift && hoveredItemId === transport.id) ? "scale(1.012)" : "none",
+        transform: enableHoverLift && hoveredItemId === transport.id ? "scale(1.012)" : undefined,
         zIndex: (hoveredItemId === transport.id) ? 20 : 1,
         opacity: isActive ? 1 : 0.72,
         transition: "box-shadow .23s, border-color .17s, transform .19s, opacity 0.14s"
@@ -501,7 +501,8 @@ export default function TransportCompactCard({
                 "transport-compact-card" +
                 (hoveredItemId === transport.id ? " pin-hovered-card" : "") +
                 (isFocused ? " highlight-card disable-hover" : "") +
-                (disableAllHover ? " disable-all-hover" : "")
+                (disableAllHover ? " disable-all-hover" : "") +
+                (enableHoverLift ? " compact-hover-lift" : "")
             }
             style={{
                 ...cardStyle,

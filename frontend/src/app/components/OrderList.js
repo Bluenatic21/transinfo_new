@@ -760,7 +760,7 @@ export default function OrderList() {
                             style={{ width: "100%" }}
                         >
                             {cardSize === "compact" ? (
-                                <CargoCompactCard cargo={order} />
+                                <CargoCompactCard cargo={order} enableHoverLift={!isMobile} />
                             ) : (
                                 <OrderCard
                                     order={order}
@@ -807,7 +807,7 @@ export default function OrderList() {
                         style={{ width: "100%" }}
                     >
                         {cardSize === "compact" ? (
-                            <CargoCompactCard cargo={order} />
+                            <CargoCompactCard cargo={order} enableHoverLift={!isMobile} />
                         ) : (
                             <OrderCard
                                 order={order}

@@ -134,6 +134,7 @@ const CargoCompactCard = forwardRef(function CargoCompactCard(
         hoveredItemId,
         setHoveredItemId,
         enableHoverScroll = false,
+        enableHoverLift = false,
         disableAllHover = false,
         managerContext = false,
         routeStacked = false,
@@ -623,7 +624,8 @@ const CargoCompactCard = forwardRef(function CargoCompactCard(
                 (hoveredItemId === (hoverKey ?? cargo.id) ? " pin-hovered-card" : "") +
                 (focusFlash ? " highlight-card" : "") +
                 (isFocused ? " disable-hover" : "") +
-                (disableAllHover ? " disable-all-hover" : "")
+                (disableAllHover ? " disable-all-hover" : "") +
+                (enableHoverLift ? " compact-hover-lift" : "")
             }
             onClick={(e) => {
                 if (isMobile && isClickGuardActive()) { e.stopPropagation(); return; }
@@ -665,7 +667,7 @@ const CargoCompactCard = forwardRef(function CargoCompactCard(
                 width: "100%",
                 position: "relative",
                 zIndex: showBids ? 2000 : undefined, // ниже оверлея/панели
-                transition: "box-shadow .23s, border-color .17s",
+                transition: "box-shadow .23s, border-color .17s, transform .2s",
                 // Desktop: одна карточка в ряд (занять всю строку родительского grid/flex)
                 gridColumn: isMobile ? undefined : "1 / -1",
                 flex: isMobile ? undefined : "1 1 100%",
