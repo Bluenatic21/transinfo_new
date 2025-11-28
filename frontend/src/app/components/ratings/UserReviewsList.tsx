@@ -25,6 +25,15 @@ export default function UserReviewsList({
 }) {
     const { t } = useLang();
     const { authFetchWithRefresh } = useUser();
+    const colors = {
+        cardBg: "var(--surface)",
+        cardBorder: "var(--border-subtle)",
+        textPrimary: "var(--text-primary)",
+        textSecondary: "var(--text-secondary)",
+        textMuted: "var(--text-muted)",
+        shadow: "var(--shadow-soft)",
+        accent: "var(--brand-blue)",
+    };
     const [items, setItems] = useState<Review[]>([]);
     const [loading, setLoading] = useState(false);
     const [page, setPage] = useState(1);
@@ -69,33 +78,44 @@ export default function UserReviewsList({
     }, [userId]);
 
     return (
-        <div className="space-y-3">
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             {items.map((r) => (
                 <div
                     key={r.id}
-                    className="rounded-2xl border border-slate-700 bg-slate-800/40 p-3"
+                    style={{
+                        borderRadius: 18,
+                        border: `1px solid ${colors.cardBorder}`,
+                        background: colors.cardBg,
+                        padding: 14,
+                        boxShadow: colors.shadow,
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 8,
+                    }}
                 >
-                    <div className="flex items-center justify-between">
-                        <div className="text-xs opacity-70">
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                        <div style={{ fontSize: 12, color: colors.textSecondary }}>
                             {new Date(r.created_at).toLocaleDateString()}
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                             <RatingStars value={score(r)} size={16} />
-                            <span className="text-xs opacity-80">{score(r).toFixed(1)}</span>
+                            <span style={{ fontSize: 12, color: colors.textPrimary, fontWeight: 700 }}>{score(r).toFixed(1)}</span>
                         </div>
                     </div>
 
-                    <div className="mt-1 text-sm text-slate-200">
-                        {r.comment ? r.comment : <span className="opacity-60">{t("reviews.noComment", "Без комментария")}</span>}
+                    <div style={{ marginTop: 2, fontSize: 14, color: colors.textPrimary }}>
+                        {r.comment ? r.comment : <span style={{ color: colors.textMuted }}>{t("reviews.noComment", "Без комментария")}</span>}
                     </div>
 
                     {/* Анонимный автор */}
-                    <div className="mt-2 text-xs text-slate-400">{t("reviews.byAnonymous", "Оценил: Анонимно")}</div>
+                    <div style={{ marginTop: 4, fontSize: 12, color: colors.textSecondary }}>
+                        {t("reviews.byAnonymous", "Оценил: Анонимно")}
+                    </div>
                 </div>
             ))}
 
             {hasMore && (
-                <div className="pt-2">
+                <div style={{ paddingTop: 8 }}>
                     <button
                         onClick={() => {
                             const p2 = page + 1;
@@ -103,7 +123,19 @@ export default function UserReviewsList({
                             load(p2);
                         }}
                         disabled={loading}
-                        className="w-full rounded-xl bg-slate-700/60 hover:bg-slate-600/70 py-2 text-sm disabled:opacity-60"
+                        style={{
+                            width: "100%",
+                            borderRadius: 12,
+                            background: colors.accent,
+                            color: "var(--text-on-brand)",
+                            padding: "10px 12px",
+                            border: "none",
+                            fontSize: 14,
+                            fontWeight: 700,
+                            cursor: loading ? "default" : "pointer",
+                            opacity: loading ? 0.8 : 1,
+                            boxShadow: colors.shadow,
+                        }}
                     >
                         {loading ? t("common.loading", "Загрузка...") : t("common.showMore", "Показать ещё")}
                     </button>
@@ -111,7 +143,9 @@ export default function UserReviewsList({
             )}
 
             {!loading && !items.length && (
-                <div className="text-sm opacity-70">{t("reviews.none", "Пока нет отзывов.")}</div>
+                <div style={{ fontSize: 14, color: colors.textSecondary }}>
+                    {t("reviews.none", "Пока нет отзывов.")}
+                </div>
             )}
         </div>
     );

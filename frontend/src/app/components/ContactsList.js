@@ -18,6 +18,21 @@ export default function ContactsList() {
     const [error, setError] = useState(null);
     const [query, setQuery] = useState(""); // <-- строка поиска
 
+    const colors = {
+        cardBg: "var(--surface)",
+        cardBorder: "var(--border-subtle)",
+        cardShadow: "var(--shadow-soft)",
+        textPrimary: "var(--text-primary)",
+        textSecondary: "var(--text-secondary)",
+        textMuted: "var(--text-muted)",
+        controlBg: "var(--control-bg)",
+        controlBorder: "var(--border-subtle)",
+        controlText: "var(--text-primary)",
+        accent: "var(--brand-blue)",
+        accentHover: "color-mix(in srgb, var(--brand-blue) 75%, transparent)",
+        danger: "#ff8a80",
+    };
+
 
     // <=640px — мобильная вёрстка (1 колонка)
     const [isMobile, setIsMobile] = useState(false);
@@ -168,13 +183,15 @@ export default function ContactsList() {
                     display: "flex",
                     alignItems: "center",
                     gap: 12,
-                    border: "1px solid #233a5a",
+                    border: `1px solid ${colors.cardBorder}`,
                     borderRadius: 16,
                     padding: 14,
-                    width: "100%"
+                    width: "100%",
+                    background: colors.cardBg,
+                    boxShadow: colors.cardShadow,
                 }}>
                 <Link href={`/profile/${u.id}`}
-                    style={{ textDecoration: "none", color: "#e3f2fd", flex: 1, minWidth: 0 }}>
+                    style={{ textDecoration: "none", color: colors.textPrimary, flex: 1, minWidth: 0 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0 }}>
                         <Image src={avatarSrc} alt={primaryTitle} width={40} height={40} style={{ borderRadius: 999 }} />
                         <div style={{ display: "flex", flexDirection: "column", minWidth: 0 }}>
@@ -182,7 +199,7 @@ export default function ContactsList() {
                             <div
                                 style={{
                                     fontWeight: 800,
-                                    color: "#e3f2fd",
+                                    color: colors.textPrimary,
                                     fontSize: 16,
                                     whiteSpace: "nowrap",
                                     overflow: "hidden",
@@ -211,7 +228,7 @@ export default function ContactsList() {
                             )}
                             {/* Телефон остаётся третьей строкой (мелко) */}
                             {phone && (
-                                <div style={{ color: "#9cc4e7", fontSize: 12, marginTop: 2 }}>{phone}</div>
+                                <div style={{ color: colors.textSecondary, fontSize: 12, marginTop: 2 }}>{phone}</div>
                             )}
                         </div>
                     </div>
@@ -221,8 +238,8 @@ export default function ContactsList() {
                         onClick={() => handleRemove(u.id)}
                         style={{
                             background: "transparent",
-                            color: "#ff8a80",
-                            border: "1px solid #ff8a80",
+                            color: colors.danger,
+                            border: `1px solid ${colors.danger}`,
                             borderRadius: 10,
                             padding: "6px 10px",
                             cursor: "pointer",
@@ -252,7 +269,7 @@ export default function ContactsList() {
                     marginBottom: isMobile ? 10 : 14,
                 }}
             >
-                <div style={{ fontWeight: 800, color: "#e3f2fd", fontSize: 18 }}>
+                <div style={{ fontWeight: 800, color: colors.textPrimary, fontSize: 18 }}>
                     {t("contacts.my", "Мои контакты")}
                 </div>
                 <div
@@ -298,10 +315,12 @@ export default function ContactsList() {
                                 width: "100%",
                                 padding: "10px 12px 10px 36px",
                                 borderRadius: 12,
-                                background: "#0f172a",
-                                border: "1px solid #223350",
-                                color: "#e3f2fd",
+                                background: colors.controlBg,
+                                border: `1px solid ${colors.controlBorder}`,
+                                color: colors.controlText,
                                 outline: "none",
+                                transition: "border-color var(--transition-fast), box-shadow var(--transition-fast)",
+                                boxShadow: "0 1px 6px rgba(0,0,0,0.06)",
                             }}
                         />
                     </div>
@@ -309,15 +328,15 @@ export default function ContactsList() {
             </div>
 
             {items.length === 0 && !loading && !error && (
-                <div style={{ color: "#9cc4e7" }}>
+                <div style={{ color: colors.textSecondary }}>
                     {t("contacts.empty", "Пока пусто.")}
                 </div>
             )}
-            {error && <div style={{ color: "#ff8a80" }}>{error}</div>}
+            {error && <div style={{ color: colors.danger }}>{error}</div>}
 
             {/* Ничего не найдено по запросу */}
             {q && filtered.length === 0 && items.length > 0 && (
-                <div style={{ color: "#9cc4e7" }}>
+                <div style={{ color: colors.textSecondary }}>
                     {t("contacts.noResults", "Ничего не найдено по запросу")} «{query}».
                 </div>
             )}
@@ -337,7 +356,7 @@ export default function ContactsList() {
 
             {/* Скелетон / прогресс */}
             {loading && (
-                <div style={{ color: "#9cc4e7", textAlign: "center", padding: 12 }}>
+                <div style={{ color: colors.textSecondary, textAlign: "center", padding: 12 }}>
                     {t("common.loading", "Загрузка...")}
                 </div>
             )}
@@ -349,8 +368,8 @@ export default function ContactsList() {
                     style={{
                         alignSelf: "center",
                         background: "transparent",
-                        color: "#90caf9",
-                        border: "1px solid #90caf9",
+                        color: colors.accent,
+                        border: `1px solid ${colors.accent}`,
                         borderRadius: 12,
                         padding: "8px 12px",
                         cursor: "pointer",

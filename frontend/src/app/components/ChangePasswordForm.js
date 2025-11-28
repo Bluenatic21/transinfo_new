@@ -4,6 +4,7 @@ import { useUser } from "../UserContext";
 import { api } from "@/config/env";
 import { FaLock } from "react-icons/fa";
 import { useLang } from "../i18n/LangProvider";
+import styles from "./ChangePasswordForm.module.css";
 
 export default function ChangePasswordForm() {
     const { authFetchWithRefresh } = useUser();
@@ -54,27 +55,17 @@ export default function ChangePasswordForm() {
     };
 
     return (
-        <div
-            className="change-password-card"
-            style={{
-                marginTop: 16,
-                background: "#0f2449",
-                border: "1px solid #254985",
-                borderRadius: 16,
-                padding: 20,
-                boxShadow: "0 6px 20px rgba(0,0,0,.25)",
-            }}
-        >
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-                <FaLock color="#b3d5fa" size={16} />
-                <h3 style={{ margin: 0, color: "#e3f2fd", fontSize: 18, fontWeight: 700 }}>
+        <div className={`${styles.card} change-password-card`}>
+            <div className={styles.header}>
+                <FaLock className={styles.icon} size={16} />
+                <h3 className={styles.title}>
                     {t("changePassword.title", "Смена пароля")}
                 </h3>
             </div>
 
-            <form onSubmit={onSubmit} style={{ display: "grid", gap: 12 }}>
+            <form onSubmit={onSubmit} className={styles.form}>
                 <div>
-                    <label style={{ color: "#b3d5fa", fontWeight: 600, display: "block", marginBottom: 6 }}>{t("changePassword.current", "Текущий пароль")}</label>
+                    <label className={styles.label}>{t("changePassword.current", "Текущий пароль")}</label>
                     <input
                         type="password"
                         autoComplete="current-password"
@@ -82,19 +73,11 @@ export default function ChangePasswordForm() {
                         onChange={(e) => setCurrentPassword(e.target.value)}
                         required
                         disabled={loading}
-                        style={{
-                            background: "#091a35",
-                            border: "1px solid #254985",
-                            color: "#e3f2fd",
-                            borderRadius: 12,
-                            padding: "10px 12px",
-                            width: "100%",
-                            fontSize: 16,
-                        }}
+                        className={styles.input}
                     />
                 </div>
                 <div>
-                    <label style={{ color: "#b3d5fa", fontWeight: 600, display: "block", marginBottom: 6 }}>{t("changePassword.new", "Новый пароль")}</label>
+                    <label className={styles.label}>{t("changePassword.new", "Новый пароль")}</label>
                     <input
                         type="password"
                         autoComplete="new-password"
@@ -103,19 +86,11 @@ export default function ChangePasswordForm() {
                         required
                         minLength={8}
                         disabled={loading}
-                        style={{
-                            background: "#091a35",
-                            border: "1px solid #254985",
-                            color: "#e3f2fd",
-                            borderRadius: 12,
-                            padding: "10px 12px",
-                            width: "100%",
-                            fontSize: 16,
-                        }}
+                        className={styles.input}
                     />
                 </div>
                 <div>
-                    <label style={{ color: "#b3d5fa", fontWeight: 600, display: "block", marginBottom: 6 }}>{t("changePassword.repeat", "Повторите новый пароль")}</label>
+                    <label className={styles.label}>{t("changePassword.repeat", "Повторите новый пароль")}</label>
                     <input
                         type="password"
                         autoComplete="new-password"
@@ -124,40 +99,17 @@ export default function ChangePasswordForm() {
                         required
                         minLength={8}
                         disabled={loading}
-                        style={{
-                            background: "#091a35",
-                            border: "1px solid #254985",
-                            color: "#e3f2fd",
-                            borderRadius: 12,
-                            padding: "10px 12px",
-                            width: "100%",
-                            fontSize: 16,
-                        }}
+                        className={styles.input}
                     />
                 </div>
 
-                {error && (
-                    <div style={{ color: "#ff9aa2", fontWeight: 600 }}>{error}</div>
-                )}
-                {message && (
-                    <div style={{ color: "#72ebff", fontWeight: 600 }}>{message}</div>
-                )}
+                {error && <div className={styles.feedbackError}>{error}</div>}
+                {message && <div className={styles.feedbackSuccess}>{message}</div>}
 
-                <button
-                    type="submit"
-                    disabled={loading}
-                    style={{
-                        background: loading ? "#1c3a72" : "#1a73e8",
-                        color: "#fff",
-                        border: "none",
-                        borderRadius: 12,
-                        padding: "10px 14px",
-                        fontSize: 16,
-                        fontWeight: 700,
-                        cursor: loading ? "default" : "pointer",
-                    }}
-                >
-                    {loading ? t("changePassword.saving", "Сохранение...") : t("changePassword.submit", "Изменить пароль")}
+                <button type="submit" disabled={loading} className={styles.submit}>
+                    {loading
+                        ? t("changePassword.saving", "Сохранение...")
+                        : t("changePassword.submit", "Изменить пароль")}
                 </button>
             </form>
         </div>

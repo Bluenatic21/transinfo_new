@@ -38,6 +38,19 @@ export default function BlockedUsersList() {
     const [q, setQ] = useState("");
     const { t } = useLang();
 
+    const colors = {
+        surface: "var(--surface)",
+        surfaceSoft: "var(--surface-soft)",
+        border: "var(--border-subtle)",
+        textPrimary: "var(--text-primary)",
+        textSecondary: "var(--text-secondary)",
+        textMuted: "var(--text-muted)",
+        controlBg: "var(--control-bg)",
+        controlBorder: "var(--border-subtle)",
+        shadow: "var(--shadow-soft)",
+        accent: "var(--brand-blue)",
+    };
+
     const isMobile = useIsMobile();
 
 
@@ -119,38 +132,44 @@ export default function BlockedUsersList() {
                             top: 0,
                             zIndex: 5,
                             padding: "8px 0 12px",
-                            background: "#182033cc",
+                            background: "color-mix(in srgb, var(--surface) 92%, transparent)",
                             backdropFilter: "blur(4px)",
                         }
                         : {}),
                 }}
             >
-                <span style={{ fontWeight: 800, color: "#e3f2fd", fontSize: 18 }}>
+                <span style={{ fontWeight: 800, color: colors.textPrimary, fontSize: 18 }}>
                     {t("users.blocked.title", "Заблокированные пользователи")}
                 </span>
                 <div style={{
                     marginLeft: isMobile ? 0 : "auto",
                     display: "flex", alignItems: "center", gap: 8,
-                    background: "#0f1a2b",
-                    border: "1px solid #233a5a",
+                    background: colors.controlBg,
+                    border: `1px solid ${colors.controlBorder}`,
                     padding: "8px 10px",
                     borderRadius: 10,
                     width: isMobile ? "100%" : 340,
                     maxWidth: isMobile ? "100%" : "40vw"
                 }}>
-                    <FiSearch size={18} color="#7fb7ff" />
+                    <FiSearch size={18} color={colors.textSecondary} />
                     <input
                         placeholder={t("search.placeholder.person", "Поиск по имени/почте/телефону")}
                         value={q}
                         onChange={(e) => setQ(e.target.value)}
-                        style={{ background: "transparent", color: "#cfe3ff", border: "none", outline: "none", width: "100%" }}
+                        style={{
+                            background: "transparent",
+                            color: colors.textPrimary,
+                            border: "none",
+                            outline: "none",
+                            width: "100%",
+                        }}
                     />
                 </div>
             </div>
 
-            {loading && <div style={{ padding: 12, color: "#9cc4e7" }}>{t("common.loading", "Загрузка…")}</div>}
+            {loading && <div style={{ padding: 12, color: colors.textSecondary }}>{t("common.loading", "Загрузка…")}</div>}
             {!loading && filtered.length === 0 && (
-                <div style={{ padding: 12, color: "#9cc4e7" }}>{t("users.blocked.empty", "Список пуст.")}</div>
+                <div style={{ padding: 12, color: colors.textSecondary }}>{t("users.blocked.empty", "Список пуст.")}</div>
             )}
 
             {!loading && filtered.length > 0 && (
@@ -165,8 +184,8 @@ export default function BlockedUsersList() {
                             <div key={u.id}
                                 style={{
                                     width: "100%",
-                                    background: "#121a2b",
-                                    border: "1px solid #233a5a",
+                                    background: colors.surface,
+                                    border: `1px solid ${colors.border}`,
                                     borderRadius: 16,
                                     padding: 14,
                                     display: "flex",
@@ -175,7 +194,7 @@ export default function BlockedUsersList() {
                                     transition: "transform .08s ease, box-shadow .08s ease",
                                 }}>
                                 {/* как в EmployeeList: слева — клика в профиль */}
-                                <Link href={`/profile/${u.id}`} style={{ display: "flex", alignItems: "center", gap: 14, textDecoration: "none", color: "#e3f2fd", flex: 1, minWidth: 0 }}>
+                                <Link href={`/profile/${u.id}`} style={{ display: "flex", alignItems: "center", gap: 14, textDecoration: "none", color: colors.textPrimary, flex: 1, minWidth: 0 }}>
                                     <Image
                                         src={avatarSrc}
                                         alt={name}
@@ -183,14 +202,16 @@ export default function BlockedUsersList() {
                                         height={64}
                                         style={{
                                             width: 64, height: 64, borderRadius: 10, objectFit: "cover",
-                                            border: "1.6px solid #223350", background: "#182337", display: "block", flexShrink: 0,
+                                            border: `1.6px solid ${colors.border}`,
+                                            background: colors.surfaceSoft,
+                                            display: "block", flexShrink: 0,
                                         }}
                                         onError={(e) => { e.currentTarget.src = "/default-avatar.png"; }}
                                     />
                                     <div style={{ flex: 1, minWidth: 0 }}>
                                         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                                             <div style={{
-                                                fontWeight: 800, fontSize: 16, color: "#e3f2fd",
+                                                fontWeight: 800, fontSize: 16, color: colors.textPrimary,
                                                 whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
                                             }}>
                                                 {name}
@@ -198,15 +219,17 @@ export default function BlockedUsersList() {
                                             {roleText && (
                                                 <span style={{
                                                     marginLeft: "auto", fontSize: 12, fontWeight: 800, padding: "4px 8px",
-                                                    borderRadius: 999, background: "#182b4a", border: "1px solid #2a3e65",
-                                                    color: "#9cc4e7", whiteSpace: "nowrap",
+                                                    borderRadius: 999,
+                                                    background: colors.surfaceSoft,
+                                                    border: `1px solid ${colors.border}`,
+                                                    color: colors.textSecondary, whiteSpace: "nowrap",
                                                 }}>
                                                     {roleText}
                                                 </span>
                                             )}
                                         </div>
                                         {(u?.email || phone) && (
-                                            <div style={{ marginTop: 4, display: "flex", gap: 12, color: "#9fbbe0", fontSize: 13, flexWrap: "wrap" }}>
+                                            <div style={{ marginTop: 4, display: "flex", gap: 12, color: colors.textSecondary, fontSize: 13, flexWrap: "wrap" }}>
                                                 {u?.email && <div>{u.email}</div>}
                                                 {phone && <div>{phone}</div>}
                                             </div>
@@ -218,7 +241,7 @@ export default function BlockedUsersList() {
                                 <div style={{ display: "flex", gap: 8 }}>
                                     <button
                                         onClick={async () => { await unblockUser(u.id); }}
-                                        style={{ padding: "8px 12px", borderRadius: 8, background: "#2563eb", color: "#fff", border: "none", cursor: "pointer" }}
+                                        style={{ padding: "8px 12px", borderRadius: 8, background: colors.accent, color: "var(--text-on-brand)", border: "none", cursor: "pointer", boxShadow: colors.shadow }}
                                     >
                                         {t("users.blocked.unblock", "Разблокировать")}
                                     </button>

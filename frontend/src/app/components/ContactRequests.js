@@ -15,6 +15,19 @@ export default function ContactRequests() {
     const { t } = useLang();
     const { authFetchWithRefresh, respondContactRequest, onNotification } = useUser();
 
+    const colors = {
+        cardBg: "var(--surface)",
+        cardBorder: "var(--border-subtle)",
+        surfaceSoft: "var(--surface-soft)",
+        textPrimary: "var(--text-primary)",
+        textSecondary: "var(--text-secondary)",
+        textMuted: "var(--text-muted)",
+        controlBg: "var(--control-bg)",
+        controlBorder: "var(--border-subtle)",
+        accent: "var(--brand-blue)",
+        shadow: "var(--shadow-soft)",
+    };
+
     // ---------- helpers ----------
     const joinName = (a, b) => [a, b].filter((v) => v && String(v).trim().length).join(" ");
 
@@ -248,32 +261,34 @@ export default function ContactRequests() {
         display: "flex",
         gap: 14,
         alignItems: "center",
-        background: "#121a2b",
-        border: "1px solid #233a5a",
+        background: colors.cardBg,
+        border: `1px solid ${colors.cardBorder}`,
         borderRadius: 16,
         padding: 14,
+        boxShadow: colors.shadow,
     };
 
     const btnBase = {
         padding: "8px 12px",
         borderRadius: 8,
-        background: "#1f2937",
-        color: "#cbd5e1",
-        border: "1px solid #334155",
+        background: colors.controlBg,
+        color: colors.textPrimary,
+        border: `1px solid ${colors.controlBorder}`,
         cursor: "pointer",
+        transition: "background var(--transition-fast), transform var(--transition-fast)",
     };
 
     // ---------- render ----------
     return (
         <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
             {/* Входящие */}
-            <div style={{ fontWeight: 800, color: "#e3f2fd", fontSize: 18 }}>
+            <div style={{ fontWeight: 800, color: colors.textPrimary, fontSize: 18 }}>
                 {t("contacts.incoming", "Входящие")}
             </div>
             {inItems.length === 0 && !inLoading && !inError && (
-                <div style={{ color: "#9cc4e7" }}>{t("common.none", "Нет")}</div>
+                <div style={{ color: colors.textSecondary }}>{t("common.none", "Нет")}</div>
             )}
-            {inError && <div style={{ color: "#ff8a80" }}>{inError}</div>}
+            {inError && <div style={{ color: colors.textSecondary }}>{inError}</div>}
 
             {inItems.map((r) => {
                 const p = resolvePerson(r, "in");
@@ -286,7 +301,7 @@ export default function ContactRequests() {
                                 alignItems: "center",
                                 gap: 14,
                                 textDecoration: "none",
-                                color: "#e3f2fd",
+                                color: colors.textPrimary,
                                 flex: 1,
                                 minWidth: 0,
                             }}
@@ -301,8 +316,8 @@ export default function ContactRequests() {
                                     height: 64,
                                     borderRadius: 10,
                                     objectFit: "cover",
-                                    border: "1.6px solid #223350",
-                                    background: "#182337",
+                                    border: `1.6px solid ${colors.cardBorder}`,
+                                    background: colors.surfaceSoft,
                                 }}
                             />
                             <div style={{ flex: 1, minWidth: 0 }}>
@@ -310,7 +325,7 @@ export default function ContactRequests() {
                                     style={{
                                         fontWeight: 800,
                                         fontSize: 16,
-                                        color: "#e3f2fd",
+                                        color: colors.textPrimary,
                                         whiteSpace: "nowrap",
                                         overflow: "hidden",
                                         textOverflow: "ellipsis",
@@ -318,7 +333,7 @@ export default function ContactRequests() {
                                 >
                                     {p.name}
                                 </div>
-                                <div style={{ marginTop: 4, color: "#9fbbe0", fontSize: 13, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                                <div style={{ marginTop: 4, color: colors.textSecondary, fontSize: 13, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                                     {t("contacts.wantsToAdd", "хочет добавить вас в контакты")}
                                 </div>
                             </div>
@@ -328,14 +343,14 @@ export default function ContactRequests() {
                             <button
                                 type="button"
                                 onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleAnswer(r.id, "accept", "in"); }}
-                                style={{ ...btnBase }}
+                                style={{ ...btnBase, background: colors.accent, color: "var(--text-on-brand)", border: "none", boxShadow: colors.shadow }}
                             >
                                 {t("common.accept", "Принять")}
                             </button>
                             <button
                                 type="button"
                                 onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleAnswer(r.id, "decline", "in"); }}
-                                style={{ ...btnBase, opacity: 0.85 }}
+                                style={{ ...btnBase, color: colors.textSecondary }}
                             >
                                 {t("common.decline", "Отклонить")}
                             </button>
@@ -345,7 +360,7 @@ export default function ContactRequests() {
             })}
 
             {inLoading && (
-                <div style={{ color: "#9cc4e7", textAlign: "center", padding: 12 }}>
+                <div style={{ color: colors.textSecondary, textAlign: "center", padding: 12 }}>
                     {t("common.loading", "Загружаем...")}
                 </div>
             )}
@@ -355,8 +370,8 @@ export default function ContactRequests() {
                     style={{
                         alignSelf: "center",
                         background: "transparent",
-                        color: "#90caf9",
-                        border: "1px solid #90caf9",
+                        color: colors.accent,
+                        border: `1px solid ${colors.accent}`,
                         borderRadius: 12,
                         padding: "8px 12px",
                         cursor: "pointer",
@@ -369,13 +384,13 @@ export default function ContactRequests() {
             <div ref={inSentinelRef} style={{ height: 1 }} />
 
             {/* Исходящие */}
-            <div style={{ marginTop: 10, fontWeight: 800, color: "#e3f2fd", fontSize: 18 }}>
+            <div style={{ marginTop: 10, fontWeight: 800, color: colors.textPrimary, fontSize: 18 }}>
                 {t("contacts.outgoing", "Исходящие")}
             </div>
             {outItems.length === 0 && !outLoading && !outError && (
-                <div style={{ color: "#9cc4e7" }}>{t("common.none", "Нет")}</div>
+                <div style={{ color: colors.textSecondary }}>{t("common.none", "Нет")}</div>
             )}
-            {outError && <div style={{ color: "#ff8a80" }}>{outError}</div>}
+            {outError && <div style={{ color: colors.textSecondary }}>{outError}</div>}
 
             {outItems.map((r) => {
                 const p = resolvePerson(r, "out");
@@ -388,7 +403,7 @@ export default function ContactRequests() {
                                 alignItems: "center",
                                 gap: 14,
                                 textDecoration: "none",
-                                color: "#e3f2fd",
+                                color: colors.textPrimary,
                                 flex: 1,
                                 minWidth: 0,
                             }}
@@ -403,8 +418,8 @@ export default function ContactRequests() {
                                     height: 64,
                                     borderRadius: 10,
                                     objectFit: "cover",
-                                    border: "1.6px solid #223350",
-                                    background: "#182337",
+                                    border: `1.6px solid ${colors.cardBorder}`,
+                                    background: colors.surfaceSoft,
                                 }}
                             />
                             <div style={{ flex: 1, minWidth: 0 }}>
@@ -412,7 +427,7 @@ export default function ContactRequests() {
                                     style={{
                                         fontWeight: 800,
                                         fontSize: 16,
-                                        color: "#e3f2fd",
+                                        color: colors.textPrimary,
                                         whiteSpace: "nowrap",
                                         overflow: "hidden",
                                         textOverflow: "ellipsis",
@@ -420,7 +435,7 @@ export default function ContactRequests() {
                                 >
                                     {p.name}
                                 </div>
-                                <div style={{ marginTop: 4, color: "#9fbbe0", fontSize: 13, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                                <div style={{ marginTop: 4, color: colors.textSecondary, fontSize: 13, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                                     {t("contacts.pending", "ожидание подтверждения запроса")}
                                 </div>
                             </div>
@@ -430,7 +445,7 @@ export default function ContactRequests() {
             })}
 
             {outLoading && (
-                <div style={{ color: "#9cc4e7", textAlign: "center", padding: 12 }}>
+                <div style={{ color: colors.textSecondary, textAlign: "center", padding: 12 }}>
                     {t("common.loading", "Загружаем...")}
                 </div>
             )}
@@ -440,8 +455,8 @@ export default function ContactRequests() {
                     style={{
                         alignSelf: "center",
                         background: "transparent",
-                        color: "#90caf9",
-                        border: "1px solid #90caf9",
+                        color: colors.accent,
+                        border: `1px solid ${colors.accent}`,
                         borderRadius: 12,
                         padding: "8px 12px",
                         cursor: "pointer",
