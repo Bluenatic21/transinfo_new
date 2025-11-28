@@ -134,13 +134,13 @@ const CargoCompactCard = forwardRef(function CargoCompactCard(
         hoveredItemId,
         setHoveredItemId,
         enableHoverScroll = false,
-        enableHoverLift = false,
         disableAllHover = false,
         managerContext = false,
         routeStacked = false,
         showOwnerBadge = false,
         showOrderBadges = false,
-        limited = false,   // ← НОВОЕ: режим урезанного просмотра на мобильном
+        enableHoverLift = false,   // эффект "подъёма" при ховере
+        limited = false,           // режим урезанного просмотра на мобильном
     },
     ref
 ) {
@@ -534,6 +534,44 @@ const CargoCompactCard = forwardRef(function CargoCompactCard(
     }
     const dateStr = safeFormatDate(cargo.load_date, dateLocale);
 
+    const metaItems = useMemo(() => {
+        const items = [];
+        items.push({
+            key: "weight",
+            content: (
+                <span className={limited ? "pw-blur pw-noevents" : ""} style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                    <FaBox style={{ marginRight: 3, verticalAlign: -2 }} />
+                    <span style={{ fontWeight: 700 }}>
+                        {cargo.cargo_items?.[0]?.tons
+                            ? `${cargo.cargo_items[0].tons} ${t("units.tonShort", "т")}`
+                            : "—"}
+                    </span>
+                </span>
+            ),
+        });
+        if (cargo.truck_type) {
+            items.push({
+                key: "truck",
+                content: (
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                        <FaTruck style={{ marginRight: 3, verticalAlign: -2 }} />
+                        <span style={{ fontWeight: 700 }}>{findBodyLabelByValue(cargo.truck_type)}</span>
+                    </span>
+                ),
+            });
+        }
+        items.push({
+            key: "date",
+            content: (
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                    <FaClock style={{ marginRight: 3, verticalAlign: -2 }} />
+                    <span style={{ fontWeight: 700 }}>{dateStr}</span>
+                </span>
+            ),
+        });
+        return items;
+    }, [cargo.cargo_items, cargo.truck_type, dateStr, findBodyLabelByValue, limited, t]);
+
     const createdAt = cargo?.created_at ? new Date(cargo.created_at) : null;
     const createdDate = createdAt
         ? createdAt.toLocaleDateString(dateLocale, { day: "2-digit", month: "2-digit", year: "2-digit" })
@@ -846,35 +884,26 @@ const CargoCompactCard = forwardRef(function CargoCompactCard(
                     </div>
                 )}
 
+                {/* Ключевые параметры: вес, кузов, дата */}
                 <div
                     style={{
                         color: "var(--compact-card-text-secondary)",
                         fontSize: isMobile ? 12 : 15,
                         marginTop: isMobile ? 10 : 6,
-                        display: "flex",
-                        gap: 12,
-                        flexWrap: "wrap",
+                        display: isMobile ? "flex" : "grid",
+                        gap: isMobile ? 12 : 8,
+                        gridTemplateColumns: isMobile ? undefined : `repeat(${Math.max(1, metaItems.length)}, minmax(0, 1fr))`,
+                        alignItems: "center",
                     }}
                 >
-                    {/* Вес (приватная зона) */}
-                    <span className={limited ? "pw-blur pw-noevents" : ""}>
-                        <FaBox style={{ marginRight: 3, verticalAlign: -2 }} />
-                        {cargo.cargo_items?.[0]?.tons
-                            ? `${cargo.cargo_items[0].tons} ${t("units.tonShort", "т")}`
-                            : "—"}
-                    </span>
-                    {/* Тип кузова — ОСТАЁТСЯ видимым */}
-                    {!!cargo.truck_type && (
-                        <span>
-                            <FaTruck style={{ marginRight: 3, verticalAlign: -2 }} />
-                            {findBodyLabelByValue(cargo.truck_type)}
+                    {metaItems.map(({ key, content }) => (
+                        <span
+                            key={key}
+                            style={{ display: "inline-flex", alignItems: "center", gap: 6, minWidth: 0, whiteSpace: "nowrap" }}
+                        >
+                            {content}
                         </span>
-                    )}
-                    {/* Дата — ОСТАЁТСЯ видимой */}
-                    <span>
-                        <FaClock style={{ marginRight: 3, verticalAlign: -2 }} />
-                        {safeFormatDate(cargo.load_date)}
-                    </span>
+                    ))}
                 </div>
 
                 {/* Бейджи/температура/габариты и пр. — приватная зона */}

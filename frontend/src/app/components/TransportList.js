@@ -926,7 +926,13 @@ export default function TransportList({ transports: propTransports }) {
                             style={{ width: "100%" }}
                         >
                             {cardSize === "compact" ? (
-                                <TransportCompactCard transport={transport} enableHoverLift={!isMobile} />
+                                <TransportCompactCard
+                                    transport={transport}
+                                    isMobile={isMobile}
+                                    hideStatus={!isMobile}
+                                    hideLive={!isMobile}
+                                    enableHoverLift={!isMobile}
+                                />
                             ) : (
                                 <TransportCard
                                     transport={transport}
@@ -972,7 +978,13 @@ export default function TransportList({ transports: propTransports }) {
                         style={{ width: "100%" }}
                     >
                         {cardSize === "compact" ? (
-                            <TransportCompactCard transport={transport} enableHoverLift={!isMobile} />
+                            <TransportCompactCard
+                                transport={transport}
+                                isMobile={isMobile}
+                                hideStatus={!isMobile}
+                                hideLive={!isMobile}
+                                enableHoverLift={!isMobile}
+                            />
                         ) : (
                             <TransportCard
                                 transport={transport}

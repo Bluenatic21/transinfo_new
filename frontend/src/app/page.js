@@ -305,23 +305,6 @@ export default function Home() {
         );
     }
 
-    function MapOrdersSection() {
-        return (
-            <section className="home-map-orders">
-                <div className="home-map-block">
-                    <HomeMapsSection hideTransportPins={isTransportRole} />
-                </div>
-                <div className="home-orders-block">
-                    <div className="section-title">{latestTitle}</div>
-                    <LatestRequests />
-                </div>
-                <div className="home-info-block">
-                    <ServiceSection compact />
-                </div>
-            </section>
-        );
-    }
-
     function CreateSection() {
         return (
             <div className="section">
@@ -391,16 +374,16 @@ export default function Home() {
     }
 
     function MapOrdersSection() {
-        const latestOrders = (
-            <div className="home-orders-block">
-                <div className="section-title">{t("home.sections.latestOrders", "Последние заявки")}</div>
-                <OrderList reload={reload} setMessage={setMessage} user={user} />
+        const latestRequests = (
+            <div className="home-orders-block">␊
+                <div className="section-title">{latestTitle}</div>
+                <LatestRequests />
             </div>
         );
 
         const mapBlock = (
             <div className="home-map-block">
-                <HomeMapsSection />
+                <HomeMapsSection hideTransportPins={isTransportRole} />
             </div>
         );
 
@@ -413,7 +396,7 @@ export default function Home() {
         if (isMobile) {
             return (
                 <div className="home-map-prime">
-                    {latestOrders}
+                    {latestRequests}
                     {mapBlock}
                     {aboutBlock}
                 </div>
@@ -424,7 +407,7 @@ export default function Home() {
             <div className="home-map-prime">
                 <div className="home-map-orders">
                     {mapBlock}
-                    {latestOrders}
+                    {latestRequests}
                     {aboutBlock}
                 </div>
                 <div className="home-hero-after-map" />

@@ -10,7 +10,7 @@ export default function ProfileLayout({ children }) {
     const isMobile = useIsMobile();
     const { user } = useUser();
     const params = useParams();
-    const { resolvedTheme } = useTheme();
+    const headerBackground = "var(--header-bg)";
 
     // Как узнать чей профиль? Допустим url: /profile/[id]
     // params.id — это id профиля, user.id — id залогиненного
@@ -25,7 +25,8 @@ export default function ProfileLayout({ children }) {
             flexDirection: "row",
             minHeight: "100vh",
             width: "100vw",
-            background: "var(--header-bg)"
+            // Align the profile background with the header/navigation color
+            background: headerBackground
         }}>
             {isOwnProfile && <ProfileSidebar />}
             <div style={{

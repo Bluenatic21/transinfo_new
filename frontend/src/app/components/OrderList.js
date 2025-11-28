@@ -148,6 +148,7 @@ function getCountryCode(location) {
 }
 
 export default function OrderList() {
+    const router = useRouter();
     const ctx = useUser() || {};
     const user = ctx.user || null;
     const isBlocked = typeof ctx.isBlocked === "function" ? ctx.isBlocked : () => false;
@@ -760,7 +761,11 @@ export default function OrderList() {
                             style={{ width: "100%" }}
                         >
                             {cardSize === "compact" ? (
-                                <CargoCompactCard cargo={order} enableHoverLift={!isMobile} />
+                                <CargoCompactCard
+                                    cargo={order}
+                                    enableHoverLift={!isMobile}
+                                    onClick={() => router.push(`/orders/${order.id}`)}
+                                />
                             ) : (
                                 <OrderCard
                                     order={order}
@@ -807,7 +812,11 @@ export default function OrderList() {
                         style={{ width: "100%" }}
                     >
                         {cardSize === "compact" ? (
-                            <CargoCompactCard cargo={order} enableHoverLift={!isMobile} />
+                            <CargoCompactCard
+                                cargo={order}
+                                enableHoverLift={!isMobile}
+                                onClick={() => router.push(`/orders/${order.id}`)}
+                            />
                         ) : (
                             <OrderCard
                                 order={order}

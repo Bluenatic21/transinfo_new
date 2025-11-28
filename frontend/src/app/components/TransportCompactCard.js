@@ -372,6 +372,48 @@ export default function TransportCompactCard({
                 : t("availability.constant", "постоянно"))
             : formatAvail(transport.ready_date_from, transport.ready_date_to);
 
+    const metaItems = useMemo(() => {
+        const items = [];
+        if (transport.transport_kind) {
+            items.push({
+                key: "kind",
+                content: (
+                    <span
+                        className={limited ? "pw-blur pw-noevents" : ""}
+                        style={{ display: "inline-flex", alignItems: "center", gap: 6, color: "#9ac7ff" }}
+                    >
+                        <FaTruck style={{ marginRight: 3, verticalAlign: -2 }} />
+                        <span style={{ fontWeight: 700 }}>{findKindLabelByValue(transport.transport_kind)}</span>
+                    </span>
+                ),
+            });
+        }
+        items.push({
+            key: "avail",
+            content: (
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 6, color: "var(--compact-card-text-primary)" }}>
+                    <FaClock style={{ marginRight: 3, verticalAlign: -2 }} />
+                    <span style={{ fontWeight: 700 }}>{availText}</span>
+                </span>
+            ),
+        });
+        if (Array.isArray(transport.load_types) && transport.load_types.length > 0) {
+            items.push({
+                key: "load",
+                content: (
+                    <span
+                        className={limited ? "pw-blur pw-noevents" : ""}
+                        style={{ display: "inline-flex", alignItems: "center", gap: 6, color: "#9ac7ff" }}
+                    >
+                        <span style={{ color: "#8ecae6" }}>{t("load.label", "Загрузка:")}</span>{" "}
+                        <b>{localizeLoadingTypes(transport.load_types).join(", ")}</b>
+                    </span>
+                ),
+            });
+        }
+        return items;
+    }, [findKindLabelByValue, limited, localizeLoadingTypes, t, transport.load_types, transport.transport_kind, availText]);
+
     // --- Время публикации транспорта (дата/время выставления) ---
     const createdAt = transport?.created_at ? new Date(transport.created_at) : null;
     const createdDateRu = createdAt
@@ -697,20 +739,6 @@ export default function TransportCompactCard({
                     </>
                 )}
 
-                {/* Вид ТС (Грузовик/Полуприцеп/Сцепка) — локализованный label, value остаётся RU */}
-                {transport.transport_kind && (
-                    <div style={{
-                        fontSize: 12.5,
-                        color: "#9ac7ff",
-                        /* не режем зря — даём занять всю доступную ширину */
-                        overflow: "visible",
-                        whiteSpace: "normal"
-                    }}
-                        className={limited ? "pw-blur pw-noevents" : ""}
-                    >
-                        {findKindLabelByValue(transport.transport_kind)}
-                    </div>
-                )}
                 {/* Направление — ОСТАЁТСЯ видимым */}
                 {routeStacked && hasBoth ? (
                     <div style={{ display: "grid", gridTemplateColumns: "auto 1fr", alignItems: "start", gap: 9, marginTop: 4 }}>
@@ -732,17 +760,27 @@ export default function TransportCompactCard({
                         {hasTo && <><Flag place={toText} />{toText}</>}
                     </div>
                 )}
-                {/* Доступность — дата/периодичность — ОСТАЁТСЯ видимой */}
-                <div style={{ fontSize: 12.5, color: "var(--compact-card-text-primary)", whiteSpace: "nowrap", marginTop: 2 }}>
-                    <FaClock style={{ marginRight: 3, verticalAlign: -2 }} />
-                    {availText}
-                </div>
-
-                {/* Виды загрузки (локализовано) */}
-                {Array.isArray(transport.load_types) && transport.load_types.length > 0 && (
-                    <div className={limited ? "pw-blur pw-noevents" : ""} style={{ fontSize: 12.5, color: "#9ac7ff", marginTop: 4 }}>
-                        <span style={{ color: "#8ecae6" }}>{t("load.label", "Загрузка:")}</span>{" "}
-                        <b>{localizeLoadingTypes(transport.load_types).join(", ")}</b>
+                {/* Ключевые параметры: вид ТС, доступность, загрузка */}
+                {metaItems.length > 0 && (
+                    <div
+                        style={{
+                            color: "var(--compact-card-text-secondary)",
+                            fontSize: isMobile ? 12 : 15,
+                            marginTop: isMobile ? 10 : 6,
+                            display: isMobile ? "flex" : "grid",
+                            gap: isMobile ? 12 : 8,
+                            gridTemplateColumns: isMobile ? undefined : `repeat(${Math.max(1, metaItems.length)}, minmax(0, 1fr))`,
+                            alignItems: "center",
+                        }}
+                    >
+                        {metaItems.map(({ key, content }) => (
+                            <span
+                                key={key}
+                                style={{ display: "inline-flex", alignItems: "center", gap: 6, minWidth: 0, whiteSpace: "nowrap" }}
+                            >
+                                {content}
+                            </span>
+                        ))}
                     </div>
                 )}
 

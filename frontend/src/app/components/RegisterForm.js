@@ -106,10 +106,10 @@ function ModalNotice({ text, palette }) {
 const withErrorStyles = (hasError) =>
   hasError
     ? {
-        borderColor: "#ff6b6b",
-        boxShadow: "0 0 0 3px rgba(255, 107, 107, 0.2)",
-        transition: "border-color .2s, box-shadow .2s",
-      }
+      borderColor: "#ff6b6b",
+      boxShadow: "0 0 0 3px rgba(255, 107, 107, 0.2)",
+      transition: "border-color .2s, box-shadow .2s",
+    }
     : { transition: "border-color .2s, box-shadow .2s" };
 
 function renderCodeDestination(template, target) {
@@ -399,23 +399,8 @@ export default function RegisterForm({ onSuccess }) {
     setForm((prev) => ({ ...prev, city: value }));
     if (errors.city.length) setErrors((prev) => ({ ...prev, city: [] }));
     setCitySuggestions([]);
+    setCityLoading(false);
     if (cityTimer.current) clearTimeout(cityTimer.current);
-    if ((value || "").trim().length < 2) return;
-
-    cityTimer.current = setTimeout(async () => {
-      setCityLoading(true);
-      const items = await fetchGeoSuggestions(value, "settlement");
-      const mapped = items
-        .map(formatCitySuggestion)
-        .filter((sug) => sug.label)
-        .reduce((acc, sug) => {
-          if (!acc.find((i) => i.label === sug.label && i.hint === sug.hint))
-            acc.push(sug);
-          return acc;
-        }, []);
-      setCitySuggestions(mapped);
-      setCityLoading(false);
-    }, 320);
   };
   function handlePersonTypeChange(v) {
     setPersonType(v);
@@ -1121,8 +1106,8 @@ export default function RegisterForm({ onSuccess }) {
             background: isActive
               ? ACTIVE_BG
               : isHover
-              ? palette.btnHover
-              : palette.btnIdle,
+                ? palette.btnHover
+                : palette.btnIdle,
             color: isActive ? "#ffffff" : palette.textIdle,
             cursor: "pointer",
             display: "flex",
@@ -1131,8 +1116,8 @@ export default function RegisterForm({ onSuccess }) {
             boxShadow: isActive
               ? "0 2px 0 rgba(0,0,0,.25), 0 0 0 3px rgba(67,200,255,.18)"
               : isHover
-              ? "0 0 0 3px rgba(67,200,255,.12)"
-              : "none",
+                ? "0 0 0 3px rgba(67,200,255,.12)"
+                : "none",
             transition:
               "background .15s ease, box-shadow .15s ease, border-color .15s ease, color .15s ease",
             ...(errors.role.length
@@ -1592,10 +1577,10 @@ export default function RegisterForm({ onSuccess }) {
                 marginTop: 4,
                 ...(errors.accepted_terms.length
                   ? {
-                      padding: "6px 8px",
-                      borderRadius: 8,
-                      ...withErrorStyles(true),
-                    }
+                    padding: "6px 8px",
+                    borderRadius: 8,
+                    ...withErrorStyles(true),
+                  }
                   : null),
               }}
             >
@@ -1639,9 +1624,8 @@ export default function RegisterForm({ onSuccess }) {
           {(!!msg || errors.form.length > 0) && !showSuccess && (
             <div
               id="field-form-msg"
-              className={`register-form-msg${
-                msg === "Регистрация успешна!" ? " ok" : ""
-              }`}
+              className={`register-form-msg${msg === "Регистрация успешна!" ? " ok" : ""
+                }`}
               style={{ marginTop: 8 }}
             >
               {errors.form.length > 0 && (
