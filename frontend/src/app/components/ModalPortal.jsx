@@ -10,6 +10,9 @@ export default function ModalPortal({
     children,
     variant = "center",      // "sheet" | "fullscreen" | "center"
     maxHeight = "85vh",
+    tone = "dark",           // "dark" | "light"
+    panelClassName = "",
+    overlayClassName = "",
 }) {
     const { t } = useLang?.() || { t: (_k, f) => f };
     if (typeof document === "undefined" || !open) return null;
@@ -23,10 +26,13 @@ export default function ModalPortal({
     }, []);
 
     const overlay = (
-        <div className="modal-overlay" onClick={onClose} />
+        <div className={`modal-overlay ${overlayClassName}`} onClick={onClose} />
     );
 
-    const panelBase = "bg-[#0b1422] text-white shadow-xl";
+    const isLightTone = tone === "light";
+    const panelBase = isLightTone
+        ? "bg-white text-slate-900 shadow-[0_10px_30px_rgba(15,23,42,0.12)] border border-slate-200"
+        : "bg-[#0b1422] text-white shadow-xl border border-white/10";
     let panelClass = "";
     let panelStyle = {};
     if (variant === "sheet") {
@@ -41,9 +47,9 @@ export default function ModalPortal({
     }
 
     const content = (
-        <>
+        <>␊
             {overlay}
-            <div className={`${panelBase} ${panelClass}`} style={panelStyle} onClick={e => e.stopPropagation()}>
+            <div className={`${panelBase} ${panelClass} ${panelClassName}`} style={panelStyle} onClick={e => e.stopPropagation()}>
                 <div className="flex items-center gap-3 mb-3">
                     {title && <h3 className="text-lg font-semibold">{title}</h3>}
                     <button onClick={onClose} className="ml-auto rounded-xl px-3 py-1 bg-white/10 hover:bg-white/15">

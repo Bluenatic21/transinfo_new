@@ -8,6 +8,8 @@ import { api } from "@/config/env";
 import { motion } from "framer-motion";
 import { useLang } from "../i18n/LangProvider";
 import { useTheme } from "../providers/ThemeProvider";
+import { FiMaximize2 } from "react-icons/fi";
+import ModalPortal from "./ModalPortal";
 
 const SimpleMap = dynamic(() => import("./SimpleMap"), { ssr: false });
 
@@ -29,6 +31,7 @@ export default function HomeMapsSection() {
     const { authFetchWithRefresh } = useUser();
     const [orders, setOrders] = useState(null);
     const [transports, setTransports] = useState(null);
+    const [mapModalOpen, setMapModalOpen] = useState(false);
     const abortRef = useRef(null);
     const router = useRouter();
 
@@ -101,6 +104,12 @@ export default function HomeMapsSection() {
     const legendClasses = isLight
         ? "bg-white/90 border border-slate-200 text-slate-700 shadow-[0_6px_20px_rgba(15,23,42,0.08)]"
         : "bg-[#0b1528]/85 border border-white/8 text-slate-100 shadow-[0_6px_20px_rgba(0,0,0,0.35)]";
+    const modalSurface = isLight
+        ? "bg-gradient-to-b from-white to-slate-50"
+        : "bg-gradient-to-b from-[#0b1422] to-[#0b1528]";
+    const modalHeader = isLight
+        ? "border-slate-200 bg-white/80"
+        : "border-white/10 bg-white/5";
 
     return (
         <section
@@ -118,7 +127,19 @@ export default function HomeMapsSection() {
                 >
                     <div className="px-4 md:px-5 pt-6 md:pt-7 pb-6 md:pb-7">
                         <div className="relative px-1 sm:px-2 md:px-3">
-                            <div className="flex justify-end mb-3 md:mb-4">
+                            <div className="flex items-center justify-between gap-3 mb-3 md:mb-4">
+                                <button
+                                    type="button"
+                                    onClick={() => setMapModalOpen(true)}
+                                    className={`inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold transition shadow-sm ${isLight
+                                        ? "bg-white text-slate-700 border border-slate-200 hover:bg-slate-50"
+                                        : "bg-white/10 text-slate-100 border border-white/10 hover:bg-white/15"}`}
+                                    aria-label={t("home.map.openFull", "Открыть карту целиком")}
+                                    disabled={!Array.isArray(orders) || !Array.isArray(transports)}
+                                >
+                                    <FiMaximize2 className="shrink-0" />
+                                    {t("home.map.fullscreen", "Развернуть карту")}
+                                </button>
                                 <div
                                     className={`${legendClasses} flex items-center gap-4 rounded-xl px-3 py-2 text-sm leading-5 backdrop-blur`}
                                     style={{ pointerEvents: "auto" }}
@@ -165,6 +186,74 @@ export default function HomeMapsSection() {
                     </div>
                 </div>
             </div>
+
+            <ModalPortal
+                open={mapModalOpen}
+                onClose={() => setMapModalOpen(false)}
+                variant="fullscreen"
+                tone={isLight ? "light" : "dark"}
+                overlayClassName={isLight ? "bg-[rgba(10,17,28,0.45)]" : ""}
+                panelClassName="p-0"
+            >
+                <div className={`flex h-full w-full flex-col ${modalSurface}`}>
+                    <div className={`flex items-center gap-3 px-4 py-3 border-b ${modalHeader}`}>
+                        <div className="flex flex-col">
+                            <span className="text-base font-semibold leading-tight">{t("home.map.fullscreenTitle", "Карта предложений")}</span>
+                            <span className="text-sm opacity-75">{t("home.map.fullscreenHint", "Используйте карту на весь экран")}</span>
+                        </div>
+                        <div className="ml-auto flex items-center gap-2 text-sm text-slate-500 dark:text-slate-200">
+                            <div
+                                className={`${legendClasses} flex items-center gap-4 rounded-xl px-3 py-2 text-sm leading-5 backdrop-blur`}
+                                style={{ pointerEvents: "auto" }}
+                            >
+                                <div className="flex items-center gap-2">
+                                    <span className="inline-block h-[10px] w-[10px] rounded-full" style={{ background: "#53b7ff" }} />
+                                    {t("map.legend.transport", "Транспорт")}
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <span className="inline-block h-[10px] w-[10px] rounded-full" style={{ background: "#ffb020" }} />
+                                    {t("map.legend.cargo", "Груз")}
+                                </div>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setMapModalOpen(false)}
+                                className={`rounded-xl px-3 py-2 font-semibold transition ${isLight
+                                    ? "bg-slate-100 text-slate-800 hover:bg-slate-200"
+                                    : "bg-white/10 text-white hover:bg-white/15"}`}
+                            >
+                                {t("common.close", "Закрыть")}
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="flex-1 min-h-0">
+                        {Array.isArray(orders) && Array.isArray(transports) ? (
+                            <SimpleMap
+                                orders={orders}
+                                transports={transports}
+                                hideSearch
+                                fitAll
+                                mixed
+                                showLegend
+                                fullHeight
+                                onPinClick={({ id, item }) => {
+                                    const kind = item?.__kind === "transport" ? "transport" : "order";
+                                    if (kind === "transport") {
+                                        router.push(`/transport?focus=${id}`);
+                                    } else {
+                                        router.push(`/orders?focus=${id}`);
+                                    }
+                                }}
+                            />
+                        ) : (
+                            <div className="h-full flex items-center justify-center px-4">
+                                <CardSkeleton />
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </ModalPortal>
         </section>
     );
 }

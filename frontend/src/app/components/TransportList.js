@@ -1137,6 +1137,8 @@ export default function TransportList({ transports: propTransports }) {
 // --- КАРТОЧКА --- //
 function TransportCard({ transport, expanded, onToggle }) {
     const { t } = useLang();
+    const { resolvedTheme } = useTheme?.() || { resolvedTheme: "dark" };
+    const isLight = resolvedTheme === "light";
     const { user: me } = useUser();
     // Больше не ограничиваем авторизованных: блар остаётся только для гостей
     const isLimited = false;
@@ -1370,6 +1372,9 @@ function TransportCard({ transport, expanded, onToggle }) {
         tooltipBg: "var(--transport-card-tooltip-bg, #222e43)",
         tooltipFg: "var(--transport-card-tooltip-fg, #53ee5c)",
     };
+
+    const infoPrimaryColor = isLight ? "#ffffff" : cardColors.text;
+    const infoSecondaryColor = isLight ? "#e5edff" : cardColors.label;
 
     async function handleChatClick() {
         const userId = ownerId;
@@ -2358,7 +2363,7 @@ function TransportCard({ transport, expanded, onToggle }) {
                         <span
                             style={{
                                 fontWeight: 700,
-                                color: cardColors.text,
+                                color: infoPrimaryColor,
                                 fontSize: 15,
                                 whiteSpace: "nowrap",
                                 maxWidth: 130,
@@ -2371,7 +2376,7 @@ function TransportCard({ transport, expanded, onToggle }) {
                         {ownerProfile.contact_person && (
                             <span
                                 style={{
-                                    color: cardColors.label,
+                                    color: infoSecondaryColor,
                                     fontSize: 14,
                                     maxWidth: 110,
                                     whiteSpace: "nowrap",

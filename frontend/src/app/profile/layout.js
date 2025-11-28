@@ -25,7 +25,7 @@ export default function ProfileLayout({ children }) {
             flexDirection: "row",
             minHeight: "100vh",
             width: "100vw",
-            background: resolvedTheme === "light" ? "var(--bg-body)" : "#171e2b"
+            background: "var(--header-bg)"
         }}>
             {isOwnProfile && <ProfileSidebar />}
             <div style={{

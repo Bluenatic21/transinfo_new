@@ -791,6 +791,7 @@
   "notFound.support": "მხარდაჭერა",
   "notFound.codeLabel": "მოვლენის კოდი",
   "home.sections.latestOrders": "ბოლო განცხადებები",
+  "home.sections.latestTransports": "ბოლო სატრანსპორტო განცხადებები",
   "home.sections.createTitle": "ახალი განცხადების შექმნა (ტვირთი)",
   "home.loginRequiredCreate": "განცხადების შესაქმნელად",
   "auth.loginLink": "შედით ანგარიშში",

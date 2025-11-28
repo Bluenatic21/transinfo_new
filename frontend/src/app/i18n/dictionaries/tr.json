@@ -779,6 +779,7 @@
   "notFound.support": "Destek",
   "notFound.codeLabel": "Olay kodu",
   "home.sections.latestOrders": "Son ilanlar",
+  "home.sections.latestTransports": "Son taşıt ilanları",
   "home.sections.createTitle": "Yeni ilan oluştur (yük)",
   "home.loginRequiredCreate": "İlan oluşturmak için",
   "auth.loginLink": "hesabınıza giriş yapın",

@@ -27,6 +27,7 @@
     --bg-header: #0C141F;
     --bg-card: #101927;
     --bg-card-soft: #0B111C;
+    --header-bg: var(--bg-body);
 
     --border-subtle: rgba(255, 255, 255, 0.06);
     --border-strong: rgba(255, 255, 255, 0.12);

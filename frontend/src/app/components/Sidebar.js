@@ -27,7 +27,7 @@ export default function Sidebar({ activeTab = "list", onTabChange }) {
                 width: 232,
                 background: "var(--sidebar-bg)",
                 borderRight: "1.5px solid var(--sidebar-border)",
-                padding: "42px 0 0 0",
+                padding: "24px 0 0 0",
                 minHeight: "100vh",
                 display: "flex",
                 flexDirection: "column",
@@ -35,7 +35,10 @@ export default function Sidebar({ activeTab = "list", onTabChange }) {
                 boxShadow: "var(--sidebar-shadow)",
                 backdropFilter: "blur(4px)",
                 position: "sticky",
-                top: 0
+                top: 0,
+                marginTop: 24,
+                borderTopLeftRadius: 18,
+                borderTopRightRadius: 18,
             }}
         >
             <div

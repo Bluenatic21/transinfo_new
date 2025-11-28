@@ -23,6 +23,7 @@ import { useLang } from "@/app/i18n/LangProvider";
 import { LOADING_TYPES, getTruckBodyTypes, getLoadingTypes } from "@/app/components/truckOptions";
 import PaywallModal from "@/app/components/PaywallModal";
 import { useUser } from "@/app/UserContext";
+import { useTheme } from "@/app/providers/ThemeProvider";
 
 // ADR классы — через t()
 const getAdrClassInfo = (t) => ({
@@ -54,12 +55,12 @@ function FlagIcon({ country, size = 22 }) {
                 height: size,
                 minWidth: size,
                 minHeight: size,
-                background: LIGHT_COLORS.accentSoft,
+                background: "var(--surface-soft)",
                 borderRadius: 5,
-                border: `1.2px solid ${LIGHT_COLORS.border}`,
+                border: "1.2px solid var(--border-subtle)",
                 marginRight: 8,
                 marginLeft: -2,
-                boxShadow: LIGHT_COLORS.shadow,
+                boxShadow: "var(--shadow-soft)",
                 overflow: "hidden",
                 flexShrink: 0,
                 flexGrow: 0,
@@ -108,7 +109,7 @@ function getCountryCode(location) {
 
 const OrderRouteMap = dynamic(() => import("../../components/OrderRouteMap"), {
     ssr: false,
-    loading: () => <div style={{ height: 220, background: LIGHT_COLORS.pillBg, borderRadius: 16 }} />,
+    loading: () => <div style={{ height: 220, background: "var(--surface-soft)", borderRadius: 16 }} />,
 });
 
 // SVG ICONS
@@ -165,19 +166,19 @@ const icons = {
     ),
 };
 
-const LIGHT_COLORS = {
-    pageBg: "#f5f7fb",
-    cardBg: "#ffffff",
-    border: "#e1e8f0",
-    text: "#1f2937",
-    heading: "#0f172a",
-    muted: "#526075",
-    accent: "#0f75e0",
-    accentSoft: "#e6f2ff",
-    highlight: "#f6d24b",
-    shadow: "0 18px 40px rgba(15, 23, 42, 0.08)",
-    pillBg: "#f0f4fa",
-};
+const getColors = (theme = "dark") => ({
+    pageBg: "var(--bg-body)",
+    cardBg: "var(--surface)",
+    border: theme === "light" ? "var(--border-subtle)" : "var(--border-strong)",
+    text: "var(--text-primary)",
+    heading: "var(--text-primary)",
+    muted: "var(--text-secondary)",
+    accent: "var(--brand-blue)",
+    accentSoft: theme === "light" ? "color-mix(in srgb, var(--brand-blue) 16%, transparent)" : "rgba(129, 202, 255, 0.16)",
+    highlight: "var(--brand-orange)",
+    shadow: "var(--shadow-soft)",
+    pillBg: "var(--surface-soft)",
+});
 
 // --- Helpers for attachments (как в транспортах) ---
 function getExt(name = "") {
@@ -318,6 +319,10 @@ export default function OrderDetailsPage() {
     const [ownerUser, setOwnerUser] = useState(null);
     const [viewsCount, setViewsCount] = useState(0);
 
+    const { resolvedTheme } = useTheme?.() || { resolvedTheme: "dark" };
+    const COLORS = useMemo(() => getColors(resolvedTheme), [resolvedTheme]);
+
+
 
     const [showBidPanel, setShowBidPanel] = useState(false);
     const [allBids, setAllBids] = useState([]);
@@ -339,14 +344,14 @@ export default function OrderDetailsPage() {
         gap: 8,
         padding: isMobile ? "7px 12px" : "7px 14px",
         borderRadius: 999,
-        border: "1px solid #213759",
-        background: "#132642",
-        color: "#e0f1ff",
+        border: `1px solid ${COLORS.border}`,
+        background: COLORS.pillBg,
+        color: COLORS.heading,
         fontWeight: 600,
         fontSize: isMobile ? 14 : 15,
         cursor: "pointer",
         transition: "border-color .15s ease, box-shadow .15s ease, opacity .15s ease, transform .12s ease",
-    }), [isMobile]);
+    }), [COLORS.border, COLORS.heading, COLORS.pillBg, isMobile]);
 
     // Для edge-swipe назад
     const dragStartX = useRef(0);
@@ -495,16 +500,16 @@ export default function OrderDetailsPage() {
 
     const cardStyle = useMemo(
         () => ({
-            background: LIGHT_COLORS.cardBg,
-            border: `1px solid ${LIGHT_COLORS.border}`,
+            background: COLORS.cardBg,
+            border: `1px solid ${COLORS.border}`,
             borderRadius: 16,
             padding: isMobile ? 14 : 18,
             display: "flex",
             flexDirection: "column",
             gap: isMobile ? 10 : 12,
-            boxShadow: LIGHT_COLORS.shadow,
+            boxShadow: COLORS.shadow,
         }),
-        [isMobile]
+        [COLORS.border, COLORS.cardBg, COLORS.shadow, isMobile]
     );
 
     // На мобильных «голый» текст загрузки выглядел как пустой экран
@@ -964,15 +969,15 @@ export default function OrderDetailsPage() {
 
                 <div
                     style={{
-                        background: isMobile ? "transparent" : LIGHT_COLORS.pageBg,
+                        background: isMobile ? "transparent" : COLORS.pageBg,
                         minHeight: "100dvh",
-                        color: LIGHT_COLORS.text,
+                        color: COLORS.text,
                         padding: `${PAD + (isMobile ? 4 : 0)}px ${PAD}px ${PAD * (isMobile ? 2 : 2)}px`,
-                        boxSizing: "border-box",           // ← фикс переполнения по ширине␊
+                        boxSizing: "border-box",           // ← фикс переполнения по ширине
                         maxWidth: isMobile ? "100%" : 1300,
                         margin: "0 auto",
                         borderRadius: isMobile ? 0 : 20,
-                        boxShadow: isMobile ? "none" : LIGHT_COLORS.shadow,
+                        boxShadow: isMobile ? "none" : COLORS.shadow,
                         position: "relative"
                     }}
                 >
@@ -989,12 +994,12 @@ export default function OrderDetailsPage() {
                             gap: 6,
                             padding: "4px 10px",
                             borderRadius: 999,
-                            background: LIGHT_COLORS.accentSoft,
-                            border: `1px solid ${LIGHT_COLORS.border}`,
-                            color: LIGHT_COLORS.heading,
+                            background: COLORS.accentSoft,
+                            border: `1px solid ${COLORS.border}`,
+                            color: COLORS.heading,
                             fontWeight: 700,
                             fontSize: isMobile ? 12 : 13,
-                            boxShadow: LIGHT_COLORS.shadow
+                            boxShadow: COLORS.shadow
                         }}
                     >
                         <FaEye style={{ filter: "drop-shadow(0 0 3px #43c8ff55)" }} />
@@ -1012,14 +1017,14 @@ export default function OrderDetailsPage() {
                     >
                         <button
                             style={{
-                                background: LIGHT_COLORS.accent,
+                                background: COLORS.accent,
                                 color: "#ffffff",
-                                border: `1px solid ${LIGHT_COLORS.border}`,
+                                border: `1px solid ${COLORS.border}`,
                                 borderRadius: 10,
                                 padding: isMobile ? "9px 14px" : "11px 18px",
                                 fontWeight: 800,
                                 fontSize: isMobile ? 16 : 18,
-                                boxShadow: LIGHT_COLORS.shadow,
+                                boxShadow: COLORS.shadow,
                                 cursor: "pointer",
                             }}
                             onClick={() => router.back()}
@@ -1488,8 +1493,8 @@ export default function OrderDetailsPage() {
                                                         height: isMobile ? 84 : 100,
                                                         objectFit: "cover",
                                                         borderRadius: 8,
-                                                        border: `1px solid ${LIGHT_COLORS.border}`,
-                                                        background: LIGHT_COLORS.pillBg,
+                                                        border: `1px solid ${COLORS.border}`,
+                                                        background: COLORS.pillBg,
                                                         cursor: "pointer",
                                                     }}
                                                     onClick={() => {
@@ -1515,8 +1520,8 @@ export default function OrderDetailsPage() {
                                                         display: "flex",
                                                         alignItems: "center",
                                                         gap: 10,
-                                                        background: LIGHT_COLORS.pillBg,
-                                                        border: `1px solid ${LIGHT_COLORS.border}`,
+                                                        background: COLORS.pillBg,
+                                                        border: `1px solid ${COLORS.border}`,
                                                         borderRadius: 10,
                                                         padding: "10px 12px",
                                                         marginBottom: 8,

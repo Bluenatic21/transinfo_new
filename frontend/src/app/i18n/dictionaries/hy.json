@@ -787,6 +787,7 @@
   "notFound.support": "Աջակցություն",
   "notFound.codeLabel": "Իրադարձության կոդ",
   "home.sections.latestOrders": "Վերջին հայտերը",
+  "home.sections.latestTransports": "Վերջին տրանսպորտի հայտերը",
   "home.sections.createTitle": "Ստեղծել նոր հայտ (բեռ)",
   "home.loginRequiredCreate": "հայտ ստեղծելու համար",
   "auth.loginLink": "Մուտք գործեք ձեր հաշիվ",

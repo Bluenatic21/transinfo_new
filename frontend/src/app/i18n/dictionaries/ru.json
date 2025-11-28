@@ -67,6 +67,8 @@
   "home.nav.addTransport": "Разместить машину и получить отклики",
   "home.nav.addCargo": "Создать заявку и найти перевозчика",
   "home.nav.about": "Преимущества платформы и возможности",
+  "home.sections.latestOrders": "Последние заявки",
+  "home.sections.latestTransports": "Последние заявки транспорта",
   "menu.open": "Меню",
   "notifications.generic": "Уведомление",
   "support.autoclose.warn": "Автоматическое закрытие из-за бездействия. Чат будет закрыт через 60 секунд.",

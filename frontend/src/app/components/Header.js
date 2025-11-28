@@ -727,21 +727,12 @@ export default function Header({ setShowRegisterModal }) {
   const [headerHeight, setHeaderHeight] = useState(HEADER_H);
 
   useEffect(() => {
-    const updateHeight = () => {
-      const target = topHeaderRef.current;
-      if (target) {
-        const h = target.offsetHeight;
-        setHeaderHeight(h);
-        try {
-          document.documentElement.style.setProperty("--header-h", `${h}px`);
-        } catch { }
-      }
-    };
-
-    updateHeight();
-    window.addEventListener("resize", updateHeight);
-    return () => window.removeEventListener("resize", updateHeight);
-  }, [isCompact, isTight, heroTitle]);
+    // Высота хедера фиксируется через дизайн‑константы, чтобы не «прыгать» при ресайзе окна
+    setHeaderHeight(HEADER_H);
+    try {
+      document.documentElement.style.setProperty("--header-h", `${HEADER_H}px`);
+    } catch { }
+  }, [HEADER_H]);
 
   const logoPx = `${LOGO}px`;
   const logoInnerPx = `${Math.round(LOGO * LOGO_OVERSCAN)}px`;
@@ -750,143 +741,147 @@ export default function Header({ setShowRegisterModal }) {
   if (isMobile) {
     const MOBILE_H = 56;
     return (
-      <header
-        className="header-root-mobile"
-        style={{
-          position: "sticky",
-          top: 0,
-          display: "grid",
-          gridTemplateColumns: "1fr auto 1fr",
-          alignItems: "center",
-          height: MOBILE_H,
-          background: "var(--header-bg)",
-          padding: "0 12px",
-          boxShadow: "var(--header-shadow)",
-          zIndex: 100,
-          WebkitTapHighlightColor: "transparent",
-        }}
-      >
-        {/* Лево: лого → домой (SPA) */}
-        <Link
-          href="/"
-          aria-label={t("nav.home", "Домой")}
+      <>
+        <header
+          className="header-root-mobile"
           style={{
-            justifySelf: "start",
-            display: "flex",
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            display: "grid",
+            gridTemplateColumns: "1fr auto 1fr",
             alignItems: "center",
-            gap: 14,
-            textDecoration: "none",
+            height: MOBILE_H,
+            background: "var(--header-bg)",
+            padding: "0 12px",
+            boxShadow: "var(--header-shadow)",
+            zIndex: 100,
+            WebkitTapHighlightColor: "transparent",
           }}
         >
-          <img
-            src="/transinfo_logo_icon_v3.png"
-            alt=""
-            width={68}
-            height={68}
-            style={{ display: "block", borderRadius: 20 }}
-          />
-          <span
+          {/* Лево: лого → домой (SPA) */}
+          <Link
+            href="/"
+            aria-label={t("nav.home", "Домой")}
             style={{
-              fontWeight: 900,
-              fontSize: 18,
-              color: "#43c8ff",
-              letterSpacing: 0.3,
+              justifySelf: "start",
+              display: "flex",
+              alignItems: "center",
+              gap: 14,
+              textDecoration: "none",
             }}
           >
-            TransInfo
-          </span>
-        </Link>
+            <img
+              src="/transinfo_logo_icon_v3.png"
+              alt=""
+              width={68}
+              height={68}
+              style={{ display: "block", borderRadius: 20 }}
+            />
+            <span
+              style={{
+                fontWeight: 900,
+                fontSize: 18,
+                color: "#43c8ff",
+                letterSpacing: 0.3,
+              }}
+            >
+              TransInfo
+            </span>
+          </Link>
 
-        {/* Центр: пусто — поиск перенесён вправо */}
-        <div />
+          {/* Центр: пусто — поиск перенесён вправо */}
+          <div />
 
-        {/* Право: поиск + уведомления + чат + меню */}
-        <div
-          style={{
-            justifySelf: "end",
-            display: "flex",
-            alignItems: "center",
-            gap: 6,
-          }}
-        >
-          {/* Поиск — рядом с колоколом и чатом */}
-          <button
-            onClick={() =>
-              user ? setShowUserSearch((v) => !v) : setShowAuth(true)
-            }
-            className="header-icon-btn"
-            style={{
-              height: 40,
-              width: 40,
-              fontSize: 22,
-              display: "grid",
-              placeItems: "center",
-              borderRadius: 12,
-            }}
-            aria-label={t("search.findUser", "Найти участника")}
-            title={t("common.search", "Поиск")}
-          >
-            <FaSearch />
-          </button>
+          {/* Право: поиск + уведомления + чат + меню */}
           <div
-            role="button"
-            className="header-icon-btn"
             style={{
-              height: 40,
-              width: 40,
-              fontSize: 22,
-              display: "grid",
-              placeItems: "center",
-              borderRadius: 12,
+              justifySelf: "end",
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
             }}
-            aria-label={t("common.notifications", "Уведомления")}
           >
-            <NotificationBell token={user?.token} userId={user?.id} />
+            {/* Поиск — рядом с колоколом и чатом */}
+            <button
+              onClick={() =>
+                user ? setShowUserSearch((v) => !v) : setShowAuth(true)
+              }
+              className="header-icon-btn"
+              style={{
+                height: 40,
+                width: 40,
+                fontSize: 22,
+                display: "grid",
+                placeItems: "center",
+                borderRadius: 12,
+              }}
+              aria-label={t("search.findUser", "Найти участника")}
+              title={t("common.search", "Поиск")}
+            >
+              <FaSearch />
+            </button>
+            <div
+              role="button"
+              className="header-icon-btn"
+              style={{
+                height: 40,
+                width: 40,
+                fontSize: 22,
+                display: "grid",
+                placeItems: "center",
+                borderRadius: 12,
+              }}
+              aria-label={t("common.notifications", "Уведомления")}
+            >
+              <NotificationBell token={user?.token} userId={user?.id} />
+            </div>
+            <button
+              type="button"
+              onClick={() => (user ? openMessenger() : setShowAuth(true))}
+              className="header-icon-btn"
+              style={{
+                height: 40,
+                width: 40,
+                fontSize: 22,
+                display: "grid",
+                placeItems: "center",
+                position: "relative",
+                borderRadius: 12,
+              }}
+              aria-label={t("nav.chat", "Чат")}
+              title={t("nav.chat", "Чат")}
+            >
+              <FaComments />
+              {unread > 0 && (
+                <span
+                  style={{
+                    position: "absolute",
+                    top: 3,
+                    right: 2,
+                    background: "#e45b5b",
+                    color: "white",
+                    borderRadius: 12,
+                    padding: "0 6px",
+                    fontWeight: 800,
+                    fontSize: 12,
+                    minWidth: 18,
+                    lineHeight: "18px",
+                    textAlign: "center",
+                    boxShadow: "0 1px 4px rgba(0,0,0,.35)",
+                  }}
+                >
+                  {unread > 99 ? "99+" : unread}
+                </span>
+              )}
+            </button>
+            {/* Переключатель темы (мобилка) */}
+            <ThemeToggle />
+            {/* Бургер-меню (мобилка): открывает выезжающий сайдбар профиля */}
+            <MobileSidebar />
           </div>
-          <button
-            type="button"
-            onClick={() => (user ? openMessenger() : setShowAuth(true))}
-            className="header-icon-btn"
-            style={{
-              height: 40,
-              width: 40,
-              fontSize: 22,
-              display: "grid",
-              placeItems: "center",
-              position: "relative",
-              borderRadius: 12,
-            }}
-            aria-label={t("nav.chat", "Чат")}
-            title={t("nav.chat", "Чат")}
-          >
-            <FaComments />
-            {unread > 0 && (
-              <span
-                style={{
-                  position: "absolute",
-                  top: 3,
-                  right: 2,
-                  background: "#e45b5b",
-                  color: "white",
-                  borderRadius: 12,
-                  padding: "0 6px",
-                  fontWeight: 800,
-                  fontSize: 12,
-                  minWidth: 18,
-                  lineHeight: "18px",
-                  textAlign: "center",
-                  boxShadow: "0 1px 4px rgba(0,0,0,.35)",
-                }}
-              >
-                {unread > 99 ? "99+" : unread}
-              </span>
-            )}
-          </button>
-          {/* Переключатель темы (мобилка) */}
-          <ThemeToggle />
-          {/* Бургер-меню (мобилка): открывает выезжающий сайдбар профиля */}
-          <MobileSidebar />
-        </div>
+        </header>
 
         {/* Мобильный оверлей поиска (фиксированная ширина) */}
         {user && showUserSearch && (
@@ -1022,7 +1017,8 @@ export default function Header({ setShowRegisterModal }) {
             </form>
           </div>
         )}
-      </header>
+        <div aria-hidden style={{ height: MOBILE_H }} />
+      </>
     );
   }
 
@@ -1049,10 +1045,13 @@ export default function Header({ setShowRegisterModal }) {
           flexDirection: "row",
           alignItems: "center",
           gap: isCompact ? 14 : 18,
+          height: headerHeight,
+          minHeight: headerHeight,
           background: "var(--header-bg)",
           padding: `${headerPadding.top}px ${headerPadding.right}px ${headerPadding.bottom}px ${headerPadding.left}px`,
           boxShadow: "var(--header-shadow)",
           borderBottom: "1px solid var(--border-strong)",
+          boxSizing: "border-box",
           zIndex: 100,
         }}
       >
@@ -1088,7 +1087,7 @@ export default function Header({ setShowRegisterModal }) {
               textShadow: "0 1px 8px rgba(30,160,255,.22)",
             }}
           >
-            Transinfo.ge
+            Transinfo
           </span>
         </Link>
 
@@ -1542,7 +1541,9 @@ export default function Header({ setShowRegisterModal }) {
             width: "100%",
             padding: `${isCompact ? 0 : 2}px ${headerPadding.right}px ${isCompact ? 4 : 6
               }px ${headerPadding.left}px`,
-            background: "var(--header-bg)",
+            // Синхронизируем фон с основным полотном страницы,
+            // чтобы слева/справа от навигации не было другой подложки.
+            background: "var(--bg-body)",
           }}
         >
           <div

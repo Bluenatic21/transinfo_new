@@ -786,6 +786,7 @@
   "notFound.support": "Dəstək",
   "notFound.codeLabel": "Hadisə kodu",
   "home.sections.latestOrders": "Son elanlar",
+  "home.sections.latestTransports": "Son nəqliyyat elanları",
   "home.sections.createTitle": "Yeni elan yarat (yük)",
   "home.loginRequiredCreate": "Elan yaratmaq üçün",
   "auth.loginLink": "Hesabınıza daxil olun",

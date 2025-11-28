@@ -8,6 +8,7 @@ import TransportForm from "./components/TransportForm";
 import BottomNavBar from "./components/BottomNavBar";
 import RegisterForm from "./components/RegisterForm";
 import { useUser } from "./UserContext";
+import dynamic from "next/dynamic";
 import { useIsMobile } from "../hooks/useIsMobile";
 import { useState, useEffect, useReducer } from "react";
 import { useRouter } from "next/navigation";
@@ -18,6 +19,8 @@ import CompactHero from "./components/CompactHero";
 import AuthModal from "./components/AuthModal";
 import HomeMapsSection from "./components/HomeMapsSection";
 import { useLang } from "./i18n/LangProvider";
+
+const TransportList = dynamic(() => import("./components/TransportList"), { ssr: false });
 
 const BASE_STATS = {
     index: 217,
@@ -152,10 +155,21 @@ export default function Home() {
     const isTransportRole = role === "TRANSPORT";
     const isOwnerRole = role === "OWNER";
 
+    const latestTitle = isOwnerRole
+        ? t("home.sections.latestTransports", "Заявки транспорта")
+        : t("home.sections.latestOrders", "Последние заявки");
+
     const handleNav = (m) => {
         if (m === "auth") setShowAuth(true);
         else setMode(m);
     };
+
+    function LatestRequests() {
+        if (isOwnerRole) {
+            return <TransportList />;
+        }
+        return <OrderList reload={reload} setMessage={setMessage} user={user} />;
+    }
 
     // компактный hero на первом экране: берём текущие «живые» метрики и передаём в новый блок
     function HeroCompactBridge() {
@@ -285,8 +299,8 @@ export default function Home() {
     function OrdersSection() {
         return (
             <div className="section">
-                <div className="section-title">{t("home.sections.latestOrders", "Последние заявки")}</div>
-                <OrderList reload={reload} setMessage={setMessage} user={user} />
+                <div className="section-title">{latestTitle}</div>
+                <LatestRequests />
             </div>
         );
     }
@@ -298,8 +312,8 @@ export default function Home() {
                     <HomeMapsSection hideTransportPins={isTransportRole} />
                 </div>
                 <div className="home-orders-block">
-                    <div className="section-title">{t("home.sections.latestOrders", "Последние заявки")}</div>
-                    <OrderList reload={reload} setMessage={setMessage} user={user} />
+                    <div className="section-title">{latestTitle}</div>
+                    <LatestRequests />
                 </div>
                 <div className="home-info-block">
                     <ServiceSection compact />
@@ -372,6 +386,48 @@ export default function Home() {
                     {t("home.about.p2", "Всё быстро, удобно, без лишних звонков и посредников.")}<br /><br />
                     <span style={{ color: "var(--accent, #FE9805)" }}>{t("home.about.tagline", "Всё как у лидеров рынка — только проще и понятнее!")}</span>
                 </div>
+            </div>
+        );
+    }
+
+    function MapOrdersSection() {
+        const latestOrders = (
+            <div className="home-orders-block">
+                <div className="section-title">{t("home.sections.latestOrders", "Последние заявки")}</div>
+                <OrderList reload={reload} setMessage={setMessage} user={user} />
+            </div>
+        );
+
+        const mapBlock = (
+            <div className="home-map-block">
+                <HomeMapsSection />
+            </div>
+        );
+
+        const aboutBlock = (
+            <div className="home-info-block">
+                <ServiceSection compact />
+            </div>
+        );
+
+        if (isMobile) {
+            return (
+                <div className="home-map-prime">
+                    {latestOrders}
+                    {mapBlock}
+                    {aboutBlock}
+                </div>
+            );
+        }
+
+        return (
+            <div className="home-map-prime">
+                <div className="home-map-orders">
+                    {mapBlock}
+                    {latestOrders}
+                    {aboutBlock}
+                </div>
+                <div className="home-hero-after-map" />
             </div>
         );
     }
@@ -546,6 +602,12 @@ export default function Home() {
             grid-column: 2;
             grid-row: 1 / span 2;
             backdrop-filter: blur(3px);
+          }
+
+          @media (max-width: 768px) {
+            :root[data-theme="light"] .home-orders-block .section-title {
+              color: #fff;
+            }
           }
 
           .home-info-block {

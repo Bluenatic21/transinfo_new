@@ -782,6 +782,7 @@
   "notFound.support": "Support",
   "notFound.codeLabel": "Event code",
   "home.sections.latestOrders": "Latest requests",
+  "home.sections.latestTransports": "Latest transport requests",
   "home.sections.createTitle": "Create a new request (cargo)",
   "home.loginRequiredCreate": "to create a request",
   "auth.loginLink": "Sign in to your account",

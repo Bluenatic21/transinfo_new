@@ -6,6 +6,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import DateInput from "../DateInput";
 import LocationAutocomplete from "../LocationAutocomplete";
 import { useLang } from "../../i18n/LangProvider";
+import { useTheme } from "../../providers/ThemeProvider";
 import { normalize, denormalize, num, countActive } from "../../filters/shared";
 
 // ----------------- ВНУТРЕННИЕ УТИЛИТЫ UI -----------------
@@ -13,19 +14,14 @@ const field = {
     display: "grid",
     gap: 6,
 };
-const label = {
-    color: "#bcd1e6",
+const labelBase = {
     fontSize: 12,
     fontWeight: 700,
 };
-const input = {
+const inputBase = {
     width: "100%",
-    background: "#16243c",
-    border: "1px solid #2b4b75",
-    borderRadius: 10,
     borderRadius: 10,
     padding: "9px 12px",
-    color: "#e3f2fd",
     outline: "none",
 };
 
@@ -39,25 +35,25 @@ function Row2({ children }) {
 }
 
 // Числовой диапазон (фикс: берём t из useLang здесь!)
-function NumberRange({ labelText, minValue, maxValue, onChange }) {
+function NumberRange({ labelText, minValue, maxValue, onChange, labelStyle, inputStyle }) {
     const { t } = useLang(); // <-- FIX: чтобы не падало "t is not defined"
     return (
         <div style={field}>
-            <span style={label}>{labelText}</span>
+            <span style={labelStyle}>{labelText}</span>
             <Row2>
                 <input
                     inputMode="decimal"
                     placeholder={t("range.from", "от")}
                     value={minValue ?? ""}
                     onChange={(e) => onChange(num(e.target.value), maxValue)}
-                    style={input}
+                    style={inputStyle}
                 />
                 <input
                     inputMode="decimal"
                     placeholder={t("range.to", "до")}
                     value={maxValue ?? ""}
                     onChange={(e) => onChange(minValue, num(e.target.value))}
-                    style={input}
+                    style={inputStyle}
                 />
             </Row2>
         </div>
@@ -76,6 +72,41 @@ export default function MobileFilterSheet({
     onPreview,                // (normalizedPayload) => void
 }) {
     const { t } = useLang();
+    const { resolvedTheme } = useTheme?.() || { resolvedTheme: "dark" };
+    const isLight = resolvedTheme === "light";
+
+    const palette = {
+        label: isLight ? "var(--text-secondary)" : "#bcd1e6",
+        inputBg: isLight ? "var(--control-bg)" : "#16243c",
+        inputBorder: isLight ? "var(--border-subtle)" : "#2b4b75",
+        inputText: isLight ? "var(--text-primary)" : "#e3f2fd",
+        sheetBg: isLight ? "var(--bg-card)" : "rgba(18,32,52,0.98)",
+        overlayBg: isLight ? "rgba(0,0,0,0.35)" : "rgba(0,10,20,.45)",
+        handle: isLight ? "var(--border-strong)" : "#446b9e",
+        handleActive: isLight ? "var(--brand-blue)" : "#57b5ff",
+        headerText: isLight ? "var(--text-primary)" : "#e3f2fd",
+        badgeBg: isLight ? "color-mix(in srgb, var(--brand-blue) 16%, #ffffff)" : "#1b3d66",
+        badgeBorder: isLight ? "var(--border-strong)" : "#2e5a8e",
+        badgeFg: isLight ? "var(--text-primary)" : "#9cd1ff",
+        resetBg: isLight ? "var(--control-bg)" : "#23395b",
+        resetBorder: isLight ? "var(--border-strong)" : "#2b4f85",
+        resetText: isLight ? "var(--text-primary)" : "#9ad3ff",
+        footerGradient: isLight
+            ? "linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.8) 40%, rgba(255,255,255,0.95) 85%)"
+            : "linear-gradient(180deg, rgba(18,32,52,0) 0%, rgba(18,32,52,0.9) 30%, rgba(18,32,52,0.98) 80%)",
+        primaryBtnBg: isLight ? "var(--brand-blue)" : "#1c65a5",
+        secondaryBtnBg: isLight ? "var(--control-bg)" : "#283e62",
+        secondaryBtnBorder: isLight ? "var(--border-strong)" : "#355a8b",
+        secondaryBtnText: isLight ? "var(--text-primary)" : "#c6e4ff",
+    };
+
+    const label = { ...labelBase, color: palette.label };
+    const input = {
+        ...inputBase,
+        background: palette.inputBg,
+        border: `1px solid ${palette.inputBorder}`,
+        color: palette.inputText,
+    };
 
     // локальное состояние полей (в "человеческом" виде)
     const [local, setLocal] = useState(normalize(initialFilters, type));
@@ -182,7 +213,7 @@ export default function MobileFilterSheet({
                 position: "fixed",
                 inset: 0,
                 zIndex: 99999,
-                background: "rgba(0,10,20,.45)",
+                background: palette.overlayBg,
                 backdropFilter: "blur(2px)",
             }}
             aria-modal="true"
@@ -203,7 +234,7 @@ export default function MobileFilterSheet({
                     overflow: "auto",
                     borderTopLeftRadius: 18,
                     borderTopRightRadius: 18,
-                    background: "rgba(18,32,52,0.98)",
+                    background: palette.sheetBg,
                     boxShadow: "0 -10px 30px rgba(0,0,0,.35)",
                     transform: `translateY(${offset}px)`,
                     transition: dragging ? "none" : "transform 180ms cubic-bezier(.2,.8,.2,1)",
@@ -218,7 +249,7 @@ export default function MobileFilterSheet({
                             width: 36,
                             height: 4,
                             borderRadius: 999,
-                            background: dragging ? "#57b5ff" : "#446b9e",
+                            background: dragging ? palette.handleActive : palette.handle,
                             transition: "background 160ms",
                         }}
                     />
@@ -234,15 +265,15 @@ export default function MobileFilterSheet({
                     }}
                 >
                     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <span style={{ color: "#e3f2fd", fontWeight: 800, fontSize: 16 }}>
+                        <span style={{ color: palette.headerText, fontWeight: 800, fontSize: 16 }}>
                             {t("filter.title", "Фильтры")}
                         </span>
                         {activeCount > 0 && (
                             <span
                                 style={{
-                                    background: "#1b3d66",
-                                    color: "#9cd1ff",
-                                    border: "1px solid #2e5a8e",
+                                    background: palette.badgeBg,
+                                    color: palette.badgeFg,
+                                    border: `1px solid ${palette.badgeBorder}`,
                                     padding: "2px 7px",
                                     borderRadius: 999,
                                     fontSize: 12,
@@ -256,9 +287,9 @@ export default function MobileFilterSheet({
                     <button
                         onClick={reset}
                         style={{
-                            background: "#23395b",
-                            color: "#9ad3ff",
-                            border: "1px solid #2b4f85",
+                            background: palette.resetBg,
+                            color: palette.resetText,
+                            border: `1px solid ${palette.resetBorder}`,
                             padding: "7px 12px",
                             borderRadius: 10,
                             fontSize: 13,
@@ -334,12 +365,16 @@ export default function MobileFilterSheet({
                                 minValue={local.weightMin}
                                 maxValue={local.weightMax}
                                 onChange={(a, b) => setLocal((s) => ({ ...s, weightMin: a, weightMax: b }))}
+                                labelStyle={label}
+                                inputStyle={input}
                             />
                             <NumberRange
                                 labelText={t("filter.volume", "Объём (м³)")}
                                 minValue={local.volumeMin}
                                 maxValue={local.volumeMax}
                                 onChange={(a, b) => setLocal((s) => ({ ...s, volumeMin: a, volumeMax: b }))}
+                                labelStyle={label}
+                                inputStyle={input}
                             />
                         </>
                     ) : (
@@ -410,7 +445,7 @@ export default function MobileFilterSheet({
                                 checked={!!local.adr}
                                 onChange={(e) => setLocal((s) => ({ ...s, adr: !!e.target.checked }))}
                             />
-                            <span style={{ color: "#e3f2fd", fontSize: 14, userSelect: "none" }}>ADR</span>
+                            <span style={{ color: palette.headerText, fontSize: 14, userSelect: "none" }}>ADR</span>
                         </label>
                     </div>
                 </div>
@@ -422,8 +457,7 @@ export default function MobileFilterSheet({
                         bottom: 0,
                         marginTop: 14,
                         paddingTop: 12,
-                        background:
-                            "linear-gradient(180deg, rgba(18,32,52,0) 0%, rgba(18,32,52,0.9) 30%, rgba(18,32,52,0.98) 80%)",
+                        background: palette.footerGradient,
                     }}
                 >
                     <div style={{ display: "flex", gap: 10 }}>
@@ -431,8 +465,8 @@ export default function MobileFilterSheet({
                             onClick={apply}
                             style={{
                                 flex: 1,
-                                background: "#1c65a5",
-                                color: "#fff",
+                                background: palette.primaryBtnBg,
+                                color: "var(--text-on-brand)",
                                 border: "none",
                                 padding: "12px 14px",
                                 borderRadius: 12,
@@ -448,9 +482,9 @@ export default function MobileFilterSheet({
                         <button
                             onClick={onClose}
                             style={{
-                                background: "#283e62",
-                                color: "#c6e4ff",
-                                border: "1px solid #355a8b",
+                                background: palette.secondaryBtnBg,
+                                color: palette.secondaryBtnText,
+                                border: `1px solid ${palette.secondaryBtnBorder}`,
                                 padding: "12px 14px",
                                 borderRadius: 12,
                                 fontSize: 15,
