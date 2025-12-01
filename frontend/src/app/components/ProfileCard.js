@@ -139,7 +139,7 @@ const InfoRow = ({ icon, children }) => (
 );
 
 /* -------------------- component -------------------- */
-export default function ProfileCard({ user: initialUser, readOnly, onUserUpdate, showMobileLogout = true, onChangePasswordClick }) {
+export default function ProfileCard({ user: initialUser, readOnly, onUserUpdate, showMobileLogout = true, onChangePasswordClick, onEdit }) {
     const { t } = useLang?.() || { t: (_k, f) => f };
     const { resolvedTheme } = useTheme?.() || { resolvedTheme: "dark" };
     const [editMode, setEditMode] = useState(false);
@@ -219,6 +219,14 @@ export default function ProfileCard({ user: initialUser, readOnly, onUserUpdate,
         controlText: isLight ? "#1d4ed8" : "#acd2ff",
         logoutBg: isLight ? "#d92d20" : "#c62828",
         logoutShadow: isLight ? "0 4px 14px rgba(217,45,32,0.25)" : "0 2px 8px rgba(198,40,40,0.35)",
+    };
+
+    const handleEditClick = () => {
+        if (onEdit) {
+            onEdit();
+        } else {
+            setEditMode(true);
+        }
     };
 
     return (
@@ -384,7 +392,7 @@ export default function ProfileCard({ user: initialUser, readOnly, onUserUpdate,
                                     {!readOnly && (
                                         <>
                                             <button
-                                                onClick={() => setEditMode(true)}
+                                                onClick={handleEditClick}
                                                 title={t("profile.edit", "Редактировать профиль")}
                                                 style={{
                                                     marginLeft: 6,
