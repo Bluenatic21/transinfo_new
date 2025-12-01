@@ -1228,6 +1228,21 @@ export default function TransportForm({
     gridTemplateColumns: "1fr 1fr",
     gap: "0 20px",
   };
+  const [adrModalOpen, setAdrModalOpen] = useState(false);
+
+  const toggleSpecial = (value) => {
+    setForm((f) => {
+      const set = new Set(f.special || []);
+      if (set.has(value)) set.delete(value);
+      else set.add(value);
+      return { ...f, special: Array.from(set) };
+    });
+  };
+
+  const adrSummary = React.useMemo(() => {
+    if (!form.adr || !form.adr_classes?.length) return t("adr.short", "ADR");
+    return `${t("adr.short", "ADR")}: ${form.adr_classes.join(", ")}`;
+  }, [form.adr, form.adr_classes, t]);
 
   return (
     <form
@@ -1939,11 +1954,160 @@ export default function TransportForm({
           <label style={{ ...label, marginBottom: 6 }}>
             {t("common.add", "Добавить:")}
           </label>
-          <div className="add-options">
-            {SPECIAL.map((s) =>
-              s === "Экипаж" ? (
-                <span key={s} className="add-option crew-option">
-                  <label style={{ fontWeight: 400 }}>
+          {isMobile ? (
+            <div className="mobile-add-list">
+              {SPECIAL.map((s) => {
+                if (s === "Экипаж") {
+                  const active = form.special.includes(s);
+                  return (
+                    <button
+                      key={s}
+                      type="button"
+                      className={`mobile-add-card ${active ? "active" : ""}`}
+                      onClick={() => toggleSpecial(s)}
+                    >
+                      <div className="mobile-add-header">
+                        <span className="mobile-add-title">{specialLabel(s)}</span>
+                        <span className="mobile-add-chip">
+                          {active
+                            ? t("common.enabled", "Выбрано")
+                            : t("common.disabled", "Не выбрано")}
+                        </span>
+                      </div>
+                      <div className="mobile-add-extra">
+                        {active ? (
+                          <select
+                            name="crew"
+                            value={form.crew}
+                            onChange={handleChange}
+                            className="mobile-add-select"
+                          >
+                            <option value="1">
+                              {t("transport.crew.one", "1 водитель")}
+                            </option>
+                            <option value="2">
+                              {t("transport.crew.two", "2 водителя")}
+                            </option>
+                          </select>
+                        ) : (
+                          t("transport.crew.hint", "Добавьте экипаж")
+                        )}
+                      </div>
+                    </button>
+                  );
+                }
+
+                if (s === "ADR") {
+                  const active = !!form.adr;
+                  return (
+                    <button
+                      key="ADR"
+                      type="button"
+                      className={`mobile-add-card ${active ? "active" : ""}`}
+                      onClick={() => {
+                        setForm((f) => ({ ...f, adr: true }));
+                        setAdrModalOpen(true);
+                      }}
+                    >
+                      <div className="mobile-add-header">
+                        <span className="mobile-add-title">ADR</span>
+                        <span className="mobile-add-chip">
+                          {active
+                            ? t("common.enabled", "Выбрано")
+                            : t("common.disabled", "Не выбрано")}
+                        </span>
+                      </div>
+                      <div className="mobile-add-extra">
+                        {active
+                          ? adrSummary
+                          : t("transport.adr.hint", "Выберите классы ADR")}
+                      </div>
+                    </button>
+                  );
+                }
+
+                const active = form.special.includes(s);
+                return (
+                  <button
+                    key={s}
+                    type="button"
+                    className={`mobile-add-card ${active ? "active" : ""}`}
+                    onClick={() => toggleSpecial(s)}
+                  >
+                    <div className="mobile-add-header">
+                      <span className="mobile-add-title">{specialLabel(s)}</span>
+                      <span className="mobile-add-chip">
+                        {active
+                          ? t("common.enabled", "Выбрано")
+                          : t("common.disabled", "Не выбрано")}
+                      </span>
+                    </div>
+                    <div className="mobile-add-extra">
+                      {active
+                        ? t("common.active", "Добавлено")
+                        : t("common.tapToSelect", "Нажмите, чтобы выбрать")}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="add-options">
+              {SPECIAL.map((s) =>
+                s === "Экипаж" ? (
+                  <span key={s} className="add-option crew-option">
+                    <label style={{ fontWeight: 400 }}>
+                      <input
+                        type="checkbox"
+                        name="special"
+                        value={s}
+                        checked={form.special.includes(s)}
+                        onChange={handleChange}
+                        style={{ marginRight: 8 }}
+                      />
+                      {specialLabel(s)}
+                    </label>
+                    {form.special.includes("Экипаж") && (
+                      <select
+                        name="crew"
+                        value={form.crew}
+                        onChange={handleChange}
+                        style={{
+                          borderRadius: 6,
+                          border: `1.5px solid ${palette.border}`,
+                          padding: "4px 9px",
+                          background: palette.controlBg,
+                          color: palette.accent,
+                        }}
+                      >
+                        <option value="1">
+                          {t("transport.crew.one", "1 водитель")}
+                        </option>
+                        <option value="2">
+                          {t("transport.crew.two", "2 водителя")}
+                        </option>
+                      </select>
+                    )}
+                  </span>
+                ) : s === "ADR" ? (
+                  <label key="ADR" className="add-option" style={{ fontWeight: 400 }}>
+                    <input
+                      type="checkbox"
+                      name="adr"
+                      checked={form.adr || false}
+                      onChange={(e) =>
+                        setForm((f) => ({
+                          ...f,
+                          adr: e.target.checked,
+                          adr_classes: e.target.checked ? [] : [],
+                        }))
+                      }
+                      style={{ marginRight: 8 }}
+                    />
+                    ADR
+                  </label>
+                ) : (
+                  <label key={s} className="add-option" style={{ fontWeight: 400 }}>
                     <input
                       type="checkbox"
                       name="special"
@@ -1954,70 +2118,17 @@ export default function TransportForm({
                     />
                     {specialLabel(s)}
                   </label>
-                  {form.special.includes("Экипаж") && (
-                    <select
-                      name="crew"
-                      value={form.crew}
-                      onChange={handleChange}
-                      style={{
-                        borderRadius: 6,
-                        border: `1.5px solid ${palette.border}`,
-                        padding: "4px 9px",
-                        background: palette.controlBg,
-                        color: palette.accent,
-                      }}
-                    >
-                      <option value="1">
-                        {t("transport.crew.one", "1 водитель")}
-                      </option>
-                      <option value="2">
-                        {t("transport.crew.two", "2 водителя")}
-                      </option>
-                    </select>
-                  )}
-                </span>
-              ) : s === "ADR" ? (
-                <label key="ADR" className="add-option" style={{ fontWeight: 400 }}>
-                  <input
-                    type="checkbox"
-                    name="adr"
-                    checked={form.adr || false}
-                    onChange={(e) =>
-                      setForm((f) => ({
-                        ...f,
-                        adr: e.target.checked,
-                        adr_classes: e.target.checked ? [] : [],
-                      }))
-                    }
-                    style={{ marginRight: 8 }}
-                  />
-                  ADR
-                </label>
-              ) : (
-                <label key={s} className="add-option" style={{ fontWeight: 400 }}>
-                  <input
-                    type="checkbox"
-                    name="special"
-                    value={s}
-                    checked={form.special.includes(s)}
-                    onChange={handleChange}
-                    style={{ marginRight: 8 }}
-                  />
-                  {specialLabel(s)}
-                </label>
-              )
-            )}
-          </div>
+                )
+              )}
+            </div>
+          )}
           {/* ВЫВОД СПИСКА ADR */}
-          {form.adr && (
-            <div
-              className={isMobile ? "adr-list-mobile" : "choice-grid"}
-              style={{ marginTop: 9, fontSize: 15 }}
-            >
+          {form.adr && !isMobile && (
+            <div className="choice-grid" style={{ marginTop: 9, fontSize: 15 }}>
               {ADR_CLASSES.map(({ value, label }) => (
                 <label
                   key={value}
-                  className={isMobile ? "adr-list-item" : "choice-tile"}
+                  className="choice-tile"
                   style={{ fontWeight: 500, cursor: "pointer" }}
                 >
                   <input
@@ -2087,6 +2198,81 @@ export default function TransportForm({
           </label>
         </div>
       </div>
+
+      {isMobile && adrModalOpen && (
+        <div
+          className="adr-modal-backdrop"
+          onClick={() => setAdrModalOpen(false)}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div
+            className="adr-modal"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="adr-modal-header">
+              <div className="adr-modal-title">
+                {t("transport.adr.classes", "Классы ADR")}
+              </div>
+              <button
+                type="button"
+                className="adr-modal-close"
+                onClick={() => setAdrModalOpen(false)}
+              >
+                ×
+              </button>
+            </div>
+            <div className="adr-modal-list">
+              {ADR_CLASSES.map(({ value, label }) => (
+                <label key={value} className="adr-modal-item">
+                  <input
+                    type="checkbox"
+                    name="adr_classes"
+                    value={value}
+                    checked={form.adr_classes?.includes(value)}
+                    onChange={(e) => {
+                      setForm((f) => {
+                        const arr = new Set(f.adr_classes || []);
+                        if (e.target.checked) arr.add(value);
+                        else arr.delete(value);
+                        return { ...f, adr_classes: Array.from(arr), adr: true };
+                      });
+                    }}
+                  />
+                  <div className="adr-modal-label">
+                    <div className="adr-modal-title-row">
+                      <span className="adr-modal-code">ADR {value}</span>
+                      <span className="adr-modal-name">{label}</span>
+                    </div>
+                    <div className="adr-modal-desc">
+                      {t(`adr.info.${value}`, ADR_CLASS_FALLBACKS[value])}
+                    </div>
+                  </div>
+                </label>
+              ))}
+            </div>
+            <div className="adr-modal-footer">
+              <button
+                type="button"
+                className="adr-modal-action secondary"
+                onClick={() => {
+                  setForm((f) => ({ ...f, adr: false, adr_classes: [] }));
+                  setAdrModalOpen(false);
+                }}
+              >
+                {t("common.remove", "Убрать ADR")}
+              </button>
+              <button
+                type="button"
+                className="adr-modal-action"
+                onClick={() => setAdrModalOpen(false)}
+              >
+                {t("common.ready", "Готово")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* --- Ставка и контакты --- */}
       <div style={section} className="form-section">

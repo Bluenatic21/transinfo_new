@@ -277,7 +277,10 @@ export default function TransportList({ transports: propTransports }) {
             localStorage.setItem(CARD_SIZE_STORAGE_KEY, cardSize);
         } catch { }
     }, [cardSize]);
-    const [loading, setLoading] = useState(false);
+    // Стартуем в состоянии загрузки, чтобы не мигало сообщение «нет транспорта»
+    // до первой загрузки списка. Если транспорт передан через пропсы, то
+    // показываем готовый список сразу.
+    const [loading, setLoading] = useState(!propTransports);
     const [loadingMore, setLoadingMore] = useState(false);
     // --- Pagination state ---
     const DEFAULT_PAGE_SIZE = 20;
@@ -988,7 +991,11 @@ export default function TransportList({ transports: propTransports }) {
             !loading && safeFiltered.length === 0 && safeTransports.length > 0
                 ? safeTransports
                 : safeFiltered;
-        if (!initialLoaded && loading) {
+        // ⬇️ ВАЖНО: до первой успешной загрузки никогда не показываем
+        // сообщение «Нет транспорта…», только скелетоны.
+        // Иначе на медленном соединении пользователь успевает увидеть
+        // пустой список, хотя данные ещё не пришли.
+        if (!initialLoaded) {
             return (
                 <>
                     {[...Array(4)].map((_, i) => (
