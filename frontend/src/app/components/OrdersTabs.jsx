@@ -72,7 +72,7 @@ export default function OrdersTabs({ mode = "route" }) {
 
     return (
         <div
-            className="sticky top-0 z-20 px-3"
+            className="sticky top-0 z-20 px-3 w-full"
             style={{
                 paddingTop: 0,
                 paddingBottom: 12,
@@ -81,7 +81,10 @@ export default function OrdersTabs({ mode = "route" }) {
                 boxShadow: "none",
             }}
         >
-            <div className="flex gap-2">
+            <div
+                className="flex gap-2 w-full"
+                style={{ maxWidth: 1400, marginInline: "auto" }}
+            >
                 <Tab
                     tKey="cargo"
                     label={t("orders.tabs.cargo", "Грузы")}

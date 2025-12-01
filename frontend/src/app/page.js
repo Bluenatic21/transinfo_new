@@ -406,9 +406,11 @@ export default function Home() {
         return (
             <div className="home-map-prime">
                 <div className="home-map-orders">
-                    {mapBlock}
-                    {latestRequests}
-                    {aboutBlock}
+                    <div className="home-map-info-col">
+                        {mapBlock}
+                        {aboutBlock}
+                    </div>
+                    <div className="home-orders-col">{latestRequests}</div>
                 </div>
                 <div className="home-hero-after-map" />
             </div>
@@ -546,10 +548,8 @@ export default function Home() {
           }
 
           .home-map-orders {
-            display: grid;
-            grid-template-columns: minmax(0, 0.9fr) minmax(0, 2.1fr);
-            grid-template-rows: auto auto;
-            gap: 0;
+            display: flex;
+            gap: clamp(12px, 2vw, 20px);
             align-items: stretch;
             margin-top: clamp(6px, 1.8vw, 20px);
             background: linear-gradient(135deg,
@@ -560,6 +560,19 @@ export default function Home() {
             box-shadow: 0 16px 40px rgba(0, 0, 0, 0.28);
             position: relative;
             overflow: hidden;
+          }
+
+          .home-map-info-col {
+            display: flex;
+            flex-direction: column;
+            gap: clamp(10px, 1.2vw, 14px);
+            flex: 0.95;
+            min-width: 0;
+          }
+
+          .home-orders-col {
+            flex: 2.05;
+            min-width: 0;
           }
 
           .home-map-block,
@@ -576,14 +589,11 @@ export default function Home() {
             display: flex;
             flex-direction: column;
             gap: 10px;
-            grid-row: 1;
-            grid-column: 1;
             backdrop-filter: blur(3px);
           }
 
           .home-orders-block {
-            grid-column: 2;
-            grid-row: 1 / span 2;
+            height: 100%;
             backdrop-filter: blur(3px);
           }
 
@@ -594,9 +604,7 @@ export default function Home() {
           }
 
           .home-info-block {
-            grid-row: 2;
-            grid-column: 1;
-            align-self: start;
+            align-self: flex-start;
             background: color-mix(in srgb, var(--bg-card, #22314a) 90%, transparent);
             border-radius: 18px;
             border: 1px solid color-mix(in srgb, var(--border-subtle, rgba(23, 65, 142, 0.12)) 80%, transparent);
@@ -608,11 +616,10 @@ export default function Home() {
           .home-orders-block .section-title {
             margin-bottom: 10px;
           }
-
+␊
           @media (max-width: 1100px) {
             .home-map-orders {
-              grid-template-columns: 1fr;
-              grid-template-rows: auto;
+              flex-direction: column;
             }
 
             .home-nav-grid {
@@ -622,12 +629,7 @@ export default function Home() {
               margin: 0;
             }
 
-            .home-orders-block {
-              grid-row: auto;
-              grid-column: 1;
-            }
             .home-info-block {
-              grid-column: 1;
               margin-top: 0;
             }
           }

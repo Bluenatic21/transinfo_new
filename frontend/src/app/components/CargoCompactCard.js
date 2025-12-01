@@ -786,7 +786,7 @@ const CargoCompactCard = forwardRef(function CargoCompactCard(
                     style={{
                         fontWeight: 800,
                         fontSize: isMobile ? 15 : 18,
-                        color: "#43c8ff",
+                        color: "var(--compact-card-title)",
                         marginBottom: isMobile ? 6 : 3,
                         display: "flex",
                         alignItems: "center",

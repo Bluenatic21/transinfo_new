@@ -60,9 +60,14 @@ export default function TransportCompactCard({
     limited = false, // ← НОВОЕ
     ...rest
 }) {
-    const [isActive, setIsActive] = useState(!!transport.is_active);
+    const [isActive, setIsActive] = useState(transport.is_active !== false);
     const [toggleLoading, setToggleLoading] = useState(false);
     const [showOverdueModal, setShowOverdueModal] = useState(false);
+
+    // Синхронизируем флаг активности при смене пропсов
+    useEffect(() => {
+        setIsActive(transport.is_active !== false);
+    }, [transport.is_active]);
 
     const { authFetchWithRefresh, user } = useUser();
     const router = useRouter();

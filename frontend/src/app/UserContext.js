@@ -8,7 +8,7 @@ import React, {
   useRef,
   useCallback,
 } from "react";
-import { API_BASE } from "@/config/env"; // централизованный базовый URL
+import { API_BASE, makeWsUrl } from "@/config/env"; // централизованный базовый URL
 
 const UserContext = createContext();
 

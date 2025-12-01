@@ -78,7 +78,7 @@ export default function TransportPage() {
         minWidth: 0,
         maxWidth: isCompact ? "100%" : 1400,
         marginInline: isCompact ? 0 : "auto",
-        marginBlockStart: 24,               // то, что было marginTop
+        marginBlockStart: 12,               // то, что было marginTop
         background: "var(--orders-panel-bg)",
         border: "1px solid var(--orders-panel-border)",
         borderRadius: isCompact ? 0 : 20,

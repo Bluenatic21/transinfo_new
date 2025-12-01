@@ -66,7 +66,7 @@ export default function OrdersPage() {
         minWidth: 0,
         maxWidth: isCompact ? "100%" : 1400,
         marginInline: isCompact ? 0 : "auto",
-        marginBlockStart: 24,
+        marginBlockStart: 12,
         background: "var(--orders-panel-bg)",
         border: "1px solid var(--orders-panel-border)",
         borderRadius: isCompact ? 0 : 20,

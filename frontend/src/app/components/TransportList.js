@@ -979,6 +979,14 @@ export default function TransportList({ transports: propTransports }) {
     // --- Плавный список транспортов ---
     function renderTransportCards(filtered) {
         const safeFiltered = Array.isArray(filtered) ? filtered : [];
+        // Иногда бэкенд отдаёт корректное количество (total > 0),
+        // но из‑за локальной фильтрации по карте список становится пустым.
+        // В таком случае показываем исходный набор, чтобы не вводить
+        // пользователя в заблуждение сообщением «Нет транспорта…».
+        const listToRender =
+            !loading && safeFiltered.length === 0 && safeTransports.length > 0
+                ? safeTransports
+                : safeFiltered;
         if (!initialLoaded && loading) {
             return (
                 <>
@@ -1024,7 +1032,7 @@ export default function TransportList({ transports: propTransports }) {
                 </AnimatePresence>
             );
         }
-        if (!loading && safeFiltered.length === 0) {
+        if (!loading && listToRender.length === 0) {
             return (
                 <motion.div
                     key="no-transports"
@@ -1047,7 +1055,7 @@ export default function TransportList({ transports: propTransports }) {
         }
         return (
             <AnimatePresence initial={false}>
-                {safeFiltered.map((transport) => (
+                {listToRender.map((transport) => (
                     <motion.div
                         key={transport.id}
                         initial={{ opacity: 0, y: 36, scale: 0.97 }}
