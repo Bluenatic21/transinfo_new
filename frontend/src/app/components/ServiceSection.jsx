@@ -141,7 +141,7 @@ export default function ServiceSection({ compact = false }) {
     }
 
     return (
-        // Наследуем фон страницы, чтобы не было скачков␊
+        // Наследуем фон страницы, чтобы не было скачков
         <section id="service" className="relative py-24" style={{ color: "var(--text-primary)" }}>
             {/* Едва заметные разделители сверху/снизу для мягкого стыка секций */}
             <div

@@ -71,7 +71,7 @@ export default function AdminUsersPage() {
         );
         setAgents(activeIds);
       })
-      .catch(() => {})
+      .catch(() => { })
       .finally(() => setAgentsLoading(false));
   }, [token]);
 
@@ -137,27 +137,27 @@ export default function AdminUsersPage() {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 text-[color:var(--text-primary)]">
       <div className="flex gap-2 flex-wrap items-end">
         <div className="flex flex-col">
-          <label className="text-sm text-gray-500">
+          <label className="text-sm text-[color:var(--text-secondary)]">
             {t("admin.common.search", "Поиск")}
           </label>
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder={t("admin.users.search.ph", "e-mail или имя")}
-            className="border border-slate-700 bg-slate-900/60 text-slate-100 placeholder-slate-400 rounded-xl px-3 py-2"
+            className="border border-[color:var(--border-subtle)] bg-[color:var(--control-bg)] text-[color:var(--text-primary)] placeholder:text-[color:var(--text-muted)] rounded-xl px-3 py-2 shadow-[var(--shadow-soft)]"
           />
         </div>
         <div className="flex flex-col">
-          <label className="text-sm text-gray-500">
+          <label className="text-sm text-[color:var(--text-secondary)]">
             {t("admin.common.role", "Роль")}
           </label>
           <select
             value={role}
             onChange={(e) => setRole(e.target.value)}
-            className="border border-slate-700 bg-slate-900/60 text-slate-100 rounded-xl px-3 py-2"
+            className="border border-[color:var(--border-subtle)] bg-[color:var(--control-bg)] text-[color:var(--text-primary)] rounded-xl px-3 py-2 shadow-[var(--shadow-soft)]"
           >
             <option value="">Все</option>
             <option value="EMPLOYEE">EMPLOYEE</option>
@@ -169,13 +169,13 @@ export default function AdminUsersPage() {
           </select>
         </div>
         <div className="flex flex-col">
-          <label className="text-sm text-gray-500">
+          <label className="text-sm text-[color:var(--text-secondary)]">
             {t("admin.common.active.m", "Активен")}
           </label>
           <select
             value={isActive}
             onChange={(e) => setIsActive(e.target.value)}
-            className="border border-slate-700 bg-slate-900/60 text-slate-100 rounded-xl px-3 py-2"
+            className="border border-[color:var(--border-subtle)] bg-[color:var(--control-bg)] text-[color:var(--text-primary)] rounded-xl px-3 py-2 shadow-[var(--shadow-soft)]"
           >
             <option value="">{t("admin.common.all", "Все")}</option>
             <option value="true">{t("common.yes", "Да")}</option>
@@ -202,9 +202,9 @@ export default function AdminUsersPage() {
         <div>{t("common.loading", "Загрузка...")}</div>
       ) : (
         <div className="space-y-4">
-          <div className="overflow-auto rounded-2xl border border-slate-700/60 bg-slate-900/30">
-            <table className="min-w-full text-sm text-slate-200">
-              <thead className="bg-slate-800/60">
+          <div className="overflow-auto rounded-2xl border border-[color:var(--border-subtle)] bg-[color:var(--surface)] shadow-[var(--shadow-soft)]">
+            <table className="min-w-full text-sm text-[color:var(--text-primary)]">
+              <thead className="bg-[color:var(--bg-card-soft)] text-[color:var(--text-secondary)]">
                 <tr>
                   <th className="text-left p-3">ID</th>
                   <th className="text-left p-3">E-mail</th>
@@ -233,7 +233,7 @@ export default function AdminUsersPage() {
                   return (
                     <tr
                       key={u.id}
-                      className="border-t border-slate-700/60 hover:bg-slate-800/30 transition"
+                      className="border-t border-[color:var(--border-subtle)] hover:bg-[color:var(--control-bg-hover)] transition"
                     >
                       <td className="p-3">{u.id}</td>
                       <td className="p-3">{u.email}</td>
@@ -242,7 +242,7 @@ export default function AdminUsersPage() {
                         <select
                           value={(u.role || "").toUpperCase()}
                           onChange={(e) => onChangeRole(u, e.target.value)}
-                          className="border border-slate-700 bg-slate-900/60 text-slate-100 rounded-lg px-2 py-1"
+                          className="border border-[color:var(--border-subtle)] bg-[color:var(--control-bg)] text-[color:var(--text-primary)] rounded-lg px-2 py-1 shadow-[var(--shadow-soft)]"
                         >
                           {[
                             "EMPLOYEE",
@@ -261,33 +261,32 @@ export default function AdminUsersPage() {
 
                       <td className="p-3">
                         {!isSupport ? (
-                          <span className="text-slate-400">—</span>
+                          <span className="text-[color:var(--text-secondary)]">—</span>
                         ) : (
                           <div className="flex items-center gap-2">
                             <span
-                              className={`px-2 py-1 rounded-lg ${
-                                isAgentActive
-                                  ? "bg-emerald-900/40 text-emerald-300"
-                                  : "bg-slate-700/50 text-slate-300"
-                              }`}
+                              className={`px-2 py-1 rounded-lg ${isAgentActive
+                                ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-200"
+                                : "bg-slate-200 text-slate-700 dark:bg-slate-700/50 dark:text-slate-300"
+                                }`}
                             >
                               {agentsLoading
                                 ? "..."
                                 : isAgentActive
-                                ? t("admin.users.supportActive", "Активен")
-                                : t("admin.users.supportOff", "Выключен")}
+                                  ? t("admin.users.supportActive", "Активен")
+                                  : t("admin.users.supportOff", "Выключен")}
                             </span>
                             {isAgentActive ? (
                               <button
                                 onClick={() => disableSupport(u)}
-                                className="px-3 py-1 rounded-lg border border-slate-700 hover:bg-slate-800/40"
+                                className="px-3 py-1 rounded-lg border border-[color:var(--border-subtle)] hover:bg-[color:var(--control-bg-hover)] bg-[color:var(--control-bg)] text-[color:var(--text-primary)] shadow-[var(--shadow-soft)]"
                               >
                                 {t("admin.users.supportDisable", "Выключить")}
                               </button>
                             ) : (
                               <button
                                 onClick={() => enableSupport(u)}
-                                className="px-3 py-1 rounded-lg border border-slate-700 hover:bg-slate-800/40"
+                                className="px-3 py-1 rounded-lg border border-[color:var(--border-subtle)] hover:bg-[color:var(--control-bg-hover)] bg-[color:var(--control-bg)] text-[color:var(--text-primary)] shadow-[var(--shadow-soft)]"
                               >
                                 {t("admin.users.supportEnable", "Включить")}
                               </button>
@@ -298,11 +297,10 @@ export default function AdminUsersPage() {
 
                       <td className="p-3">
                         <span
-                          className={`px-2 py-1 rounded-lg ${
-                            u.is_active
-                              ? "bg-emerald-900/40 text-emerald-300"
-                              : "bg-slate-700/50 text-slate-300"
-                          }`}
+                          className={`px-2 py-1 rounded-lg ${u.is_active
+                            ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-200"
+                            : "bg-slate-200 text-slate-700 dark:bg-slate-700/50 dark:text-slate-300"
+                            }`}
                         >
                           {u.is_active
                             ? t("common.yes", "Да")
@@ -313,7 +311,7 @@ export default function AdminUsersPage() {
                       <td className="p-3">
                         <button
                           onClick={() => onToggleActive(u)}
-                          className="px-3 py-1 rounded-lg border border-slate-700 hover:bg-slate-800/40"
+                          className="px-3 py-1 rounded-lg border border-[color:var(--border-subtle)] hover:bg-[color:var(--control-bg-hover)] bg-[color:var(--control-bg)] text-[color:var(--text-primary)] shadow-[var(--shadow-soft)]"
                         >
                           {u.is_active
                             ? t("admin.users.block", "Заблокировать")
@@ -321,7 +319,7 @@ export default function AdminUsersPage() {
                         </button>
                         <button
                           onClick={() => deleteUser(u)}
-                          className="px-3 py-1 rounded-lg border border-rose-700 hover:bg-rose-800/40 text-rose-200 ml-2"
+                          className="px-3 py-1 rounded-lg border border-rose-200 text-rose-700 hover:bg-rose-50 dark:border-rose-700 dark:text-rose-200 dark:hover:bg-rose-800/40 ml-2"
                         >
                           {t("admin.users.delete", "Удалить")}
                         </button>
@@ -331,7 +329,7 @@ export default function AdminUsersPage() {
                 })}
                 {items.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="p-6 text-center text-gray-500">
+                    <td colSpan={7} className="p-6 text-center text-[color:var(--text-secondary)]">
                       {t("admin.common.nothing", "Ничего не найдено")}
                     </td>
                   </tr>
@@ -345,7 +343,7 @@ export default function AdminUsersPage() {
               <button
                 onClick={() => load({ append: true })}
                 disabled={loading}
-                className="px-4 py-2 rounded-xl shadow bg-slate-800/60 border border-slate-700 text-white hover:bg-slate-700 disabled:opacity-60"
+                className="px-4 py-2 rounded-xl shadow bg-[color:var(--control-bg)] border border-[color:var(--border-subtle)] text-[color:var(--text-primary)] hover:bg-[color:var(--control-bg-hover)] disabled:opacity-60"
               >
                 {loading
                   ? t("common.loading", "Загрузка...")

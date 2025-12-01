@@ -121,7 +121,7 @@ export default function MessengerOverlay() {
         window.dispatchEvent(
           new CustomEvent("call_start", { detail: { chatId: id } })
         );
-      } catch {}
+      } catch { }
     };
     // Мост для модуля звонков: репорт исхода звонка
     // Примеры:
@@ -133,15 +133,15 @@ export default function MessengerOverlay() {
       const evt = `call_${status}`;
       try {
         window.dispatchEvent(new CustomEvent(evt, { detail }));
-      } catch {}
+      } catch { }
     };
     return () => {
       try {
         delete window.__transinfo_call;
-      } catch {}
+      } catch { }
       try {
         delete window.reportCall;
-      } catch {}
+      } catch { }
     };
   }, [selectedChat, chatId]);
 
@@ -195,12 +195,12 @@ export default function MessengerOverlay() {
         onClick={(e) => e.stopPropagation()}
       >
         <button
-          // Малая кнопка закрытия внутри хэдера — на десктопе «сливаем» с фоном,␊
-          // чтобы она не была видна (есть большой белый X справа).␊
-          className="␊
-                        absolute right-5 top-5 z-50 hidden md:block text-3xl transition␊
-                        md:text-transparent md:hover:text-transparent md:focus:text-transparent␊
-                        md:opacity-0 md:pointer-events-none␊
+          // Малая кнопка закрытия внутри хэдера — на десктопе «сливаем» с фоном,
+          // чтобы она не была видна (есть большой белый X справа).
+          className="
+                        absolute right-5 top-5 z-50 hidden md:block text-3xl transition
+                        md:text-transparent md:hover:text-transparent md:focus:text-transparent
+                        md:opacity-0 md:pointer-events-none
                     "
           onClick={handleCloseMessenger}
           title={t("bottomSheet.close", "Закрыть чат")}

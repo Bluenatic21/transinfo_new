@@ -47,7 +47,7 @@ export default function ModalPortal({
     }
 
     const content = (
-        <>␊
+        <>
             {overlay}
             <div className={`${panelBase} ${panelClass} ${panelClassName}`} style={panelStyle} onClick={e => e.stopPropagation()}>
                 <div className="flex items-center gap-3 mb-3">

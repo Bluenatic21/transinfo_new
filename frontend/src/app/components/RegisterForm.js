@@ -519,7 +519,7 @@ export default function RegisterForm({ onSuccess }) {
     }
   }
 
-  // Клиентская валидация -> раскладка по полям␊
+  // Клиентская валидация -> раскладка по полям
   function validateFormAndSetErrors() {
     const next = createEmptyErrors();
     const empty = (v) => !v || (typeof v === "string" && !v.trim());
@@ -879,7 +879,7 @@ export default function RegisterForm({ onSuccess }) {
       }, 1800);
       return;
     } else {
-      // Ошибки от FastAPI␊
+      // Ошибки от FastAPI
       if (resp && Array.isArray(resp.detail)) {
         mapServerErrors(resp.detail);
         setMsg("");

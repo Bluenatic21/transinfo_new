@@ -726,6 +726,22 @@ export default function Header({ setShowRegisterModal }) {
   const topHeaderRef = useRef(null);
   const [headerHeight, setHeaderHeight] = useState(HEADER_H);
 
+  const compactIconBtnStyle = {
+    height: 40,
+    width: 40,
+    fontSize: 22,
+    display: "grid",
+    placeItems: "center",
+  };
+
+  const desktopIconBtnStyle = {
+    height: ICON_BTN,
+    width: ICON_BTN,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  };
+
   useEffect(() => {
     // Высота хедера фиксируется через дизайн‑константы, чтобы не «прыгать» при ресайзе окна
     setHeaderHeight(HEADER_H);
@@ -809,47 +825,25 @@ export default function Header({ setShowRegisterModal }) {
                 user ? setShowUserSearch((v) => !v) : setShowAuth(true)
               }
               className="header-icon-btn"
-              style={{
-                height: 40,
-                width: 40,
-                fontSize: 22,
-                display: "grid",
-                placeItems: "center",
-                borderRadius: 12,
-              }}
+              style={compactIconBtnStyle}
               aria-label={t("search.findUser", "Найти участника")}
               title={t("common.search", "Поиск")}
             >
               <FaSearch />
             </button>
-            <div
-              role="button"
+            <button
+              type="button"
               className="header-icon-btn"
-              style={{
-                height: 40,
-                width: 40,
-                fontSize: 22,
-                display: "grid",
-                placeItems: "center",
-                borderRadius: 12,
-              }}
+              style={compactIconBtnStyle}
               aria-label={t("common.notifications", "Уведомления")}
             >
               <NotificationBell token={user?.token} userId={user?.id} />
-            </div>
+            </button>
             <button
               type="button"
               onClick={() => (user ? openMessenger() : setShowAuth(true))}
               className="header-icon-btn"
-              style={{
-                height: 40,
-                width: 40,
-                fontSize: 22,
-                display: "grid",
-                placeItems: "center",
-                position: "relative",
-                borderRadius: 12,
-              }}
+              style={{ ...compactIconBtnStyle, position: "relative" }}
               aria-label={t("nav.chat", "Чат")}
               title={t("nav.chat", "Чат")}
             >
@@ -1125,12 +1119,8 @@ export default function Header({ setShowRegisterModal }) {
                   onClick={() => setShowUserSearch((v) => !v)}
                   className="header-icon-btn"
                   style={{
-                    height: ICON_BTN,
-                    width: ICON_BTN,
+                    ...desktopIconBtnStyle,
                     fontSize: isTight ? 22 : 24,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
                     position: "relative",
                   }}
                   title={t("search.findUser", "Найти участника")}
@@ -1273,39 +1263,25 @@ export default function Header({ setShowRegisterModal }) {
                   </form>
                 )}
               </div>
-              <div
+              <button
+                type="button"
                 className="header-icon-btn"
                 style={{
-                  height: ICON_BTN,
-                  width: ICON_BTN,
+                  ...desktopIconBtnStyle,
                   fontSize: isTight ? 21 : 23,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
                   position: "relative",
-                  transition: "box-shadow .17s, background .15s",
-                  background: "none",
-                  cursor: "pointer",
                 }}
                 aria-label={t("common.notifications", "Уведомления")}
-                onMouseOver={(e) =>
-                  (e.currentTarget.style.background = "#1c273e")
-                }
-                onMouseOut={(e) => (e.currentTarget.style.background = "none")}
               >
                 <NotificationBell token={user?.token} userId={user?.id} />
-              </div>
+              </button>
               <button
                 type="button"
                 onClick={openMessenger}
                 className="header-icon-btn"
                 style={{
-                  height: ICON_BTN,
-                  width: ICON_BTN,
+                  ...desktopIconBtnStyle,
                   fontSize: isTight ? 22 : 24,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
                   position: "relative",
                 }}
                 title={t("nav.chat", "Чат")}

@@ -369,7 +369,7 @@ export default function ProfileSidebar({ variant = "desktop" }) {
                             {t("gps.soon.title", "Скоро доступно")}
                         </div>
                         <div style={{ fontSize: 14, lineHeight: 1.5, color: "var(--sidebar-link-muted)" }}>
-                            {t("gps.soon.body", "GPS-мониторинг находится в разработке и появится в ближайших обновлениях.")}␊
+                            {t("gps.soon.body", "GPS-мониторинг находится в разработке и появится в ближайших обновлениях.")}
                         </div>
                         <div style={{ display: "flex", gap: 10, marginTop: 18, justifyContent: "flex-end" }}>
                             <button

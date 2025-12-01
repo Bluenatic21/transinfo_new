@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import LocationAutocomplete from "./LocationAutocomplete";
-import { useMapEvents } from "react-leaflet";
+import { useMap, useMapEvents } from "react-leaflet";
 import { useLang } from "../i18n/LangProvider";
 
 // Dynamic imports для SSR
@@ -17,6 +17,19 @@ function ClickableMap({ onMapClick }) {
             onMapClick(e);
         },
     });
+    return null;
+}
+
+function MapViewUpdater({ center, zoom }) {
+    const map = useMap();
+
+    useEffect(() => {
+        if (!map || !Array.isArray(center) || center.length !== 2) return;
+        try {
+            map.setView(center, zoom, { animate: true });
+        } catch { }
+    }, [map, center?.[0], center?.[1], zoom]);
+
     return null;
 }
 
@@ -109,6 +122,8 @@ export default function MapFilterModal({ open, onSelect, onClose, onOpenChange, 
                             // можно popup добавить по желанию
                             />
                         )}
+
+                        <MapViewUpdater center={center} zoom={selected ? 10 : 6} />
 
                         {selected && (
                             <>

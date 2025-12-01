@@ -29,7 +29,12 @@ import { useMapHover } from "./MapHoverContext";
 import OrderShareButtons from "./OrderShareButtons";
 import CargoCompactCard from "./CargoCompactCard";
 import IconLabel from "./ui/IconLabel";
-import { FiMap as MapIcon, FiList as ListIcon } from "react-icons/fi";
+import {
+    FiMap as MapIcon,
+    FiList as ListIcon,
+    FiGrid as GridIcon,
+    FiAlignJustify as CompactIcon,
+} from "react-icons/fi";
 import { useTheme } from "../providers/ThemeProvider";
 
 import MobileFilterSheet from "./mobile/MobileFilterSheet";
@@ -688,14 +693,20 @@ export default function OrderList() {
                     onClick={() => setCardSize("large")}
                     aria-label={t("view.largeCards", "Крупные карточки")}
                 >
-                    {t("view.largeCards", "Крупные")}
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                        <GridIcon size={18} aria-hidden />
+                        <span>{t("view.largeCards", "Крупные")}</span>
+                    </span>
                 </button>
                 <button
                     style={getStyle(cardSize === "compact")}
                     onClick={() => setCardSize("compact")}
                     aria-label={t("view.compactCards", "Компактные карточки")}
                 >
-                    {t("view.compactCards", "Компактные")}
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                        <CompactIcon size={18} aria-hidden />
+                        <span>{t("view.compactCards", "Компактные")}</span>
+                    </span>
                 </button>
             </div>
         );
@@ -1049,6 +1060,11 @@ function OrderCard({
         iconFg: "var(--order-card-icon-fg, #43c8ff)",
         iconShadow: "var(--order-card-icon-shadow, 0 1px 8px #43c8ff17)",
     };
+
+    // На светлой теме фон панели остаётся тёмным, поэтому фиксируем светлые цвета
+    // имени/контактного лица, чтобы текст не "пропадал" на фоне.
+    const infoPrimaryColor = "#ffffff";
+    const infoSecondaryColor = "#e5edff";
 
 
     const iconBtnStyle = {
@@ -1874,11 +1890,11 @@ function OrderCard({
                                 size={48}
                                 style={{ border: "2px solid #233655", background: "#222d38", marginRight: 12 }}
                             />
-                            <span style={{ fontWeight: 700, color: "#e3f2fd", fontSize: 15, whiteSpace: "nowrap", maxWidth: 130, overflow: "hidden", textOverflow: "ellipsis" }}>
+                            <span style={{ fontWeight: 700, color: infoPrimaryColor, fontSize: 15, whiteSpace: "nowrap", maxWidth: 130, overflow: "hidden", textOverflow: "ellipsis" }}>
                                 {ownerProfile.organization}
                             </span>
                             {ownerProfile.contact_person && (
-                                <span style={{ color: cardColors.label, fontSize: 14, maxWidth: 110, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                                <span style={{ color: infoSecondaryColor, fontSize: 14, maxWidth: 110, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                                     {ownerProfile.contact_person}
                                 </span>
                             )}

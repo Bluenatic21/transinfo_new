@@ -13,8 +13,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     const [isMenuOpen, setIsMenuOpen] = React.useState(false);
     if (!isAdmin) {
         return (
-            <div className="min-h-[60vh] flex items-center justify-center text-slate-200">
-                <div className="p-6 rounded-2xl border border-slate-700/60 bg-slate-900/40">
+            <div className="min-h-[60vh] flex items-center justify-center text-[color:var(--text-primary)]">
+                <div className="p-6 rounded-2xl border border-[color:var(--border-subtle)] bg-[color:var(--surface)] shadow-[var(--shadow-soft)]">
                     {t("admin.onlyAdmins", "Доступ только для администраторов.")}
                 </div>
             </div>
@@ -33,8 +33,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <Link
             href={href}
             className={`block px-4 py-2 rounded-xl transition ${pathname === href
-                ? "bg-slate-800/70 text-white shadow-sm"
-                : "hover:bg-slate-800/40 text-slate-300"
+                ? "bg-[color:var(--bg-card-soft)] text-[color:var(--text-primary)] shadow-sm"
+                : "hover:bg-[color:var(--control-bg-hover)] text-[color:var(--text-secondary)]"
                 }`}
             onClick={() => setIsMenuOpen(false)}
         >
@@ -43,20 +43,20 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     );
 
     return (
-        <div className="flex min-h-[calc(100vh-80px)] text-slate-100 flex-col md:flex-row">
+        <div className="flex min-h-[calc(100vh-80px)] text-[color:var(--text-primary)] flex-col md:flex-row">
             <div className="md:hidden p-4 flex items-center justify-between">
-                <div className="font-bold text-xl text-slate-200">{t("admin.sidebar.title", "Админ")}</div>
+                <div className="font-bold text-xl text-[color:var(--text-primary)]">{t("admin.sidebar.title", "Админ")}</div>
                 <button
-                    className="px-3 py-2 rounded-lg border border-slate-700 text-sm text-slate-200 bg-slate-900/60"
+                    className="px-3 py-2 rounded-lg border border-[color:var(--border-subtle)] text-sm text-[color:var(--text-primary)] bg-[color:var(--control-bg)] shadow-[var(--shadow-soft)]"
                     onClick={() => setIsMenuOpen((prev) => !prev)}
                 >
                     {isMenuOpen ? t("common.close", "Закрыть") : t("common.menu", "Меню")}
                 </button>
             </div>
             <aside
-                className={`md:w-64 p-4 border border-slate-700/60 bg-slate-900/40 backdrop-blur rounded-r-2xl md:border-r ${isMenuOpen ? "block" : "hidden"} md:block md:sticky md:top-4 md:self-start md:h-[calc(100vh-100px)]`}
+                className={`md:w-64 p-4 border border-[color:var(--border-subtle)] bg-[color:var(--surface)] backdrop-blur rounded-r-2xl md:border-r shadow-[var(--shadow-soft)] ${isMenuOpen ? "block" : "hidden"} md:block md:sticky md:top-4 md:self-start md:h-[calc(100vh-100px)]`}
             >
-                <div className="hidden md:block font-bold text-xl mb-4 text-slate-200">{t("admin.sidebar.title", "Админ")}</div>
+                <div className="hidden md:block font-bold text-xl mb-4 text-[color:var(--text-primary)]">{t("admin.sidebar.title", "Админ")}</div>
                 <nav className="space-y-1">
                     {/* активный пункт — плотнее и светлее */}
                     <NavLink href="/admin" label={t("admin.sidebar.dashboard", "Панель")} />

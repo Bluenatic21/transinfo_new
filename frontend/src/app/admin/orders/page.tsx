@@ -32,17 +32,17 @@ export default function AdminOrdersPage() {
     };
 
     return (
-        <div className="space-y-4 text-slate-100">
+        <div className="space-y-4 text-[color:var(--text-primary)]">
             <div className="flex gap-2 items-end flex-wrap">
                 <div className="flex flex-col">
-                    <label className="text-sm text-gray-400">{t("admin.common.search", "Поиск")}</label>
+                    <label className="text-sm text-[color:var(--text-secondary)]">{t("admin.common.search", "Поиск")}</label>
                     <input value={q} onChange={e => setQ(e.target.value)} placeholder={t("admin.orders.search.ph", "название/маршрут/контакт")}
-                        className="border border-slate-700 bg-slate-900/60 text-slate-100 placeholder-slate-400 rounded-xl px-3 py-2" />
+                        className="border border-[color:var(--border-subtle)] bg-[color:var(--control-bg)] text-[color:var(--text-primary)] placeholder:text-[color:var(--text-muted)] rounded-xl px-3 py-2 shadow-[var(--shadow-soft)]" />
                 </div>
                 <div className="flex flex-col">
-                    <label className="text-sm text-gray-400">{t("admin.common.active.f", "Активна")}</label>
+                    <label className="text-sm text-[color:var(--text-secondary)]">{t("admin.common.active.f", "Активна")}</label>
                     <select value={isActive} onChange={e => setIsActive(e.target.value)}
-                        className="border border-slate-700 bg-slate-900/60 text-slate-100 rounded-xl px-3 py-2">
+                        className="border border-[color:var(--border-subtle)] bg-[color:var(--control-bg)] text-[color:var(--text-primary)] rounded-xl px-3 py-2 shadow-[var(--shadow-soft)]">
                         <option value="">{t("admin.common.all", "Все")}</option>
                         <option value="true">{t("common.yes", "Да")}</option>
                         <option value="false">{t("common.no", "Нет")}</option>
@@ -53,11 +53,11 @@ export default function AdminOrdersPage() {
                 </button>
             </div>
 
-            {err && <div className="text-red-400">{t("admin.common.error", "Ошибка")}: {err}</div>}
+            {err && <div className="text-red-500">{t("admin.common.error", "Ошибка")}: {err}</div>}
             {loading ? <div>{t("common.loading", "Загрузка...")}</div> : (
-                <div className="overflow-auto rounded-2xl border border-slate-700/60 bg-slate-900/30">
-                    <table className="min-w-full text-sm text-slate-200">
-                        <thead className="bg-slate-800/60">
+                <div className="overflow-auto rounded-2xl border border-[color:var(--border-subtle)] bg-[color:var(--surface)] shadow-[var(--shadow-soft)]">
+                    <table className="min-w-full text-sm text-[color:var(--text-primary)]">
+                        <thead className="bg-[color:var(--bg-card-soft)] text-[color:var(--text-secondary)]">
                             <tr>
                                 <th className="p-3 text-left">ID</th>
                                 <th className="p-3 text-left">{t("admin.common.status", "Статус")}</th>
@@ -68,23 +68,26 @@ export default function AdminOrdersPage() {
                         </thead>
                         <tbody>
                             {items.map(o => (
-                                <tr key={o.id} className="border-t border-slate-700/60 hover:bg-slate-800/30">
+                                <tr key={o.id} className="border-t border-[color:var(--border-subtle)] hover:bg-[color:var(--control-bg-hover)]">
                                     <td className="p-3">{o.id}</td>
                                     <td className="p-3">{o.status || "-"}</td>
                                     <td className="p-3">
-                                        <span className={`px-2 py-1 rounded-lg ${o.is_active ? "bg-emerald-900/40 text-emerald-300" : "bg-slate-700/50 text-slate-300"}`}>
+                                        <span className={`px-2 py-1 rounded-lg ${o.is_active
+                                            ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-200"
+                                            : "bg-slate-200 text-slate-700 dark:bg-slate-700/50 dark:text-slate-300"
+                                            }`}>
                                             {o.is_active ? t("common.yes", "Да") : t("common.no", "Нет")}
                                         </span>
                                     </td>
                                     <td className="p-3">{o.created_at ? new Date(o.created_at).toLocaleString() : "-"}</td>
                                     <td className="p-3">
-                                        <button onClick={() => toggle(o)} className="px-3 py-1 rounded-lg border border-slate-700 hover:bg-slate-800/40">
+                                        <button onClick={() => toggle(o)} className="px-3 py-1 rounded-lg border border-[color:var(--border-subtle)] hover:bg-[color:var(--control-bg-hover)] bg-[color:var(--control-bg)] text-[color:var(--text-primary)] shadow-[var(--shadow-soft)]">
                                             {o.is_active ? t("admin.common.deactivate", "Деактивировать") : t("admin.common.activate", "Активировать")}
                                         </button>
                                     </td>
                                 </tr>
                             ))}
-                            {items.length === 0 && <tr><td colSpan={5} className="p-6 text-center text-slate-400">{t("admin.common.nothing", "Ничего не найдено")}</td></tr>}
+                            {items.length === 0 && <tr><td colSpan={5} className="p-6 text-center text-[color:var(--text-secondary)]">{t("admin.common.nothing", "Ничего не найдено")}</td></tr>}
                         </tbody>
                     </table>
                 </div>

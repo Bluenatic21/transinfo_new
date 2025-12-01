@@ -771,12 +771,19 @@ export default function TransportCompactCard({
                             gap: isMobile ? 12 : 8,
                             gridTemplateColumns: isMobile ? undefined : `repeat(${Math.max(1, metaItems.length)}, minmax(0, 1fr))`,
                             alignItems: "center",
+                            flexWrap: isMobile ? "wrap" : undefined,
                         }}
                     >
                         {metaItems.map(({ key, content }) => (
                             <span
                                 key={key}
-                                style={{ display: "inline-flex", alignItems: "center", gap: 6, minWidth: 0, whiteSpace: "nowrap" }}
+                                style={{
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    gap: 6,
+                                    minWidth: 0,
+                                    whiteSpace: isMobile ? "normal" : "nowrap",
+                                }}
                             >
                                 {content}
                             </span>

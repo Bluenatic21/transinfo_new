@@ -63,9 +63,9 @@ export default async function RootLayout({
     <html
       lang={chosen}
       data-booting="1"
-      data-theme="dark"
+      data-theme="light"
       suppressHydrationWarning
-      className={`dark ${GeistSans.variable} ${GeistMono.variable}`}
+      className={`${GeistSans.variable} ${GeistMono.variable}`}
     >
       <head>
         <meta
@@ -83,7 +83,7 @@ export default async function RootLayout({
       </head>
       <body
         suppressHydrationWarning
-        data-theme="dark"
+        data-theme="light"
         className="antialiased min-h-[100dvh] bg-bg text-fg overflow-x-hidden"
       >
         {/* Boot‑loader первого кадра */}

@@ -34,7 +34,12 @@ import MobileFilterSheet from "./mobile/MobileFilterSheet";
 import MobileMapSheet from "./mobile/MobileMapSheet";
 import { api, abs } from "@/config/env";
 import IconLabel from "./ui/IconLabel";
-import { FiMap as MapIcon, FiList as ListIcon } from "react-icons/fi";
+import {
+    FiMap as MapIcon,
+    FiList as ListIcon,
+    FiGrid as GridIcon,
+    FiAlignJustify as CompactIcon,
+} from "react-icons/fi";
 import { useLang } from "../i18n/LangProvider";
 import { useTheme } from "../providers/ThemeProvider";
 import {
@@ -500,22 +505,21 @@ export default function TransportList({ transports: propTransports }) {
             if (thisRequest === lastRequestId.current) {
                 const incoming = Array.isArray(items) ? items : [];
                 const shouldAppend = isAppend;
-                const merged = shouldAppend
-                    ? (() => {
-                        const prev = Array.isArray(transportsRef.current)
-                            ? transportsRef.current
-                            : [];
-                        const seen = new Set(prev.map((it) => it?.id ?? it?.uid));
-                        const next = [...prev];
-                        for (const it of incoming) {
-                            const key = it?.id ?? it?.uid;
-                            if (key != null && seen.has(key)) continue;
-                            if (key != null) seen.add(key);
-                            next.push(it);
-                        }
-                        return next;
-                    })()
-                    : incoming;
+                const merged = shouldAppend ? /* как было */ (() => {
+                    const prev = Array.isArray(transportsRef.current)
+                        ? transportsRef.current
+                        : [];
+                    const seen = new Set(prev.map((it) => it?.id ?? it?.uid));
+                    const next = [...prev];
+                    for (const it of incoming) {
+                        const key = it?.id ?? it?.uid;
+                        if (key != null && seen.has(key)) continue;
+                        if (key != null) seen.add(key);
+                        next.push(it);
+                    }
+                    return next;
+                })() : incoming;
+
                 transportsRef.current = merged;
                 setTransports(merged);
                 setTimeout(() => {
@@ -527,12 +531,18 @@ export default function TransportList({ transports: propTransports }) {
                 setInitialLoaded(true);
             }
         } catch (e) {
-            setTransports([]);
-            setTimeout(() => setDisplayedTransports([]), 80);
+            // Обнуляем стейт только если это ещё актуальный запрос
+            if (thisRequest === lastRequestId.current) {
+                setTransports([]);
+                setTimeout(() => setDisplayedTransports([]), 80);
+            }
         } finally {
-            setLoading(false);
-            setLoadingMore(false);
-            appendModeRef.current = false;
+            // КРИТИЧНО: не даём старым запросам гасить загрузку и ломать infinite scroll
+            if (thisRequest === lastRequestId.current) {
+                setLoading(false);
+                setLoadingMore(false);
+                appendModeRef.current = false;
+            }
         }
     }, [filters, isMobile, page, pageSize, propTransports]);
 
@@ -685,17 +695,7 @@ export default function TransportList({ transports: propTransports }) {
                     <IconLabel icon={ListIcon} label={t("common.list", "Список")} />
                 </button>
                 <button
-                    style={{
-                        fontWeight: 700,
-                        fontSize: 16,
-                        padding: "8px 25px",
-                        background: activeTab === "map" ? "#11284a" : "#19223a",
-                        color: activeTab === "map" ? "#43c8ff" : "#8ecae6",
-                        borderRadius: 10,
-                        border: "none",
-                        cursor: "pointer",
-                        transition: "all .14s",
-                    }}
+                    style={tabButtonStyle("map")}
                     onClick={() => setActiveTab("map")}
                     aria-label={t("common.map", "Карта")}
                 >
@@ -756,14 +756,20 @@ export default function TransportList({ transports: propTransports }) {
                     onClick={() => setCardSize("large")}
                     aria-label={t("view.largeCards", "Крупные карточки")}
                 >
-                    {t("view.largeCards", "Крупные")}
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                        <GridIcon size={18} aria-hidden />
+                        <span>{t("view.largeCards", "Крупные")}</span>
+                    </span>
                 </button>
                 <button
                     style={getStyle(cardSize === "compact")}
                     onClick={() => setCardSize("compact")}
                     aria-label={t("view.compactCards", "Компактные карточки")}
                 >
-                    {t("view.compactCards", "Компактные")}
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                        <CompactIcon size={18} aria-hidden />
+                        <span>{t("view.compactCards", "Компактные")}</span>
+                    </span>
                 </button>
             </div>
         );
@@ -1385,8 +1391,10 @@ function TransportCard({ transport, expanded, onToggle }) {
         tooltipFg: "var(--transport-card-tooltip-fg, #53ee5c)",
     };
 
-    const infoPrimaryColor = isLight ? "#ffffff" : cardColors.text;
-    const infoSecondaryColor = isLight ? "#e5edff" : cardColors.label;
+    // На светлой теме фон панели остаётся тёмным, поэтому фиксируем светлые цвета
+    // имени/контактного лица, чтобы текст не "пропадал" на фоне.
+    const infoPrimaryColor = "#ffffff";
+    const infoSecondaryColor = "#e5edff";
 
     async function handleChatClick() {
         const userId = ownerId;

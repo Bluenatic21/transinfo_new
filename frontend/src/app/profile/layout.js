@@ -10,8 +10,8 @@ export default function ProfileLayout({ children }) {
     const isMobile = useIsMobile();
     const { user } = useUser();
     const params = useParams();
-    // Align the page background with the navigation/ sidebar area
-    const pageBackground = "var(--sidebar-bg)";
+    // Align the page background with the global page color (same as header)
+    const pageBackground = "var(--bg-body)";
 
     // Как узнать чей профиль? Допустим url: /profile/[id]
     // params.id — это id профиля, user.id — id залогиненного

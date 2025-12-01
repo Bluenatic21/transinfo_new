@@ -21,18 +21,18 @@ export default function AdminAuditPage() {
     React.useEffect(() => { load(); }, []);
 
     return (
-        <div className="space-y-4 text-slate-100">
+        <div className="space-y-4 text-[color:var(--text-primary)]">
             <div className="flex gap-2 items-end flex-wrap">
                 <div className="flex flex-col">
-                    <label className="text-sm text-gray-400">{t("admin.audit.action", "Действие")}</label>
+                    <label className="text-sm text-[color:var(--text-secondary)]">{t("admin.audit.action", "Действие")}</label>
                     <input value={action} onChange={e => setAction(e.target.value)}
-                        className="border border-slate-700 bg-slate-900/60 text-slate-100 rounded-xl px-3 py-2"
+                        className="border border-[color:var(--border-subtle)] bg-[color:var(--control-bg)] text-[color:var(--text-primary)] rounded-xl px-3 py-2 shadow-[var(--shadow-soft)]"
                         placeholder={t("admin.audit.action.ph", "USER_PATCH / ORDER_ACTIVATE ...")} />
                 </div>
                 <div className="flex flex-col">
-                    <label className="text-sm text-gray-400">{t("admin.audit.targetType", "Тип объекта")}</label>
+                    <label className="text-sm text-[color:var(--text-secondary)]">{t("admin.audit.targetType", "Тип объекта")}</label>
                     <input value={targetType} onChange={e => setTargetType(e.target.value)}
-                        className="border border-slate-700 bg-slate-900/60 text-slate-100 rounded-xl px-3 py-2"
+                        className="border border-[color:var(--border-subtle)] bg-[color:var(--control-bg)] text-[color:var(--text-primary)] rounded-xl px-3 py-2 shadow-[var(--shadow-soft)]"
                         placeholder={t("admin.audit.targetType.ph", "user / order / transport ...")} />
                 </div>
                 <button onClick={load} className="px-4 py-2 rounded-xl shadow bg-blue-600 hover:bg-blue-500 text-white">
@@ -40,9 +40,9 @@ export default function AdminAuditPage() {
                 </button>
             </div>
 
-            <div className="overflow-auto rounded-2xl border border-slate-700/60 bg-slate-900/30">
-                <table className="min-w-full text-sm text-slate-200">
-                    <thead className="bg-slate-800/60">
+            <div className="overflow-auto rounded-2xl border border-[color:var(--border-subtle)] bg-[color:var(--surface)] shadow-[var(--shadow-soft)]">
+                <table className="min-w-full text-sm text-[color:var(--text-primary)]">
+                    <thead className="bg-[color:var(--bg-card-soft)] text-[color:var(--text-secondary)]">
                         <tr>
                             <th className="p-3 text-left">ID</th>
                             <th className="p-3 text-left">{t("admin.audit.admin", "Админ")}</th>
@@ -55,7 +55,7 @@ export default function AdminAuditPage() {
                     </thead>
                     <tbody>
                         {items.map(a => (
-                            <tr key={a.id} className="border-t border-slate-700/60 hover:bg-slate-800/30">
+                            <tr key={a.id} className="border-t border-[color:var(--border-subtle)] hover:bg-[color:var(--control-bg-hover)]">
                                 <td className="p-3">{a.id}</td>
                                 <td className="p-3">{a.admin_user_id}</td>
                                 <td className="p-3">{a.action}</td>
@@ -66,7 +66,7 @@ export default function AdminAuditPage() {
                             </tr>
                         ))}
                         {items.length === 0 && (
-                            <tr><td colSpan={7} className="p-6 text-center text-slate-400">{t("admin.common.empty", "Пусто")}</td></tr>
+                            <tr><td colSpan={7} className="p-6 text-center text-[color:var(--text-secondary)]">{t("admin.common.empty", "Пусто")}</td></tr>
                         )}
                     </tbody>
                 </table>

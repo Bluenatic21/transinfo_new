@@ -3794,7 +3794,7 @@ body {
   --ctl-border: 1.5px solid var(--border, #233655);
   --ctl-bg: var(--input, #23242b);
   --ctl-fg: var(--foreground, #e3f2fd);
-  --ctl-placeholder: #9bb0c5;
+  --ctl-placeholder: var(--input-placeholder, #9bb0c5);
   --ctl-focus-ring: 0 0 0 3px color-mix(in oklab, var(--accent, #43c8ff) 30%, transparent);
 }
 

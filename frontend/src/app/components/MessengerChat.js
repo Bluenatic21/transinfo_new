@@ -1235,7 +1235,7 @@ export default function MessengerChat({
   closeMessenger,
   goBack,
 }) {
-  // ---- суффиксатор коллизий ключей на один рендер ----␊
+  // ---- суффиксатор коллизий ключей на один рендер ----
   const { t, lang } = useLang();
   // Локализованные типы кузова + хелпер лейбла для использования ниже (tr.truck_type)
   // Используем общий источник правды из truckOptions.js
@@ -4250,7 +4250,7 @@ export default function MessengerChat({
             disabled={inputLocked}
             style={{
               flexGrow: 1,
-              minHeight: 44, // удобнее палец␊
+              minHeight: 44, // удобнее палец
               maxHeight: 120,
               resize: "none",
               padding: "10px 12px",

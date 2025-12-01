@@ -25,12 +25,12 @@ export default function AdminTrackingPage() {
     };
 
     return (
-        <div className="space-y-4 text-slate-100">
+        <div className="space-y-4 text-[color:var(--text-primary)]">
             <div className="flex gap-2 items-end flex-wrap">
                 <div className="flex flex-col">
-                    <label className="text-sm text-gray-400">{t("admin.common.active.p", "Активные")}</label>
+                    <label className="text-sm text-[color:var(--text-secondary)]">{t("admin.common.active.p", "Активные")}</label>
                     <select value={isActive} onChange={e => setIsActive(e.target.value)}
-                        className="border border-slate-700 bg-slate-900/60 text-slate-100 rounded-xl px-3 py-2">
+                        className="border border-[color:var(--border-subtle)] bg-[color:var(--control-bg)] text-[color:var(--text-primary)] rounded-xl px-3 py-2 shadow-[var(--shadow-soft)]">
                         <option value="">{t("admin.common.all", "Все")}</option>
                         <option value="true">{t("common.yes", "Да")}</option>
                         <option value="false">{t("common.no", "Нет")}</option>
@@ -55,20 +55,20 @@ export default function AdminTrackingPage() {
                     </thead>
                     <tbody>
                         {items.map(s => (
-                            <tr key={s.id} className="border-t border-slate-700/60 hover:bg-slate-800/30">
+                            <tr key={s.id} className="border-t border-[color:var(--border-subtle)] hover:bg-[color:var(--control-bg-hover)]">
                                 <td className="p-3">{s.id}</td>
                                 <td className="p-3">{s.user_id ?? "-"}</td>
                                 <td className="p-3">
-                                    <span className={`px-2 py-1 rounded-lg ${s.is_active ? "bg-emerald-900/40 text-emerald-300" : "bg-slate-700/50 text-slate-300"}`}>
+                                    <span className={`px-2 py-1 rounded-lg ${s.is_active ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-200" : "bg-slate-200 text-slate-700 dark:bg-slate-700/50 dark:text-slate-300"}`}>
                                         {s.is_active ? t("common.yes", "Да") : t("common.no", "Нет")}
                                     </span>
                                 </td>
                                 <td className="p-3">{s.started_at ? new Date(s.started_at).toLocaleString() : "-"}</td>
                                 <td className="p-3">{s.ended_at ? new Date(s.ended_at).toLocaleString() : "-"}</td>
-                                <td className="p-3">{s.is_active && <button onClick={() => revoke(s.id)} className="px-3 py-1 rounded-lg border border-slate-700 hover:bg-slate-800/40">{t("admin.tracking.revoke", "Отозвать")}</button>}</td>
+                                <td className="p-3">{s.is_active && <button onClick={() => revoke(s.id)} className="px-3 py-1 rounded-lg border border-[color:var(--border-subtle)] hover:bg-[color:var(--control-bg-hover)] bg-[color:var(--control-bg)] text-[color:var(--text-primary)] shadow-[var(--shadow-soft)]">{t("admin.tracking.revoke", "Отозвать")}</button>}</td>
                             </tr>
                         ))}
-                        {items.length === 0 && <tr><td colSpan={6} className="p-6 text-center text-slate-400">{t("admin.common.empty", "Пусто")}</td></tr>}
+                        {items.length === 0 && <tr><td colSpan={6} className="p-6 text-center text-[color:var(--text-secondary)]">{t("admin.common.empty", "Пусто")}</td></tr>}
                     </tbody>
                 </table>
             </div>

@@ -5,8 +5,8 @@ type Theme = "dark" | "light" | "system";
 type Ctx = { theme: Theme; resolvedTheme: "dark" | "light"; setTheme: (t: Theme) => void };
 
 const ThemeCtx = createContext<Ctx>({
-    theme: "dark",
-    resolvedTheme: "dark",
+    theme: "light",
+    resolvedTheme: "light",
     setTheme: () => { },
 });
 
@@ -20,8 +20,8 @@ function applyTheme(mode: "dark" | "light") {
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-    const [theme, setTheme] = useState<Theme>("dark");
-    const [resolvedTheme, setResolvedTheme] = useState<"dark" | "light">("dark");
+    const [theme, setTheme] = useState<Theme>("light");
+    const [resolvedTheme, setResolvedTheme] = useState<"dark" | "light">("light");
 
     useEffect(() => {
         const prefersDark = () =>
@@ -37,7 +37,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
             }
         })();
 
-        const initial = stored ?? (prefersDark() ? "dark" : "light");
+        const initial = stored ?? "light";
         setTheme(initial);
     }, []);
 

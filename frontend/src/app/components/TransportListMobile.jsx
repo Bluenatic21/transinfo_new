@@ -278,7 +278,7 @@ export default function TransportListMobile({
                 onApply={(normalized) => {
                     // заменяем фильтры целиком, чтобы не оставались хвосты
                     setFilters?.(normalized);
-                    fetchTransports?.();
+                    // fetchTransports дернётся сам через useEffect в TransportList
                     setFilterOpen(false);
                 }}
             />

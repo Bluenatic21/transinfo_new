@@ -80,7 +80,7 @@ const Flag = ({ place }) => {
             srcSet={`https://flagcdn.com/32x24/${cc}.png 2x, https://flagcdn.com/48x36/${cc}.png 3x`}
             style={{
                 width: 18, height: 12, marginRight: 6, borderRadius: 2,
-                display: "inline-block", boxShadow: "0 0 0 2px #14233d"
+                display: "inline-block"
             }}
             loading="lazy"
         />

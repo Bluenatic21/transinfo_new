@@ -31,14 +31,14 @@ export default function ChatPage() {
       if (typeof fetchChatList === "function") {
         fetchChatList({ force: false });
       }
-    } catch {}
+    } catch { }
 
     if (Number.isFinite(chatId)) {
       try {
         if (typeof openMessenger === "function") {
           openMessenger(chatId);
         }
-      } catch {}
+      } catch { }
     }
   }, [chatId, openMessenger, fetchChatList]);
 
@@ -48,9 +48,19 @@ export default function ChatPage() {
   return (
     <div
       id="chat-root"
-      className="min-h-[100dvh] max-h-[100dvh] bg-[#0b1220] text-slate-100"
+      className="min-h-[100dvh] max-h-[100dvh] px-4 py-4 md:py-6 flex justify-center"
+      style={{
+        background: "var(--bg-body)",
+        color: "var(--text-primary)",
+      }}
     >
-      <div className="max-w-screen-sm mx-auto">
+      <div
+        className="w-full max-w-screen-sm rounded-2xl shadow-2xl overflow-hidden"
+        style={{
+          background: "var(--bg-card)",
+          border: "1px solid var(--border-subtle)",
+        }}
+      >
         <MessengerChat
           chatId={chatId}
           peerUser={peerUser}

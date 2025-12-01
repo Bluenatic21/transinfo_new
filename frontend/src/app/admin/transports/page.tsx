@@ -31,17 +31,17 @@ export default function AdminTransportsPage() {
     };
 
     return (
-        <div className="space-y-4 text-slate-100">
+        <div className="space-y-4 text-[color:var(--text-primary)]">
             <div className="flex gap-2 items-end flex-wrap">
                 <div className="flex flex-col">
-                    <label className="text-sm text-gray-400">{translate("admin.common.search", "Поиск")}</label>
+                    <label className="text-sm text-[color:var(--text-secondary)]">{translate("admin.common.search", "Поиск")}</label>
                     <input value={q} onChange={e => setQ(e.target.value)} placeholder={translate("admin.transports.search.ph", "название/маршрут/водитель")}
-                        className="border border-slate-700 bg-slate-900/60 text-slate-100 placeholder-slate-400 rounded-xl px-3 py-2" />
+                        className="border border-[color:var(--border-subtle)] bg-[color:var(--control-bg)] text-[color:var(--text-primary)] placeholder:text-[color:var(--text-muted)] rounded-xl px-3 py-2 shadow-[var(--shadow-soft)]" />
                 </div>
                 <div className="flex flex-col">
-                    <label className="text-sm text-gray-400">{translate("admin.common.active.m", "Активен")}</label>
+                    <label className="text-sm text-[color:var(--text-secondary)]">{translate("admin.common.active.m", "Активен")}</label>
                     <select value={isActive} onChange={e => setIsActive(e.target.value)}
-                        className="border border-slate-700 bg-slate-900/60 text-slate-100 rounded-xl px-3 py-2">
+                        className="border border-[color:var(--border-subtle)] bg-[color:var(--control-bg)] text-[color:var(--text-primary)] rounded-xl px-3 py-2 shadow-[var(--shadow-soft)]">
                         <option value="">{translate("admin.common.all", "Все")}</option>
                         <option value="true">Да</option>
                         <option value="false">Нет</option>
@@ -52,13 +52,13 @@ export default function AdminTransportsPage() {
                 </button>
             </div>
 
-            {err && <div className="text-red-400">{translate("admin.common.error", "Ошибка")}: {err}</div>}
+            {err && <div className="text-red-500">{translate("admin.common.error", "Ошибка")}: {err}</div>}
             {loading ? <div>{translate("common.loading", "Загрузка...")}</div> : (
-                <div className="overflow-auto rounded-2xl border border-slate-700/60 bg-slate-900/30">
-                    <table className="min-w-full text-sm text-slate-200">
-                        <thead className="bg-slate-800/60">
+                <div className="overflow-auto rounded-2xl border border-[color:var(--border-subtle)] bg-[color:var(--surface)] shadow-[var(--shadow-soft)]">
+                    <table className="min-w-full text-sm text-[color:var(--text-primary)]">
+                        <thead className="bg-[color:var(--bg-card-soft)] text-[color:var(--text-secondary)]">
                             <tr>
- <th className="p-3 text-left">ID</th>
+                                <th className="p-3 text-left">ID</th>
                                 <th className="p-3 text-left">{translate("admin.common.status", "Статус")}</th>
                                 <th className="p-3 text-left">{translate("admin.common.active.m", "Активен")}</th>
                                 <th className="p-3 text-left">{translate("admin.common.created.m", "Создан")}</th>
@@ -66,7 +66,7 @@ export default function AdminTransportsPage() {
                             </tr>
                         </thead>
                         <tbody>
-                                                       {items.map(transport => (
+                            {items.map(transport => (
                                 <tr key={transport.id} className="border-t border-slate-700/60 hover:bg-slate-800/30">
                                     <td className="p-3">{transport.id}</td>
                                     <td className="p-3">{transport.status || "-"}</td>
@@ -88,6 +88,6 @@ export default function AdminTransportsPage() {
                     </table>
                 </div>
             )}
-     </div>
+        </div>
     );
 }

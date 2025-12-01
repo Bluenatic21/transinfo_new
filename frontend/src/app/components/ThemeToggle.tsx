@@ -23,12 +23,8 @@ export default function ThemeToggle() {
             style={{
                 height: 40,
                 width: 40,
-                borderRadius: 12,
-                background: "var(--control-bg)",
-                color: "var(--text-primary)",
-                border: `1px solid var(--border-subtle)`,
-                boxShadow: "var(--shadow-soft)",
-                transition: "background var(--transition-fast), color var(--transition-fast), border var(--transition-fast)",
+                display: "grid",
+                placeItems: "center",
             }}
         >
             <Icon />
