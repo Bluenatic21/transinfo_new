@@ -20,6 +20,64 @@ function localizeTicketStatus(s, t) {
   return m[s] || s || "";
 }
 
+function normalizeStatus(statusRaw) {
+  return String(statusRaw || "").replace("TicketStatus.", "");
+}
+
+function formatSupportStatus(statusRaw, t) {
+  const normalized = normalizeStatus(statusRaw);
+  return normalized ? localizeTicketStatus(normalized, t) : "";
+}
+
+function formatLastMessagePreview(chat, t) {
+  const msg = chat?.last_message;
+  if (!msg) return t("chat.noMessagesShort", "Нет сообщений");
+
+  const asString = (val) =>
+    typeof val === "string" ? val : val == null ? "" : String(val);
+
+  if (msg.message_type === "call") {
+    let payload = {};
+    try {
+      payload = JSON.parse(msg.content || "{}");
+    } catch {
+      payload = {};
+    }
+
+    const statusText =
+      payload.status === "missed"
+        ? t("call.missed", "Пропущенный звонок")
+        : payload.status === "rejected"
+          ? t("call.status.rejected", "Отклонён")
+          : payload.status === "canceled"
+            ? t("call.status.canceled", "Отменён")
+            : t("call.status.ended", "Завершён");
+
+    const directionText =
+      payload.direction === "incoming"
+        ? t("call.incoming", "Входящий звонок")
+        : payload.direction === "outgoing"
+          ? t("call.outgoing", "Исходящий звонок")
+          : "";
+
+    return directionText ? `${statusText} • ${directionText}` : statusText;
+  }
+
+  if (msg.message_type === "system" || msg.message_type === "group_event") {
+    const raw = asString(msg.content);
+    if (/^TicketStatus\./.test(raw) || /^(NEW|PENDING|ASSIGNED|RESOLVED|CLOSED)$/.test(raw)) {
+      const localized = formatSupportStatus(raw, t);
+      if (localized) return localized;
+    }
+
+    const looksLikeKey = /^[a-z0-9_]+(\.[a-z0-9_]+)+$/i.test(raw);
+    return looksLikeKey ? t(raw, raw) : raw;
+  }
+
+  const content = asString(msg.content);
+  return content || t("chat.noMessagesShort", "Нет сообщений");
+}
+
 function getUserChatTitleAndSubtitle(user, fallbackUserTitle = "") {
   let title = "";
   let subtitle = "";
@@ -132,7 +190,7 @@ export default function MessengerSidebar({ onSelectChat, selectedChat }) {
         .then((arr) =>
           setGroupCounts((gc) => ({ ...gc, [chat.chat_id]: arr.length }))
         )
-        .catch(() => {});
+        .catch(() => { });
     });
     // eslint-disable-next-line
   }, [chatList.length]);
@@ -148,7 +206,7 @@ export default function MessengerSidebar({ onSelectChat, selectedChat }) {
         .then((arr) =>
           setGroupCounts((gc) => ({ ...gc, [chatId]: arr.length }))
         )
-        .catch(() => {});
+        .catch(() => { });
     }
     window.addEventListener("group_members_updated", handleGroupMembersUpdated);
     return () =>
@@ -201,21 +259,21 @@ export default function MessengerSidebar({ onSelectChat, selectedChat }) {
   const filteredChats = !search.trim()
     ? chatList
     : chatList.filter((chat) => {
-        const peer = chat.peer || chat.last_message?.sender || {};
-        const val = [
-          peer.organization,
-          peer.contact_person,
-          peer.full_name,
-          peer.name,
-          peer.email,
-          peer.id,
-          chat.chat_id,
-          chat.group_name,
-        ]
-          .map((x) => x || "")
-          .join(" ");
-        return val.toLowerCase().includes(search.trim().toLowerCase());
-      });
+      const peer = chat.peer || chat.last_message?.sender || {};
+      const val = [
+        peer.organization,
+        peer.contact_person,
+        peer.full_name,
+        peer.name,
+        peer.email,
+        peer.id,
+        chat.chat_id,
+        chat.group_name,
+      ]
+        .map((x) => x || "")
+        .join(" ");
+      return val.toLowerCase().includes(search.trim().toLowerCase());
+    });
 
   // Делаем список уникальным по chat_id (с фолбэком на id/uid)
   const uniqueFilteredChats = useMemo(() => {
@@ -307,6 +365,9 @@ export default function MessengerSidebar({ onSelectChat, selectedChat }) {
             const isSupport = !!chat.support;
             const isGroup = isSupport ? false : !!chat.is_group; // саппорт НЕ отображаем как группу
             const isSelected = chat.chat_id === selectedChat;
+            const supportStatusLabel = isSupport
+              ? formatSupportStatus(chat.support_status, t)
+              : "";
             let title,
               subtitle,
               avatarUrl,
@@ -354,8 +415,8 @@ export default function MessengerSidebar({ onSelectChat, selectedChat }) {
               subtitle = chat.display_subtitle
                 ? t(chat.display_subtitle, chat.display_subtitle)
                 : statusRaw
-                ? `${t("support.status", "Статус")}: ${statusLbl}`
-                : "";
+                  ? `${t("support.status", "Статус")}: ${statusLbl}`
+                  : "";
               avatarUrl = abs(
                 chat.support_logo_url || "/static/support-logo.svg"
               );
@@ -401,18 +462,12 @@ export default function MessengerSidebar({ onSelectChat, selectedChat }) {
             return (
               <div
                 key={chat.chat_id ?? chat.id ?? chat.uid}
-                className={`flex items-center gap-3 p-3 cursor-pointer rounded-lg mb-1
-                                            hover:bg-[var(--chat-item-hover-bg)]
-                                            ${
-                                              isSelected
-                                                ? "hover:bg-[var(--chat-item-selected-bg)]"
-                                                : ""
-                                            }
-                                            ${
-                                              isClosing
-                                                ? "opacity-0 max-h-0 -my-2 pointer-events-none"
-                                                : "opacity-100 max-h-40"
-                                            }
+                className={`chat-list-item ${isSelected ? "chat-list-item--selected" : ""
+                  } flex items-center gap-3 p-3 cursor-pointer rounded-lg mb-1
+                                            ${isClosing
+                    ? "opacity-0 max-h-0 -my-2 pointer-events-none"
+                    : "opacity-100 max-h-40"
+                  }
                                             transition-[background-color,border-color,box-shadow,opacity] duration-300`}
                 style={cardStyle}
                 onClick={() => onSelectChat(chat.chat_id)}
@@ -486,19 +541,12 @@ export default function MessengerSidebar({ onSelectChat, selectedChat }) {
                     className="text-xs truncate mt-1"
                     style={{ color: textColors.preview }}
                   >
-                    {chat.last_message
-                      ? chat.last_message.content
-                      : t("chat.noMessagesShort", "Нет сообщений")}
+                    {formatLastMessagePreview(chat, t)}
                   </div>
                   {isSupport && (
                     <div className="text-[10px] mt-1 text-[#80d1ff] uppercase tracking-wide">
                       🛟 {t("support.badge", "Поддержка")}
-                      {chat.support_status
-                        ? ` • ${String(chat.support_status).replace(
-                            "TicketStatus.",
-                            ""
-                          )}`
-                        : ""}
+                      {supportStatusLabel ? ` • ${supportStatusLabel}` : ""}
                     </div>
                   )}
                 </div>
@@ -635,14 +683,14 @@ export default function MessengerSidebar({ onSelectChat, selectedChat }) {
                     detail: { chatId: contextMenu.chat.chat_id },
                   })
                 );
-              } catch {}
+              } catch { }
               const cid = contextMenu.chat.chat_id;
               // личное удаление: сервер проставит cleared_at,
               // локально чистим и обновляем список
               await deleteChatForMe?.(cid);
               try {
                 clearLocalChat?.(cid);
-              } catch {}
+              } catch { }
               setTimeout(() => {
                 fetchChatList?.({ force: true });
               }, 300);

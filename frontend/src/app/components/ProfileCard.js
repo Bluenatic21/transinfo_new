@@ -221,6 +221,14 @@ export default function ProfileCard({ user: initialUser, readOnly, onUserUpdate,
         logoutShadow: isLight ? "0 4px 14px rgba(217,45,32,0.25)" : "0 2px 8px rgba(198,40,40,0.35)",
     };
 
+    const messengerColors = {
+        chat: isLight ? "#1d4ed8" : "#43c8ff",
+        whatsapp: isLight ? "#1e8c46" : "#74e07e",
+        viber: isLight ? "#5b2f94" : "#7954a1",
+        telegram: isLight ? "#1a9cf3" : "#5abdf0",
+        email: isLight ? "#2b4f8c" : "#d2e4ff",
+    };
+
     const handleEditClick = () => {
         if (onEdit) {
             onEdit();
@@ -523,7 +531,7 @@ export default function ProfileCard({ user: initialUser, readOnly, onUserUpdate,
                                 title={t("chat.open", "Чат")}
                                 style={{
                                     background: palette.control,
-                                    color: "#43c8ff",
+                                    color: messengerColors.chat,
                                     borderRadius: 7,
                                     border: `1px solid ${palette.border}`,
                                     padding: "8px 10px",
@@ -549,7 +557,7 @@ export default function ProfileCard({ user: initialUser, readOnly, onUserUpdate,
                                                 title={t("messenger.whatsapp", "WhatsApp")}
                                                 style={{
                                                     background: palette.control,
-                                                    color: "#74e07e",
+                                                    color: messengerColors.whatsapp,
                                                     borderRadius: 7,
                                                     border: `1px solid ${palette.border}`,
                                                     padding: pad,
@@ -569,7 +577,7 @@ export default function ProfileCard({ user: initialUser, readOnly, onUserUpdate,
                                                 title={t("messenger.viber", "Viber")}
                                                 style={{
                                                     background: palette.control,
-                                                    color: "#7954a1",
+                                                    color: messengerColors.viber,
                                                     borderRadius: 7,
                                                     border: `1px solid ${palette.border}`,
                                                     padding: pad,
@@ -589,7 +597,7 @@ export default function ProfileCard({ user: initialUser, readOnly, onUserUpdate,
                                                 title={t("messenger.telegram", "Telegram")}
                                                 style={{
                                                     background: palette.control,
-                                                    color: "#5abdf0",
+                                                    color: messengerColors.telegram,
                                                     borderRadius: 7,
                                                     border: `1px solid ${palette.border}`,
                                                     padding: pad,
@@ -607,7 +615,7 @@ export default function ProfileCard({ user: initialUser, readOnly, onUserUpdate,
                                                 title={t("messenger.email", "Эл. почта")}
                                                 style={{
                                                     background: palette.control,
-                                                    color: "#d2e4ff",
+                                                    color: messengerColors.email,
                                                     borderRadius: 7,
                                                     border: `1px solid ${palette.border}`,
                                                     padding: pad,

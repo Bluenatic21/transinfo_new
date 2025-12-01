@@ -3859,3 +3859,30 @@ body {
     box-shadow: 0 14px 34px rgba(18, 30, 56, 0.24), var(--compact-card-shadow);
   }
 }
+
+/* Chat list hover feedback */
+@media (hover: hover) {
+  .chat-list-item {
+    transition: background-color var(--transition-normal, 220ms ease-out),
+      border-color var(--transition-normal, 220ms ease-out),
+      box-shadow var(--transition-normal, 220ms ease-out),
+      transform var(--transition-normal, 220ms ease-out);
+  }
+
+  .chat-list-item:hover {
+    background: var(--chat-item-hover-bg);
+    border-color: var(--chat-item-hover-border, var(--border-strong));
+    box-shadow: var(--chat-item-hover-shadow, var(--shadow-soft));
+    transform: translateY(-2px);
+  }
+
+  .chat-list-item.chat-list-item--selected:hover {
+    background: var(--chat-item-selected-bg);
+    border-color: var(--chat-item-selected-border);
+  }
+}
+
+.chat-list-item:focus-visible {
+  outline: 2px solid var(--chat-item-hover-border, var(--border-strong));
+  outline-offset: 3px;
+}

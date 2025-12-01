@@ -3128,10 +3128,21 @@ export default function MessengerChat({
 
       // Если content похож на ключ i18n (a.b.c), пробуем перевести.
       // Fallback — показать исходный content.
-      const looksLikeKey =
-        typeof msg.content === "string" &&
-        /^[a-z0-9_]+(\.[a-z0-9_]+)+$/i.test(msg.content);
-      const text = looksLikeKey ? t(msg.content, msg.content) : msg.content;
+      const rawContent =
+        typeof msg.content === "string"
+          ? msg.content
+          : msg.content == null
+            ? ""
+            : String(msg.content);
+
+      const looksLikeKey = /^[a-z0-9_]+(\.[a-z0-9_]+)+$/i.test(rawContent);
+      let text = looksLikeKey ? t(rawContent, rawContent) : rawContent;
+
+      if (typeof text === "string") {
+        const normalized = text.replace("TicketStatus.", "");
+        const localized = localizeTicketStatus(normalized, t);
+        if (localized && localized !== normalized) text = localized;
+      }
 
       return (
         <div

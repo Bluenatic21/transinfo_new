@@ -1211,7 +1211,9 @@ export function MessengerProvider({ children }) {
                 // если этот чат уже открыт — просто показываем окно и ничего не перезагружаем
                 if (!alreadyOpen) {
                     setChatId(_chatId);
-                    setMessages([]); // clear old
+                    // сразу показываем кэшированные сообщения, чтобы избежать «мигания»
+                    const cached = allMessages?.[_chatId];
+                    setMessages(Array.isArray(cached) ? cached : []);
                     try { ensureChatInSidebar(_chatId, { peer: peerUser }); } catch { }
                     await fetchMessagesById(_chatId, { force: true });
                 } else {
@@ -1264,7 +1266,14 @@ export function MessengerProvider({ children }) {
                 } catch { }
             }
         },
-        [authFetchWithRefresh, chatList, fetchMessagesById, ensureChatInSidebar, peerUser]
+        [
+            authFetchWithRefresh,
+            allMessages,
+            chatList,
+            fetchMessagesById,
+            ensureChatInSidebar,
+            peerUser,
+        ]
     );
 
     const sendMessage = useCallback(

@@ -73,6 +73,17 @@
     --chat-input-border: #364869;
     --chat-input-text: #e8f1ff;
 
+    /* Messenger list */
+    --chat-item-hover-bg: color-mix(in srgb, #152135 80%, #43c8ff 20%);
+    --chat-item-hover-border: color-mix(in srgb, #38bcf8 38%, transparent);
+    --chat-item-hover-shadow: 0 14px 34px rgba(0, 0, 0, 0.45);
+    --chat-item-selected-bg: color-mix(in srgb, #0f1a2b 68%, #38bcf8 32%);
+    --chat-item-selected-border: color-mix(in srgb, #38bcf8 50%, transparent);
+    --chat-item-selected-title: #e5f4ff;
+    --chat-item-selected-subtitle: #c7e4ff;
+    --chat-item-selected-preview: #a6c9e6;
+    --chat-item-selected-timestamp: #8cb3d4;
+
     /* Chat menus and action panels */
     --chat-menu-panel-bg: #0f172a;
     --chat-menu-panel-border: #22304b;
@@ -181,6 +192,8 @@
 
     /* Messenger list */
     --chat-item-hover-bg: color-mix(in srgb, #81caff 18%, #ffffff 82%);
+    --chat-item-hover-border: color-mix(in srgb, #81caff 32%, transparent);
+    --chat-item-hover-shadow: 0 10px 26px rgba(15, 23, 42, 0.08);
     --chat-item-selected-bg: color-mix(in srgb, #81caff 26%, #ffffff 74%);
     --chat-item-selected-border: color-mix(in srgb, #81caff 38%, transparent);
     --chat-item-selected-title: #0f172a;
