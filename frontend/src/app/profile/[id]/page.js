@@ -12,6 +12,7 @@ import { useMessenger } from "@/app/components/MessengerContext";
 import { FaWhatsapp, FaTelegramPlane, FaViber, FaEnvelope, FaPhoneAlt, FaComments } from "react-icons/fa";
 import { useLang } from "@/app/i18n/LangProvider";
 import { api } from "@/config/env";
+import { useTheme } from "@/app/providers/ThemeProvider";
 
 // Карточка с вашим отзывом
 function YourReviewCard({ review }) {
@@ -78,6 +79,10 @@ function YourReviewCard({ review }) {
 
 export default function OtherUserProfile() {
     const { t } = useLang?.() || { t: (_k, f) => f };
+    const { resolvedTheme } = useTheme();
+    const isLightTheme = resolvedTheme === "light";
+    const reviewTitleColor = isLightTheme ? "#0f1b2a" : "#e3f2fd";
+    const reviewDotColor = isLightTheme ? "#0284c7" : "#72ebff";
     const params = useParams();
     const id = params.id;
     const cleanId = Array.isArray(id) ? id[0] : id;
@@ -191,10 +196,10 @@ export default function OtherUserProfile() {
                     {/* Отзывы — как в собственном профиле */}
                     <section style={{ marginTop: 16, paddingTop: 12, borderTop: "1px solid #233a5a" }}>
                         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
-                            <span style={{ width: 10, height: 10, borderRadius: 999, background: "#72ebff" }} />
+                            <span style={{ width: 10, height: 10, borderRadius: 999, background: reviewDotColor }} />
                             <span
                                 style={{
-                                    fontWeight: 700, fontSize: 18, color: "#e3f2fd", letterSpacing: ".01em"
+                                    fontWeight: 700, fontSize: 18, color: reviewTitleColor, letterSpacing: ".01em"
                                 }}>
                                 {t("reviews.title", "Отзывы")}
                             </span>
@@ -228,8 +233,8 @@ export default function OtherUserProfile() {
             {/* Отзывы — как в собственном профиле */}
             <section style={{ marginTop: 16, paddingTop: 12, borderTop: "1px solid #233a5a" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
-                    <span style={{ width: 10, height: 10, borderRadius: 999, background: "#72ebff" }} />
-                    <span style={{ fontWeight: 700, fontSize: 18, color: "#e3f2fd", letterSpacing: ".01em" }}>
+                    <span style={{ width: 10, height: 10, borderRadius: 999, background: reviewDotColor }} />
+                    <span style={{ fontWeight: 700, fontSize: 18, color: reviewTitleColor, letterSpacing: ".01em" }}>
                         {t("reviews.title", "Отзывы")}
                     </span>
                 </div>

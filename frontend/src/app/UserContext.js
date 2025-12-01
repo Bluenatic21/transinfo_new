@@ -504,11 +504,18 @@ export function UserProvider({ children }) {
       }
     };
 
+    // ⚠ Для неавторизованных гостей:
+    // - чистим уведомления
+    // - закрываем WS/таймеры (если вдруг что-то осталось)
+    // - больше ничего не делаем
     if (!user || !user.id) {
       setNotifications([]);
-    } else {
-      fetchNotifications();
+      cleanup();
+      return;
     }
+
+    // Авторизованным — сразу подтягиваем уведомления
+    fetchNotifications();
 
     let cancelled = false;
     (async () => {
@@ -673,20 +680,7 @@ export function UserProvider({ children }) {
     })();
 
     return () => {
-      if (wsReconnectTimerRef.current) {
-        clearTimeout(wsReconnectTimerRef.current);
-        wsReconnectTimerRef.current = null;
-      }
-      if (wsPingRef.current) {
-        clearInterval(wsPingRef.current);
-        wsPingRef.current = null;
-      }
-      if (wsRef.current) {
-        try {
-          wsRef.current.close();
-        } catch { }
-        wsRef.current = null;
-      }
+      cleanup();
     };
   }, [user?.id, notifyReconnectTick, ensureFreshToken, fetchNotifications, forceLogout]);
 
