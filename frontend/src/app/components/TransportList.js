@@ -490,6 +490,7 @@ export default function TransportList({ transports: propTransports }) {
                 }`,
                 {
                     credentials: "include", // чтобы кука тоже пришла в API-роут
+                    cache: "no-store", // избегаем 304/кешей браузера, из-за которых список пустует
                     headers: t ? { Authorization: `Bearer ${t}` } : undefined,
                 }
             );

@@ -4,6 +4,11 @@
 export default async function handler(req, res) {
   const { method, query } = req;
 
+  // Запрещаем кэширование ответа, чтобы браузер не отвечал 304 и не скрывал транспорт
+  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
+  res.setHeader("Pragma", "no-cache");
+  res.setHeader("Expires", "0");
+
   // ⚠️ По умолчанию API_BASE указывает на тот же домен, что и фронт (http://127.0.0.1:3000/api),
   // поэтому прямое использование приведёт к бесконечному рекурсивному вызову этого же API-роута
   // и пустому списку транспорта. Всегда берём «настоящий» backend-хост, а в крайнем случае
@@ -55,9 +60,8 @@ export default async function handler(req, res) {
 
       try {
         const u = new URL(trimmed);
-        const upstreamHost = `${u.hostname}${
-          u.port ? `:${u.port}` : ""
-        }`.toLowerCase();
+        const upstreamHost = `${u.hostname}${u.port ? `:${u.port}` : ""
+          }`.toLowerCase();
 
         // Реальный рекурсивный вызов случается только если base-URL указывает обратно
         // на Next API (host совпадает и путь начинается с "/api"). Если backend крутится
