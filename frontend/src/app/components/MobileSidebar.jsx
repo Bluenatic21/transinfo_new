@@ -6,6 +6,7 @@ import { FaBars, FaTimes } from "react-icons/fa";
 import { useUser } from "../UserContext";
 import { useLang } from "../i18n/LangProvider";
 import LangSwitcher from "./LangSwitcher";
+import ThemeToggle from "./ThemeToggle";
 
 // грузим тот же сайдбар, что на десктопе (с той же логикой по ролям)
 const ProfileSidebar = dynamic(() => import("./ProfileSidebar"), { ssr: false });
@@ -119,6 +120,9 @@ export default function MobileSidebar() {
                         >
                             {!user ? (
                                 <div style={{ padding: 12 }}>
+                                    <div className="flex items-center justify-end mb-2" style={{ padding: "2px 2px 8px 2px" }}>
+                                        <ThemeToggle />
+                                    </div>
                                     {/* Заголовок + переключатель языка для гостей */}
                                     <div
                                         className="flex items-center gap-2 mb-2"

@@ -1438,7 +1438,15 @@ export default function Header({ setShowRegisterModal }) {
                 gap: isTight ? 8 : 10,
               }}
             >
-              <div style={{ marginRight: 6 }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                  marginRight: isTight ? 2 : 6,
+                }}
+              >
+                <ThemeToggle />
                 <LangSwitcher variant="compact" />
               </div>
               {isTight ? (

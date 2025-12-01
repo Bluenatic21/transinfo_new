@@ -58,16 +58,16 @@ export default function NotFound() {
                 <div
                     className="
             block dark:hidden absolute inset-0
-            bg-white bg-no-repeat bg-cover
+            bg-slate-50 bg-no-repeat bg-cover
             bg-center md:bg-right
-            bg-[url('/img/404-light.webp')]
+            bg-[url('/img/404-light.png')]
           "
                 />
                 {/* Плавное «слияние» с темой + читаемость текста слева */}
                 <div className="hidden dark:block absolute inset-0 bg-gradient-to-r from-[#0b0f14] via-[#0b0f14]/75 to-transparent" />
-                <div className="block dark:hidden absolute inset-0 bg-gradient-to-r from-white via-white/80 to-transparent" />
+                <div className="block dark:hidden absolute inset-0 bg-gradient-to-r from-white via-white/70 to-transparent" />
                 {/* Лёгкая виньетка, чтобы края не «резались» */}
-                <div className="absolute inset-0 bg-[radial-gradient(120%_80%_at_0%_50%,rgba(0,0,0,0.35),transparent_60%)] dark:bg-[radial-gradient(120%_80%_at_0%_50%,rgba(0,0,0,0.55),transparent_60%)]" />
+                <div className="absolute inset-0 bg-[radial-gradient(120%_80%_at_0%_50%,rgba(15,23,42,0.15),transparent_60%)] dark:bg-[radial-gradient(120%_80%_at_0%_50%,rgba(0,0,0,0.55),transparent_60%)]" />
             </div>
 
             {/* === КОНТЕНТ === */}
