@@ -192,7 +192,7 @@ function TransportsListBody() {
     }, [savedTransports, q]);
 
     return (
-        <div className="flex flex-col gap-3">␊
+        <div className="flex flex-col gap-3">
             <SectionHeader title={t("saved.transport.title", "Транспорт")} count={savedTransports.length} colors={colors} />
             <SearchBar placeholder={t("saved.transport.search", "Поиск по сохранённому транспорту")} value={q} onChange={setQ} colors={colors} />
 

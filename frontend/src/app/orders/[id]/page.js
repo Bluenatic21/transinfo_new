@@ -1419,7 +1419,7 @@ export default function OrderDetailsPage() {
                                         <span style={{ color: routeColors.city, fontWeight: 700 }}>{to || "-"}</span>
                                     </span>
                                 </div>
-                                ␊
+
                                 {loadDate && <div style={{ color: routeColors.text, fontSize: isMobile ? 14 : 15 }}><b>{t("route.load", "Погрузка")}:</b> {loadDate}</div>}
                                 {unloadDate && <div style={{ color: routeColors.text, fontSize: isMobile ? 14 : 15 }}><b>{t("route.unload", "Разгрузка")}:</b> {unloadDate}</div>}
                                 {routes && (

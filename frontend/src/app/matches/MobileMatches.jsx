@@ -17,18 +17,18 @@ function SectionHeader({ title, count }) {
                 alignItems: "center",
                 justifyContent: "space-between",
                 padding: "14px 16px",
-                background: "#1b2741",
+                background: "var(--bg-card)",
                 position: "sticky",
                 top: 48,
                 zIndex: 5,
-                borderBottom: "1px solid rgba(255,255,255,.06)",
+                borderBottom: "1px solid var(--border-subtle)",
             }}
         >
             <div
                 style={{
                     fontWeight: 900,
                     fontSize: 15,
-                    color: "#9fd8ff",
+                    color: "var(--text-primary)",
                     letterSpacing: 0.2,
                 }}
             >
@@ -36,13 +36,14 @@ function SectionHeader({ title, count }) {
             </div>
             <div
                 style={{
-                    background: "#0f2037",
-                    border: "1px solid rgba(67,200,255,.35)",
-                    color: "#d6f2ff",
+                    background: "var(--control-bg)",
+                    border: "1px solid var(--border-strong)",
+                    color: "var(--text-primary)",
                     borderRadius: 14,
                     padding: "3px 10px",
                     fontWeight: 800,
                     fontSize: 12,
+                    boxShadow: "var(--shadow-soft)",
                 }}
             >
                 {count ?? 0}
@@ -137,9 +138,9 @@ export default function MobileMatches() {
     }, [router]);
 
     const toolbarBtn = {
-        border: "1px solid rgba(255,255,255,.15)",
+        border: "1px solid var(--border-subtle)",
         background: "transparent",
-        color: "#cfe7ff",
+        color: "var(--text-primary)",
         padding: "8px 12px",
         borderRadius: 12,
         fontWeight: 800,
@@ -171,22 +172,29 @@ export default function MobileMatches() {
 
     // хаб
     return (
-        <div style={{ background: "#182337", minHeight: "100vh", paddingBottom: 64 }}>
+        <div
+            style={{
+                background: "var(--bg-body)",
+                minHeight: "100vh",
+                paddingBottom: 64,
+                color: "var(--text-primary)",
+            }}
+        >
             {/* header */}
             <div
                 style={{
                     position: "sticky",
                     top: 0,
                     zIndex: 10,
-                    background: "#212c46",
+                    background: "var(--bg-header)",
                     padding: "18px 16px 12px 16px",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "space-between",
-                    borderBottom: "1px solid rgba(255,255,255,.06)",
+                    borderBottom: "1px solid var(--border-subtle)",
                 }}
             >
-                <span style={{ fontWeight: 900, fontSize: 21, color: "#43c8ff" }}>
+                <span style={{ fontWeight: 900, fontSize: 21, color: "var(--brand-blue)" }}>
                     {t("matches.hubTitle", "Соответствия")}
                 </span>
 
