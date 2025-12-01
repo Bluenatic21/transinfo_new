@@ -446,7 +446,7 @@ export default function Home() {
             top: clamp(-320px, -16vh, 20px);
             width: min(1380px, 118vw);
             aspect-ratio: 1 / 1;
-            background: url("/main_web.png") top right / 80% no-repeat;
+            background: url("/main_web.png") 70% 10% / 80% no-repeat;
             opacity: 0.82;
             filter: drop-shadow(0 22px 52px rgba(0, 0, 0, 0.35));
             pointer-events: none;

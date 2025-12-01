@@ -15,6 +15,7 @@ import MiniUserCard from "@/app/components/MiniUserCard";
 import SaveToggleButton from "@/app/components/SaveToggleButton";
 import TransportShareButtons from "@/app/components/TransportShareButtons";
 import { useLang } from "../../i18n/LangProvider";
+import { useTheme } from "../../providers/ThemeProvider";
 import {
     LOADING_TYPES,
     getTruckBodyTypes,
@@ -38,7 +39,7 @@ function parseDateDMY(str) {
     return `${y.padStart(4, "20")}-${m.padStart(2, "0")}-${d.padStart(2, "0")}`;
 }
 
-function FlagIcon({ country, size = 22 }) {
+function FlagIcon({ country, size = 22, colors }) {
     if (!country) return null;
     return (
         <span
@@ -50,12 +51,12 @@ function FlagIcon({ country, size = 22 }) {
                 height: size,
                 minWidth: size,
                 minHeight: size,
-                background: LIGHT_COLORS.accentSoft,
+                background: colors.accentSoft,
                 borderRadius: 5,
-                border: `1.2px solid ${LIGHT_COLORS.border}`,
+                border: `1.2px solid ${colors.border}`,
                 marginRight: 8,
                 marginLeft: -2,
-                boxShadow: LIGHT_COLORS.shadow,
+                boxShadow: colors.shadow,
                 overflow: "hidden",
                 flexShrink: 0,
                 flexGrow: 0,
@@ -164,6 +165,30 @@ const LIGHT_COLORS = {
     highlight: "#f6d24b",
     shadow: "0 18px 40px rgba(15, 23, 42, 0.08)",
     pillBg: "#f0f4fa",
+    infoBg: "#eef2f7",
+    infoText: "#526075",
+    badgeBg: "#e6f2ff",
+    badgeText: "#0f172a",
+    overlayBg: "rgba(0,0,0,0.85)",
+};
+
+const DARK_COLORS = {
+    pageBg: "rgba(24,34,54,0.96)",
+    cardBg: "#1b2742",
+    border: "#27446d",
+    text: "#c9eaff",
+    heading: "#e3f2fd",
+    muted: "#9fb6d6",
+    accent: "#43c8ff",
+    accentSoft: "#193158cc",
+    highlight: "#FFD600",
+    shadow: "0 6px 28px #192f4c85",
+    pillBg: "#172a47",
+    infoBg: "#172a47",
+    infoText: "#6ec6ff",
+    badgeBg: "#193158cc",
+    badgeText: "#cfe9ff",
+    overlayBg: "rgba(0,0,0,0.85)",
 };
 
 // ADR классы — берём локализованный текст через t()
@@ -179,28 +204,28 @@ const getAdrClassInfo = (t) => ({
     "9": t("adr.info.9", "Класс 9: Прочие опасные вещества"),
 });
 
-function Section({ title, children, style }) {
+function Section({ title, children, style, colors }) {
     return (
         <section
             style={{
-                background: LIGHT_COLORS.cardBg,
-                border: `1px solid ${LIGHT_COLORS.border}`,
+                background: colors.cardBg,
+                border: `1px solid ${colors.border}`,
                 borderRadius: 16,
                 padding: "clamp(14px, 4vw, 18px)",
                 marginBottom: "clamp(12px, 3vw, 18px)",
                 height: "100%", // <--- ДОБАВЬ ЭТО
-                boxShadow: LIGHT_COLORS.shadow,
+                boxShadow: colors.shadow,
                 display: "flex",
                 flexDirection: "column",
                 gap: 10,
-                color: LIGHT_COLORS.text,
+                color: colors.text,
                 ...style,
             }}
         >
             {title && (
                 <div
                     style={{
-                        color: LIGHT_COLORS.heading,
+                        color: colors.heading,
                         fontWeight: 750,
                         fontSize: 17,
                         marginBottom: 10,
@@ -248,14 +273,14 @@ function normalizeAttachments(raw = []) {
 // Централизуем формирование абсолютных URL бекенда
 const withApi = (u) => abs(u);
 
-function FileIcon({ ext }) {
+function FileIcon({ ext, colors }) {
     const upper = (ext || "").toUpperCase();
     return (
         <span style={{
             width: 28, height: 28, minWidth: 28, minHeight: 28,
-            borderRadius: 7, background: LIGHT_COLORS.pillBg,
+            borderRadius: 7, background: colors.pillBg,
             display: "inline-flex", alignItems: "center", justifyContent: "center",
-            fontSize: 12, color: LIGHT_COLORS.accent, border: `1px solid ${LIGHT_COLORS.border}`
+            fontSize: 12, color: colors.accent, border: `1px solid ${colors.border}`
         }}>
             {upper || "FILE"}
         </span>
@@ -265,6 +290,31 @@ function FileIcon({ ext }) {
 
 export default function TransportDetailPage() {
     const { t } = useLang();
+    const { resolvedTheme } = useTheme?.() || { resolvedTheme: "dark" };
+    const colors = resolvedTheme === "light" ? LIGHT_COLORS : DARK_COLORS;
+    const infoPlaceholderStyle = {
+        color: colors.infoText,
+        fontWeight: 500,
+        fontSize: 16,
+        display: "flex",
+        alignItems: "center",
+        gap: 8,
+        marginTop: 13,
+        opacity: resolvedTheme === "light" ? 0.9 : 0.67,
+    };
+    const infoIconStyle = {
+        width: 23,
+        height: 23,
+        borderRadius: "50%",
+        background: colors.infoBg,
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+    };
+    const infoIconFill = {
+        circle: colors.border,
+        text: colors.infoText,
+    };
     // Витрины: label = перевод, value = канон (RU)
     const BODY_TYPES = useMemo(() => getTruckBodyTypes(t), [t]);
     const TRANSPORT_KIND_OPTS = useMemo(() => getTransportKindOptions(t), [t]);
@@ -517,9 +567,9 @@ export default function TransportDetailPage() {
                 />
 
                 <div style={{
-                    background: LIGHT_COLORS.pageBg,
+                    background: colors.pageBg,
                     minHeight: "100vh",
-                    color: LIGHT_COLORS.text,
+                    color: colors.text,
                     padding: "24px 16px 48px",
                     maxWidth: 520,
                     margin: "0 auto",
@@ -543,13 +593,13 @@ export default function TransportDetailPage() {
                             gap: 6,
                             padding: "3px 9px",
                             borderRadius: 999,
-                            background: LIGHT_COLORS.accentSoft,
-                            border: `1px solid ${LIGHT_COLORS.border}`,
-                            color: LIGHT_COLORS.heading,
+                            background: colors.accentSoft,
+                            border: `1px solid ${colors.border}`,
+                            color: colors.heading,
                             fontWeight: 700,
                             fontSize: 12,
                             pointerEvents: "none",
-                            boxShadow: LIGHT_COLORS.shadow,
+                            boxShadow: colors.shadow,
                         }}
                     >
                         <FaEye />
@@ -558,14 +608,14 @@ export default function TransportDetailPage() {
                     <button
                         style={{
                             marginBottom: 16,
-                            background: LIGHT_COLORS.accent,
+                            background: colors.accent,
                             color: "#ffffff",
-                            border: `1px solid ${LIGHT_COLORS.border}`,
+                            border: `1px solid ${colors.border}`,
                             borderRadius: 8,
                             padding: "10px 19px",
                             fontWeight: 800,
                             fontSize: 17,
-                            boxShadow: LIGHT_COLORS.shadow
+                            boxShadow: colors.shadow
                         }}
                         onClick={() => router.back()}
                     >← {t("common.back", "Назад")}</button>
@@ -600,10 +650,10 @@ export default function TransportDetailPage() {
                             <MiniUserCard user={ownerUser} transport={transport} />
                         </div>
                     )}
-                    <Section title={<>{icons.route}{t("route.title", "Маршрут и дата")}</>}>
+                    <Section colors={colors} title={<>{icons.route}{t("route.title", "Маршрут и дата")}</>}>
                         <div style={{ marginBottom: 5, display: "flex", alignItems: "center" }}>
                             <b>{t("route.from", "Откуда")}:</b>
-                            <FlagIcon country={getCountryCode(from_location)} />
+                            <FlagIcon colors={colors} country={getCountryCode(from_location)} />
                             {from_location}
                         </div>
                         <div style={{ marginBottom: 5, display: "flex", alignItems: "center" }}>
@@ -611,20 +661,20 @@ export default function TransportDetailPage() {
                             {Array.isArray(to_locations) && to_locations.length > 0
                                 ? to_locations.map((l, i) => (
                                     <span key={i} style={{ display: "flex", alignItems: "center", marginRight: 9 }}>
-                                        <FlagIcon country={getCountryCode(typeof l === "string" ? l : l.location)} />
+                                        <FlagIcon colors={colors} country={getCountryCode(typeof l === "string" ? l : l.location)} />
                                         {typeof l === "string" ? l : l.location}
                                         {i !== to_locations.length - 1 ? <span style={{ margin: "0 4px", color: "#b7e1fd" }}>•</span> : null}
                                     </span>
                                 ))
                                 : <>
-                                    <FlagIcon country={getCountryCode(toStr)} />
+                                    <FlagIcon colors={colors} country={getCountryCode(toStr)} />
                                     {toStr}
                                 </>
                             }
                         </div>
                         <div style={{ marginBottom: 5 }}><b>{t("transport.available", "Доступен")}:</b> {readyDateInterval}</div>
                     </Section>
-                    <Section title={<>{icons.params}{t("transport.params", "Параметры транспорта")}</>}>
+                    <Section colors={colors} title={<>{icons.params}{t("transport.params", "Параметры транспорта")}</>}>
                         {(
                             truck_type ||
                             transport_kind ||
@@ -642,22 +692,9 @@ export default function TransportDetailPage() {
                                 {trailer && <div><b>{t("transport.trailerDims", "Габариты прицепа")}:</b> {trailer}</div>}
                             </>
                         ) : (
-                            <div style={{
-                                color: "#6ec6ff",
-                                fontWeight: 500,
-                                fontSize: 16,
-                                display: "flex",
-                                alignItems: "center",
-                                gap: 8,
-                                marginTop: 13,
-                                opacity: 0.67
-                            }}>
-                                <span style={{
-                                    width: 23, height: 23, borderRadius: "50%",
-                                    background: "#172a47", display: "inline-flex",
-                                    alignItems: "center", justifyContent: "center"
-                                }}>
-                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="8" fill="#21395d" /><text x="8" y="12" textAnchor="middle" fill="#6ec6ff" fontSize="13" fontWeight="bold">i</text></svg>
+                            <div style={infoPlaceholderStyle}>
+                                <span style={infoIconStyle}>
+                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="8" fill={infoIconFill.circle} /><text x="8" y="12" textAnchor="middle" fill={infoIconFill.text} fontSize="13" fontWeight="bold">i</text></svg>
                                 </span>
                                 {t("info.missing", "Информация не указана")}
                             </div>
@@ -665,7 +702,7 @@ export default function TransportDetailPage() {
                     </Section>
 
                     {/* ОСОБЕННОСТИ */}
-                    <Section title={<>{icons.features}{t("features.title", "Особенности")}</>}>
+                    <Section colors={colors} title={<>{icons.features}{t("features.title", "Особенности")}</>}>
                         <div>
                             <b>{t("loading.types", "Типы загрузки")}:</b>{" "}
                             {Array.isArray(load_types) && load_types.length
@@ -695,15 +732,15 @@ export default function TransportDetailPage() {
                                     <span
                                         style={{
                                             marginLeft: 6,
-                                            background: LIGHT_COLORS.accentSoft,
-                                            color: LIGHT_COLORS.heading,
+                                            background: colors.accentSoft,
+                                            color: colors.heading,
                                             fontWeight: 700,
                                             borderRadius: 6,
                                             padding: "2px 13px",
                                             fontSize: 16,
                                             cursor: "pointer",
-                                            boxShadow: LIGHT_COLORS.shadow,
-                                            border: adrDropdownOpen ? `2px solid ${LIGHT_COLORS.accent}` : `2px solid ${LIGHT_COLORS.border}`,
+                                            boxShadow: colors.shadow,
+                                            border: adrDropdownOpen ? `2px solid ${colors.accent}` : `2px solid ${colors.border}`,
                                             transition: "border .15s",
                                             display: "inline-block",
                                         }}
@@ -719,11 +756,11 @@ export default function TransportDetailPage() {
                                             position: "absolute",
                                             left: 0,
                                             top: "110%",
-                                            background: LIGHT_COLORS.cardBg,
-                                            color: LIGHT_COLORS.text,
+                                            background: colors.cardBg,
+                                            color: colors.text,
                                             borderRadius: 10,
                                             padding: "13px 19px 13px 19px",
-                                            boxShadow: LIGHT_COLORS.shadow,
+                                            boxShadow: colors.shadow,
                                             zIndex: 24,
                                             minWidth: 220,
                                             fontSize: 15,
@@ -751,13 +788,13 @@ export default function TransportDetailPage() {
                             </div>
                         )}
                     </Section>
-                    <Section title={<>{icons.pay}{t("rate.title", "Ставка")}</>}>
+                    <Section colors={colors} title={<>{icons.pay}{t("rate.title", "Ставка")}</>}>
                         <div><b>{t("rate.withVat", "С НДС")}:</b> {valOrDash(rate_with_vat)}</div>
                         <div><b>{t("rate.withoutVat", "Без НДС")}:</b> {valOrDash(rate_without_vat)}</div>
                         <div><b>{t("rate.cash", "Наличными")}:</b> {valOrDash(rate_cash)}</div>
                         <div><b>{t("rate.bargain", "Торг")}:</b> {bargainStr}</div>
                     </Section>
-                    <Section title={<>{icons.contact}{t("contacts.title", "Контакты")}</>}>
+                    <Section colors={colors} title={<>{icons.contact}{t("contacts.title", "Контакты")}</>}>
                         <div><b>{t("contacts.person", "Контактное лицо")}:</b> {contact_name || "-"}</div>
                         <div>
                             <b>{t("contacts.phone", "Телефон")}:</b>{" "}
@@ -773,26 +810,24 @@ export default function TransportDetailPage() {
                         </div>
                     </Section>
                     {comment && (
-                        <Section title={<>{icons.comment}{t("comment.title", "Комментарий")}</>}>
+                        <Section colors={colors} title={<>{icons.comment}{t("comment.title", "Комментарий")}</>}>
                             <div style={{ whiteSpace: "pre-wrap" }}>{comment}</div>
                         </Section>
                     )}
                     {files.length > 0 && (
-                        <Section title={<>{icons.files}{t("files.title", "Файлы")}</>}>
+                        <Section colors={colors} title={<>{icons.files}{t("files.title", "Файлы")}</>}>
                             {(imageItems.length === 0 && docItems.length === 0) && (
-                                <div style={{ display: "flex", alignItems: "center", gap: 8, color: "#9fb6d6" }}>
-                                    <span style={{
-                                        width: 22, height: 22, borderRadius: 6, background: "#1f2f4d",
-                                        display: "inline-flex", alignItems: "center", justifyContent: "center",
-                                        border: "1px solid #27446d", fontWeight: 700
-                                    }}>i</span>
+                                <div style={{ ...infoPlaceholderStyle, marginTop: 6 }}>
+                                    <span style={{ ...infoIconStyle, borderRadius: 6, width: 22, height: 22 }}>
+                                        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="8" fill={infoIconFill.circle} /><text x="8" y="12" textAnchor="middle" fill={infoIconFill.text} fontSize="12" fontWeight="bold">i</text></svg>
+                                    </span>
                                     {t("info.missing", "Информация не указана")}
                                 </div>
                             )}
 
                             {imageItems.length > 0 && (
                                 <>
-                                    <div style={{ color: "#9fd3ff", fontWeight: 700, marginBottom: 6 }}>
+                                    <div style={{ color: colors.heading, fontWeight: 700, marginBottom: 6 }}>
                                         {t("files.photos", "Фотографии")}
                                     </div>
                                     <div style={{
@@ -806,8 +841,8 @@ export default function TransportDetailPage() {
                                                 title={img.name}
                                                 style={{
                                                     width: 140, height: 100, objectFit: "cover",
-                                                    borderRadius: 10, border: "1px solid #27446d",
-                                                    boxShadow: "0 2px 10px #0b1a2a80",
+                                                    borderRadius: 10, border: `1px solid ${colors.border}`,
+                                                    boxShadow: colors.shadow,
                                                     cursor: "pointer", flexShrink: 0
                                                 }}
                                                 onClick={() => setLightbox({ open: true, index: idx })}
@@ -820,21 +855,21 @@ export default function TransportDetailPage() {
 
                             {docItems.length > 0 && (
                                 <>
-                                    <div style={{ color: "#9fd3ff", fontWeight: 700, margin: "2px 0 6px" }}>
+                                    <div style={{ color: colors.heading, fontWeight: 700, margin: "2px 0 6px" }}>
                                         {t("files.docs", "Документы")}
                                     </div>
                                     <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
                                         {docItems.map((f, i) => (
                                             <li key={i} style={{
                                                 display: "flex", alignItems: "center", gap: 10,
-                                                background: LIGHT_COLORS.pillBg, border: `1px solid ${LIGHT_COLORS.border}`,
+                                                background: colors.cardBg, border: `1px solid ${colors.border}`,
                                                 borderRadius: 10, padding: "10px 12px", marginBottom: 8,
-                                                boxShadow: LIGHT_COLORS.shadow,
+                                                boxShadow: colors.shadow,
                                             }}>
-                                                <FileIcon ext={f.ext} />
+                                                <FileIcon ext={f.ext} colors={colors} />
                                                 <a
                                                     href={withApi(f.url)} target="_blank" rel="noopener noreferrer"
-                                                    style={{ color: LIGHT_COLORS.text, textDecoration: "none", fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
+                                                    style={{ color: colors.text, textDecoration: "none", fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
                                                     title={f.name}
                                                 >
                                                     {f.name}
@@ -843,8 +878,8 @@ export default function TransportDetailPage() {
                                                     <a
                                                         href={withApi(f.url)} download
                                                         style={{
-                                                            background: LIGHT_COLORS.accent,
-                                                            border: `1px solid ${LIGHT_COLORS.border}`,
+                                                            background: colors.accent,
+                                                            border: `1px solid ${colors.border}`,
                                                             color: "#ffffff", borderRadius: 8, padding: "6px 10px",
                                                             fontSize: 14, textDecoration: "none"
                                                         }}
@@ -868,14 +903,14 @@ export default function TransportDetailPage() {
     return (
         <>
             <div style={{
-                background: "rgba(24,34,54,0.96)",
+                background: colors.pageBg,
                 minHeight: "100vh",
-                color: "#e3f2fd",
+                color: colors.text,
                 padding: "40px 40px 80px 40px",
                 maxWidth: 1300,
                 margin: "0 auto",
                 borderRadius: 20,
-                boxShadow: "0 6px 28px #192f4c85",
+                boxShadow: colors.shadow,
                 position: "relative"
             }}>
                 {/* Просмотры — правый верхний угол */}
@@ -891,9 +926,9 @@ export default function TransportDetailPage() {
                         gap: 6,
                         padding: "4px 10px",
                         borderRadius: 999,
-                        background: "#193158cc",
-                        border: "1px solid #2a4872",
-                        color: "#cfe9ff",
+                        background: colors.badgeBg,
+                        border: `1px solid ${colors.border}`,
+                        color: colors.badgeText,
                         fontWeight: 700,
                         fontSize: 13,
                         pointerEvents: "none"
@@ -905,9 +940,9 @@ export default function TransportDetailPage() {
                 <button
                     style={{
                         marginBottom: 32,
-                        background: "#43c8ff",
-                        color: "#182337",
-                        border: 0,
+                        background: colors.accent,
+                        color: resolvedTheme === "light" ? "#ffffff" : "#182337",
+                        border: `1px solid ${colors.border}`,
                         borderRadius: 10,
                         padding: "11px 27px",
                         fontWeight: 800,
@@ -934,11 +969,11 @@ export default function TransportDetailPage() {
                             fontSize: 28,
                             letterSpacing: 0.01,
                             marginBottom: 8,
-                            color: "#43c8ff"
+                            color: colors.accent
                         }}>
                             {findBodyLabelByValue(truck_type)} <span style={{ fontWeight: 400 }}>•</span> {findKindLabelByValue(transport_kind)}
                         </div>
-                        <div style={{ color: "#8ecae6", fontSize: 15, marginBottom: 20 }}>
+                        <div style={{ color: colors.muted, fontSize: 15, marginBottom: 20 }}>
                             {created_at && <>{t("common.created", "Создано")}: {new Date(created_at).toLocaleString("ru-RU", {
                                 day: "2-digit",
                                 month: "2-digit",
@@ -968,8 +1003,7 @@ export default function TransportDetailPage() {
                         gap: isMobile ? 16 : 36,
                         marginBottom: 0,
                     }}>
-                        <Section
-                            title={null}
+                        <Section colors={colors} title={null}
                             style={{
                                 color: "#e3f2fd",
                                 marginBottom: 0,
@@ -1002,12 +1036,14 @@ export default function TransportDetailPage() {
                                 alignItems: "center",
                                 fontSize: 17,
                                 fontWeight: 800,
-                                background: "linear-gradient(90deg, #183969 38%, #253759 100%)",
-                                color: "#fff",
+                                background: resolvedTheme === "light"
+                                    ? "linear-gradient(90deg, #e9f2ff 0%, #d7e6ff 100%)"
+                                    : "linear-gradient(90deg, #183969 38%, #253759 100%)",
+                                color: resolvedTheme === "light" ? colors.heading : "#fff",
                                 borderRadius: 9,
                                 padding: "7px 13px",
                                 marginBottom: 2,
-                                boxShadow: "0 2px 8px #43c8ff17",
+                                boxShadow: colors.shadow,
                                 letterSpacing: 0.02,
                                 gap: 9,
                                 flexWrap: "wrap",
@@ -1015,8 +1051,8 @@ export default function TransportDetailPage() {
                                 wordBreak: "break-word"
                             }}>
                                 <span style={{ display: "inline-flex", alignItems: "center", whiteSpace: "nowrap", gap: 6 }}>
-                                    <FlagIcon country={getCountryCode(from_location)} size={18} />
-                                    <span style={{ color: "#8ecae6", fontWeight: 700 }}>{from_location || "-"}</span>
+                                    <FlagIcon colors={colors} country={getCountryCode(from_location)} size={18} />
+                                    <span style={{ color: colors.muted, fontWeight: 700 }}>{from_location || "-"}</span>
                                 </span>
                                 {hasFrom && hasTo && (
                                     <span style={{
@@ -1056,7 +1092,7 @@ export default function TransportDetailPage() {
                                                     whiteSpace: "nowrap",
                                                     lineHeight: 1.17
                                                 }}>
-                                                    <FlagIcon country={getCountryCode(loc)} size={16} />
+                                                    <FlagIcon colors={colors} country={getCountryCode(loc)} size={16} />
                                                     <span style={{ minWidth: 0, overflow: "hidden", textOverflow: "ellipsis" }}>
                                                         {loc}
                                                     </span>
@@ -1083,7 +1119,7 @@ export default function TransportDetailPage() {
                                 <b>{t("transport.available", "Доступен")}:</b> {readyDateInterval}
                             </div>
                         </Section>
-                        <Section title={<>{icons.pay}{t("rate.title", "Ставка")}</>} style={{
+                        <Section colors={colors} title={<>{icons.pay}{t("rate.title", "Ставка")}</>} style={{
                             minHeight: 170,
                             height: "100%",
                             display: "flex",
@@ -1105,7 +1141,7 @@ export default function TransportDetailPage() {
                         </Section>
                     </div>
 
-                    <Section title={<>{icons.params}{t("transport.params", "Параметры транспорта")}</>}>
+                    <Section colors={colors} title={<>{icons.params}{t("transport.params", "Параметры транспорта")}</>}>
                         {[
                             truck_type && <div key="truck_type"><b>{t("truck.bodyType", "Тип кузова")}:</b> {findBodyLabelByValue(truck_type)}</div>,
                             transport_kind && <div key="transport_kind"><b>{t("transport.kind", "Тип транспорта")}:</b> {findKindLabelByValue(transport_kind)}</div>,
@@ -1123,22 +1159,9 @@ export default function TransportDetailPage() {
                                 trailer && <div key="trailer"><b>Габариты прицепа:</b> {trailer}</div>,
                             ].filter(Boolean)
                         ) : (
-                            <div style={{
-                                color: "#6ec6ff",
-                                fontWeight: 500,
-                                fontSize: 16,
-                                display: "flex",
-                                alignItems: "center",
-                                gap: 8,
-                                marginTop: 13,
-                                opacity: 0.67
-                            }}>
-                                <span style={{
-                                    width: 23, height: 23, borderRadius: "50%",
-                                    background: "#172a47", display: "inline-flex",
-                                    alignItems: "center", justifyContent: "center"
-                                }}>
-                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="8" fill="#21395d" /><text x="8" y="12" textAnchor="middle" fill="#6ec6ff" fontSize="13" fontWeight="bold">i</text></svg>
+                            <div style={infoPlaceholderStyle}>
+                                <span style={infoIconStyle}>
+                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="8" fill={infoIconFill.circle} /><text x="8" y="12" textAnchor="middle" fill={infoIconFill.text} fontSize="13" fontWeight="bold">i</text></svg>
                                 </span>
                                 {t("info.missing", "Информация не указана")}
                             </div>
@@ -1146,14 +1169,14 @@ export default function TransportDetailPage() {
                     </Section>
 
                     {/* Особенности - теперь именно тут выводится ADR! */}
-                    <Section title={<>{icons.features}{t("features.title", "Особенности")}</>}>
+                    <Section colors={colors} title={<>{icons.features}{t("features.title", "Особенности")}</>}>
                         {Array.isArray(load_types) && load_types.length > 0 && (
                             <div>
                                 <b>{t("loading.types", "Типы загрузки")}:</b>{" "}
                                 {localizeLoadingTypes(load_types).map((label, i) =>
                                     <span key={i} style={{
-                                        background: "#11284a",
-                                        color: "#43c8ff",
+                                        background: resolvedTheme === "light" ? colors.accentSoft : "#11284a",
+                                        color: colors.accent,
                                         borderRadius: 8,
                                         padding: "2px 11px",
                                         marginLeft: 6,
@@ -1177,15 +1200,15 @@ export default function TransportDetailPage() {
                                     <span
                                         style={{
                                             marginLeft: 6,
-                                            background: "#232f45",
-                                            color: "#FFD600",
+                                            background: resolvedTheme === "light" ? colors.accentSoft : "#232f45",
+                                            color: resolvedTheme === "light" ? colors.heading : colors.highlight,
                                             fontWeight: 700,
                                             borderRadius: 6,
                                             padding: "2px 13px",
                                             fontSize: 16,
                                             cursor: "pointer",
-                                            boxShadow: "0 2px 16px #ffe60018",
-                                            border: adrDropdownOpen ? "2px solid #FFD600" : "2px solid #232f45",
+                                            boxShadow: colors.shadow,
+                                            border: adrDropdownOpen ? `2px solid ${colors.accent}` : `2px solid ${colors.border}`,
                                             transition: "border .15s",
                                             display: "inline-block",
                                         }}
@@ -1201,11 +1224,11 @@ export default function TransportDetailPage() {
                                             position: "absolute",
                                             left: 0,
                                             top: "110%",
-                                            background: "#212d3d",
-                                            color: "#FFD600",
+                                            background: colors.cardBg,
+                                            color: colors.heading,
                                             borderRadius: 10,
                                             padding: "13px 19px 13px 19px",
-                                            boxShadow: "0 4px 24px #ffe60022",
+                                            boxShadow: colors.shadow,
                                             zIndex: 24,
                                             minWidth: 220,
                                             fontSize: 15,
@@ -1216,13 +1239,13 @@ export default function TransportDetailPage() {
                                                     key={num}
                                                     style={{
                                                         marginBottom: 8,
-                                                        color: "#FFD600",
+                                                        color: colors.heading,
                                                         fontWeight: 600,
                                                         letterSpacing: 0.04,
                                                         lineHeight: 1.4,
                                                     }}
                                                 >
-                                                    <span style={{ color: "#fff", fontWeight: 900, marginRight: 7 }}>{num}</span>
+                                                    <span style={{ color: colors.text, fontWeight: 900, marginRight: 7 }}>{num}</span>
                                                     {getAdrClassInfo(t)[num] || ""}
                                                 </div>
                                             ))}
@@ -1241,19 +1264,19 @@ export default function TransportDetailPage() {
                         marginBottom: 0,
                     }}>
                         {/* Слева — Контакты */}
-                        <Section title={<>{icons.contact}{t("contacts.title", "Контакты")}</>}>
+                        <Section colors={colors} title={<>{icons.contact}{t("contacts.title", "Контакты")}</>}>
                             {[
                                 contact_name && <div key="contact_name"><b>{t("contacts.person", "Контактное лицо")}:</b> {contact_name}</div>,
                                 phone && (
                                     <div key="phone">
                                         <b>{t("contacts.phone", "Телефон")}:</b>{" "}
-                                        <a href={`tel:${phone}`} style={{ color: "#b6eaff" }}>{phone}</a>
+                                        <a href={`tel:${phone}`} style={{ color: colors.accent }}>{phone}</a>
                                     </div>
                                 ),
                                 email && (
                                     <div key="email">
                                         <b>{t("messenger.email", "Эл. почта")}:</b>{" "}
-                                        <a href={`mailto:${email}`} style={{ color: "#b6eaff" }}>{email}</a>
+                                        <a href={`mailto:${email}`} style={{ color: colors.accent }}>{email}</a>
                                     </div>
                                 ),
                             ].filter(Boolean).length > 0 ? (
@@ -1262,40 +1285,27 @@ export default function TransportDetailPage() {
                                     phone && (
                                         <div key="phone">
                                             <b>{t("contacts.phone", "Телефон")}:</b>{" "}
-                                            <a href={`tel:${phone}`} style={{ color: "#b6eaff" }}>{phone}</a>
+                                            <a href={`tel:${phone}`} style={{ color: colors.accent }}>{phone}</a>
                                         </div>
                                     ),
                                     email && (
                                         <div key="email">
                                             <b>{t("messenger.email", "Эл. почта")}:</b>{" "}
-                                            <a href={`mailto:${email}`} style={{ color: "#b6eaff" }}>{email}</a>
+                                            <a href={`mailto:${email}`} style={{ color: colors.accent }}>{email}</a>
                                         </div>
                                     ),
                                 ].filter(Boolean)
                             ) : (
-                                <div style={{
-                                    color: "#6ec6ff",
-                                    fontWeight: 500,
-                                    fontSize: 16,
-                                    display: "flex",
-                                    alignItems: "center",
-                                    gap: 8,
-                                    marginTop: 13,
-                                    opacity: 0.67
-                                }}>
-                                    <span style={{
-                                        width: 23, height: 23, borderRadius: "50%",
-                                        background: "#172a47", display: "inline-flex",
-                                        alignItems: "center", justifyContent: "center"
-                                    }}>
-                                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="8" fill="#21395d" /><text x="8" y="12" textAnchor="middle" fill="#6ec6ff" fontSize="13" fontWeight="bold">i</text></svg>
+                                <div style={infoPlaceholderStyle}>
+                                    <span style={infoIconStyle}>
+                                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="8" fill={infoIconFill.circle} /><text x="8" y="12" textAnchor="middle" fill={infoIconFill.text} fontSize="13" fontWeight="bold">i</text></svg>
                                     </span>
                                     {t("info.missing", "Информация не указана")}
                                 </div>
                             )}
                         </Section>
                         {/* Справа — Комментарий */}
-                        <Section title={<>{icons.comment}{t("comment.title", "Комментарий")}</>} style={{
+                        <Section colors={colors} title={<>{icons.comment}{t("comment.title", "Комментарий")}</>} style={{
                             minHeight: 120,
                             height: "100%",
                             display: "flex",
@@ -1305,22 +1315,9 @@ export default function TransportDetailPage() {
                             {comment
                                 ? <div style={{ whiteSpace: "pre-wrap" }}>{comment}</div>
                                 : (
-                                    <div style={{
-                                        color: "#6ec6ff",
-                                        fontWeight: 500,
-                                        fontSize: 16,
-                                        display: "flex",
-                                        alignItems: "center",
-                                        gap: 8,
-                                        marginTop: 13,
-                                        opacity: 0.67
-                                    }}>
-                                        <span style={{
-                                            width: 23, height: 23, borderRadius: "50%",
-                                            background: "#172a47", display: "inline-flex",
-                                            alignItems: "center", justifyContent: "center"
-                                        }}>
-                                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="8" fill="#21395d" /><text x="8" y="12" textAnchor="middle" fill="#6ec6ff" fontSize="13" fontWeight="bold">i</text></svg>
+                                    <div style={infoPlaceholderStyle}>
+                                        <span style={infoIconStyle}>
+                                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="8" fill={infoIconFill.circle} /><text x="8" y="12" textAnchor="middle" fill={infoIconFill.text} fontSize="13" fontWeight="bold">i</text></svg>
                                         </span>
                                         {t("info.missing", "Информация не указана")}
                                     </div>
@@ -1330,23 +1327,16 @@ export default function TransportDetailPage() {
                     </div>
                     {/* Файлы: изображения и документы отдельно (нормализованные) */}
                     <div style={{ gridColumn: "1 / span 2", marginTop: 0 }}>
-                        <Section title={<>{icons.files}{t("files.title", "Файлы")}</>} style={{
+                        <Section colors={colors} title={<>{icons.files}{t("files.title", "Файлы")}</>} style={{
                             minHeight: 120, height: "100%",
                             display: "flex", flexDirection: "column", justifyContent: "flex-start"
                         }}>
                             {(imageItems.length === 0 && docItems.length === 0) ? (
-                                <div style={{
-                                    color: "#6ec6ff", fontWeight: 500, fontSize: 16,
-                                    display: "flex", alignItems: "center", gap: 8, marginTop: 13, opacity: 0.67
-                                }}>
-                                    <span style={{
-                                        width: 23, height: 23, borderRadius: "50%",
-                                        background: "#172a47", display: "inline-flex",
-                                        alignItems: "center", justifyContent: "center"
-                                    }}>
+                                <div style={infoPlaceholderStyle}>
+                                    <span style={infoIconStyle}>
                                         <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                                            <circle cx="8" cy="8" r="8" fill="#21395d" />
-                                            <text x="8" y="12" textAnchor="middle" fill="#6ec6ff" fontSize="13" fontWeight="bold">i</text>
+                                            <circle cx="8" cy="8" r="8" fill={infoIconFill.circle} />
+                                            <text x="8" y="12" textAnchor="middle" fill={infoIconFill.text} fontSize="13" fontWeight="bold">i</text>
                                         </svg>
                                     </span>
                                     {t("info.missing", "Информация не указана")}
@@ -1355,7 +1345,7 @@ export default function TransportDetailPage() {
                                 <>
                                     {imageItems.length > 0 && (
                                         <div style={{ marginBottom: 12 }}>
-                                            <div style={{ color: "#9fd3ff", fontWeight: 700, marginBottom: 6 }}>
+                                            <div style={{ color: colors.heading, fontWeight: 700, marginBottom: 6 }}>
                                                 {t("files.photos", "Фотографии")}
                                             </div>
                                             <div style={{ display: "flex", overflowX: "auto", gap: 12, paddingBottom: 8 }}>
@@ -1367,8 +1357,8 @@ export default function TransportDetailPage() {
                                                         title={img.name}
                                                         style={{
                                                             width: 160, height: 114, objectFit: "cover",
-                                                            borderRadius: 10, border: "1px solid #27446d",
-                                                            boxShadow: "0 2px 10px #0b1a2a80", cursor: "pointer", flexShrink: 0
+                                                            borderRadius: 10, border: `1px solid ${colors.border}`,
+                                                            boxShadow: colors.shadow, cursor: "pointer", flexShrink: 0
                                                         }}
                                                         onClick={() => setLightbox({ open: true, index: idx })}
                                                         loading="lazy"
@@ -1380,21 +1370,21 @@ export default function TransportDetailPage() {
 
                                     {docItems.length > 0 && (
                                         <div>
-                                            <div style={{ color: "#9fd3ff", fontWeight: 700, margin: "2px 0 6px" }}>
+                                            <div style={{ color: colors.heading, fontWeight: 700, margin: "2px 0 6px" }}>
                                                 {t("files.docs", "Документы")}
                                             </div>
                                             <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
                                                 {docItems.map((f, i) => (
                                                     <li key={i} style={{
                                                         display: "flex", alignItems: "center", gap: 10,
-                                                        background: "#1b2742", border: "1px solid #27446d",
+                                                        background: colors.cardBg, border: `1px solid ${colors.border}`,
                                                         borderRadius: 10, padding: "10px 12px", marginBottom: 8
                                                     }}>
-                                                        <FileIcon ext={f.ext} />
+                                                        <FileIcon ext={f.ext} colors={colors} />
                                                         <a
                                                             href={withApi(f.url)} target="_blank" rel="noopener noreferrer"
                                                             style={{
-                                                                color: "#c9eaff", textDecoration: "none", fontWeight: 600,
+                                                                color: colors.text, textDecoration: "none", fontWeight: 600,
                                                                 overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap"
                                                             }}
                                                             title={f.name}
@@ -1405,7 +1395,7 @@ export default function TransportDetailPage() {
                                                             <a
                                                                 href={withApi(f.url)} download
                                                                 style={{
-                                                                    background: "#2a6eb3", border: "1px solid #3a86d1",
+                                                                    background: colors.accent, border: `1px solid ${colors.border}`,
                                                                     color: "#e8f4ff", borderRadius: 8, padding: "6px 10px",
                                                                     fontSize: 14, textDecoration: "none"
                                                                 }}
@@ -1428,7 +1418,7 @@ export default function TransportDetailPage() {
                 <div
                     onClick={() => setLightbox({ open: false, index: 0 })}
                     style={{
-                        position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)",
+                        position: "fixed", inset: 0, background: colors.overlayBg,
                         zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center"
                     }}
                 >
@@ -1449,7 +1439,7 @@ export default function TransportDetailPage() {
                         onClick={(e) => { e.stopPropagation(); setLightbox({ open: false, index: 0 }); }}
                         style={{
                             position: "absolute", top: 16, right: 16, fontSize: 22,
-                            background: "#0b1c2f", color: "#fff", border: "1px solid #27446d",
+                            background: colors.cardBg, color: colors.text, border: `1px solid ${colors.border}`,
                             borderRadius: 12, padding: "6px 10px", cursor: "pointer"
                         }}
                     >
@@ -1461,8 +1451,8 @@ export default function TransportDetailPage() {
                         onClick={(e) => { e.stopPropagation(); prevImage(); }}
                         style={{
                             position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)",
-                            fontSize: 28, background: "#0b1c2f", color: "#fff",
-                            border: "1px solid #27446d", borderRadius: 999, width: 48, height: 48, cursor: "pointer"
+                            fontSize: 28, background: colors.cardBg, color: colors.text,
+                            border: `1px solid ${colors.border}`, borderRadius: 999, width: 48, height: 48, cursor: "pointer"
                         }}
                         aria-label={t("common.prev", "Назад")}
                     >
@@ -1474,8 +1464,8 @@ export default function TransportDetailPage() {
                         onClick={(e) => { e.stopPropagation(); nextImage(); }}
                         style={{
                             position: "absolute", right: 16, top: "50%", transform: "translateY(-50%)",
-                            fontSize: 28, background: "#0b1c2f", color: "#fff",
-                            border: "1px solid #27446d", borderRadius: 999, width: 48, height: 48, cursor: "pointer"
+                            fontSize: 28, background: colors.cardBg, color: colors.text,
+                            border: `1px solid ${colors.border}`, borderRadius: 999, width: 48, height: 48, cursor: "pointer"
                         }}
                         aria-label={t("common.next", "Вперёд")}
                     >
@@ -1489,7 +1479,7 @@ export default function TransportDetailPage() {
                         onClick={(e) => e.stopPropagation()}
                         style={{
                             maxWidth: "94vw", maxHeight: "88vh", objectFit: "contain",
-                            borderRadius: 12, border: "1px solid #27446d", boxShadow: "0 10px 40px #0008"
+                            borderRadius: 12, border: `1px solid ${colors.border}`, boxShadow: colors.shadow
                         }}
                     />
                 </div>

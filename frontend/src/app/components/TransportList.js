@@ -86,14 +86,24 @@ function toISODate(v) {
 
 function normalizeTransportFilters(f) {
     const out = { ...f };
+
     const isoFrom = toISODate(out.ready_date_from);
     const isoTo = toISODate(out.ready_date_to);
+
     if (isoFrom) out.ready_date_from = isoFrom;
     else delete out.ready_date_from;
+
     if (isoTo) out.ready_date_to = isoTo;
     else delete out.ready_date_to;
+
+    // если есть датный фильтр — просим бэк включить «постоянные» рейсы
+    const hasDate = !!(out.ready_date_from || out.ready_date_to);
+    if (hasDate) out.include_permanent = 1;
+    else delete out.include_permanent;
+
     return out;
 }
+
 
 const iconBtnStyle = {
     display: "flex",
@@ -276,10 +286,27 @@ export default function TransportList({ transports: propTransports }) {
     const [total, setTotal] = useState(0);
     const totalPages = Math.max(1, Math.ceil((total || 0) / pageSize));
     const hasMoreMobile = useMemo(() => {
-        if (total) return transports.length < total;
-        if (!transports.length) return false;
-        const expected = page * pageSize;
-        return transports.length >= expected;
+        const loaded = Array.isArray(transports) ? transports.length : 0;
+        const knownTotal = Number(total) || 0;
+
+        if (!loaded) return false;
+
+        if (knownTotal > 0) {
+            // уже всё загрузили
+            if (loaded >= knownTotal) return false;
+
+            // если текущая "страница" короче ожидаемого размера —
+            // это последняя страница, дальше грузить нечего
+            const expectedByPage = page * pageSize;
+            if (loaded < expectedByPage) return false;
+
+            return true;
+        }
+
+        // если API не вернул total — считаем, что есть ещё,
+        // пока количество загруженного кратно размеру страницы
+        const expectedByPage = page * pageSize;
+        return loaded >= expectedByPage;
     }, [page, pageSize, total, transports.length]);
     const [expandedId, setExpandedId] = useState(null);
     const [activeTab, setActiveTab] = useState("list");
@@ -505,10 +532,14 @@ export default function TransportList({ transports: propTransports }) {
             if (thisRequest === lastRequestId.current) {
                 const incoming = Array.isArray(items) ? items : [];
                 const shouldAppend = isAppend;
-                const merged = shouldAppend ? /* как было */ (() => {
+
+                let merged;
+                if (shouldAppend) {
                     const prev = Array.isArray(transportsRef.current)
                         ? transportsRef.current
                         : [];
+                    const prevLen = prev.length;
+
                     const seen = new Set(prev.map((it) => it?.id ?? it?.uid));
                     const next = [...prev];
                     for (const it of incoming) {
@@ -517,8 +548,16 @@ export default function TransportList({ transports: propTransports }) {
                         if (key != null) seen.add(key);
                         next.push(it);
                     }
-                    return next;
-                })() : incoming;
+                    merged = next;
+
+                    // ⬇️ КЛЮЧЕВОЕ: если новых элементов не появилось (дубликаты или пустая страница),
+                    // считаем, что это конец списка и больше грузить не нужно
+                    if (!incoming.length || merged.length <= prevLen) {
+                        setTotal(prevLen);
+                    }
+                } else {
+                    merged = incoming;
+                }
 
                 transportsRef.current = merged;
                 setTransports(merged);
@@ -531,19 +570,22 @@ export default function TransportList({ transports: propTransports }) {
                 setInitialLoaded(true);
             }
         } catch (e) {
-            // Обнуляем стейт только если это ещё актуальный запрос
             if (thisRequest === lastRequestId.current) {
+                console.warn("[transport] fetchTransports failed", e);
                 setTransports([]);
                 setTimeout(() => setDisplayedTransports([]), 80);
+                // чтобы не было "Всего: 32" при пустом списке из‑за ошибки
+                setTotal(0);
+                setInitialLoaded(true);
             }
         } finally {
-            // КРИТИЧНО: не даём старым запросам гасить загрузку и ломать infinite scroll
             if (thisRequest === lastRequestId.current) {
                 setLoading(false);
                 setLoadingMore(false);
-                appendModeRef.current = false;
             }
+            appendModeRef.current = false;
         }
+
     }, [filters, isMobile, page, pageSize, propTransports]);
 
     const handleResetFilters = () => setFilters({});

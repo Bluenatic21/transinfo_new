@@ -8,6 +8,7 @@ import { FaComments } from "react-icons/fa";
 import { useMessenger } from "@/app/components/MessengerContext";
 import { useLang } from "../i18n/LangProvider";
 import { api, abs } from "@/config/env";
+import { useTheme } from "../providers/ThemeProvider";
 
 export default function MiniUserCard({ user, attachment = null }) {
     if (!user) return null;
@@ -27,6 +28,23 @@ export default function MiniUserCard({ user, attachment = null }) {
         telegram
     } = user;
     const { t } = useLang();
+    const { resolvedTheme } = useTheme?.() || { resolvedTheme: "dark" };
+    const isLight = resolvedTheme === "light";
+    const palette = {
+        cardBg: isLight ? "var(--bg-card)" : "rgba(25, 34, 58, 0.95)",
+        cardShadow: isLight ? "0 10px 24px rgba(15,23,42,0.07)" : "0 2px 16px #1e22361b",
+        cardBorder: isLight ? "1px solid var(--border-subtle)" : "none",
+        textPrimary: isLight ? "var(--text-primary)" : "#e3f2fd",
+        textSecondary: isLight ? "var(--text-secondary)" : "#b6eaff",
+        role: isLight ? "#1d4ed8" : "#7af4fd",
+        avatarBg: isLight ? "var(--bg-card-soft)" : "#182337",
+        avatarBorder: isLight ? "1.4px solid var(--border-subtle)" : "1.6px solid #223350",
+        messengerBg: isLight ? "var(--control-bg)" : "#192b4b",
+        messengerText: isLight ? "#1d4ed8" : "#b2dbfb",
+        contactBg: isLight ? "var(--bg-card-soft)" : "#233655",
+        contactText: isLight ? "var(--text-primary)" : "#b7e7ff",
+        phoneText: isLight ? "#0f172a" : "#b7e7ff",
+    };
     // Итоговый рейтинг с дефолтом 10
     const ratingValue = (typeof rating === "number")
         ? rating
@@ -111,12 +129,13 @@ export default function MiniUserCard({ user, attachment = null }) {
     return (
         <div
             style={{
-                background: "rgba(25, 34, 58, 0.95)",
+                background: palette.cardBg,
                 borderRadius: 13,
                 width: "auto",
                 maxWidth: "100%",
                 padding: "10px 18px",
-                boxShadow: "0 2px 16px #1e22361b",
+                boxShadow: palette.cardShadow,
+                border: palette.cardBorder,
                 display: "flex",
                 flexDirection: "column",
                 gap: 5,
@@ -137,8 +156,8 @@ export default function MiniUserCard({ user, attachment = null }) {
                         style={{
                             borderRadius: 10,
                             objectFit: "cover",
-                            border: "1.6px solid #223350",
-                            background: "#182337",
+                            border: palette.avatarBorder,
+                            background: palette.avatarBg,
                             display: "block"
                         }}
                         onError={e => { e.currentTarget.src = "/default-avatar.png"; }}
@@ -147,10 +166,10 @@ export default function MiniUserCard({ user, attachment = null }) {
                 <div>
                     <div style={{
                         display: "flex", alignItems: "center", gap: 8, fontWeight: 700,
-                        fontSize: 17, color: "#e3f2fd", marginBottom: 0
+                        fontSize: 17, color: palette.textPrimary, marginBottom: 0
                     }}>
                         <span>
-                            <Link href={`/profile/${id}`} style={{ color: "#e3f2fd", textDecoration: "none" }}>
+                            <Link href={`/profile/${id}`} style={{ color: palette.textPrimary, textDecoration: "none" }}>
                                 {getDisplayName()}
                             </Link>
                         </span>
@@ -160,17 +179,17 @@ export default function MiniUserCard({ user, attachment = null }) {
                         <span style={{
                             fontWeight: 600,
                             fontSize: 13,
-                            color: "#7af4fd",
+                            color: palette.role,
                             marginLeft: 7
                         }}>{getRoleRu(role)}</span>
                     </div>
                     {email &&
                         <div style={{
                             fontSize: 14,
-                            color: "#b6eaff",
+                            color: palette.textSecondary,
                             marginTop: 1
                         }}>
-                            <a href={`mailto:${email}`} style={{ color: "#b6eaff", textDecoration: "none" }}>
+                            <a href={`mailto:${email}`} style={{ color: palette.textSecondary, textDecoration: "none" }}>
                                 <FaEnvelope style={{ marginRight: 5 }} />
                                 {email}
                             </a>
@@ -191,7 +210,7 @@ export default function MiniUserCard({ user, attachment = null }) {
                     onClick={handleChatClick}
                     title={t("chat.open", "Чат")}
                     style={{
-                        ...messengerIconStyle,
+                        ...messengerIconStyle(palette),
                         color: "#43c8ff",
                         border: "none",
                         cursor: "pointer"
@@ -201,28 +220,29 @@ export default function MiniUserCard({ user, attachment = null }) {
                 </button>
                 {whatsappUrl &&
                     <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" title="WhatsApp"
-                        style={{ ...messengerIconStyle, color: "#43eb6a" }}>
+                        style={{ ...messengerIconStyle(palette), color: "#43eb6a" }}>
                         <FaWhatsapp />
                     </a>
                 }
                 {viberUrl &&
                     <a href={viberUrl} target="_blank" rel="noopener noreferrer" title="Viber"
-                        style={{ ...messengerIconStyle, color: "#7954a1" }}>
+                        style={{ ...messengerIconStyle(palette), color: "#7954a1" }}>
                         <FaViber />
                     </a>
                 }
                 {telegramUrl &&
                     <a href={telegramUrl} target="_blank" rel="noopener noreferrer" title="Telegram"
-                        style={{ ...messengerIconStyle, color: "#37b8fe" }}>
+                        style={{ ...messengerIconStyle(palette), color: "#37b8fe" }}>
                         <FaTelegramPlane />
                     </a>
                 }
                 {phone &&
                     <a href={`tel:${phone}`} style={{
-                        ...contactIconStyle,
+                        ...contactIconStyle(palette),
                         fontWeight: 700,
                         marginLeft: 5,
-                        fontSize: 16
+                        fontSize: 16,
+                        color: palette.phoneText
                     }}>
                         <FaPhoneAlt style={{ marginRight: 5 }} />
                         {phone}
@@ -233,9 +253,9 @@ export default function MiniUserCard({ user, attachment = null }) {
     );
 }
 
-const contactIconStyle = {
-    background: "#233655",
-    color: "#b7e7ff",
+const contactIconStyle = (palette) => ({
+    background: palette.contactBg,
+    color: palette.contactText,
     borderRadius: 8,
     padding: "4px 10px 4px 8px",
     textDecoration: "none",
@@ -243,12 +263,12 @@ const contactIconStyle = {
     fontSize: 15,
     display: "flex",
     alignItems: "center",
-    transition: "background 0.14s"
-};
+    transition: "background 0.14s, color 0.14s"
+});
 
-const messengerIconStyle = {
-    background: "#192b4b",
-    color: "#b2dbfb",
+const messengerIconStyle = (palette) => ({
+    background: palette.messengerBg,
+    color: palette.messengerText,
     borderRadius: 7,
     padding: "6px 8px",
     fontSize: 18,
@@ -257,4 +277,4 @@ const messengerIconStyle = {
     justifyContent: "center",
     textDecoration: "none",
     transition: "background 0.16s, color 0.16s"
-};
+});

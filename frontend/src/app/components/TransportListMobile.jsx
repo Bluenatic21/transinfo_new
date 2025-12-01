@@ -83,17 +83,28 @@ export default function TransportListMobile({
     }, [estimatedCount]);
 
     const loadMoreRef = useRef(null);
+
     useEffect(() => {
         const node = loadMoreRef.current;
         if (!node || typeof IntersectionObserver === "undefined") return;
+
+        // если данных больше нет — даже не вешаем observer
+        if (!hasMore) return;
+
         const observer = new IntersectionObserver(
             ([entry]) => {
-                if (entry?.isIntersecting && hasMore && !loading) {
-                    try { onLoadMore?.(); } catch { }
+                if (!entry?.isIntersecting) return;
+                // двойная проверка, чтобы не стрелять лишний раз
+                if (!hasMore || loading) return;
+                try {
+                    onLoadMore?.();
+                } catch (e) {
+                    console.warn("[transport-mobile] onLoadMore failed", e);
                 }
             },
-            { rootMargin: "280px 0px 320px 0px", threshold: 0 },
+            { rootMargin: "280px 0px 320px 0px", threshold: 0 }
         );
+
         observer.observe(node);
         return () => observer.disconnect();
     }, [hasMore, loading, onLoadMore]);

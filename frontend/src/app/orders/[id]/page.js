@@ -321,8 +321,20 @@ export default function OrderDetailsPage() {
 
     const { resolvedTheme } = useTheme?.() || { resolvedTheme: "dark" };
     const COLORS = useMemo(() => getColors(resolvedTheme), [resolvedTheme]);
-
-
+    const routeColors = useMemo(
+        () => ({
+            barBackground:
+                resolvedTheme === "light"
+                    ? COLORS.accentSoft
+                    : "linear-gradient(90deg, #183969 38%, #253759 100%)",
+            barText: resolvedTheme === "light" ? COLORS.heading : "#fff",
+            city: resolvedTheme === "light" ? COLORS.accent : "#8ecae6",
+            arrow: resolvedTheme === "light" ? COLORS.highlight : "#43c8ff",
+            text: resolvedTheme === "light" ? COLORS.text : "#fff",
+            shadow: resolvedTheme === "light" ? "var(--shadow-soft)" : "0 2px 8px #43c8ff17",
+        }),
+        [COLORS.accent, COLORS.accentSoft, COLORS.heading, COLORS.highlight, COLORS.text, resolvedTheme]
+    );
 
     const [showBidPanel, setShowBidPanel] = useState(false);
     const [allBids, setAllBids] = useState([]);
@@ -1352,7 +1364,7 @@ export default function OrderDetailsPage() {
                             <div
                                 style={{
                                     ...cardStyle,
-                                    color: "#e3f2fd",
+                                    color: routeColors.text,
                                     marginBottom: 0,
                                     minWidth: 220,
                                     gap: 10,
@@ -1374,12 +1386,12 @@ export default function OrderDetailsPage() {
                                         alignItems: "center",
                                         fontSize: isMobile ? 15 : 17,
                                         fontWeight: 800,
-                                        background: "linear-gradient(90deg, #183969 38%, #253759 100%)",
-                                        color: "#fff",
+                                        background: routeColors.barBackground,
+                                        color: routeColors.barText,
                                         borderRadius: 9,
                                         padding: isMobile ? "7px 10px" : "7px 13px",
                                         marginBottom: 2,
-                                        boxShadow: "0 2px 8px #43c8ff17",
+                                        boxShadow: routeColors.shadow,
                                         letterSpacing: 0.02,
                                         gap: 9,
                                         flexWrap: "wrap",
@@ -1389,13 +1401,13 @@ export default function OrderDetailsPage() {
                                 >
                                     <span style={{ display: "inline-flex", alignItems: "center", whiteSpace: "nowrap", gap: 6 }}>
                                         <FlagIcon country={getCountryCode(from)} size={18} />
-                                        <span style={{ color: "#8ecae6", fontWeight: 700 }}>{from || "-"}</span>
+                                        <span style={{ color: routeColors.city, fontWeight: 700 }}>{from || "-"}</span>
                                     </span>
                                     <span
                                         style={{
                                             fontSize: isMobile ? 17 : 19,
                                             margin: "0 7px",
-                                            color: "#43c8ff",
+                                            color: routeColors.arrow,
                                             fontWeight: 900,
                                             flexShrink: 0,
                                         }}
@@ -1404,14 +1416,14 @@ export default function OrderDetailsPage() {
                                     </span>
                                     <span style={{ display: "inline-flex", alignItems: "center", whiteSpace: "nowrap", gap: 6 }}>
                                         <FlagIcon country={getCountryCode(to)} size={18} />
-                                        <span style={{ color: "#8ecae6", fontWeight: 700 }}>{to || "-"}</span>
+                                        <span style={{ color: routeColors.city, fontWeight: 700 }}>{to || "-"}</span>
                                     </span>
                                 </div>
-
-                                {loadDate && <div style={{ color: "#fff", fontSize: isMobile ? 14 : 15 }}><b>{t("route.load", "Погрузка")}:</b> {loadDate}</div>}
-                                {unloadDate && <div style={{ color: "#fff", fontSize: isMobile ? 14 : 15 }}><b>{t("route.unload", "Разгрузка")}:</b> {unloadDate}</div>}
+                                ␊
+                                {loadDate && <div style={{ color: routeColors.text, fontSize: isMobile ? 14 : 15 }}><b>{t("route.load", "Погрузка")}:</b> {loadDate}</div>}
+                                {unloadDate && <div style={{ color: routeColors.text, fontSize: isMobile ? 14 : 15 }}><b>{t("route.unload", "Разгрузка")}:</b> {unloadDate}</div>}
                                 {routes && (
-                                    <div style={{ color: "#fff", fontSize: isMobile ? 13.5 : 14, marginTop: 3, wordBreak: "break-word" }}>
+                                    <div style={{ color: routeColors.text, fontSize: isMobile ? 13.5 : 14, marginTop: 3, wordBreak: "break-word" }}>
                                         <b>{t("route.pointsPath", "Маршрут по точкам")}:</b> {routes}
                                     </div>
                                 )}
