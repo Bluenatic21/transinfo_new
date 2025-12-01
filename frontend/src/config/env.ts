@@ -50,7 +50,11 @@ export function abs(path = ''): string {
 }
 
 /** WebSocket URL */
-const ENV_WS_BASE = (process.env.NEXT_PUBLIC_WS_URL || '').trim();
+const ENV_WS_BASE = (
+  process.env.NEXT_PUBLIC_WS_URL ||
+  process.env.NEXT_PUBLIC_WS_BASE ||
+  ''
+).trim();
 
 export function ws(path = ''): string {
   const p = path.startsWith('/') ? path : `/${path}`;

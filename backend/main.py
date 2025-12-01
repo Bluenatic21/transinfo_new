@@ -383,6 +383,15 @@ def admin_required(current_user: UserModel = Depends(get_current_user)):
         )
     return current_user
 
+import logging
+
+logging.basicConfig(
+    filename="backend_debug.log",   # файл будет рядом с main.py
+    level=logging.INFO,             # можно DEBUG, если нужно больше шума
+    format="%(asctime)s %(levelname)s %(name)s %(message)s",
+)
+
+logger = logging.getLogger(__name__)
 
 app = FastAPI()
 
