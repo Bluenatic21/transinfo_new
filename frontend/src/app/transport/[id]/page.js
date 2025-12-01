@@ -166,7 +166,7 @@ const LIGHT_COLORS = {
     shadow: "0 18px 40px rgba(15, 23, 42, 0.08)",
     pillBg: "#f0f4fa",
     infoBg: "#eef2f7",
-    infoText: "#526075",
+    infoText: "#9aa4b7",
     badgeBg: "#e6f2ff",
     badgeText: "#0f172a",
     overlayBg: "rgba(0,0,0,0.85)",

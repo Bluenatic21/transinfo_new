@@ -120,9 +120,6 @@ export default function MobileSidebar() {
                         >
                             {!user ? (
                                 <div style={{ padding: 12 }}>
-                                    <div className="flex items-center justify-end mb-2" style={{ padding: "2px 2px 8px 2px" }}>
-                                        <ThemeToggle />
-                                    </div>
                                     {/* Заголовок + переключатель языка для гостей */}
                                     <div
                                         className="flex items-center gap-2 mb-2"

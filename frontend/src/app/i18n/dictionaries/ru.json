@@ -235,5 +235,16 @@
   "reset.saving": "Сохраняем...",
   "reset.save": "Сохранить пароль",
   "reset.error.min8": "Минимум 8 символов",
-  "reset.error.mismatch": "Пароли не совпадают"
+  "reset.error.mismatch": "Пароли не совпадают",
+  "home.map.aria": "Карта предложений",
+  "home.map.header": "Грузы + транспорт (общая карта)",
+  "home.map.findCargo": "Найти груз",
+  "home.map.findTransport": "Найти транспорт",
+  "home.map.openFull": "Открыть карту целиком",
+  "home.map.fullscreen": "Развернуть карту",
+  "home.map.fullscreenTitle": "Карта предложений",
+  "home.map.fullscreenHint": "Используйте карту на весь экран",
+  "map.legend.transport": "Транспорт",
+  "map.legend.cargo": "Груз",
+  "map.legend.clusterHint": "Кольцо кластера: соотношение синего и оранжевого показывает состав"
 }
