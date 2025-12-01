@@ -831,14 +831,55 @@ export default function TransportList({ transports: propTransports }) {
         if (end - start + 1 < maxButtons) start = Math.max(1, end - maxButtons + 1);
         for (let i = start; i <= end; i++) numbers.push(i);
 
-        const pagerBtnStyle = {
-            background: "#162335",
-            border: "1px solid #2b3d56",
-            color: "#dbe8ff",
-            borderRadius: 8,
-            padding: "6px 10px",
-            cursor: "pointer",
+        const pagerBaseStyle = { borderRadius: 8, padding: "6px 10px", cursor: "pointer", transition: "all .18s ease" };
+        const pagerBtnStyle = (active = false) => {
+            if (isLight) {
+                const base = {
+                    ...pagerBaseStyle,
+                    background: "var(--control-bg)",
+                    color: "var(--text-primary)",
+                    border: "1px solid var(--border-subtle)",
+                    boxShadow: "0 3px 10px rgba(15, 23, 42, 0.05)",
+                };
+
+                if (active) {
+                    return {
+                        ...base,
+                        background: "var(--bg-card)",
+                        border: "1px solid var(--border-strong)",
+                        boxShadow: "0 6px 18px rgba(15, 23, 42, 0.08)",
+                        fontWeight: 700,
+                    };
+                }
+
+                return base;
+            }
+
+            return {
+                ...pagerBaseStyle,
+                background: "#162335",
+                border: "1px solid #2b3d56",
+                color: "#dbe8ff",
+                fontWeight: active ? 800 : 600,
+            };
         };
+
+        const selectStyle = isLight
+            ? {
+                background: "var(--control-bg)",
+                border: "1px solid var(--border-subtle)",
+                color: "var(--text-primary)",
+                borderRadius: 8,
+                padding: "6px 10px",
+                boxShadow: "0 3px 10px rgba(15, 23, 42, 0.05)",
+            }
+            : {
+                background: "#162335",
+                border: "1px solid #2b3d56",
+                color: "#dbe8ff",
+                borderRadius: 8,
+                padding: "6px 10px",
+            };
 
         return (
             <div
@@ -855,14 +896,14 @@ export default function TransportList({ transports: propTransports }) {
                     <button
                         onClick={() => go(1)}
                         disabled={page === 1}
-                        style={pagerBtnStyle}
+                        style={pagerBtnStyle()}
                     >
                         «
                     </button>
                     <button
                         onClick={() => go(page - 1)}
                         disabled={page === 1}
-                        style={pagerBtnStyle}
+                        style={pagerBtnStyle()}
                     >
                         ‹
                     </button>
@@ -873,11 +914,7 @@ export default function TransportList({ transports: propTransports }) {
                         <button
                             key={n}
                             onClick={() => go(n)}
-                            style={{
-                                ...pagerBtnStyle,
-                                fontWeight: n === page ? 800 : 600,
-                                borderColor: n === page ? "#43c8ff" : "#2b3d56",
-                            }}
+                            style={pagerBtnStyle(n === page)}
                         >
                             {n}
                         </button>
@@ -888,14 +925,14 @@ export default function TransportList({ transports: propTransports }) {
                     <button
                         onClick={() => go(page + 1)}
                         disabled={page === totalPages}
-                        style={pagerBtnStyle}
+                        style={pagerBtnStyle()}
                     >
                         ›
                     </button>
                     <button
                         onClick={() => go(totalPages)}
                         disabled={page === totalPages}
-                        style={pagerBtnStyle}
+                        style={pagerBtnStyle()}
                     >
                         »
                     </button>
@@ -910,13 +947,7 @@ export default function TransportList({ transports: propTransports }) {
                             setPage(1);
                             setPageSize(parseInt(e.target.value, 10));
                         }}
-                        style={{
-                            background: "#162335",
-                            border: "1px solid #2b3d56",
-                            color: "#dbe8ff",
-                            borderRadius: 8,
-                            padding: "6px 10px",
-                        }}
+                        style={selectStyle}
                     >
                         {[10, 20, 30, 40, 50].map((sz) => (
                             <option key={sz} value={sz}>

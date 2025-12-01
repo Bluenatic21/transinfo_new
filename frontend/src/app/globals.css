@@ -2378,14 +2378,14 @@ body {
 [data-theme="light"] .header-root .nav-link,
 [data-theme="light"] .header-root-mobile .nav-link,
 [data-theme="light"] .header-nav-row .nav-link {
-  color: color-mix(in srgb, var(--brand-blue) 82%, #0b67a9 18%);
-  text-shadow: 0 1px 8px rgba(14, 82, 140, 0.18);
+  color: #2b6ba8;
+  text-shadow: 0 1px 6px rgba(30, 87, 145, 0.18);
 }
 
 [data-theme="light"] .header-root .nav-icon,
 [data-theme="light"] .header-root-mobile .nav-icon,
 [data-theme="light"] .header-nav-row .nav-icon {
-  color: color-mix(in srgb, var(--brand-blue) 88%, #0f3f6d 12%);
+  color: #2b6ba8;
 }
 
 [data-theme="light"] .header-nav .nav-link:hover .nav-icon,
@@ -2425,13 +2425,13 @@ body {
 }
 
 .header-nav-row .nav-link {
-  color: #0b67a9;
+  color: inherit;
   min-width: auto;
 }
 
 .header-nav-row .nav-icon,
 .header-nav-row .nav-link:hover .nav-icon {
-  color: #0b67a9;
+  color: currentColor;
 }
 
 .header-nav-row .nav-link:hover {

@@ -36,6 +36,34 @@ export default function EditProfileForm({ user, onClose, onSave }) {
 
     const role = user.role || ""; // нужно для логики person_type
 
+    const cardStyle = {
+        background: "var(--bg-card)",
+        color: "var(--text-primary)",
+        borderRadius: 18,
+        border: "1px solid var(--border-subtle)",
+        boxShadow: "var(--shadow-soft)",
+        padding: "28px 32px",
+        width: "100%",
+        display: "flex",
+        alignItems: "flex-start",
+        gap: 32,
+        minWidth: 0,
+        maxWidth: "100%",
+    };
+
+    const labelStyle = { color: "var(--text-secondary)", fontWeight: 600 };
+
+    const controlStyle = {
+        background: "var(--control-bg)",
+        color: "var(--text-primary)",
+        border: "1px solid var(--border-subtle)",
+        borderRadius: 8,
+        padding: "6px 10px",
+        marginTop: 4,
+        fontSize: 16,
+        width: "100%",
+    };
+
     const handleChange = e => {
         setForm(f => ({ ...f, [e.target.name]: e.target.value }));
     };
@@ -102,18 +130,7 @@ export default function EditProfileForm({ user, onClose, onSave }) {
     return (
         <form className="editProfileForm"
             onSubmit={handleSubmit}
-            style={{
-                background: "#172135",
-                borderRadius: 18,
-                boxShadow: "0 2px 8px rgba(60,130,255,0.08)",
-                padding: "28px 32px",
-                width: "100%",
-                display: "flex",
-                alignItems: "flex-start",
-                gap: 32,
-                minWidth: 0,
-                maxWidth: "100%",
-            }}
+            style={cardStyle}
         >
             {/* Аватар (изолированный от глобальных стилей) */}
             <div
@@ -129,14 +146,14 @@ export default function EditProfileForm({ user, onClose, onSave }) {
                         borderRadius: "50%",
                         display: "block",
                         objectFit: "cover",
-                        border: "2px solid #233655"
+                        border: "2px solid var(--border-subtle)"
                     }}
                     onError={e => { e.currentTarget.src = "/default-avatar.png"; }}
                 />
                 <input
                     type="file"
                     accept="image/png, image/jpeg, image/jpg"
-                    style={{ marginTop: 7, color: "#b3d5fa", fontSize: 13, width: 140 }}
+                    style={{ marginTop: 7, color: "var(--text-secondary)", fontSize: 13, width: 140 }}
                     onChange={handleFileChange}
                     disabled={loading}
                 />
@@ -145,7 +162,7 @@ export default function EditProfileForm({ user, onClose, onSave }) {
             {/* Форма */}
             <div className="profile-card-info" style={{ flex: 1 }}>
                 <div className="profile-card-row" style={{ marginBottom: 11 }}>
-                    <label style={{ color: "#b3d5fa", fontWeight: 600 }}>{t("profile.orgName", "Название организации")}</label>
+                    <label style={labelStyle}>{t("profile.orgName", "Название организации")}</label>
                     <input
                         name="organization"
                         value={form.organization}
@@ -153,20 +170,11 @@ export default function EditProfileForm({ user, onClose, onSave }) {
                         disabled={loading}
                         required
                         placeholder={t("profile.orgName", "Название организации")}
-                        style={{
-                            background: "#19263e",
-                            color: "#e3f2fd",
-                            border: "1px solid #233655",
-                            borderRadius: 8,
-                            padding: "6px 10px",
-                            marginTop: 4,
-                            fontSize: 16,
-                            width: "100%",
-                        }}
+                        style={controlStyle}
                     />
                 </div>
                 <div className="profile-card-row" style={{ marginBottom: 11 }}>
-                    <label style={{ color: "#b3d5fa", fontWeight: 600 }}>{t("profile.contactPerson", "Имя, Фамилия")}</label>
+                    <label style={labelStyle}>{t("profile.contactPerson", "Имя, Фамилия")}</label>
                     <input
                         name="contact_person"
                         value={form.contact_person}
@@ -174,21 +182,12 @@ export default function EditProfileForm({ user, onClose, onSave }) {
                         disabled={loading}
                         required
                         placeholder={t("profile.contactPerson", "Имя, Фамилия")}
-                        style={{
-                            background: "#19263e",
-                            color: "#e3f2fd",
-                            border: "1px solid #233655",
-                            borderRadius: 8,
-                            padding: "6px 10px",
-                            marginTop: 4,
-                            fontSize: 16,
-                            width: "100%",
-                        }}
+                        style={controlStyle}
                     />
                 </div>
                 {(role === "TRANSPORT" || role === "OWNER") && (
                     <div className="profile-card-row" style={{ marginBottom: 11 }}>
-                        <label style={{ color: "#b3d5fa", fontWeight: 600 }}>
+                        <label style={labelStyle}>
                             {t("profile.personType", "Юр. статус")}
                         </label>
                         <select
@@ -197,16 +196,7 @@ export default function EditProfileForm({ user, onClose, onSave }) {
                             onChange={handleChange}
                             disabled={loading}
                             required
-                            style={{
-                                background: "#19263e",
-                                color: "#e3f2fd",
-                                border: "1px solid #233655",
-                                borderRadius: 8,
-                                padding: "6px 10px",
-                                marginTop: 4,
-                                fontSize: 16,
-                                width: "100%",
-                            }}
+                            style={controlStyle}
                         >
                             {PERSON_TYPES.map(opt => (
                                 <option key={opt.value} value={opt.value} disabled={opt.value === ""}>
@@ -217,7 +207,7 @@ export default function EditProfileForm({ user, onClose, onSave }) {
                     </div>
                 )}
                 <div className="profile-card-row" style={{ marginBottom: 11 }}>
-                    <label style={{ color: "#b3d5fa", fontWeight: 600 }}>{t("profile.country", "Страна")}</label>
+                    <label style={labelStyle}>{t("profile.country", "Страна")}</label>
                     <input
                         name="country"
                         value={form.country}
@@ -225,20 +215,11 @@ export default function EditProfileForm({ user, onClose, onSave }) {
                         disabled={loading}
                         required
                         placeholder={t("profile.country", "Страна")}
-                        style={{
-                            background: "#19263e",
-                            color: "#e3f2fd",
-                            border: "1px solid #233655",
-                            borderRadius: 8,
-                            padding: "6px 10px",
-                            marginTop: 4,
-                            fontSize: 16,
-                            width: "100%",
-                        }}
+                        style={controlStyle}
                     />
                 </div>
                 <div className="profile-card-row" style={{ marginBottom: 11 }}>
-                    <label style={{ color: "#b3d5fa", fontWeight: 600 }}>{t("profile.city", "Город")}</label>
+                    <label style={labelStyle}>{t("profile.city", "Город")}</label>
                     <input
                         name="city"
                         value={form.city}
@@ -246,20 +227,11 @@ export default function EditProfileForm({ user, onClose, onSave }) {
                         disabled={loading}
                         required
                         placeholder="Город"
-                        style={{
-                            background: "#19263e",
-                            color: "#e3f2fd",
-                            border: "1px solid #233655",
-                            borderRadius: 8,
-                            padding: "6px 10px",
-                            marginTop: 4,
-                            fontSize: 16,
-                            width: "100%",
-                        }}
+                        style={controlStyle}
                     />
                 </div>
                 <div className="profile-card-row" style={{ marginBottom: 11 }}>
-                    <label style={{ color: "#b3d5fa", fontWeight: 600 }}>{t("profile.phone", "Телефон")}</label>
+                    <label style={labelStyle}>{t("profile.phone", "Телефон")}</label>
                     <input pattern="\+?[0-9\s\-()]+" autoComplete="tel" inputMode="tel" type="tel"
                         name="phone"
                         value={form.phone}
@@ -267,20 +239,11 @@ export default function EditProfileForm({ user, onClose, onSave }) {
                         disabled={loading}
                         required
                         placeholder={t("profile.phone", "Телефон")}
-                        style={{
-                            background: "#19263e",
-                            color: "#e3f2fd",
-                            border: "1px solid #233655",
-                            borderRadius: 8,
-                            padding: "6px 10px",
-                            marginTop: 4,
-                            fontSize: 16,
-                            width: "100%",
-                        }}
+                        style={controlStyle}
                     />
                 </div>
                 <div className="profile-card-row" style={{ marginBottom: 11 }}>
-                    <label style={{ color: "#b3d5fa", fontWeight: 600 }}>Email</label>
+                    <label style={labelStyle}>Email</label>
                     <input autoComplete="email" type="email"
                         name="email"
 
@@ -289,16 +252,7 @@ export default function EditProfileForm({ user, onClose, onSave }) {
                         disabled={loading}
                         required
                         placeholder="Email"
-                        style={{
-                            background: "#19263e",
-                            color: "#e3f2fd",
-                            border: "1px solid #233655",
-                            borderRadius: 8,
-                            padding: "6px 10px",
-                            marginTop: 4,
-                            fontSize: 16,
-                            width: "100%",
-                        }}
+                        style={controlStyle}
                     />
                 </div>
                 <div className="profile-card-row" style={{ marginBottom: 11 }}>
@@ -309,16 +263,7 @@ export default function EditProfileForm({ user, onClose, onSave }) {
                         onChange={handleChange}
                         disabled={loading}
                         placeholder="WhatsApp"
-                        style={{
-                            background: "#19263e",
-                            color: "#e3f2fd",
-                            border: "1px solid #233655",
-                            borderRadius: 8,
-                            padding: "6px 10px",
-                            marginTop: 4,
-                            fontSize: 16,
-                            width: "100%",
-                        }}
+                        style={controlStyle}
                     />
                 </div>
                 <div className="profile-card-row" style={{ marginBottom: 11 }}>
@@ -329,16 +274,7 @@ export default function EditProfileForm({ user, onClose, onSave }) {
                         onChange={handleChange}
                         disabled={loading}
                         placeholder="Viber"
-                        style={{
-                            background: "#19263e",
-                            color: "#e3f2fd",
-                            border: "1px solid #233655",
-                            borderRadius: 8,
-                            padding: "6px 10px",
-                            marginTop: 4,
-                            fontSize: 16,
-                            width: "100%",
-                        }}
+                        style={controlStyle}
                     />
                 </div>
                 <div className="profile-card-row" style={{ marginBottom: 11 }}>
@@ -349,16 +285,7 @@ export default function EditProfileForm({ user, onClose, onSave }) {
                         onChange={handleChange}
                         disabled={loading}
                         placeholder={t("profile.telegram", "Telegram (ник или номер)")}
-                        style={{
-                            background: "#19263e",
-                            color: "#e3f2fd",
-                            border: "1px solid #233655",
-                            borderRadius: 8,
-                            padding: "6px 10px",
-                            marginTop: 4,
-                            fontSize: 16,
-                            width: "100%",
-                        }}
+                        style={controlStyle}
                     />
                 </div>
                 {error && <div style={{ color: "red", margin: "7px 0 10px 0" }}>{error}</div>}
@@ -384,9 +311,9 @@ export default function EditProfileForm({ user, onClose, onSave }) {
                         onClick={onClose}
                         disabled={loading}
                         style={{
-                            background: "none",
-                            color: "#b3d5fa",
-                            border: "1px solid #284273",
+                            background: "var(--control-bg)",
+                            color: "var(--text-secondary)",
+                            border: "1px solid var(--border-strong)",
                             borderRadius: 6,
                             padding: "7px 18px",
                             fontWeight: 700,
@@ -458,9 +385,9 @@ export default function EditProfileForm({ user, onClose, onSave }) {
       bottom: 0;
       margin-top: 8px;
       padding: 10px 12px;
-      background: linear-gradient(180deg, rgba(23,33,53,0.0) 0%, rgba(23,33,53,0.95) 24%);
+      background: linear-gradient(180deg, transparent 0%, var(--bg-card) 28%, var(--bg-card) 100%);
       backdrop-filter: blur(6px);
-      border-top: 1px solid #223554;
+      border-top: 1px solid var(--border-subtle);
       display: flex !important;
       gap: 8px !important;
       justify-content: space-between !important;

@@ -722,24 +722,66 @@ export default function OrderList() {
         if (end - start + 1 < maxButtons) start = Math.max(1, end - maxButtons + 1);
         for (let i = start; i <= end; i++) numbers.push(i);
 
-        const pagerBtnStyle = { background: "#162335", border: "1px solid #2b3d56", color: "#dbe8ff", borderRadius: 8, padding: "6px 10px", cursor: "pointer" };
+        const pagerBaseStyle = { borderRadius: 8, padding: "6px 10px", cursor: "pointer", transition: "all .18s ease" };
+        const pagerBtnStyle = (active = false) => {
+            if (isLight) {
+                const base = {
+                    ...pagerBaseStyle,
+                    background: "var(--control-bg)",
+                    color: "var(--text-primary)",
+                    border: "1px solid var(--border-subtle)",
+                    boxShadow: "0 3px 10px rgba(15, 23, 42, 0.05)",
+                };
+
+                if (active) {
+                    return {
+                        ...base,
+                        background: "var(--bg-card)",
+                        border: "1px solid var(--border-strong)",
+                        boxShadow: "0 6px 18px rgba(15, 23, 42, 0.08)",
+                        fontWeight: 700,
+                    };
+                }
+
+                return base;
+            }
+
+            return {
+                ...pagerBaseStyle,
+                background: "#162335",
+                border: "1px solid #2b3d56",
+                color: "#dbe8ff",
+                fontWeight: active ? 800 : 600,
+            };
+        };
+
+        const selectStyle = isLight
+            ? {
+                background: "var(--control-bg)",
+                border: "1px solid var(--border-subtle)",
+                color: "var(--text-primary)",
+                borderRadius: 8,
+                padding: "6px 10px",
+                boxShadow: "0 3px 10px rgba(15, 23, 42, 0.05)",
+            }
+            : { background: "#162335", border: "1px solid #2b3d56", color: "#dbe8ff", borderRadius: 8, padding: "6px 10px" };
 
         return (
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap", marginTop: 18 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <button onClick={() => go(1)} disabled={page === 1} style={pagerBtnStyle}>«</button>
-                    <button onClick={() => go(page - 1)} disabled={page === 1} style={pagerBtnStyle}>‹</button>
+                    <button onClick={() => go(1)} disabled={page === 1} style={pagerBtnStyle()}>«</button>
+                    <button onClick={() => go(page - 1)} disabled={page === 1} style={pagerBtnStyle()}>‹</button>
                     {start > 1 && <span style={{ opacity: 0.6, padding: "6px 10px" }}>…</span>}
                     {numbers.map(n => (
-                        <button key={n} onClick={() => go(n)} style={{ ...pagerBtnStyle, fontWeight: n === page ? 800 : 600, borderColor: n === page ? "#43c8ff" : "#2b3d56" }}>{n}</button>
+                        <button key={n} onClick={() => go(n)} style={pagerBtnStyle(n === page)}>{n}</button>
                     ))}
                     {end < totalPages && <span style={{ opacity: 0.6, padding: "6px 10px" }}>…</span>}
-                    <button onClick={() => go(page + 1)} disabled={page === totalPages} style={pagerBtnStyle}>›</button>
-                    <button onClick={() => go(totalPages)} disabled={page === totalPages} style={pagerBtnStyle}>»</button>
+                    <button onClick={() => go(page + 1)} disabled={page === totalPages} style={pagerBtnStyle()}>›</button>
+                    <button onClick={() => go(totalPages)} disabled={page === totalPages} style={pagerBtnStyle()}>»</button>
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                     <span style={{ opacity: 0.7, fontSize: 14 }}>{t("pager.perPage", "На странице:")}</span>
-                    <select value={pageSize} onChange={(e) => { setPage(1); setPageSize(parseInt(e.target.value, 10)); }} style={{ background: "#162335", border: "1px solid #2b3d56", color: "#dbe8ff", borderRadius: 8, padding: "6px 10px" }}>
+                    <select value={pageSize} onChange={(e) => { setPage(1); setPageSize(parseInt(e.target.value, 10)); }} style={selectStyle}>
                         {[10, 20, 30, 40, 50].map(sz => <option key={sz} value={sz}>{sz}</option>)}
                     </select>
                     <span style={{ opacity: 0.7, fontSize: 14 }}>{t("pager.total", "Всего:")} {total}</span>

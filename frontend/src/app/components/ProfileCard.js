@@ -318,6 +318,25 @@ export default function ProfileCard({ user: initialUser, readOnly, onUserUpdate,
                                     {!readOnly && (
                                         <>
                                             <button
+                                                onClick={handleEditClick}
+                                                title={t("profile.edit", "Редактировать профиль")}
+                                                style={{
+                                                    marginLeft: 6,
+                                                    display: "inline-flex",
+                                                    alignItems: "center",
+                                                    justifyContent: "center",
+                                                    width: 32,
+                                                    height: 32,
+                                                    borderRadius: 8,
+                                                    background: themeColors.controlBg,
+                                                    border: themeColors.controlBorder,
+                                                    color: themeColors.controlText,
+                                                    cursor: "pointer",
+                                                }}
+                                            >
+                                                <FaRegEdit size={16} />
+                                            </button>
+                                            <button
                                                 onClick={handleOpenChangePassword}
                                                 title={t("profile.changePassword", "Сменить пароль")}
                                                 style={{
