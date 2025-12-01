@@ -68,8 +68,8 @@ export default function TransportPage() {
         return () => clearTimeout(t);
     }, [params, setClickedItemId]);
 
-    // Гостям тоже показываем список; запрещаем лишь роли TRANSPORT (их редиректим в профиль)
-    const ready = hydrated && role !== "TRANSPORT";
+    // Список показываем сразу; роль TRANSPORT всё равно редиректим выше в useEffect
+    const ready = role !== "TRANSPORT";
 
     // ВНИМАНИЕ: не используем margin (шорт-хенд)!
     const cardStyle = {
@@ -129,11 +129,7 @@ export default function TransportPage() {
                     </div>
                 )}
 
-                {!ready ? (
-                    <div style={{ opacity: 0.7, fontSize: 14, color: "var(--orders-muted)" }}>{t("common.loading", "Загрузка...")}</div>
-                ) : (
-                    <TransportList key="transport-list" />
-                )}
+                <TransportList key="transport-list" />
             </div>
         </div>
     );

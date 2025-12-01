@@ -1089,12 +1089,15 @@ export default function Header({ setShowRegisterModal }) {
           className="header-tagline"
           style={{
             color: "var(--text-primary)",
+            fontFamily:
+              "'Manrope', 'Inter', 'SF Pro Display', 'Segoe UI', system-ui, sans-serif",
             fontWeight: 800,
             fontSize: isCompact ? 15.5 : 17,
             lineHeight: 1.32,
             letterSpacing: 0.1,
             maxWidth: 620,
-            paddingLeft: 4,
+            paddingLeft: isCompact ? 10 : 14,
+            transform: "translateX(4px)",
           }}
         >
           {heroTitle}
