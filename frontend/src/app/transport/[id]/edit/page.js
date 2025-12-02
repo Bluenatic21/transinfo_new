@@ -47,7 +47,11 @@ export default function EditTransportPage() {
         <TransportForm
             initialData={initialData}
             mode="edit"
-            onSuccess={() => router.push(`/transport/${params.id}?highlight=1`)}
+            onSuccess={() =>
+                router.replace(
+                    `/profile?transports=1&highlight_transport=${params.id}`
+                )
+            }
         />
     );
 }

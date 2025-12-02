@@ -53,7 +53,9 @@ export default function EditOrderPage() {
             <div className="section-title">{t("order.editTitle", "Редактировать заявку")}</div>
             <OrderForm
                 order={order}
-                onSaved={() => router.push(`/orders/${id}?highlight=1`)}
+                onSaved={() =>
+                    router.replace(`/profile?orders=1&highlight_order=${id}`)
+                }
             />
         </div>
     );

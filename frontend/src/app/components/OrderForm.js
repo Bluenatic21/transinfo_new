@@ -2576,10 +2576,18 @@ export default function OrderForm({ order = null, onSaved }) {
                                 <CustomSelect
                                     value={form.rate_selected}
                                     onChange={(v) =>
-                                        setForm((f) => ({
-                                            ...f,
-                                            rate_selected: v || "rate_with_vat",
-                                        }))
+                                        setForm((f) => {
+                                            const next = v || "rate_with_vat";
+                                            const currentValue = f[f.rate_selected] ?? "";
+                                            return {
+                                                ...f,
+                                                rate_with_vat: "",
+                                                rate_no_vat: "",
+                                                rate_cash: "",
+                                                rate_selected: next,
+                                                [next]: currentValue,
+                                            };
+                                        })
                                     }
                                     options={RATE_PAYMENT_OPTIONS}
                                     name="rate_selected"
