@@ -4011,6 +4011,23 @@ body {
   --ctl-fg: var(--foreground, #e3f2fd);
   --ctl-placeholder: var(--input-placeholder, #9bb0c5);
   --ctl-focus-ring: 0 0 0 3px color-mix(in oklab, var(--accent, #43c8ff) 30%, transparent);
+  --ctl-menu-shadow: 0 6px 24px #18315366;
+  --ctl-option-selected-bg: #244e7855;
+  --ctl-option-hover: #244e7822;
+  --ctl-option-fg: #e3f2fd;
+  --ctl-option-selected-fg: #ffd600;
+}
+
+:root[data-theme="light"] {
+  --ctl-border: 1.5px solid var(--border-subtle, #d7deea);
+  --ctl-bg: var(--input, #fbfcff);
+  --ctl-fg: var(--foreground, #0f172a);
+  --ctl-placeholder: var(--input-placeholder, #94a3b8);
+  --ctl-menu-shadow: 0 10px 30px rgba(15, 23, 42, 0.12);
+  --ctl-option-selected-bg: color-mix(in oklab, var(--brand-blue, #81caff) 22%, transparent);
+  --ctl-option-hover: color-mix(in oklab, var(--brand-blue, #81caff) 12%, transparent);
+  --ctl-option-fg: var(--text-primary, #0f172a);
+  --ctl-option-selected-fg: var(--accent, #fe9805);
 }
 
 /* Base */

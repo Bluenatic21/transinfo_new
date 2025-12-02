@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 
 from database import get_db
 from auth import get_current_user
-from models import Review, User as UserModel
+from models import Rating, Review, User as UserModel
 from schemas import ReviewCreate, ReviewOut, UserRatingOut
 
 router = APIRouter()
@@ -89,11 +89,43 @@ def list_user_reviews(
     db: Session = Depends(get_db),
 ):
     """Список отзывов о пользователе (он — target)."""
-    return (
+    reviews = (
         db.query(Review)
         .filter(Review.target_user_id == user_id)
         .order_by(Review.created_at.desc())
         .all()
+    )
+
+    # Подтягиваем старые оценки из таблицы ratings, чтобы они не пропали в новом UI
+    # и приводим их к формату ReviewOut.
+    legacy_ratings = (
+        db.query(Rating)
+        .filter(Rating.user_id == user_id)
+        .order_by(Rating.created_at.desc())
+        .all()
+    )
+
+    legacy_as_reviews = [
+        ReviewOut(
+            id=-r.id,  # отрицательный id, чтобы не конфликтовать с id из новой таблицы
+            author_user_id=r.author_id,
+            target_user_id=r.user_id,
+            stars10=None,
+            punctuality=r.punctuality,
+            communication=r.communication,
+            professionalism=r.professionalism,
+            terms=r.reliability,
+            comment=r.comment,
+            created_at=r.created_at,
+        )
+        for r in legacy_ratings
+    ]
+
+    # Возвращаем общую ленту, отсортированную по дате
+    return sorted(
+        [*reviews, *legacy_as_reviews],
+        key=lambda r: r.created_at,
+        reverse=True,
     )
 
 

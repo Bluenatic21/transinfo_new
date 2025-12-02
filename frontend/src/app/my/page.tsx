@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useLang } from "@/app/i18n/LangProvider";
+import { useTheme } from "../providers/ThemeProvider";
 
 function detectRoles(): string[] {
     try {
@@ -37,6 +38,8 @@ export default function MyResolver() {
     const hasOwner = roles.includes('owner') || roles.includes('owner_role') || roles.includes('cargo') || roles.includes('владелец');
     const hasTransport = roles.includes('transport') || roles.includes('carrier') || roles.includes('перевозчик');
     const { t } = useLang?.() || { t: (_k, f) => f };
+    const { resolvedTheme } = useTheme?.() || { resolvedTheme: "light" };
+    const isLight = resolvedTheme === "light";
 
     useEffect(() => {
         if (hasOwner && !hasTransport) { router.replace('/profile?orders=1'); return; }
@@ -50,12 +53,22 @@ export default function MyResolver() {
 
     return (
         <div className="min-h-[60vh] flex items-center justify-center">
-            <div className="w-[92%] max-w-[420px] rounded-2xl p-5 bg-[rgb(22,27,34)]/70 backdrop-blur shadow-xl border border-white/10">
+            <div className={`w-[92%] max-w-[420px] rounded-2xl p-5 backdrop-blur shadow-xl border ${isLight ? "bg-white text-slate-900 border-slate-200" : "bg-[rgb(22,27,34)]/70 border-white/10 text-white"}`}>
                 <h1 className="text-xl font-semibold mb-3">{t("navigate.whereTo", "Куда перейти?")}</h1>
-                <p className="text-sm opacity-70 mb-5">{t("navigate.chooseMy", "Выберите раздел для «Моё».")}</p>
+                <p className={`text-sm mb-5 ${isLight ? "text-slate-600" : "opacity-70"}`}>{t("navigate.chooseMy", "Выберите раздел для «Моё».")}</p>
                 <div className="grid gap-3">
-                    <button onClick={() => router.replace('/profile?orders=1')} className="w-full rounded-xl px-4 py-3 bg-white/10 hover:bg-white/15 transition">{t("navigate.myOrders", "Мои грузы")}</button>
-                    <button onClick={() => router.replace('/profile?transports=1')} className="w-full rounded-xl px-4 py-3 bg-white/10 hover:bg-white/15 transition">{t("navigate.myTransports", "Мой транспорт")}</button>
+                    <button
+                        onClick={() => router.replace('/profile?orders=1')}
+                        className={`w-full rounded-xl px-4 py-3 transition ${isLight ? "bg-sky-500 hover:bg-sky-600 text-white shadow-[0_12px_26px_-14px_rgba(14,165,233,0.65)]" : "bg-white/10 hover:bg-white/15 text-white"}`}
+                    >
+                        {t("navigate.myOrders", "Мои грузы")}
+                    </button>
+                    <button
+                        onClick={() => router.replace('/profile?transports=1')}
+                        className={`w-full rounded-xl px-4 py-3 transition ${isLight ? "bg-sky-500 hover:bg-sky-600 text-white shadow-[0_12px_26px_-14px_rgba(14,165,233,0.65)]" : "bg-white/10 hover:bg-white/15 text-white"}`}
+                    >
+                        {t("navigate.myTransports", "Мой транспорт")}
+                    </button>
                 </div>
             </div>
         </div>

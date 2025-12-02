@@ -60,9 +60,15 @@ export default function UserReviewsList({
     if (!userId) return;
     setLoading(true);
     try {
-      const res = await authFetchWithRefresh(
-        api(`/users/${userId}/reviews?page=${p}&per_page=10`)
-      );
+      const url = api(`/users/${userId}/reviews?page=${p}&per_page=10`);
+      let res = await authFetchWithRefresh(url);
+
+      // Если токен протух или пользователь не авторизован — пробуем публичный запрос,
+      // чтобы отзывы были видны всем (они не требуют авторизации на backend).
+      if (res.status === 401 || res.status === 403) {
+        res = await fetch(url, { credentials: "include" });
+      }
+
       if (!res.ok) throw new Error("failed");
       const data: Review[] = await res.json();
       setItems((prev) => (p === 1 ? data : [...prev, ...data]));

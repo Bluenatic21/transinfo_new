@@ -692,13 +692,11 @@ const CargoCompactCard = forwardRef(function CargoCompactCard(
                         ? "2.5px solid var(--compact-card-border-strong)"
                         : "2px solid transparent",
                 marginBottom: 17,
-                padding: isMobile ? "18px 14px 16px 14px" : 18,
-                // На мобиле: Grid из двух колонок — контент и блок действий
-                display: isMobile ? "grid" : "flex",
-                gridTemplateColumns: isMobile ? "1fr auto" : undefined,
-                flexDirection: "row",
-                alignItems: isMobile ? "start" : "center",
-                gap: isMobile ? 10 : 28,
+                padding: isMobile ? "18px 14px 22px 14px" : 18,
+                display: "flex",
+                flexDirection: isMobile ? "column" : "row",
+                alignItems: isMobile ? "stretch" : "center",
+                gap: isMobile ? 12 : 28,
                 cursor: onClick ? "pointer" : "default",
                 maxWidth: "100%",
                 minWidth: 0, // позволяем гриду делать 2 колонки на десктопе

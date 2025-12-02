@@ -65,7 +65,7 @@ export default function CustomSelect({
                     minWidth: "100%",
                     maxHeight: 270,
                     overflowY: "auto",
-                    boxShadow: "0 6px 24px #18315366",  // глубокая тень
+                    boxShadow: "var(--ctl-menu-shadow)",  // глубокая тень
                     padding: 7
                 }}>
                     <input
@@ -100,15 +100,15 @@ export default function CustomSelect({
                                         padding: "8px 12px",
                                         borderRadius: style?.borderRadius || undefined,
                                         cursor: "pointer",
-                                        background: value === val ? "#244e7855" : "none",  // полу-прозрачный синий
-                                        color: value === val ? "#ffd600" : "#e3f2fd",      // акцент и светлый текст
+                                        background: value === val ? "var(--ctl-option-selected-bg)" : "transparent",
+                                        color: value === val ? "var(--ctl-option-selected-fg)" : "var(--ctl-option-fg)",
                                         fontWeight: value === val ? 700 : 400,
                                         marginBottom: 2,
                                         transition: "background .17s, color .17s",
                                         ...optionStyle
                                     }}
-                                    onMouseEnter={e => e.currentTarget.style.background = "#244e7822"}
-                                    onMouseLeave={e => e.currentTarget.style.background = value === val ? "#244e7855" : "none"}
+                                    onMouseEnter={e => e.currentTarget.style.background = value === val ? "var(--ctl-option-selected-bg)" : "var(--ctl-option-hover)"}
+                                    onMouseLeave={e => e.currentTarget.style.background = value === val ? "var(--ctl-option-selected-bg)" : "transparent"}
                                 >
                                     {label}
                                 </div>
