@@ -20,8 +20,11 @@ type Review = {
 
 export default function UserReviewsList({
   userId,
+  reloadKey,
 }: {
   userId: number | undefined | null;
+  /** force-reload reviews when the value changes (e.g. after submitting) */
+  reloadKey?: string | number;
 }) {
   const { t } = useLang();
   const { authFetchWithRefresh } = useUser();
@@ -76,8 +79,8 @@ export default function UserReviewsList({
     setPage(1);
     setHasMore(true);
     if (userId) load(1);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps␊
+  }, [userId, reloadKey]);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>

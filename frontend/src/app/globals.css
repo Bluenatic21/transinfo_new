@@ -1999,9 +1999,13 @@ footer a:hover {
 .pin-hovered-card {
   background: linear-gradient(90deg, #233359 40%, #274083 100%) !important;
   box-shadow: 0 8px 36px 0 #2196f322, 0 0px 0 #43c8ff;
-  transform: scale(1.04);
   z-index: 10;
-  transition: all .17s cubic-bezier(.4, 2, .6, 1);
+  transition: box-shadow .17s cubic-bezier(.4, 2, .6, 1), background .17s cubic-bezier(.4, 2, .6, 1);
+}
+
+:root[data-theme="light"] .pin-hovered-card {
+  background: linear-gradient(90deg, #e8f5ff 35%, #dff0ff 100%) !important;
+  box-shadow: 0 0 0 8px #38bdf81f, 0 12px 30px rgba(15, 23, 42, 0.12);
 }
 
 .map-dot {

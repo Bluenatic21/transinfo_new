@@ -185,6 +185,7 @@
     --compact-card-matches-bg: #23314b;
     --compact-card-matches-new-bg: #2ea043;
     --compact-card-matches-shadow: 0 0 7px #2ea04399;
+    --compact-card-matches-text: #e8edf7;
     --compact-card-action-bg: #243356;
     --compact-card-action-bg-strong: #1a3555;
     --compact-card-action-shadow: #22304b55;
@@ -241,6 +242,7 @@
     --compact-card-matches-bg: #e2e8f0;
     --compact-card-matches-new-bg: #22c55e;
     --compact-card-matches-shadow: 0 0 8px rgba(34, 197, 94, 0.28);
+    --compact-card-matches-text: #0f172a;
     --compact-card-action-bg: #e2e8f0;
     --compact-card-action-bg-strong: #dbeafe;
     --compact-card-action-shadow: 0 1px 6px rgba(15, 23, 42, 0.14);

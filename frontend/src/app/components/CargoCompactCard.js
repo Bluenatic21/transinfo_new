@@ -1044,7 +1044,7 @@ const CargoCompactCard = forwardRef(function CargoCompactCard(
                             style={{
                                 padding: "7px 16px",
                                 background: newMatchesCount > 0 ? "var(--compact-card-matches-new-bg)" : "var(--compact-card-matches-bg)",
-                                color: "var(--text-on-brand, #fff)",
+                                color: "var(--compact-card-matches-text)",
                                 border: "none",
                                 borderRadius: 11,
                                 fontWeight: 600,
@@ -1068,7 +1068,7 @@ const CargoCompactCard = forwardRef(function CargoCompactCard(
                                         : t("matches.show", "Показать совпадения"))
                             }
                         >
-                            <FaLink size={17} color="var(--text-on-brand, #fff)" style={{ marginRight: 5, flexShrink: 0 }} />
+                            <FaLink size={17} color="var(--compact-card-matches-text)" style={{ marginRight: 5, flexShrink: 0 }} />
                             {newMatchesCount > 0 && (
                                 <span style={{
                                     marginLeft: 6,

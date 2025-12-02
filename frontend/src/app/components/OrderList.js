@@ -816,7 +816,7 @@ export default function OrderList() {
                             {cardSize === "compact" ? (
                                 <CargoCompactCard
                                     cargo={order}
-                                    enableHoverLift={!isMobile}
+                                    enableHoverLift={false}
                                     onClick={() => router.push(`/orders/${order.id}`)}
                                 />
                             ) : (
@@ -867,7 +867,7 @@ export default function OrderList() {
                         {cardSize === "compact" ? (
                             <CargoCompactCard
                                 cargo={order}
-                                enableHoverLift={!isMobile}
+                                enableHoverLift={false}
                                 onClick={() => router.push(`/orders/${order.id}`)}
                             />
                         ) : (

@@ -101,6 +101,7 @@ export default function OtherUserProfile() {
   const [loading, setLoading] = useState(true);
   const [yourReview, setYourReview] = useState(null);
   const [reviewLoading, setReviewLoading] = useState(false);
+  const [reviewReloadKey, setReviewReloadKey] = useState(0);
   const isMobile = useIsMobile();
 
   const { openMessenger } = useMessenger
@@ -239,7 +240,10 @@ export default function OtherUserProfile() {
                 </div>
                 <LeaveReview
                   targetUserId={user.id}
-                  onReviewSent={setYourReview}
+                  onReviewSent={(saved) => {
+                    setYourReview(saved);
+                    setReviewReloadKey((k) => k + 1);
+                  }}
                   className="max-w-3xl"
                 />
               </section>
@@ -279,7 +283,7 @@ export default function OtherUserProfile() {
                 {t("reviews.title", "Отзывы")}
               </span>
             </div>
-            <UserReviewsList userId={user?.id} />
+            <UserReviewsList userId={user?.id} reloadKey={reviewReloadKey} />
           </section>
         </div>
       </div>
@@ -318,7 +322,13 @@ export default function OtherUserProfile() {
                 {t("reviews.scoreVisible", "Оценка видна другим")}
               </span>
             </div>
-            <LeaveReview targetUserId={user.id} onReviewSent={setYourReview} />
+            <LeaveReview
+              targetUserId={user.id}
+              onReviewSent={(saved) => {
+                setYourReview(saved);
+                setReviewReloadKey((k) => k + 1);
+              }}
+            />
           </section>
         ))}
       {/* Отзывы — как в собственном профиле */}
@@ -356,7 +366,7 @@ export default function OtherUserProfile() {
             {t("reviews.title", "Отзывы")}
           </span>
         </div>
-        <UserReviewsList userId={user?.id} />
+        <UserReviewsList userId={user?.id} reloadKey={reviewReloadKey} />
       </section>
     </div>
   );
