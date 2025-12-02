@@ -20,6 +20,13 @@ export default function EmployeeRegisterForm({ onSuccess }) {
   const [msg, setMsg] = useState("");
   const [loading, setLoading] = useState(false);
   const { t } = useLang();
+
+  // Заглушки для подсветки ошибок, чтобы не падать из-за отсутствующих функций
+  const errors = { country: "", city: "" };
+  const fieldStyle = (hasError) => ({
+    border: `1.5px solid ${hasError ? "#ff6b6b" : "#43c8ff"}`,
+    boxShadow: hasError ? "0 0 0 3px rgba(255,107,107,.2)" : "none",
+  });
   function handleChange(e) {
     setForm({ ...form, [e.target.name]: e.target.value });
   }

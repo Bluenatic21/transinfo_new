@@ -1,115 +1,62 @@
-diff --git a/frontend/src/app/components/TransportList.js b/frontend/src/app/components/TransportList.js
-index b2f148908c41f0ea02acd1110195dcc64159451a..7e4cc2170c6e131f99389ca652172a4bea375fc8 100644
---- a/frontend/src/app/components/TransportList.js
-+++ b/frontend/src/app/components/TransportList.js
-@@ -112,82 +112,78 @@ const iconBtnStyle = {
-   color: "var(--transport-card-icon-fg, #43c8ff)",
-   border: "none",
-   borderRadius: "50%",
-   width: 32,
-   height: 32,
-   fontSize: 16,
-   cursor: "pointer",
-   marginLeft: 3,
-   boxShadow: "var(--transport-card-icon-shadow, 0 1px 8px #23416722)",
- };
+diff --git a/frontend/src/app/components/EmployeeRegisterForm.js b/frontend/src/app/components/EmployeeRegisterForm.js
+index 5da6abdaac301cf0c80e64f50b7a45c8f04b5e27..f8bf331e6d4bdd96b61a87470c16423e42dbda5d 100644
+--- a/frontend/src/app/components/EmployeeRegisterForm.js
++++ b/frontend/src/app/components/EmployeeRegisterForm.js
+@@ -1,47 +1,54 @@
+ "use client";
+ import { useState } from "react";
+ import PhoneInput from "react-phone-input-2";
+ import "react-phone-input-2/lib/style.css";
+ import { useLang } from "../i18n/LangProvider";
+ import { api } from "@/config/env";
  
- const SimpleMap = dynamic(() => import("./SimpleMap"), { ssr: false });
- 
- function parseDateDMY(str) {
-   if (!str) return null;
-   const parts = str.split(/[./-]/);
-   if (parts.length !== 3) return null;
-   if (str.includes("-")) return str;
-   const [d, m, y] = parts;
-   return `${y.padStart(4, "20")}-${m.padStart(2, "0")}-${d.padStart(2, "0")}`;
- }
- 
- function FlagIcon({ country, size = 22 }) {
-   if (!country) return null;
-   return (
--    <span
--      style={{
--        display: "inline-flex",
--        alignItems: "center",
--        justifyContent: "center",
--        width: size,
--        height: size,
--        minWidth: size,
--        minHeight: size,
--        background: "var(--transport-card-chip-bg, #193158)",
--        borderRadius: 5,
--        border: "1.2px solid var(--transport-card-tag-border, #234167)",
--        marginRight: 8,
--        marginLeft: -2,
--        boxShadow: "var(--transport-card-chip-shadow, 0 1px 6px #23416711)",
--        overflow: "hidden",
--        flexShrink: 0,
--        flexGrow: 0,
--        position: "relative",
--      }}
--    >
--      <ReactCountryFlag
--        countryCode={country}
--        svg
--        style={{
--          width: size - 3,
--          height: size - 3,
--          objectFit: "cover",
--          borderRadius: 4,
--          background: "#fff",
--          display: "block",
--        }}
-+    <span
-+      style={{
-+        display: "inline-flex",
-+        alignItems: "center",
-+        justifyContent: "center",
-+        width: size,
-+        height: size,
-+        minWidth: size,
-+        minHeight: size,
-+        marginRight: 8,
-+        marginLeft: -2,
-+        overflow: "hidden",
-+        flexShrink: 0,
-+        flexGrow: 0,
-+        position: "relative",
-+    }}
-+  >
-+    <ReactCountryFlag
-+      countryCode={country}
-+      svg
-+      style={{
-+        width: size - 3,
-+        height: size - 3,
-+        objectFit: "cover",
-+        borderRadius: 4,
-+        background: "#fff",
-+        display: "block",
-+      }}
-         title={country}
-       />
-     </span>
-   );
- }
- 
- const LANGS = ["en", "ru", "tr", "ka"];
- function getCountryCode(location) {
-   if (!location) return null;
-   const parts = location.split(",").map((s) => s.trim());
-   let country = parts[parts.length - 1];
-   if (!country) return null;
-   let code = null;
-   for (const lang of LANGS) {
-     code = countries.getAlpha2Code(country, lang);
-     if (code) break;
+ export default function EmployeeRegisterForm({ onSuccess }) {
+   const [form, setForm] = useState({
+     contact_person: "",
+     country: "",
+     city: "",
+     phone: "",
+     email: "",
+     password: "",
+   });
+   const [password2, setPassword2] = useState("");
+   const [show, setShow] = useState(false);
+   const [show2, setShow2] = useState(false);
+-  const [msg, setMsg] = useState("");
+-  const [loading, setLoading] = useState(false);
+-  const { t } = useLang();
++  const [msg, setMsg] = useState("");
++  const [loading, setLoading] = useState(false);
++  const { t } = useLang();
++
++  // Заглушки для подсветки ошибок, чтобы не падать из-за отсутствующих функций
++  const errors = { country: "", city: "" };
++  const fieldStyle = (hasError) => ({
++    border: `1.5px solid ${hasError ? "#ff6b6b" : "#43c8ff"}`,
++    boxShadow: hasError ? "0 0 0 3px rgba(255,107,107,.2)" : "none",
++  });
+   function handleChange(e) {
+     setForm({ ...form, [e.target.name]: e.target.value });
    }
-   if (!code && parts.length > 1) {
-     for (let i = parts.length - 1; i >= 0; i--) {
-       for (const lang of LANGS) {
-         code = countries.getAlpha2Code(parts[i], lang);
-         if (code) break;
-       }
-       if (code) break;
-     }
+ 
+   async function handleSubmit(e) {
+     e.preventDefault();
+     setMsg("");
+     if (!form.password || !password2)
+       return setMsg(
+         t("register.enterAndConfirmPass", "Введите и подтвердите пароль")
+       );
+     if (form.password !== password2)
+       return setMsg(t("register.passwordMismatch", "Пароли не совпадают"));
+ 
+     const data = {
+       contact_person: form.contact_person,
+       country: form.country,
+       city: form.city,
+       phone: form.phone.startsWith("+") ? form.phone : "+" + form.phone,
+       email: form.email,
+       password: form.password,
+       // роль и привязка к менеджеру — на бэке
+     };
+ 
+     try {

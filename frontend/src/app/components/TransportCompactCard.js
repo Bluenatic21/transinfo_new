@@ -946,7 +946,9 @@ export default function TransportCompactCard({
                                             if (!toggleLoading) handleToggleActive();
                                         }}
                                         style={{
-                                            background: isActive ? "#33de7b" : "#8e9cb6",
+                                            background: isActive
+                                                ? "var(--compact-card-action-active-bg)"
+                                                : "var(--compact-card-action-archive-bg)",
                                             border: "none",
                                             borderRadius: 7,
                                             width: 44,
@@ -956,7 +958,9 @@ export default function TransportCompactCard({
                                             alignItems: "center",
                                             justifyContent: "center",
                                             cursor: "pointer",
-                                            boxShadow: isActive ? "0 1px 5px #33de7b55" : undefined,
+                                            boxShadow: isActive
+                                                ? "0 1px 5px var(--compact-card-action-active-shadow)"
+                                                : undefined,
                                             transition: ".13s"
                                         }}
                                         title={
@@ -967,13 +971,18 @@ export default function TransportCompactCard({
                                     >
                                         <span style={{
                                             fontSize: 18, fontWeight: 800,
-                                            color: "#fff", marginBottom: 2,
+                                            color: isActive
+                                                ? "var(--compact-card-action-active-text)"
+                                                : "var(--compact-card-action-archive-text)",
+                                            marginBottom: 2,
                                         }}>
                                             {isActive ? "✓" : "—"}
                                         </span>
                                         <span style={{
                                             fontSize: 11,
-                                            color: "#fff",
+                                            color: isActive
+                                                ? "var(--compact-card-action-active-text)"
+                                                : "var(--compact-card-action-archive-text)",
                                             fontWeight: 600,
                                             lineHeight: 1,
                                             opacity: 0.93
@@ -989,7 +998,7 @@ export default function TransportCompactCard({
                                     <button
                                         title={allowActions ? t("gps.share", "Поделиться локацией") : t("gps.onlyOwn", "Доступно только для ваших транспортов")}
                                         style={{
-                                            background: "#14324b",
+                                            background: "var(--compact-card-gps-bg)",
                                             border: "none",
                                             borderRadius: 7,
                                             width: 44,
@@ -1000,16 +1009,16 @@ export default function TransportCompactCard({
                                             justifyContent: "center",
                                             cursor: allowActions ? "pointer" : "not-allowed",
                                             transition: ".13s",
-                                            boxShadow: "0 1px 5px #14324b55",
+                                            boxShadow: "var(--compact-card-gps-shadow)",
                                             position: "relative",
                                             opacity: allowActions ? 1 : .45
                                         }}
                                         onClick={e => { e.stopPropagation(); setShowSoon(true); }}
                                     >
-                                        <FaShareAlt color="#43c8ff" size={17} style={{ marginBottom: 2 }} />
+                                        <FaShareAlt color="var(--compact-card-accent)" size={17} style={{ marginBottom: 2 }} />
                                         <span style={{
                                             fontSize: 11,
-                                            color: "#b3d5fa",
+                                            color: "var(--compact-card-gps-text)",
                                             fontWeight: 600,
                                             lineHeight: 1
                                         }}>
@@ -1063,7 +1072,7 @@ export default function TransportCompactCard({
                                     <button
                                         title={t("common.edit", "Редактировать")}
                                         style={{
-                                            background: "#1a68c7",
+                                            background: "var(--compact-card-edit-bg)",
                                             border: "none",
                                             borderRadius: 7,
                                             width: 44,
@@ -1083,7 +1092,7 @@ export default function TransportCompactCard({
                                         <FaEdit color="#fff" size={17} style={{ marginBottom: 2 }} />
                                         <span style={{
                                             fontSize: 11,
-                                            color: "#d6e9ff",
+                                            color: "var(--compact-card-edit-text)",
                                             fontWeight: 600,
                                             lineHeight: 1
                                         }}>
@@ -1098,7 +1107,7 @@ export default function TransportCompactCard({
                                     <button
                                         title={t("common.delete", "Удалить")}
                                         style={{
-                                            background: "#db2344",
+                                            background: "var(--compact-card-delete-bg)",
                                             border: "none",
                                             borderRadius: 7,
                                             width: 44,
@@ -1117,7 +1126,7 @@ export default function TransportCompactCard({
                                         <FaTrash color="#fff" size={17} style={{ marginBottom: 2 }} />
                                         <span style={{
                                             fontSize: 11,
-                                            color: "#ffd6e0",
+                                            color: "var(--compact-card-delete-text)",
                                             fontWeight: 600,
                                             lineHeight: 1
                                         }}>
@@ -1145,11 +1154,17 @@ export default function TransportCompactCard({
                                     title={isActive ? t("card.toArchive", "Перевести в архив") : t("card.makeActive", "Сделать активным")}
                                     style={{
                                         ...chipBase,
-                                        background: isActive ? "#2b854c" : "#6f7f9c",
-                                        color: "#fff",
+                                        background: isActive
+                                            ? "var(--compact-card-action-active-bg)"
+                                            : "var(--compact-card-action-archive-bg)",
+                                        color: isActive
+                                            ? "var(--compact-card-action-active-text)"
+                                            : "var(--compact-card-action-archive-text)",
                                         whiteSpace: "nowrap",
                                         cursor: "pointer",
-                                        boxShadow: isActive ? "0 1px 5px #33de7b55" : "0 0 0 1px var(--compact-card-pill-border)",
+                                        boxShadow: isActive
+                                            ? "0 1px 5px var(--compact-card-action-active-shadow)"
+                                            : "0 0 0 1px var(--compact-card-pill-border)",
                                         flex: "1 1 130px"
                                     }}
                                 >

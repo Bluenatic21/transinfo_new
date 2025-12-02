@@ -199,6 +199,11 @@
     --compact-card-pill-danger-bg: rgba(239, 68, 68, .12);
     --compact-card-pill-danger-border: #ef4444;
     --compact-card-pill-danger-text: #fecaca;
+    --compact-card-action-active-bg: #33de7b;
+    --compact-card-action-active-shadow: #33de7b55;
+    --compact-card-action-active-text: #ffffff;
+    --compact-card-action-archive-bg: #8e9cb6;
+    --compact-card-action-archive-text: #ffffff;
     --compact-card-owner-mine-bg: #123524;
     --compact-card-owner-mine-border: #29d17d;
     --compact-card-owner-mine-text: #0f3d2c;
@@ -219,7 +224,7 @@
     --compact-card-action-icon: #7aa3cc;
     --compact-card-badge-outline: #19233b;
     --compact-card-gps-bg: #14324b;
-    --compact-card-gps-shadow: #14324b55;
+    --compact-card-gps-shadow: 0 1px 5px #14324b55;
     --compact-card-gps-text: #b3d5fa;
     --compact-card-edit-bg: #1a68c7;
     --compact-card-edit-text: #d6e9ff;
@@ -256,6 +261,11 @@
     --compact-card-pill-danger-bg: rgba(239, 68, 68, .12);
     --compact-card-pill-danger-border: #ef4444;
     --compact-card-pill-danger-text: #991b1b;
+    --compact-card-action-active-bg: #1f7a5c;
+    --compact-card-action-active-shadow: rgba(31, 122, 92, 0.38);
+    --compact-card-action-active-text: #f8fffb;
+    --compact-card-action-archive-bg: #556179;
+    --compact-card-action-archive-text: #f8fafc;
     --compact-card-owner-mine-bg: #ecfdf3;
     --compact-card-owner-mine-border: #bbf7d0;
     --compact-card-owner-mine-text: #065f46;
@@ -275,13 +285,13 @@
     --compact-card-action-shadow: 0 1px 6px rgba(15, 23, 42, 0.14);
     --compact-card-action-icon: #0f235a;
     --compact-card-badge-outline: #ffffff;
-    --compact-card-gps-bg: #e0f2fe;
-    --compact-card-gps-shadow: 0 1px 5px rgba(14, 165, 233, 0.25);
-    --compact-card-gps-text: #0f172a;
-    --compact-card-edit-bg: #2563eb;
-    --compact-card-edit-text: #eff6ff;
-    --compact-card-delete-bg: #ef4444;
-    --compact-card-delete-text: #fff1f2;
+    --compact-card-gps-bg: #c5d9f1;
+    --compact-card-gps-shadow: 0 1px 5px rgba(12, 74, 110, 0.16);
+    --compact-card-gps-text: #0f2947;
+    --compact-card-edit-bg: #1f4fa3;
+    --compact-card-edit-text: #e7eefc;
+    --compact-card-delete-bg: #c81e40;
+    --compact-card-delete-text: #fff1f5;
 }
 
 /* === Sidebar tokens === */

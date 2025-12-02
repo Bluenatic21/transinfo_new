@@ -1108,7 +1108,9 @@ const CargoCompactCard = forwardRef(function CargoCompactCard(
                                     if (!toggleLoading) handleToggleActive();
                                 }}
                                 style={{
-                                    background: isActive ? "#33de7b" : "#8e9cb6",
+                                    background: isActive
+                                        ? "var(--compact-card-action-active-bg)"
+                                        : "var(--compact-card-action-archive-bg)",
                                     border: "none",
                                     borderRadius: 7,
                                     width: 44,
@@ -1118,7 +1120,9 @@ const CargoCompactCard = forwardRef(function CargoCompactCard(
                                     alignItems: "center",
                                     justifyContent: "center",
                                     cursor: "pointer",
-                                    boxShadow: isActive ? "0 1px 5px #33de7b55" : undefined,
+                                    boxShadow: isActive
+                                        ? "0 1px 5px var(--compact-card-action-active-shadow)"
+                                        : undefined,
                                     transition: ".13s",
                                 }}
                                 title={
@@ -1127,10 +1131,29 @@ const CargoCompactCard = forwardRef(function CargoCompactCard(
                                         : t("card.activateHint", "Сделать заявку снова активной (видимой для поиска)")
                                 }
                             >
-                                <span style={{ fontSize: 18, fontWeight: 800, color: "#fff", marginBottom: 2 }}>
+                                <span
+                                    style={{
+                                        fontSize: 18,
+                                        fontWeight: 800,
+                                        color: isActive
+                                            ? "var(--compact-card-action-active-text)"
+                                            : "var(--compact-card-action-archive-text)",
+                                        marginBottom: 2,
+                                    }}
+                                >
                                     {isActive ? "✓" : "—"}
                                 </span>
-                                <span style={{ fontSize: 11, color: "#fff", fontWeight: 600, lineHeight: 1, opacity: 0.93 }}>
+                                <span
+                                    style={{
+                                        fontSize: 11,
+                                        color: isActive
+                                            ? "var(--compact-card-action-active-text)"
+                                            : "var(--compact-card-action-archive-text)",
+                                        fontWeight: 600,
+                                        lineHeight: 1,
+                                        opacity: 0.93,
+                                    }}
+                                >
                                     {isActive ? t("card.active", "Актив") : t("card.archive", "Архив")}
                                 </span>
                             </button>
@@ -1678,28 +1701,34 @@ const CargoCompactCard = forwardRef(function CargoCompactCard(
                                 <button
                                     ref={activeChipRef}
                                     onClick={(e) => { e.stopPropagation(); if (!toggleLoading) handleToggleActive(); }}
-                                    title={isActive ? t("card.toArchive", "Перевести в архив")
-                                        : t("card.makeActive", "Сделать активной")}
-                                    style={{
-                                        display: "inline-flex",
-                                        alignItems: "center",
-                                        gap: 8,
-                                        height: 32,
-                                        padding: "0 12px",
-                                        border: "none",
-                                        borderRadius: 999,
-                                        background: isActive ? "#2b854c" : "#6f7f9c",
-                                        color: "#fff",
-                                        fontWeight: 800,
-                                        fontSize: 12,
-                                        whiteSpace: "nowrap",
-                                        cursor: "pointer",
-                                        boxShadow: isActive ? "0 1px 5px #33de7b55" : "0 0 0 1px var(--compact-card-pill-border)",
-                                        flex: "1 1 130px"
-                                    }}
-                                >
-                                    <span style={{ fontSize: 14 }}>{isActive ? "✓" : "—"}</span>
-                                    <span>{isActive ? t("card.active", "Актив") : t("card.archive", "Архив")}</span>
+                                title={isActive ? t("card.toArchive", "Перевести в архив")
+                                    : t("card.makeActive", "Сделать активной")}
+                                style={{
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    gap: 8,
+                                    height: 32,
+                                    padding: "0 12px",
+                                    border: "none",
+                                    borderRadius: 999,
+                                    background: isActive
+                                        ? "var(--compact-card-action-active-bg)"
+                                        : "var(--compact-card-action-archive-bg)",
+                                    color: isActive
+                                        ? "var(--compact-card-action-active-text)"
+                                        : "var(--compact-card-action-archive-text)",
+                                    fontWeight: 800,
+                                    fontSize: 12,
+                                    whiteSpace: "nowrap",
+                                    cursor: "pointer",
+                                    boxShadow: isActive
+                                        ? "0 1px 5px var(--compact-card-action-active-shadow)"
+                                        : "0 0 0 1px var(--compact-card-pill-border)",
+                                    flex: "1 1 130px"
+                                }}
+                            >
+                                <span style={{ fontSize: 14 }}>{isActive ? "✓" : "—"}</span>
+                                <span>{isActive ? t("card.active", "Актив") : t("card.archive", "Архив")}</span>
                                 </button>
                             )}
 
