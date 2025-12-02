@@ -72,28 +72,6 @@ export default function OrderListMobile({
 
     const [mapOpen, setMapOpen] = useState(false);
     const [filterOpen, setFilterOpen] = useState(false);
-    // Открываем фильтр только при «прямом переходе» (клик по «Заявки»),
-    // помеченном sessionStorage("openMobileFilterOnEntry") === "1",
-    // либо по URL-параметру ?openFilter=1. Исключение — ?matches_only=1.
-    useEffect(() => {
-        try {
-            const qs = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
-            const mo = qs?.get?.("matches_only");
-            const hasMatchesOnly = mo && mo !== "0" && String(mo).toLowerCase() !== "false";
-            const openFromUrl = (qs?.get?.("openFilter") === "1");
-            let openFromNav = false;
-            try {
-                if (typeof window !== "undefined") {
-                    openFromNav = sessionStorage.getItem("openMobileFilterOnEntry") === "1";
-                    if (openFromNav) sessionStorage.removeItem("openMobileFilterOnEntry");
-                }
-            } catch { }
-            setFilterOpen(!hasMatchesOnly && (openFromUrl || openFromNav));
-        } catch {
-            // по умолчанию ничего не открываем автоматически
-            setFilterOpen(false);
-        }
-    }, []);
     const [previewCount, setPreviewCount] = useState(
         Number.isFinite(estimatedCount) ? estimatedCount : undefined
     );

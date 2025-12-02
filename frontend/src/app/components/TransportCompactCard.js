@@ -774,8 +774,9 @@ export default function TransportCompactCard({
                             marginTop: isMobile ? 10 : 6,
                             display: isMobile ? "flex" : "grid",
                             gap: isMobile ? 12 : 8,
-                            gridTemplateColumns: isMobile ? undefined : `repeat(${Math.max(1, metaItems.length)}, minmax(0, 1fr))`,
+                            gridTemplateColumns: isMobile ? undefined : "repeat(auto-fit, minmax(180px, 1fr))",
                             alignItems: "center",
+                            minWidth: 0,
                             flexWrap: isMobile ? "wrap" : undefined,
                         }}
                     >
@@ -787,7 +788,8 @@ export default function TransportCompactCard({
                                     alignItems: "center",
                                     gap: 6,
                                     minWidth: 0,
-                                    whiteSpace: isMobile ? "normal" : "nowrap",
+                                    whiteSpace: "normal",
+                                    wordBreak: "break-word",
                                 }}
                             >
                                 {content}

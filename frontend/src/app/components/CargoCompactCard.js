@@ -950,7 +950,7 @@ const CargoCompactCard = forwardRef(function CargoCompactCard(
                 {compactPrice && (
                     <div
                         className={limited ? "pw-blur pw-noevents" : ""}
-                        style={{ color: "#43c8ff", fontWeight: 600, fontSize: isMobile ? 13 : 16, marginTop: isMobile ? 10 : 6 }}
+                        style={{ color: "var(--compact-card-price)", fontWeight: 600, fontSize: isMobile ? 13 : 16, marginTop: isMobile ? 10 : 6 }}
                     >
                         {compactPrice.label}: {compactPrice.value}
                     </div>
@@ -994,7 +994,7 @@ const CargoCompactCard = forwardRef(function CargoCompactCard(
                         <div
                             style={{
                                 fontSize: 13,
-                                color: "#9cc4e7",
+                                color: "var(--compact-card-info-text)",
                                 textAlign: "right",
                                 maxWidth: isMobile ? 280 : 340,     // больше места под текст
                                 paddingRight: isMobile ? 70 : 96,   // зазор от бейджа даты
@@ -1043,8 +1043,8 @@ const CargoCompactCard = forwardRef(function CargoCompactCard(
                             onClick={handleShowMatchesClick}
                             style={{
                                 padding: "7px 16px",
-                                background: newMatchesCount > 0 ? "#2ea043" : "#23314b",
-                                color: "#fff",
+                                background: newMatchesCount > 0 ? "var(--compact-card-matches-new-bg)" : "var(--compact-card-matches-bg)",
+                                color: "var(--text-on-brand, #fff)",
                                 border: "none",
                                 borderRadius: 11,
                                 fontWeight: 600,
@@ -1053,7 +1053,7 @@ const CargoCompactCard = forwardRef(function CargoCompactCard(
                                 alignItems: "center",
                                 justifyContent: "center",
                                 gap: 5,
-                                boxShadow: newMatchesCount > 0 ? "0 0 7px #2ea04399" : undefined,
+                                boxShadow: newMatchesCount > 0 ? "var(--compact-card-matches-shadow)" : undefined,
                                 position: "relative",
                                 whiteSpace: "nowrap",
                                 marginBottom: isMobile ? 6 : 8,
@@ -1068,7 +1068,7 @@ const CargoCompactCard = forwardRef(function CargoCompactCard(
                                         : t("matches.show", "Показать совпадения"))
                             }
                         >
-                            <FaLink size={17} color="#fff" style={{ marginRight: 5, flexShrink: 0 }} />
+                            <FaLink size={17} color="var(--text-on-brand, #fff)" style={{ marginRight: 5, flexShrink: 0 }} />
                             {newMatchesCount > 0 && (
                                 <span style={{
                                     marginLeft: 6,
@@ -1077,7 +1077,7 @@ const CargoCompactCard = forwardRef(function CargoCompactCard(
                                     padding: "1px 8px",
                                     borderRadius: 999,
                                     background: "#14532d",
-                                    color: "#fff"
+                                    color: "var(--text-on-brand, #fff)"
                                 }}>{newMatchesCount}</span>
                             )}
                             {matchesPulse && <span className="matches-flash-ring" />}
@@ -1145,7 +1145,7 @@ const CargoCompactCard = forwardRef(function CargoCompactCard(
                                 ref={bidsBtnRef}
                                 onClick={handleBidsClick}
                                 style={{
-                                    background: bidsCount > 0 ? "#1a3555" : "#243356",
+                                    background: bidsCount > 0 ? "var(--compact-card-action-bg-strong)" : "var(--compact-card-action-bg)",
                                     border: "none",
                                     borderRadius: 7,
                                     width: 44,
@@ -1155,7 +1155,7 @@ const CargoCompactCard = forwardRef(function CargoCompactCard(
                                     alignItems: "center",
                                     justifyContent: "center",
                                     cursor: "pointer",
-                                    boxShadow: bidsCount > 0 ? "0 1px 8px #43c8ff55" : "0 1px 6px #22304b55",
+                                    boxShadow: bidsCount > 0 ? "var(--compact-card-action-shadow)" : "var(--compact-card-action-shadow)",
                                     position: "relative",
                                     transition: "background .14s",
                                 }}
@@ -1163,13 +1163,13 @@ const CargoCompactCard = forwardRef(function CargoCompactCard(
                             >
                                 <FaGavel
                                     size={17}
-                                    color={bidsCount > 0 ? "#43c8ff" : "#7aa3cc"}
+                                    color={bidsCount > 0 ? "var(--compact-card-accent)" : "var(--compact-card-action-icon)"}
                                     style={{
                                         filter: bidsCount > 0 ? "drop-shadow(0 0 3px #43c8ff77)" : undefined,
                                         marginBottom: 2,
                                     }}
                                 />
-                                <span style={{ fontSize: 11, color: "#7aa3cc", fontWeight: 600, lineHeight: 1 }}>
+                                <span style={{ fontSize: 11, color: "var(--compact-card-action-icon)", fontWeight: 600, lineHeight: 1 }}>
                                     {t("bids.label", "Ставки")}
                                 </span>
 
@@ -1190,7 +1190,7 @@ const CargoCompactCard = forwardRef(function CargoCompactCard(
                                             display: "flex",
                                             alignItems: "center",
                                             justifyContent: "center",
-                                            boxShadow: "0 0 0 2px #19233b",
+                                            boxShadow: `0 0 0 2px var(--compact-card-badge-outline)`,
                                         }}
                                         title={t("bids.newCount", "Новые ставки: {count}").replace("{count}", String(newBidsCount))}
                                     >
@@ -1582,7 +1582,7 @@ const CargoCompactCard = forwardRef(function CargoCompactCard(
                                     title={t("gps.request", "Запросить локацию")}
                                     onClick={(e) => { e.stopPropagation(); setShowSoon(true); }}
                                     style={{
-                                        background: "#14324b",
+                                        background: "var(--compact-card-gps-bg)",
                                         border: "none",
                                         borderRadius: 7,
                                         width: 44,
@@ -1593,14 +1593,14 @@ const CargoCompactCard = forwardRef(function CargoCompactCard(
                                         justifyContent: "center",
                                         cursor: "pointer",
                                         transition: ".13s",
-                                        boxShadow: "0 1px 5px #14324b55",
+                                        boxShadow: "var(--compact-card-gps-shadow)",
                                         position: "relative",
                                     }}
                                 >
-                                    <FaShareAlt color="#43c8ff" size={17} style={{ marginBottom: 2 }} />
+                                    <FaShareAlt color="var(--compact-card-accent)" size={17} style={{ marginBottom: 2 }} />
                                     <span style={{
                                         fontSize: 11,
-                                        color: "#b3d5fa",
+                                        color: "var(--compact-card-gps-text)",
                                         fontWeight: 600,
                                         lineHeight: 1
                                     }}>
@@ -1615,7 +1615,7 @@ const CargoCompactCard = forwardRef(function CargoCompactCard(
                             <button
                                 title={t("common.edit", "Редактировать")}
                                 style={{
-                                    background: "#1a68c7",
+                                    background: "var(--compact-card-edit-bg)",
                                     border: "none",
                                     borderRadius: 7,
                                     width: 44,
@@ -1632,7 +1632,7 @@ const CargoCompactCard = forwardRef(function CargoCompactCard(
                                 }}
                             >
                                 <FaEdit color="#fff" size={17} style={{ marginBottom: 2 }} />
-                                <span style={{ fontSize: 11, color: "#d6e9ff", fontWeight: 600, lineHeight: 1 }}>
+                                <span style={{ fontSize: 11, color: "var(--compact-card-edit-text)", fontWeight: 600, lineHeight: 1 }}>
                                     {t("common.editShort", "Ред.")}
                                 </span>
                             </button>
@@ -1643,7 +1643,7 @@ const CargoCompactCard = forwardRef(function CargoCompactCard(
                             <button
                                 title={t("common.delete", "Удалить")}
                                 style={{
-                                    background: "#db2344",
+                                    background: "var(--compact-card-delete-bg)",
                                     border: "none",
                                     borderRadius: 7,
                                     width: 44,
@@ -1660,7 +1660,7 @@ const CargoCompactCard = forwardRef(function CargoCompactCard(
                                 }}
                             >
                                 <FaTrash color="#fff" size={17} style={{ marginBottom: 2 }} />
-                                <span style={{ fontSize: 11, color: "#ffd6e0", fontWeight: 600, lineHeight: 1 }}>
+                                <span style={{ fontSize: 11, color: "var(--compact-card-delete-text)", fontWeight: 600, lineHeight: 1 }}>
                                     {t("common.delete", "Удалить")}
                                 </span>
                             </button>

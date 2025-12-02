@@ -52,25 +52,6 @@ export default function TransportListMobile({
 
     // хуки всегда сверху
     const [filterOpen, setFilterOpen] = useState(false);
-    // Открываем фильтр только при прямом переходе (см. OrderListMobile).
-    useEffect(() => {
-        try {
-            const qs = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
-            const mo = qs?.get?.("matches_only");
-            const hasMatchesOnly = mo && mo !== "0" && String(mo).toLowerCase() !== "false";
-            const openFromUrl = (qs?.get?.("openFilter") === "1");
-            let openFromNav = false;
-            try {
-                if (typeof window !== "undefined") {
-                    openFromNav = sessionStorage.getItem("openMobileFilterOnEntry") === "1";
-                    if (openFromNav) sessionStorage.removeItem("openMobileFilterOnEntry");
-                }
-            } catch { }
-            setFilterOpen(!hasMatchesOnly && (openFromUrl || openFromNav));
-        } catch {
-            setFilterOpen(false);
-        }
-    }, []);
     const [mapOpen, setMapOpen] = useState(false);
 
     const [previewCount, setPreviewCount] = useState(

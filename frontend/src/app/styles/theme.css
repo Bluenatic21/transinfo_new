@@ -180,6 +180,23 @@
     --compact-card-owner-other-border: #2a4872;
     --compact-card-owner-other-text: #9ecbff;
     --compact-card-owner-other-strong: #cfe9ff;
+    --compact-card-price: #43c8ff;
+    --compact-card-info-text: #9cc4e7;
+    --compact-card-matches-bg: #23314b;
+    --compact-card-matches-new-bg: #2ea043;
+    --compact-card-matches-shadow: 0 0 7px #2ea04399;
+    --compact-card-action-bg: #243356;
+    --compact-card-action-bg-strong: #1a3555;
+    --compact-card-action-shadow: #22304b55;
+    --compact-card-action-icon: #7aa3cc;
+    --compact-card-badge-outline: #19233b;
+    --compact-card-gps-bg: #14324b;
+    --compact-card-gps-shadow: #14324b55;
+    --compact-card-gps-text: #b3d5fa;
+    --compact-card-edit-bg: #1a68c7;
+    --compact-card-edit-text: #d6e9ff;
+    --compact-card-delete-bg: #db2344;
+    --compact-card-delete-text: #ffd6e0;
 }
 
 /* === Footer tokens === */
@@ -219,6 +236,23 @@
     --compact-card-owner-other-border: #c7d2fe;
     --compact-card-owner-other-text: #1f2937;
     --compact-card-owner-other-strong: #1d4ed8;
+    --compact-card-price: #0ea5e9;
+    --compact-card-info-text: #475569;
+    --compact-card-matches-bg: #e2e8f0;
+    --compact-card-matches-new-bg: #22c55e;
+    --compact-card-matches-shadow: 0 0 8px rgba(34, 197, 94, 0.28);
+    --compact-card-action-bg: #e2e8f0;
+    --compact-card-action-bg-strong: #dbeafe;
+    --compact-card-action-shadow: 0 1px 6px rgba(15, 23, 42, 0.14);
+    --compact-card-action-icon: #0f235a;
+    --compact-card-badge-outline: #ffffff;
+    --compact-card-gps-bg: #e0f2fe;
+    --compact-card-gps-shadow: 0 1px 5px rgba(14, 165, 233, 0.25);
+    --compact-card-gps-text: #0f172a;
+    --compact-card-edit-bg: #2563eb;
+    --compact-card-edit-text: #eff6ff;
+    --compact-card-delete-bg: #ef4444;
+    --compact-card-delete-text: #fff1f2;
 }
 
 /* === Sidebar tokens === */
