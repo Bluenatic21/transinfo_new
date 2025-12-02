@@ -492,11 +492,11 @@ export default function TransportCompactCard({
             ? "2.5px solid var(--compact-card-border-strong)"
             : "2px solid transparent",
         marginBottom: 17,
-        padding: 18,
+        padding: isMobile ? "18px 14px 22px 14px" : 18,
         display: "flex",
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 20,
+        flexDirection: isMobile ? "column" : "row",
+        alignItems: isMobile ? "stretch" : "center",
+        gap: isMobile ? 12 : 20,
         cursor: onClick ? "pointer" : "default",
         cursor: "pointer",
         maxWidth: "100%",
@@ -508,8 +508,8 @@ export default function TransportCompactCard({
         transition: "box-shadow .23s, border-color .17s, transform .19s"
     } : {
         display: "flex",
-        flexDirection: "row",
-        alignItems: "center",
+        flexDirection: isMobile ? "column" : "row",
+        alignItems: isMobile ? "stretch" : "center",
         background: "var(--compact-card-bg)",
         borderRadius: 14,
         boxShadow: (isFocused || hoveredItemId === transport.id)
@@ -518,17 +518,17 @@ export default function TransportCompactCard({
         border: (isFocused || hoveredItemId === transport.id)
             ? "2.5px solid var(--compact-card-border-strong)"
             : "2px solid transparent",
-        // На десктопе убираем ограничение ширины — карточка должна заполнять всю строку
-        maxWidth: isMobile ? 960 : "none", // было: 960
+        // На десктопе убираем ограничение ширины — карточка должна заполнять всю строку␊
+        maxWidth: isMobile ? 960 : "none", // было: 960␊
         width: "100%",
         marginLeft: "auto",
         marginRight: "auto",
         boxSizing: "border-box",
-        // Разрешаем карточке реально сжиматься внутри флекса/грида
+        // Разрешаем карточке реально сжиматься внутри флекса/грида␊
         minWidth: 0,
-        gap: isMobile ? 10 : 20,
+        gap: isMobile ? 12 : 20,
         marginBottom: 17,
-        padding: isMobile ? 10 : 18,
+        padding: isMobile ? "18px 14px 22px 14px" : 18,
         cursor: onClick ? "pointer" : "default",
         cursor: "pointer",
         transform: enableHoverLift && hoveredItemId === transport.id ? "scale(1.012)" : undefined,
@@ -838,13 +838,17 @@ export default function TransportCompactCard({
                 <div className={limited ? "pw-blur pw-noevents" : ""} style={{
                     // показываем колонку, если есть onShowMatches ИЛИ разрешены действия
                     display: (onShowMatches || allowActions) ? "flex" : "none",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    marginLeft: 12,
-                    marginRight: 8,
-                    minWidth: 0,
+                    flexDirection: isMobile ? "row" : "column",
+                    flexWrap: isMobile ? "wrap" : "nowrap",
+                    alignItems: isMobile ? "stretch" : "center",
+                    justifyContent: isMobile ? "flex-start" : "center",
+                    marginLeft: isMobile ? 0 : 12,
+                    marginRight: isMobile ? 0 : 8,
+                    minWidth: isMobile ? "100%" : 0,
                     position: "relative",
-                    paddingBottom: isMobile ? 34 : 0   // зазор от бейджа даты
+                    paddingTop: isMobile ? 2 : 0,
+                    paddingBottom: isMobile ? 6 : 0,
+                    gap: isMobile ? 8 : 10,
                 }}>
                     {/* Соответствия — кнопка сверху */}
                     {allowActions && onShowMatches && (
@@ -879,11 +883,8 @@ export default function TransportCompactCard({
                                 position: "relative",
                                 transition: "background .18s",
                                 whiteSpace: "nowrap",
-                                // УДАЛЕНО:
-                                // maxWidth: 128,
-                                // overflow: "hidden",
-                                // textOverflow: "ellipsis",
-                                marginBottom: 8,
+                                marginBottom: isMobile ? 0 : 8,
+                                width: isMobile ? "100%" : undefined,
                             }}
                             title={
                                 localNewMatchesCount > 0
@@ -1118,11 +1119,11 @@ export default function TransportCompactCard({
                         /* --- Mobile: 2 чипа + кнопка "Ещё" --- */
                         <div style={{
                             display: "flex",
-                            flexDirection: "column",
-                            alignItems: "flex-end",
-                            gap: 6,
+                            flexWrap: "wrap",
+                            alignItems: "center",
+                            gap: 8,
                             marginTop: 8,
-                            paddingRight: 36   // запас под правый chevron
+                            paddingRight: 0
                         }}>
                             {/* Актив/Архив как чип (идентично Cargo) */}
                             {allowActions && typeof transport?.is_active !== "undefined" && (
@@ -1144,7 +1145,8 @@ export default function TransportCompactCard({
                                         fontSize: 12,
                                         whiteSpace: "nowrap",
                                         cursor: "pointer",
-                                        boxShadow: isActive ? "0 1px 5px #33de7b55" : "0 0 0 1px #2a4872"
+                                        boxShadow: isActive ? "0 1px 5px #33de7b55" : "0 0 0 1px #2a4872",
+                                        flex: "1 1 130px"
                                     }}
                                 >
                                     <span style={{ fontSize: 14, lineHeight: 1 }}>{isActive ? "✓" : "—"}</span>
@@ -1174,7 +1176,8 @@ export default function TransportCompactCard({
                                         position: "relative",
                                         boxShadow: "0 0 0 1px #2a4872",
                                         width: chipWidth || undefined,
-                                        justifyContent: "space-between"
+                                        justifyContent: "space-between",
+                                        flex: "1 1 130px"
                                     }}
                                 >
                                     <FaShareAlt size={14} />
@@ -1207,7 +1210,8 @@ export default function TransportCompactCard({
                                     cursor: "pointer",
                                     boxShadow: "0 0 0 1px #2a4872",
                                     width: chipWidth || undefined,
-                                    justifyContent: "space-between"
+                                    justifyContent: "space-between",
+                                    flex: "1 1 130px"
                                 }}
                             >
                                 <FaEllipsisH size={14} />
@@ -1220,10 +1224,18 @@ export default function TransportCompactCard({
             {/* ^ закрываем внешний правый столбец действий после тернарника */}
 
             {/* Chevron справа */}
-            <FaChevronRight color="#43c8ff" style={{
-                marginLeft: 14,
-                fontSize: 22
-            }} />
+            <FaChevronRight
+                color="#43c8ff"
+                style={{
+                    marginLeft: isMobile ? 0 : 14,
+                    fontSize: 22,
+                    position: isMobile ? "absolute" : "static",
+                    right: isMobile ? 10 : undefined,
+                    top: isMobile ? "50%" : undefined,
+                    transform: isMobile ? "translateY(-50%)" : undefined,
+                    pointerEvents: "none"
+                }}
+            />
 
             {/* Заглушка: единая модалка "Скоро доступно" */}
             {showSoon && ReactDOM.createPortal(
