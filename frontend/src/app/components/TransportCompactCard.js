@@ -518,8 +518,8 @@ export default function TransportCompactCard({
         border: (isFocused || hoveredItemId === transport.id)
             ? "2.5px solid var(--compact-card-border-strong)"
             : "2px solid transparent",
-        // На десктопе убираем ограничение ширины — карточка должна заполнять всю строку␊
-        maxWidth: isMobile ? 960 : "none", // было: 960␊
+        // На десктопе убираем ограничение ширины — карточка должна заполнять всю строку
+        maxWidth: isMobile ? 960 : "none", // было: 960
         width: "100%",
         marginLeft: "auto",
         marginRight: "auto",
@@ -541,6 +541,18 @@ export default function TransportCompactCard({
         (typeof matchesCount === "number" && matchesCount > 0)
             ? matchesCount
             : (typeof lazyMatchesCount === "number" ? lazyMatchesCount : undefined);
+
+    const chipBase = {
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 8,
+        height: 32,
+        padding: "0 12px",
+        borderRadius: 999,
+        border: "none",
+        fontWeight: 800,
+        fontSize: 12,
+    };
 
     return (
         <div
@@ -869,8 +881,8 @@ export default function TransportCompactCard({
                             style={{
                                 minWidth: 0,
                                 padding: "7px 16px", // чуть больше паддинга
-                                background: localNewMatchesCount > 0 ? "#2ea043" : "#23314b",
-                                color: "#fff",
+                                background: localNewMatchesCount > 0 ? "var(--compact-card-matches-new-bg)" : "var(--compact-card-matches-bg)",
+                                color: "var(--compact-card-matches-text)",
                                 border: "none",
                                 borderRadius: 11,
                                 fontWeight: 600,
@@ -879,7 +891,7 @@ export default function TransportCompactCard({
                                 alignItems: "center",
                                 justifyContent: "center",
                                 gap: 5,
-                                boxShadow: localNewMatchesCount > 0 ? "0 0 7px #2ea04399" : undefined,
+                                boxShadow: localNewMatchesCount > 0 ? "var(--compact-card-matches-shadow)" : undefined,
                                 position: "relative",
                                 transition: "background .18s",
                                 whiteSpace: "nowrap",
@@ -895,7 +907,7 @@ export default function TransportCompactCard({
                                         : t("matches.show", "Показать совпадения"))
                             }
                         >
-                            <FaLink size={17} color="#fff" style={{ marginRight: 5, flexShrink: 0 }} />
+                            <FaLink size={17} color="var(--compact-card-matches-text)" style={{ marginRight: 5, flexShrink: 0 }} />
                             {localNewMatchesCount > 0 && (
                                 <span style={{
                                     marginLeft: 6,
@@ -1132,20 +1144,12 @@ export default function TransportCompactCard({
                                     onClick={(e) => { e.stopPropagation(); if (!toggleLoading) handleToggleActive(); }}
                                     title={isActive ? t("card.toArchive", "Перевести в архив") : t("card.makeActive", "Сделать активным")}
                                     style={{
-                                        display: "inline-flex",
-                                        alignItems: "center",
-                                        gap: 8,
-                                        height: 32,
-                                        padding: "0 12px",
-                                        border: "none",
-                                        borderRadius: 999,
+                                        ...chipBase,
                                         background: isActive ? "#2b854c" : "#6f7f9c",
                                         color: "#fff",
-                                        fontWeight: 800,
-                                        fontSize: 12,
                                         whiteSpace: "nowrap",
                                         cursor: "pointer",
-                                        boxShadow: isActive ? "0 1px 5px #33de7b55" : "0 0 0 1px #2a4872",
+                                        boxShadow: isActive ? "0 1px 5px #33de7b55" : "0 0 0 1px var(--compact-card-pill-border)",
                                         flex: "1 1 130px"
                                     }}
                                 >
@@ -1160,21 +1164,13 @@ export default function TransportCompactCard({
                                     title={allowActions ? t("gps.share", "Поделиться локацией") : t("gps.onlyOwnShort", "Доступно только для своих")}
                                     onClick={(e) => { e.stopPropagation(); setShowSoon(true); }}
                                     style={{
-                                        display: "inline-flex",
-                                        alignItems: "center",
-                                        gap: 8,
-                                        height: 32,
-                                        padding: "0 12px",
-                                        borderRadius: 999,
-                                        border: "none",
-                                        background: "#18324b",
-                                        color: "#b3d5fa",
-                                        fontWeight: 800,
-                                        fontSize: 12,
+                                        ...chipBase,
+                                        background: "var(--compact-card-pill-bg)",
+                                        color: "var(--compact-card-pill-text)",
                                         cursor: allowActions ? "pointer" : "not-allowed",
                                         opacity: allowActions ? 1 : .45,
                                         position: "relative",
-                                        boxShadow: "0 0 0 1px #2a4872",
+                                        boxShadow: "0 0 0 1px var(--compact-card-pill-border)",
                                         width: chipWidth || undefined,
                                         justifyContent: "space-between",
                                         flex: "1 1 130px"
@@ -1196,19 +1192,11 @@ export default function TransportCompactCard({
                                 onClick={(e) => { e.stopPropagation(); setMobileActionsOpen(true); }}
                                 title={t("common.more", "Ещё")}
                                 style={{
-                                    display: "inline-flex",
-                                    alignItems: "center",
-                                    gap: 8,
-                                    height: 32,
-                                    padding: "0 12px",
-                                    borderRadius: 999,
-                                    border: "none",
-                                    background: "#23385a",
-                                    color: "#d6e9ff",
-                                    fontWeight: 800,
-                                    fontSize: 12,
+                                    ...chipBase,
+                                    background: "var(--compact-card-pill-bg)",
+                                    color: "var(--compact-card-pill-text)",
                                     cursor: "pointer",
-                                    boxShadow: "0 0 0 1px #2a4872",
+                                    boxShadow: "0 0 0 1px var(--compact-card-pill-border)",
                                     width: chipWidth || undefined,
                                     justifyContent: "space-between",
                                     flex: "1 1 130px"
