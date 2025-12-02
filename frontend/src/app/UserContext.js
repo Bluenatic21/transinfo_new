@@ -28,7 +28,7 @@ export function UserProvider({ children }) {
     if (cached) {
       try {
         setUser(JSON.parse(cached));
-      } catch { }
+      } catch {}
     }
   }, []);
 
@@ -80,16 +80,16 @@ export function UserProvider({ children }) {
   const forceLogout = useCallback((reason = "session_revoked") => {
     try {
       localStorage.removeItem("token");
-    } catch { }
+    } catch {}
     try {
       localStorage.removeItem("user");
-    } catch { }
+    } catch {}
     setUser(null);
     setNotifications([]);
     if (wsRef.current) {
       try {
         wsRef.current.close();
-      } catch { }
+      } catch {}
       wsRef.current = null;
     }
   }, []);
@@ -106,15 +106,24 @@ export function UserProvider({ children }) {
       // 1) первичный запрос
       let response;
       try {
-        response = await fetch(url, { ...options, credentials: "include", headers });
+        response = await fetch(url, {
+          ...options,
+          credentials: "include",
+          headers,
+        });
       } catch (err) {
         const aborted =
           (err && err.name === "AbortError") ||
           (options && options.signal && options.signal.aborted) ||
           (typeof err === "string" &&
             (err === "component-unmount" || err === "fetch-replaced")) ||
-          (err && typeof err.message === "string" && /abort/i.test(err.message)) ||
-          (err && err.cause && (err.cause === "component-unmount" || err.cause === "fetch-replaced"));
+          (err &&
+            typeof err.message === "string" &&
+            /abort/i.test(err.message)) ||
+          (err &&
+            err.cause &&
+            (err.cause === "component-unmount" ||
+              err.cause === "fetch-replaced"));
         if (aborted) throw err;
 
         console.warn("[UserContext] authFetchWithRefresh network error:", err);
@@ -130,9 +139,12 @@ export function UserProvider({ children }) {
           const code = data?.code || data?.detail?.code || data?.detail;
           if (code === "error.auth.sessionRevoked") {
             forceLogout("session_revoked_401");
-            return new Response(null, { status: 401, statusText: "SESSION_REVOKED" });
+            return new Response(null, {
+              status: 401,
+              statusText: "SESSION_REVOKED",
+            });
           }
-        } catch { }
+        } catch {}
 
         try {
           const refreshResp = await fetch(`${API}/refresh-token`, {
@@ -149,29 +161,48 @@ export function UserProvider({ children }) {
                 Authorization: `Bearer ${refreshData.access_token}`,
               };
               try {
-                return await fetch(url, { ...options, credentials: "include", headers });
+                return await fetch(url, {
+                  ...options,
+                  credentials: "include",
+                  headers,
+                });
               } catch (err2) {
                 const aborted2 =
                   (err2 && err2.name === "AbortError") ||
                   (options && options.signal && options.signal.aborted) ||
                   (typeof err2 === "string" &&
-                    (err2 === "component-unmount" || err2 === "fetch-replaced")) ||
-                  (err2 && typeof err2.message === "string" && /abort/i.test(err2.message)) ||
-                  (err2 && err2.cause && (err2.cause === "component-unmount" || err2.cause === "fetch-replaced"));
+                    (err2 === "component-unmount" ||
+                      err2 === "fetch-replaced")) ||
+                  (err2 &&
+                    typeof err2.message === "string" &&
+                    /abort/i.test(err2.message)) ||
+                  (err2 &&
+                    err2.cause &&
+                    (err2.cause === "component-unmount" ||
+                      err2.cause === "fetch-replaced"));
                 if (aborted2) throw err2;
                 console.error("[UserContext] retry fetch failed:", err2);
-                return new Response(null, { status: 502, statusText: "FETCH_ERROR" });
+                return new Response(null, {
+                  status: 502,
+                  statusText: "FETCH_ERROR",
+                });
               }
             }
           } else if (refreshResp.status === 401) {
             try {
-              const jd = await refreshResp.clone().json().catch(() => ({}));
+              const jd = await refreshResp
+                .clone()
+                .json()
+                .catch(() => ({}));
               const code = jd?.code || jd?.detail?.code || jd?.detail;
               if (code === "error.auth.sessionRevoked") {
                 forceLogout("session_revoked_refresh");
-                return new Response(null, { status: 401, statusText: "SESSION_REVOKED" });
+                return new Response(null, {
+                  status: 401,
+                  statusText: "SESSION_REVOKED",
+                });
               }
-            } catch { }
+            } catch {}
           }
         } catch (e) {
           console.warn("[UserContext] refresh-token failed:", e);
@@ -191,7 +222,7 @@ export function UserProvider({ children }) {
   const ensureFreshToken = useCallback(async () => {
     try {
       await authFetchWithRefresh(`${API}/auth/whoami`);
-    } catch { }
+    } catch {}
     return localStorage.getItem("token");
   }, [authFetchWithRefresh]);
 
@@ -240,7 +271,9 @@ export function UserProvider({ children }) {
           setSubscription(null);
           return;
         }
-        const resp = await fetch(`${API}/api/billing/subscription`, { credentials: "include" });
+        const resp = await fetch(`${API}/api/billing/subscription`, {
+          credentials: "include",
+        });
         if (!resp.ok) {
           setSubscription(null);
           return;
@@ -279,14 +312,20 @@ export function UserProvider({ children }) {
   const contactReqLastAtRef = useRef(0);
   const fetchContactRequests = useCallback(
     async (force = false) => {
-      if (contactReqFetchLockRef.current && !force) return contactReqRef.current;
+      if (contactReqFetchLockRef.current && !force)
+        return contactReqRef.current;
       const now = Date.now();
-      if (!force && now - contactReqLastAtRef.current < 800) return contactReqRef.current;
+      if (!force && now - contactReqLastAtRef.current < 800)
+        return contactReqRef.current;
       contactReqFetchLockRef.current = true;
       try {
         const [rin, rout] = await Promise.all([
-          authFetchWithRefresh(`${API}/contacts/requests?direction=in&status=pending`),
-          authFetchWithRefresh(`${API}/contacts/requests?direction=out&status=pending`),
+          authFetchWithRefresh(
+            `${API}/contacts/requests?direction=in&status=pending`
+          ),
+          authFetchWithRefresh(
+            `${API}/contacts/requests?direction=out&status=pending`
+          ),
         ]);
         const incoming = rin.ok ? await rin.json() : [];
         const outgoing = rout.ok ? await rout.json() : [];
@@ -303,9 +342,12 @@ export function UserProvider({ children }) {
   );
 
   const sendContactRequest = async (targetId) => {
-    const res = await authFetchWithRefresh(`${API}/contacts/request/${targetId}`, {
-      method: "POST",
-    });
+    const res = await authFetchWithRefresh(
+      `${API}/contacts/request/${targetId}`,
+      {
+        method: "POST",
+      }
+    );
     return res.ok ? await res.json() : Promise.reject(await res.text());
   };
 
@@ -331,7 +373,9 @@ export function UserProvider({ children }) {
   function _rebuildBlockedSet(obj) {
     const set = new Set((obj?.all_ids || []).map(Number));
     blockedSetRef.current = set;
-    setBlocked(obj || { all_ids: [], blocked_by_me_ids: [], blocked_me_ids: [] });
+    setBlocked(
+      obj || { all_ids: [], blocked_by_me_ids: [], blocked_me_ids: [] }
+    );
   }
 
   const isBlocked = (userId) => blockedSetRef.current.has(Number(userId));
@@ -343,18 +387,22 @@ export function UserProvider({ children }) {
         const data = await res.json();
         _rebuildBlockedSet(data);
       }
-    } catch (_) { }
+    } catch (_) {}
   }
 
   async function blockUser(targetId) {
     if (!targetId) return;
-    await authFetchWithRefresh(`${API}/users/${targetId}/block`, { method: "POST" });
+    await authFetchWithRefresh(`${API}/users/${targetId}/block`, {
+      method: "POST",
+    });
     await reloadBlocked();
   }
 
   async function unblockUser(targetId) {
     if (!targetId) return;
-    await authFetchWithRefresh(`${API}/users/${targetId}/block`, { method: "DELETE" });
+    await authFetchWithRefresh(`${API}/users/${targetId}/block`, {
+      method: "DELETE",
+    });
     await reloadBlocked();
   }
 
@@ -371,7 +419,7 @@ export function UserProvider({ children }) {
         const data = await r.json();
         setSavedOrders(Array.isArray(data) ? data : []);
       }
-    } catch { }
+    } catch {}
   }, [authFetchWithRefresh]);
 
   const fetchSavedTransports = useCallback(async () => {
@@ -381,12 +429,14 @@ export function UserProvider({ children }) {
         const data = await r.json();
         setSavedTransports(Array.isArray(data) ? data : []);
       }
-    } catch { }
+    } catch {}
   }, [authFetchWithRefresh]);
 
   const saveOrder = useCallback(
     async (id) => {
-      await authFetchWithRefresh(`${API}/saved/orders/${id}`, { method: "POST" });
+      await authFetchWithRefresh(`${API}/saved/orders/${id}`, {
+        method: "POST",
+      });
       await fetchSavedOrders();
     },
     [authFetchWithRefresh, fetchSavedOrders]
@@ -394,7 +444,9 @@ export function UserProvider({ children }) {
 
   const unsaveOrder = useCallback(
     async (id) => {
-      await authFetchWithRefresh(`${API}/saved/orders/${id}`, { method: "DELETE" });
+      await authFetchWithRefresh(`${API}/saved/orders/${id}`, {
+        method: "DELETE",
+      });
       await fetchSavedOrders();
     },
     [authFetchWithRefresh, fetchSavedOrders]
@@ -402,7 +454,9 @@ export function UserProvider({ children }) {
 
   const saveTransport = useCallback(
     async (id) => {
-      await authFetchWithRefresh(`${API}/saved/transports/${id}`, { method: "POST" });
+      await authFetchWithRefresh(`${API}/saved/transports/${id}`, {
+        method: "POST",
+      });
       await fetchSavedTransports();
     },
     [authFetchWithRefresh, fetchSavedTransports]
@@ -410,7 +464,9 @@ export function UserProvider({ children }) {
 
   const unsaveTransport = useCallback(
     async (id) => {
-      await authFetchWithRefresh(`${API}/saved/transports/${id}`, { method: "DELETE" });
+      await authFetchWithRefresh(`${API}/saved/transports/${id}`, {
+        method: "DELETE",
+      });
       await fetchSavedTransports();
     },
     [authFetchWithRefresh, fetchSavedTransports]
@@ -499,7 +555,7 @@ export function UserProvider({ children }) {
       if (wsRef.current) {
         try {
           wsRef.current.close();
-        } catch { }
+        } catch {}
         wsRef.current = null;
       }
     };
@@ -548,13 +604,15 @@ export function UserProvider({ children }) {
       const qs = new URLSearchParams();
       if (user?.id) qs.set("user_id", String(user.id));
       qs.set("token", freshToken);
-      const wsUrl = `${wsProto}://${wsURL.host}${basePath}/ws/notifications?${qs.toString()}`;
+      const wsUrl = `${wsProto}://${
+        wsURL.host
+      }${basePath}/ws/notifications?${qs.toString()}`;
       console.log("[UserContext] Connecting WS:", wsUrl);
 
       if (wsRef.current) {
         try {
           wsRef.current.close();
-        } catch { }
+        } catch {}
       }
       const ws = new window.WebSocket(wsUrl, ["bearer", freshToken]);
       wsRef.current = ws;
@@ -570,7 +628,7 @@ export function UserProvider({ children }) {
           if (ws.readyState === WebSocket.OPEN) {
             try {
               ws.send(JSON.stringify({ type: "ping", ts: Date.now() }));
-            } catch { }
+            } catch {}
           }
         }, 30000);
       };
@@ -580,14 +638,19 @@ export function UserProvider({ children }) {
           const msg = JSON.parse(e.data);
 
           // Принудительный выход по сигналу сервера
-          if (msg && (msg.type === "force_logout" || msg.event === "force_logout")) {
+          if (
+            msg &&
+            (msg.type === "force_logout" || msg.event === "force_logout")
+          ) {
             forceLogout("ws_force_logout");
             return;
           }
           if (msg && msg.event === "incoming_call") {
             try {
-              window.dispatchEvent(new CustomEvent("incoming_call", { detail: msg }));
-            } catch { }
+              window.dispatchEvent(
+                new CustomEvent("incoming_call", { detail: msg })
+              );
+            } catch {}
             return;
           }
 
@@ -597,7 +660,7 @@ export function UserProvider({ children }) {
           if (msg?.event === "contacts_update") {
             try {
               window.dispatchEvent(new Event("contacts_update"));
-            } catch { }
+            } catch {}
           }
 
           if (msg.event === "new_notification") {
@@ -606,9 +669,12 @@ export function UserProvider({ children }) {
               if (incoming?.type === "AUTO_MATCH") {
                 emitMatchesReload();
               }
-            } catch { }
+            } catch {}
             setNotifications((prev) => {
-              const updated = [incoming, ...prev.filter((n) => n.id !== incoming.id)];
+              const updated = [
+                incoming,
+                ...prev.filter((n) => n.id !== incoming.id),
+              ];
               return updated;
             });
             try {
@@ -628,7 +694,10 @@ export function UserProvider({ children }) {
           if (msg?.type === "AUTO_MATCH") {
             emitMatchesReload();
           }
-          if (msg?.type === "GPS_REQUEST_CREATED" || msg?.type === "GPS_REQUEST_RESPONDED") {
+          if (
+            msg?.type === "GPS_REQUEST_CREATED" ||
+            msg?.type === "GPS_REQUEST_RESPONDED"
+          ) {
             emitMonitoringReload();
           }
           if (msg?.event === "support.ticket.claimed") {
@@ -636,11 +705,14 @@ export function UserProvider({ children }) {
               window.dispatchEvent(
                 new CustomEvent("support_ticket_claimed", { detail: msg })
               );
-            } catch { }
+            } catch {}
           }
           if (msg?.event === "new_notification") {
             const n = msg?.notification || {};
-            if (n?.type === "GPS_REQUEST_CREATED" || n?.type === "GPS_REQUEST_RESPONDED") {
+            if (
+              n?.type === "GPS_REQUEST_CREATED" ||
+              n?.type === "GPS_REQUEST_RESPONDED"
+            ) {
               emitMonitoringReload();
             }
           }
@@ -660,21 +732,37 @@ export function UserProvider({ children }) {
           wsPingRef.current = null;
         }
         wsRef.current = null;
-        if (ev && (ev.code === 4401 || ev.code === 4403)) {
-          return;
-        }
-        const base = Math.min(30000, 1000 * Math.pow(2, wsAttemptRef.current++));
+
+        // 4401/4403 = проблемы с токеном (истёк / разлогинили). Раньше мы просто
+        // выходили, и сокет навсегда оставался мёртвым до ручного обновления
+        // страницы. Теперь пробуем переполучить токен и переподключиться с тем
+        // же механизмом бэкоффа.
+        const isAuthError = ev && (ev.code === 4401 || ev.code === 4403);
+        const base = Math.min(
+          30000,
+          1000 * Math.pow(2, wsAttemptRef.current++)
+        );
         const jitter = Math.floor(Math.random() * 300);
         const delay = Math.min(30000, base) + jitter;
         if (wsReconnectTimerRef.current) {
           clearTimeout(wsReconnectTimerRef.current);
           wsReconnectTimerRef.current = null;
         }
-        wsReconnectTimerRef.current = setTimeout(() => {
-          if (!wsRef.current) {
-            console.log("[UserContext] Reconnecting WS after", delay, "ms");
-            setNotifyReconnectTick((t) => t + 1);
-          }
+
+        wsReconnectTimerRef.current = setTimeout(async () => {
+          if (wsRef.current) return;
+          try {
+            if (isAuthError) {
+              await ensureFreshToken();
+            }
+          } catch {}
+          console.log(
+            "[UserContext] Reconnecting WS after",
+            delay,
+            "ms",
+            isAuthError ? "(auth error)" : ""
+          );
+          setNotifyReconnectTick((t) => t + 1);
         }, delay);
       };
     })();
@@ -682,7 +770,13 @@ export function UserProvider({ children }) {
     return () => {
       cleanup();
     };
-  }, [user?.id, notifyReconnectTick, ensureFreshToken, fetchNotifications, forceLogout]);
+  }, [
+    user?.id,
+    notifyReconnectTick,
+    ensureFreshToken,
+    fetchNotifications,
+    forceLogout,
+  ]);
 
   // --- Пометить уведомления прочитанными ---
   const markNotificationsRead = async (ids) => {
@@ -698,11 +792,13 @@ export function UserProvider({ children }) {
       });
       if (resp.ok) {
         setNotifications((prev) =>
-          prev.map((n) => (arr.includes(Number(n.id)) ? { ...n, read: true } : n))
+          prev.map((n) =>
+            arr.includes(Number(n.id)) ? { ...n, read: true } : n
+          )
         );
         try {
           await fetchNotifications();
-        } catch { }
+        } catch {}
       }
     } catch (e) {
       console.error("[UserContext] markNotificationsRead error", e);
@@ -714,10 +810,10 @@ export function UserProvider({ children }) {
     if (!user || !user.id) return;
     try {
       fetchContacts?.();
-    } catch { }
+    } catch {}
     try {
       fetchContactRequests?.(true);
-    } catch { }
+    } catch {}
   }, [user?.id, fetchContacts, fetchContactRequests]);
 
   // Подписка на contacts_update — после объявлений функций
@@ -725,16 +821,17 @@ export function UserProvider({ children }) {
     const onContactsUpdate = () => {
       try {
         fetchContacts?.();
-      } catch { }
+      } catch {}
       try {
         fetchContactRequests?.(true);
-      } catch { }
+      } catch {}
       try {
         fetchNotifications?.();
-      } catch { }
+      } catch {}
     };
     window.addEventListener("contacts_update", onContactsUpdate);
-    return () => window.removeEventListener("contacts_update", onContactsUpdate);
+    return () =>
+      window.removeEventListener("contacts_update", onContactsUpdate);
   }, [fetchContacts, fetchContactRequests, fetchNotifications]);
 
   // Очищать user при выходе (и убрать refresh-cookie на бэке)
@@ -745,19 +842,19 @@ export function UserProvider({ children }) {
         credentials: "include",
         keepalive: true, // чтобы запрос не прервался при мгновенной навигации
       });
-    } catch { }
+    } catch {}
     try {
       localStorage.removeItem("user");
-    } catch { }
+    } catch {}
     try {
       localStorage.removeItem("token");
-    } catch { }
+    } catch {}
     setUser(null);
     setNotifications([]);
     if (wsRef.current) {
       try {
         wsRef.current.close();
-      } catch { }
+      } catch {}
       wsRef.current = null;
     }
     setToken(null);
@@ -768,10 +865,10 @@ export function UserProvider({ children }) {
         setTimeout(() => {
           try {
             window.location.replace("/");
-          } catch { }
+          } catch {}
         }, 0);
       }
-    } catch { }
+    } catch {}
   };
 
   const handleLoginClick = () => setShowAuth(true);
