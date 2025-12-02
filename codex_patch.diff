@@ -1,62 +1,139 @@
-diff --git a/frontend/src/app/components/EmployeeRegisterForm.js b/frontend/src/app/components/EmployeeRegisterForm.js
-index 5da6abdaac301cf0c80e64f50b7a45c8f04b5e27..f8bf331e6d4bdd96b61a87470c16423e42dbda5d 100644
---- a/frontend/src/app/components/EmployeeRegisterForm.js
-+++ b/frontend/src/app/components/EmployeeRegisterForm.js
-@@ -1,47 +1,54 @@
- "use client";
- import { useState } from "react";
- import PhoneInput from "react-phone-input-2";
- import "react-phone-input-2/lib/style.css";
- import { useLang } from "../i18n/LangProvider";
- import { api } from "@/config/env";
+diff --git a/frontend/src/config/env.ts b/frontend/src/config/env.ts
+index 891c1cd13b3966953943239101acd8637cb2ef2c..4e60d6ac4c2583d107f2eb44bbcb8307649ae6d5 100644
+--- a/frontend/src/config/env.ts
++++ b/frontend/src/config/env.ts
+@@ -1,87 +1,126 @@
+ // src/config/env.ts
+ type AppEnv = 'production' | 'staging' | 'development';
  
- export default function EmployeeRegisterForm({ onSuccess }) {
-   const [form, setForm] = useState({
-     contact_person: "",
-     country: "",
-     city: "",
-     phone: "",
-     email: "",
-     password: "",
-   });
-   const [password2, setPassword2] = useState("");
-   const [show, setShow] = useState(false);
-   const [show2, setShow2] = useState(false);
--  const [msg, setMsg] = useState("");
--  const [loading, setLoading] = useState(false);
--  const { t } = useLang();
-+  const [msg, setMsg] = useState("");
-+  const [loading, setLoading] = useState(false);
-+  const { t } = useLang();
+ export const APP_ENV: AppEnv =
+   (process.env.NEXT_PUBLIC_APP_ENV as AppEnv) ||
+   (process.env.NODE_ENV === 'production' ? 'production' : 'development');
+ 
+ // Базовые хосты по окружениям
+ const HOST_BY_ENV: Record<AppEnv, string> = {
+   production: 'https://www.transinfo.ge',
+   staging: 'https://staging.transinfo.ge',
+   development: 'http://127.0.0.1:3000'
+ };
+ 
+ // В проде закрепляемся на prod-домене
+ export const BASE =
+   APP_ENV === 'production' ? 'https://www.transinfo.ge' : HOST_BY_ENV[APP_ENV];
+ 
++// Текущий origin в браузере — помогает избежать рассинхрона env и фактического домена
++// (например, prod сборка открыта с www., а API/WS прописаны на transinfo.ge → CORS/mixed content)
++const RUNTIME_BASE =
++  typeof window !== 'undefined' && window?.location?.origin
++    ? window.location.origin
++    : '';
 +
-+  // Заглушки для подсветки ошибок, чтобы не падать из-за отсутствующих функций
-+  const errors = { country: "", city: "" };
-+  const fieldStyle = (hasError) => ({
-+    border: `1.5px solid ${hasError ? "#ff6b6b" : "#43c8ff"}`,
-+    boxShadow: hasError ? "0 0 0 3px rgba(255,107,107,.2)" : "none",
-+  });
-   function handleChange(e) {
-     setForm({ ...form, [e.target.name]: e.target.value });
+ // База API
+ // По умолчанию (как раньше) ходим на `${BASE}/api`.
+ // Локально можно переопределить через переменные окружения,
+ // чтобы сразу стучаться в FastAPI (например http://127.0.0.1:8004).
+ const ENV_API_BASE =
+   process.env.NEXT_PUBLIC_API_URL ||
+   process.env.NEXT_PUBLIC_API_BASE_URL ||
+   process.env.NEXT_PUBLIC_DEV_API_URL ||
+   '';
+ 
+-export const API_BASE =
+-  ENV_API_BASE.trim()
+-    ? ENV_API_BASE.replace(/\/$/, '')
+-    : `${BASE}/api`;
++// Если в проде env указывает на другой домен, чем открытый сайт, — игнорируем его,
++// чтобы избежать CORS/префлайт блокировок.
++const SHOULD_FORCE_RUNTIME_BASE = (() => {
++  if (!ENV_API_BASE || APP_ENV !== 'production' || !RUNTIME_BASE) return false;
++  try {
++    const envHost = new URL(ENV_API_BASE).host;
++    const runtimeHost = new URL(RUNTIME_BASE).host;
++    return envHost !== runtimeHost;
++  } catch {
++    return false;
++  }
++})();
++
++const EFFECTIVE_BASE =
++  (APP_ENV === 'production' && RUNTIME_BASE ? RUNTIME_BASE : BASE).replace(/\/$/, '');
++
++export const API_BASE = (() => {
++  if (ENV_API_BASE.trim() && !SHOULD_FORCE_RUNTIME_BASE) {
++    return ENV_API_BASE.replace(/\/$/, '');
++  }
++  return `${EFFECTIVE_BASE}/api`;
++})();
+ 
+ // Совместимость с существующим кодом
+ export const API = API_BASE;
+ 
+ /** Склеивает абсолютный URL к API */
+ export function api(path = ''): string {
+   const p = path.startsWith('/') ? path : `/${path}`;
+   return `${API_BASE}${p}`;
+ }
+ 
+ // alias под старые импорты
+ export const withApi = api;
+ 
+ /** Абсолютный URL к сайту (assets и пр.) */
+ export function abs(path = ''): string {
+   const p = path.startsWith('/') ? path : `/${path}`;
+   return `${BASE}${p}`;
+ }
+ 
+ /** WebSocket URL */
+ const ENV_WS_BASE = (
+   process.env.NEXT_PUBLIC_WS_URL ||
+   process.env.NEXT_PUBLIC_WS_BASE ||
+   ''
+ ).trim();
+ 
+ export function ws(path = ''): string {
+   const p = path.startsWith('/') ? path : `/${path}`;
+ 
+-  // Если явно задан WS‑URL в env (локальная дев-база) — используем его
++  // Если явно задан WS‑URL в env (локальная дев-база) — используем его,
++  // но в проде перепроверяем, что домен совпадает с текущим (иначе mixed content/CORS).
+   if (ENV_WS_BASE) {
++    try {
++      if (
++        APP_ENV === 'production' &&
++        RUNTIME_BASE &&
++        new URL(ENV_WS_BASE).host !== new URL(RUNTIME_BASE).host
++      ) {
++        const host = RUNTIME_BASE.replace(/^https?:\/\//, '');
++        const proto = RUNTIME_BASE.startsWith('https') ? 'wss' : 'ws';
++        return `${proto}://${host}${p}`;
++      }
++    } catch {}
++
+     return `${ENV_WS_BASE.replace(/\/$/, '')}${p}`;
    }
  
-   async function handleSubmit(e) {
-     e.preventDefault();
-     setMsg("");
-     if (!form.password || !password2)
-       return setMsg(
-         t("register.enterAndConfirmPass", "Введите и подтвердите пароль")
-       );
-     if (form.password !== password2)
-       return setMsg(t("register.passwordMismatch", "Пароли не совпадают"));
+-  // Иначе старое поведение: тот же хост, что и BASE
+-  const host = BASE.replace(/^https?:\/\//, '');
+-  const proto = BASE.startsWith('https') ? 'wss' : 'ws';
++  // Иначе старое поведение: тот же хост, что и BASE (или фактический runtime-домен)
++  const base = RUNTIME_BASE || BASE;
++  const host = base.replace(/^https?:\/\//, '');
++  const proto = base.startsWith('https') ? 'wss' : 'ws';
+   return `${proto}://${host}${p}`;
+ }
  
-     const data = {
-       contact_person: form.contact_person,
-       country: form.country,
-       city: form.city,
-       phone: form.phone.startsWith("+") ? form.phone : "+" + form.phone,
-       email: form.email,
-       password: form.password,
-       // роль и привязка к менеджеру — на бэке
-     };
  
-     try {
+ // Иногда в коде встречается makeWsUrl — оставляем алиас
+ export const makeWsUrl = ws;
+ 
+ export default {
+   APP_ENV,
+   BASE,
+   API_BASE,
+   API,
+   api,
+   withApi,
+   abs,
+   ws,
+   makeWsUrl
+ };
