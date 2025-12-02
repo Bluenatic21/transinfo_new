@@ -1,89 +1,115 @@
-diff --git a/frontend/src/app/components/TransportCompactCard.js b/frontend/src/app/components/TransportCompactCard.js
-index 43542210c691d006a4adc62c42876eb78c4444a7..8cdde5120477199b524da3702264f4efb87f6967 100644
---- a/frontend/src/app/components/TransportCompactCard.js
-+++ b/frontend/src/app/components/TransportCompactCard.js
-@@ -363,78 +363,78 @@ export default function TransportCompactCard({
-         const [d, m, y] = parts;
-         return `${String(y).padStart(4, "20")}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+diff --git a/frontend/src/app/components/TransportList.js b/frontend/src/app/components/TransportList.js
+index b2f148908c41f0ea02acd1110195dcc64159451a..7e4cc2170c6e131f99389ca652172a4bea375fc8 100644
+--- a/frontend/src/app/components/TransportList.js
++++ b/frontend/src/app/components/TransportList.js
+@@ -112,82 +112,78 @@ const iconBtnStyle = {
+   color: "var(--transport-card-icon-fg, #43c8ff)",
+   border: "none",
+   borderRadius: "50%",
+   width: 32,
+   height: 32,
+   fontSize: 16,
+   cursor: "pointer",
+   marginLeft: 3,
+   boxShadow: "var(--transport-card-icon-shadow, 0 1px 8px #23416722)",
+ };
+ 
+ const SimpleMap = dynamic(() => import("./SimpleMap"), { ssr: false });
+ 
+ function parseDateDMY(str) {
+   if (!str) return null;
+   const parts = str.split(/[./-]/);
+   if (parts.length !== 3) return null;
+   if (str.includes("-")) return str;
+   const [d, m, y] = parts;
+   return `${y.padStart(4, "20")}-${m.padStart(2, "0")}-${d.padStart(2, "0")}`;
+ }
+ 
+ function FlagIcon({ country, size = 22 }) {
+   if (!country) return null;
+   return (
+-    <span
+-      style={{
+-        display: "inline-flex",
+-        alignItems: "center",
+-        justifyContent: "center",
+-        width: size,
+-        height: size,
+-        minWidth: size,
+-        minHeight: size,
+-        background: "var(--transport-card-chip-bg, #193158)",
+-        borderRadius: 5,
+-        border: "1.2px solid var(--transport-card-tag-border, #234167)",
+-        marginRight: 8,
+-        marginLeft: -2,
+-        boxShadow: "var(--transport-card-chip-shadow, 0 1px 6px #23416711)",
+-        overflow: "hidden",
+-        flexShrink: 0,
+-        flexGrow: 0,
+-        position: "relative",
+-      }}
+-    >
+-      <ReactCountryFlag
+-        countryCode={country}
+-        svg
+-        style={{
+-          width: size - 3,
+-          height: size - 3,
+-          objectFit: "cover",
+-          borderRadius: 4,
+-          background: "#fff",
+-          display: "block",
+-        }}
++    <span
++      style={{
++        display: "inline-flex",
++        alignItems: "center",
++        justifyContent: "center",
++        width: size,
++        height: size,
++        minWidth: size,
++        minHeight: size,
++        marginRight: 8,
++        marginLeft: -2,
++        overflow: "hidden",
++        flexShrink: 0,
++        flexGrow: 0,
++        position: "relative",
++    }}
++  >
++    <ReactCountryFlag
++      countryCode={country}
++      svg
++      style={{
++        width: size - 3,
++        height: size - 3,
++        objectFit: "cover",
++        borderRadius: 4,
++        background: "#fff",
++        display: "block",
++      }}
+         title={country}
+       />
+     </span>
+   );
+ }
+ 
+ const LANGS = ["en", "ru", "tr", "ka"];
+ function getCountryCode(location) {
+   if (!location) return null;
+   const parts = location.split(",").map((s) => s.trim());
+   let country = parts[parts.length - 1];
+   if (!country) return null;
+   let code = null;
+   for (const lang of LANGS) {
+     code = countries.getAlpha2Code(country, lang);
+     if (code) break;
+   }
+   if (!code && parts.length > 1) {
+     for (let i = parts.length - 1; i >= 0; i--) {
+       for (const lang of LANGS) {
+         code = countries.getAlpha2Code(parts[i], lang);
+         if (code) break;
+       }
+       if (code) break;
      }
-     function formatAvail(from, to) {
-         if (from && to && from !== to) {
-             return `${new Date(parseDateDMY(from)).toLocaleDateString(intl, { day: "2-digit", month: "2-digit", year: "2-digit" })} — ${new Date(parseDateDMY(to)).toLocaleDateString(intl, { day: "2-digit", month: "2-digit", year: "2-digit" })}`;
-         }
-         if (from) return new Date(parseDateDMY(from)).toLocaleDateString(intl, { day: "2-digit", month: "2-digit", year: "2-digit" });
-         return "—";
-     }
-     const availText =
-         transport?.mode === "постоянно"
-             ? (transport?.regularity
-                 ? `${t("availability.constant", "постоянно")} — ${localizeRegularity(transport.regularity)}`
-                 : t("availability.constant", "постоянно"))
-             : formatAvail(transport.ready_date_from, transport.ready_date_to);
- 
-     const metaItems = useMemo(() => {
-         const items = [];
-         if (transport.transport_kind) {
-             items.push({
-                 key: "kind",
-                 content: (
-                     <span
-                         className={limited ? "pw-blur pw-noevents" : ""}
--                        style={{ display: "inline-flex", alignItems: "center", gap: 6, color: "#9ac7ff" }}
-+                        style={{ display: "inline-flex", alignItems: "center", gap: 6, color: "var(--compact-card-meta-accent)" }}
-                     >
-                         <FaTruck style={{ marginRight: 3, verticalAlign: -2 }} />
-                         <span style={{ fontWeight: 700 }}>{findKindLabelByValue(transport.transport_kind)}</span>
-                     </span>
-                 ),
-             });
-         }
-         items.push({
-             key: "avail",
-             content: (
-                 <span style={{ display: "inline-flex", alignItems: "center", gap: 6, color: "var(--compact-card-text-primary)" }}>
-                     <FaClock style={{ marginRight: 3, verticalAlign: -2 }} />
-                     <span style={{ fontWeight: 700 }}>{availText}</span>
-                 </span>
-             ),
-         });
-         if (Array.isArray(transport.load_types) && transport.load_types.length > 0) {
-             items.push({
-                 key: "load",
-                 content: (
-                     <span
-                         className={limited ? "pw-blur pw-noevents" : ""}
--                        style={{ display: "inline-flex", alignItems: "center", gap: 6, color: "#9ac7ff" }}
--                    >
--                        <span style={{ color: "#8ecae6" }}>{t("load.label", "Загрузка:")}</span>{" "}
--                        <b>{localizeLoadingTypes(transport.load_types).join(", ")}</b>
--                    </span>
-+                        style={{ display: "inline-flex", alignItems: "center", gap: 6, color: "var(--compact-card-meta-accent)" }}
-+                    >
-+                        <span style={{ color: "var(--compact-card-meta-label)" }}>{t("load.label", "Загрузка:")}</span>{" "}
-+                        <b>{localizeLoadingTypes(transport.load_types).join(", ")}</b>
-+                    </span>
-                 ),
-             });
-         }
-         return items;
-     }, [findKindLabelByValue, limited, localizeLoadingTypes, t, transport.load_types, transport.transport_kind, availText]);
- 
-     // --- Время публикации транспорта (дата/время выставления) ---
-     const createdAt = transport?.created_at ? new Date(transport.created_at) : null;
-     const createdDateRu = createdAt
-         ? createdAt.toLocaleDateString(intl, { day: "2-digit", month: "2-digit", year: "2-digit" })
- 
-         : "";
-     const createdTimeRu = createdAt
-         ? createdAt.toLocaleTimeString(intl, { hour: "2-digit", minute: "2-digit" })
-         : "";
-     const createdTitleRu = createdAt ? createdAt.toLocaleString(intl) : "";
- 
-     // Направление: готовим текст и флаги наличия частей
-     // fromStr не был объявлен → рантайм. Объявляем и нормализуем обе стороны.
-     const fromStr =
-         (Array.isArray(transport.from_locations) && transport.from_locations.length
-             ? (typeof transport.from_locations[0] === "string"
-                 ? transport.from_locations[0]
-                 : (transport.from_locations[0]?.location || ""))
-             : (transport.from_location || transport.from_city || transport.from || "")) || "";

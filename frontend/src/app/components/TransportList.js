@@ -143,29 +143,25 @@ function FlagIcon({ country, size = 22 }) {
         height: size,
         minWidth: size,
         minHeight: size,
-        background: "var(--transport-card-chip-bg, #193158)",
-        borderRadius: 5,
-        border: "1.2px solid var(--transport-card-tag-border, #234167)",
         marginRight: 8,
         marginLeft: -2,
-        boxShadow: "var(--transport-card-chip-shadow, 0 1px 6px #23416711)",
         overflow: "hidden",
         flexShrink: 0,
         flexGrow: 0,
         position: "relative",
+    }}
+  >
+    <ReactCountryFlag
+      countryCode={country}
+      svg
+      style={{
+        width: size - 3,
+        height: size - 3,
+        objectFit: "cover",
+        borderRadius: 4,
+        background: "#fff",
+        display: "block",
       }}
-    >
-      <ReactCountryFlag
-        countryCode={country}
-        svg
-        style={{
-          width: size - 3,
-          height: size - 3,
-          objectFit: "cover",
-          borderRadius: 4,
-          background: "#fff",
-          display: "block",
-        }}
         title={country}
       />
     </span>
