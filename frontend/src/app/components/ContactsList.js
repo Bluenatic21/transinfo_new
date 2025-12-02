@@ -213,7 +213,7 @@ export default function ContactsList() {
                             {secondaryName && (
                                 <div
                                     style={{
-                                        color: "#cfe9ff",
+                                        color: "var(--contact-secondary-name, #cfe9ff)",
                                         fontSize: 13,
                                         lineHeight: 1.35,
                                         marginTop: 2,

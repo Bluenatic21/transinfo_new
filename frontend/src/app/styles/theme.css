@@ -6,6 +6,21 @@
     --brand-orange: #FE9805;
     --brand-navy: #111B27;
 
+    /* contacts */
+    --contact-secondary-name: #cfe9ff;
+
+    /* Call overlay */
+    --call-overlay-bg: #17263a;
+    --call-overlay-text: #e6eef8;
+    --call-overlay-border: rgba(255, 255, 255, 0.06);
+    --call-overlay-avatar-bg: rgba(255, 255, 255, 0.06);
+    --call-overlay-shadow: 0 22px 60px rgba(0, 0, 0, 0.46);
+    --call-overlay-mini-shadow: 0 16px 40px rgba(0, 0, 0, 0.46);
+    --call-overlay-btn-neutral-bg: #213651;
+    --call-overlay-btn-neutral-text: #e6eef8;
+    --call-overlay-mini-btn-bg: #233854;
+    --call-overlay-mini-btn-text: #e6eef8;
+
     /* neutral gray scale */
     --gray-50: #F5F7FA;
     --gray-75: #EEF1F6;
@@ -74,6 +89,7 @@
     --chat-input-bg: #232b3c;
     --chat-input-border: #364869;
     --chat-input-text: #e8f1ff;
+    --contact-secondary-name: #cfe9ff;
 }
 
 /* Светлая тема */
@@ -122,14 +138,25 @@
     --chat-info-card-bg: #eef4ff;
     --chat-info-card-text: #0f172a;
     --chat-info-card-title: #1d4ed8;
-    --chat-info-card-border: #c7d7ef;
-    --chat-info-card-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
     --chat-translation-bg: #eef2f7;
     --chat-translation-text: #0f172a;
     --chat-reaction-shadow: 0 2px 12px rgba(15, 23, 42, 0.12);
     --chat-input-bg: #ffffff;
     --chat-input-border: #cbd5e1;
     --chat-input-text: #0f172a;
+    --contact-secondary-name: var(--text-secondary);
+
+    /* Call overlay */
+    --call-overlay-bg: var(--bg-card);
+    --call-overlay-text: var(--text-primary);
+    --call-overlay-border: var(--border-subtle);
+    --call-overlay-avatar-bg: var(--bg-card-soft);
+    --call-overlay-shadow: var(--shadow-soft);
+    --call-overlay-mini-shadow: var(--shadow-soft);
+    --call-overlay-btn-neutral-bg: var(--control-bg);
+    --call-overlay-btn-neutral-text: var(--text-primary);
+    --call-overlay-mini-btn-bg: var(--control-bg);
+    --call-overlay-mini-btn-text: var(--text-primary);
 }
 
 /* === Header design tokens === */
