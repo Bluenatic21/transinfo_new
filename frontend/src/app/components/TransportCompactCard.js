@@ -385,7 +385,7 @@ export default function TransportCompactCard({
                 content: (
                     <span
                         className={limited ? "pw-blur pw-noevents" : ""}
-                        style={{ display: "inline-flex", alignItems: "center", gap: 6, color: "#9ac7ff" }}
+                        style={{ display: "inline-flex", alignItems: "center", gap: 6, color: "var(--compact-card-meta-accent)" }}
                     >
                         <FaTruck style={{ marginRight: 3, verticalAlign: -2 }} />
                         <span style={{ fontWeight: 700 }}>{findKindLabelByValue(transport.transport_kind)}</span>
@@ -408,9 +408,9 @@ export default function TransportCompactCard({
                 content: (
                     <span
                         className={limited ? "pw-blur pw-noevents" : ""}
-                        style={{ display: "inline-flex", alignItems: "center", gap: 6, color: "#9ac7ff" }}
+                        style={{ display: "inline-flex", alignItems: "center", gap: 6, color: "var(--compact-card-meta-accent)" }}
                     >
-                        <span style={{ color: "#8ecae6" }}>{t("load.label", "Загрузка:")}</span>{" "}
+                        <span style={{ color: "var(--compact-card-meta-label)" }}>{t("load.label", "Загрузка:")}</span>{" "}
                         <b>{localizeLoadingTypes(transport.load_types).join(", ")}</b>
                     </span>
                 ),
