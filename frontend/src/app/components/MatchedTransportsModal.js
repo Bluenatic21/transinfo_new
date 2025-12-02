@@ -3,13 +3,14 @@ import TransportCompactCard from "./TransportCompactCard";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { useLang } from "../i18n/LangProvider";
+import { useTheme } from "../providers/ThemeProvider";
 
 const SimpleMap = dynamic(() => import("./SimpleMap"), { ssr: false });
 
 function MatchesList({ matches, onClose, router, hoveredItemId, setHoveredItemId }) {
     const { t } = useLang();
     if (!matches || matches.length === 0) {
-        return <div style={{ color: "#b3d5fa" }}>{t("matchedTransports.empty", "Нет совпавших транспортов.")}</div>;
+        return <div style={{ color: "var(--text-secondary)" }}>{t("matchedTransports.empty", "Нет совпавших транспортов.")}</div>;
     }
     return matches.map(tr => (
         <TransportCompactCard
@@ -36,6 +37,8 @@ function MatchesList({ matches, onClose, router, hoveredItemId, setHoveredItemId
 export default function MatchedTransportsModal({ open, onClose, matches, myTransportId, myTransport, myOrder }) {
     const router = useRouter();
     const { t } = useLang();
+    const { resolvedTheme } = useTheme?.() || { resolvedTheme: "dark" };
+    const isLight = resolvedTheme === "light";
     const [hoveredItemId, setHoveredItemId] = useState(null); // <-- hover state для синхронизации карты и списка
 
     if (!open) return null;

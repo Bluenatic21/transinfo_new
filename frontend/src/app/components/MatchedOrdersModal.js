@@ -3,13 +3,14 @@ import CargoCompactCard from "./CargoCompactCard";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { useLang } from "../i18n/LangProvider";
+import { useTheme } from "../providers/ThemeProvider";
 
 const SimpleMap = dynamic(() => import("./SimpleMap"), { ssr: false });
 
 function MatchesList({ matches, onClose, router, hoveredItemId, setHoveredItemId }) {
     const { t } = useLang();
     if (!matches || matches.length === 0)
-        return <div style={{ color: "#b3d5fa" }}>{t("matchedOrders.empty", "Нет совпавших грузов.")}</div>;
+        return <div style={{ color: "var(--text-secondary)" }}>{t("matchedOrders.empty", "Нет совпавших грузов.")}</div>;
     return matches.map(order => (
         <CargoCompactCard
             key={order.id}
@@ -30,6 +31,8 @@ function MatchesList({ matches, onClose, router, hoveredItemId, setHoveredItemId
 export default function MatchedOrdersModal({ open, onClose, matches, myOrderId, myOrder, myTransport }) {
     const router = useRouter();
     const { t } = useLang();
+    const { resolvedTheme } = useTheme?.() || { resolvedTheme: "dark" };
+    const isLight = resolvedTheme === "light";
     const [hoveredItemId, setHoveredItemId] = useState(null); // hover state для синхронизации карты и списка
 
     if (!open) return null;
@@ -39,25 +42,38 @@ export default function MatchedOrdersModal({ open, onClose, matches, myOrderId, 
     const cardsWidth = 0.52;
     const mapWidth = 0.48;
 
+    const palette = {
+        overlay: isLight ? "color-mix(in srgb, #0f172a 26%, transparent)" : "rgba(13,23,37,0.85)",
+        shellBg: isLight ? "var(--surface)" : "#232d46",
+        shellBorder: isLight ? "1px solid var(--border-subtle)" : "1px solid rgba(255,255,255,0.04)",
+        shellShadow: isLight ? "0 18px 46px rgba(15,23,42,0.14)" : "0 4px 32px #0d172560",
+        heading: "var(--text-primary)",
+        close: isLight ? "var(--text-secondary)" : "#82b1ff",
+        mapBg: isLight ? "var(--surface-soft)" : "#203153",
+        emptyMap: isLight ? "var(--text-muted)" : "#b3d5fa77",
+    };
+
     return (
         <div className="modal-overlay" style={{
             position: "fixed", left: 0, top: 0, width: "100vw", height: "100vh", zIndex: 2000,
-            background: "rgba(13,23,37,0.85)", display: "flex", justifyContent: "center", alignItems: "center"
+            background: palette.overlay, display: "flex", justifyContent: "center", alignItems: "center"
         }}
             onClick={onClose} // <--- добавлено
         >
             <div style={{
-                background: "#232d46",
+                background: palette.shellBg,
                 borderRadius: 22,
                 width: modalWidth,
                 height: modalHeight,
                 maxWidth: "94vw",
                 maxHeight: "95vh",
-                boxShadow: "0 4px 32px #0d172560",
+                boxShadow: palette.shellShadow,
+                border: palette.shellBorder,
                 display: "flex",
                 flexDirection: "column",
                 overflow: "hidden",
                 padding: 0,
+                color: "var(--text-primary)",
             }}
                 onClick={e => e.stopPropagation()} // <--- добавлено
             >
@@ -70,14 +86,14 @@ export default function MatchedOrdersModal({ open, onClose, matches, myOrderId, 
                     flexShrink: 0,
                 }}>
                     <span style={{
-                        fontWeight: 700, color: "#e3f2fd", fontSize: 26,
+                        fontWeight: 700, color: palette.heading, fontSize: 26,
                         letterSpacing: "-0.5px"
                     }}>
                         {t("matchedOrders.title", "Совпавшие грузы")}
                     </span>
                     <button onClick={onClose}
                         style={{
-                            background: "none", border: "none", color: "#82b1ff",
+                            background: "none", border: "none", color: palette.close,
                             fontSize: 36, cursor: "pointer", marginLeft: 18, marginTop: -2
                         }}>×</button>
                 </div>
@@ -131,7 +147,7 @@ export default function MatchedOrdersModal({ open, onClose, matches, myOrderId, 
                         minWidth: 350,
                         borderRadius: 16,
                         overflow: "hidden",
-                        background: "#203153",
+                        background: palette.mapBg,
                         display: "flex",
                         height: "100%"
                     }}>
@@ -154,7 +170,7 @@ export default function MatchedOrdersModal({ open, onClose, matches, myOrderId, 
                             <div style={{
                                 width: "100%", height: "100%",
                                 display: "flex", alignItems: "center", justifyContent: "center",
-                                color: "#b3d5fa77"
+                                color: palette.emptyMap
                             }}>{t("matchedOrders.emptyMap", "Нет совпавших грузов на карте")}</div>
                         )}
                     </div>
