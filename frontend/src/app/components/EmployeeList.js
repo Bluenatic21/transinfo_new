@@ -4,6 +4,7 @@ import Link from "next/link";
 import { FiSearch, FiUserPlus } from "react-icons/fi";
 import { useLang } from "../i18n/LangProvider";
 import { API_BASE, api, abs } from "@/config/env";
+import { useTheme } from "../providers/ThemeProvider";
 
 // Базовые адреса централизованы в "@/config/env"
 
@@ -12,13 +13,49 @@ const PAGE_SIZE = 30; // безопасная пачка
 export default function EmployeeList({
     canManage = true,
     reloadSignal = 0,
-    onCreateNew, // откроет EmployeeRegisterModal из страницы профиля
+    onCreateNew, // откроет EmployeeRegisterModal из страницы профиля␊
 }) {
     const [loading, setLoading] = useState(false);
     const [employees, setEmployees] = useState([]);
     const [error, setError] = useState("");
     const [query, setQuery] = useState("");
     const { t } = useLang();
+    const { resolvedTheme } = useTheme?.() || { resolvedTheme: "dark" };
+    const isLight = resolvedTheme === "light";
+    const palette = {
+        containerBg: isLight ? "var(--bg-card)" : "#182033",
+        containerBorder: isLight ? "1px solid var(--border-subtle)" : "1px solid #233a5a",
+        containerText: isLight ? "var(--text-primary)" : "#e3f2fd",
+        badgeBg: isLight ? "var(--control-bg-hover)" : "#182b4a",
+        badgeBorder: isLight ? "1px solid var(--border-subtle)" : "1px solid #2a3e65",
+        badgeText: isLight ? "var(--text-secondary)" : "#9cc4e7",
+        addButtonBg: isLight ? "#e8f1ff" : "#20325a",
+        addButtonIcon: isLight ? "#1d4ed8" : "#43c8ff",
+        searchIcon: isLight ? "#64748b" : "#9cc4e7",
+        searchBg: isLight ? "var(--input)" : "#0f1a2b",
+        searchBorder: isLight ? "1px solid var(--border-subtle)" : "1px solid #233a5a",
+        searchText: isLight ? "var(--text-primary)" : "#e3f2fd",
+        infoText: isLight ? "var(--text-secondary)" : "#9cc4e7",
+        errorText: isLight ? "#dc2626" : "#ff9ea6",
+        cardBg: isLight ? "var(--bg-card)" : "#121a2b",
+        cardBorder: isLight ? "1px solid var(--border-subtle)" : "1px solid #233a5a",
+        cardShadowHover: isLight ? "0 10px 28px rgba(15, 23, 42, 0.08)" : "0 6px 18px rgba(0,0,0,.2)",
+        avatarBorder: isLight ? "1.6px solid #d7deea" : "1.6px solid #223350",
+        avatarBg: isLight ? "#f1f5f9" : "#182337",
+        nameColor: isLight ? "var(--text-primary)" : "#e3f2fd",
+        roleBg: isLight ? "var(--control-bg)" : "#182b4a",
+        roleBorder: isLight ? "1px solid var(--border-subtle)" : "1px solid #2a3e65",
+        roleText: isLight ? "var(--text-secondary)" : "#9cc4e7",
+        emailColor: isLight ? "var(--text-secondary)" : "#cfe9ff",
+        phoneColor: isLight ? "var(--text-muted)" : "#9cc4e7",
+        editBtnBg: isLight ? "var(--control-bg)" : "#192a4a",
+        editBtnBorder: isLight ? "1px solid var(--border-subtle)" : "1px solid #2a3e65",
+        editBtnText: isLight ? "var(--text-secondary)" : "#9cc4e7",
+        deleteBtnBg: "#db2344",
+        deleteBtnText: "#fff",
+        showMoreColor: isLight ? "#2563eb" : "#90caf9",
+        showMoreBorder: isLight ? "1px solid #2563eb" : "1px solid #90caf9",
+    };
 
     const [offset, setOffset] = useState(0);
     const [eof, setEof] = useState(false);
@@ -244,10 +281,12 @@ export default function EmployeeList({
     return (
         <div
             style={{
-                background: "#182033",
+                background: palette.containerBg,
                 borderRadius: 18,
                 padding: 16,
-                border: "1px solid #233a5a",
+                border: palette.containerBorder,
+                color: palette.containerText,
+                boxShadow: isLight ? "0 12px 28px rgba(15, 23, 42, 0.06)" : "none",
             }}
         >
             {/* header */}
@@ -267,7 +306,7 @@ export default function EmployeeList({
                         alignItems: "center",
                         gap: 8,
                         fontWeight: 800,
-                        color: "#e3f2fd",
+                        color: palette.containerText,
                         fontSize: 18,
                     }}
                 >
@@ -278,9 +317,9 @@ export default function EmployeeList({
                             borderRadius: 999,
                             fontSize: 12,
                             fontWeight: 800,
-                            background: "#182b4a",
-                            border: "1px solid #2a3e65",
-                            color: "#9cc4e7",
+                            background: palette.badgeBg,
+                            border: palette.badgeBorder,
+                            color: palette.badgeText,
                             lineHeight: 1.4,
                         }}
                         title={`${t("employees.count", "Кол-во сотрудников")}: ${totalCount ?? employees.length}`}
@@ -304,33 +343,42 @@ export default function EmployeeList({
                                 justifyContent: "center",
                                 borderRadius: 9,
                                 border: "none",
-                                background: "#20325a",
+                                background: palette.addButtonBg,
                                 cursor: "pointer"
                             }}
                         >
-                            <FiUserPlus size={18} color="#43c8ff" />
+                            <FiUserPlus size={18} color={palette.addButtonIcon} />
                         </button>
                     )}
                     <div style={{ position: "relative", display: isMobile ? "block" : "inline-flex", width: isMobile ? "100%" : 380, maxWidth: isMobile ? "100%" : "36vw" }}>
-                        <FiSearch size={18} color="#9cc4e7"
+                        <FiSearch size={18} color={palette.searchIcon}
                             style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
                         <input
                             value={query}
                             onChange={(e) => setQuery(e.target.value)}
                             placeholder={t("employees.searchPlaceholder", "Поиск: имя, email, телефон, роль")}
-                            style={{ padding: "10px 12px 10px 34px", background: "#0f1a2b", border: "1px solid #233a5a", borderRadius: 10, color: "#e3f2fd", fontSize: 14, outline: "none", width: "100%" }}
+                            style={{
+                                padding: "10px 12px 10px 34px",
+                                background: palette.searchBg,
+                                border: palette.searchBorder,
+                                borderRadius: 10,
+                                color: palette.searchText,
+                                fontSize: 14,
+                                outline: "none",
+                                width: "100%",
+                            }}
                         />
                     </div>
                 </div>
             </div>
 
             {/* list area */}
-            {loading && <div style={{ padding: 12, color: "#9cc4e7" }}>{t("common.loading", "Загрузка...")}</div>}
+            {loading && <div style={{ padding: 12, color: palette.infoText }}>{t("common.loading", "Загрузка...")}</div>}
             {!loading && error && (
-                <div style={{ padding: 12, color: "#ff9ea6" }}>{error}</div>
+                <div style={{ padding: 12, color: palette.errorText }}>{error}</div>
             )}
             {!loading && !error && employees.length === 0 && (
-                <div style={{ padding: 12, color: "#9cc4e7" }}>{t("employees.empty", "Пока нет сотрудников.")}</div>
+                <div style={{ padding: 12, color: palette.infoText }}>{t("employees.empty", "Пока нет сотрудников.")}</div>
             )}
 
             {/* WIDE one-per-row cards */}
@@ -361,8 +409,8 @@ export default function EmployeeList({
                                     key={`emp-${employeeKey(emp) || i}`}
                                     style={{
                                         width: "100%",
-                                        background: "#121a2b",
-                                        border: "1px solid #233a5a",
+                                        background: palette.cardBg,
+                                        border: palette.cardBorder,
                                         borderRadius: 16,
                                         padding: 14,
                                         display: "flex",
@@ -373,7 +421,7 @@ export default function EmployeeList({
                                     }}
                                     onMouseEnter={(e) => {
                                         e.currentTarget.style.transform = "translateY(-2px)";
-                                        e.currentTarget.style.boxShadow = "0 6px 18px rgba(0,0,0,.2)";
+                                        e.currentTarget.style.boxShadow = palette.cardShadowHover;
                                     }}
                                     onMouseLeave={(e) => {
                                         e.currentTarget.style.transform = "translateY(0)";
@@ -404,8 +452,8 @@ export default function EmployeeList({
                                                 height: 64,
                                                 borderRadius: 10,
                                                 objectFit: "cover",
-                                                border: "1.6px solid #223350",
-                                                background: "#182337",
+                                                border: palette.avatarBorder,
+                                                background: palette.avatarBg,
                                                 display: "block",
                                                 flexShrink: 0,
                                             }}
@@ -424,7 +472,7 @@ export default function EmployeeList({
                                             >
                                                 <div
                                                     style={{
-                                                        color: "#e3f2fd",
+                                                        color: palette.nameColor,
                                                         fontWeight: 800,
                                                         fontSize: 16,
                                                         overflow: "hidden",
@@ -445,9 +493,9 @@ export default function EmployeeList({
                                                         fontWeight: 800,
                                                         padding: "4px 8px",
                                                         borderRadius: 999,
-                                                        background: "#182b4a",
-                                                        border: "1px solid #2a3e65",
-                                                        color: "#9cc4e7",
+                                                        background: palette.roleBg,
+                                                        border: palette.roleBorder,
+                                                        color: palette.roleText,
                                                         whiteSpace: "nowrap",
                                                     }}
                                                 >
@@ -457,7 +505,7 @@ export default function EmployeeList({
 
                                             <div
                                                 style={{
-                                                    color: "#cfe9ff",
+                                                    color: palette.emailColor,
                                                     fontSize: 13,
                                                     lineHeight: 1.35,
                                                     marginBottom: 2,
@@ -472,9 +520,9 @@ export default function EmployeeList({
                                             {phone && (
                                                 <div
                                                     style={{
-                                                        color: "#9cc4e7",
+                                                        color: palette.phoneColor,
                                                         fontSize: 12.5,
-                                                        opacity: 0.9,
+                                                        opacity: isLight ? 1 : 0.9,
                                                         marginTop: 2,
                                                         overflow: "hidden",
                                                         textOverflow: "ellipsis",
@@ -506,9 +554,9 @@ export default function EmployeeList({
                                                 style={{
                                                     padding: "8px 12px",
                                                     borderRadius: 8,
-                                                    border: "1px solid #2a3e65",
-                                                    background: "#192a4a",
-                                                    color: "#9cc4e7",
+                                                    border: palette.editBtnBorder,
+                                                    background: palette.editBtnBg,
+                                                    color: palette.editBtnText,
                                                     fontWeight: 700,
                                                     cursor: "pointer",
                                                     whiteSpace: "nowrap",
@@ -539,8 +587,8 @@ export default function EmployeeList({
                                                     padding: "8px 12px",
                                                     borderRadius: 8,
                                                     border: "none",
-                                                    background: "#db2344",
-                                                    color: "#fff",
+                                                    background: palette.deleteBtnBg,
+                                                    color: palette.deleteBtnText,
                                                     fontWeight: 700,
                                                     cursor: "pointer",
                                                     whiteSpace: "nowrap",
@@ -558,7 +606,7 @@ export default function EmployeeList({
 
             {/* Прогресс + Показать ещё + сенсор */}
             {loading && employees.length > 0 && (
-                <div style={{ padding: 12, color: "#9cc4e7", textAlign: "center" }}>
+                <div style={{ padding: 12, color: palette.infoText, textAlign: "center" }}>
                     {t("common.loading", "Загрузка…")}
                 </div>
             )}
@@ -568,8 +616,8 @@ export default function EmployeeList({
                     style={{
                         display: "block",
                         background: "transparent",
-                        color: "#90caf9",
-                        border: "1px solid #90caf9",
+                        color: palette.showMoreColor,
+                        border: palette.showMoreBorder,
                         borderRadius: 12,
                         padding: "8px 12px",
                         cursor: "pointer",
@@ -615,7 +663,7 @@ export default function EmployeeList({
                         />
                     </div>
 
-                    {saveError && <div style={{ color: "#ff9ea6", marginTop: 10 }}>{saveError}</div>}
+                    {saveError && <div style={{ color: palette.errorText, marginTop: 10 }}>{saveError}</div>}
 
                     <div style={{ display: "flex", gap: 8, marginTop: 14, justifyContent: "flex-end" }}>
                         <Button ghost onClick={closeEdit} disabled={saving}>{t("common.cancel", "Отмена")}</Button>
@@ -649,14 +697,15 @@ function Modal({ title, children, onClose }) {
             <div
                 style={{
                     width: "min(820px, 96vw)",
-                    background: "#121a2b",
-                    border: "1px solid #2a3e65",
+                    background: "var(--bg-card)",
+                    border: "1px solid var(--border-subtle)",
                     borderRadius: 16,
                     padding: 16,
-                    boxShadow: "0 12px 32px rgba(0,0,0,.35)",
+                    boxShadow: "var(--shadow-soft)",
+                    color: "var(--text-primary)",
                 }}
             >
-                <div style={{ fontWeight: 800, color: "#e3f2fd", fontSize: 18, marginBottom: 12 }}>
+                <div style={{ fontWeight: 800, color: "var(--text-primary)", fontSize: 18, marginBottom: 12 }}>
                     {title}
                 </div>
                 {children}
@@ -675,7 +724,7 @@ function Button({ children, primary, ghost, ...props }) {
     const styles = primary
         ? { ...base, border: "none", background: "#2f7ce3", color: "white" }
         : ghost
-            ? { ...base, border: "1px solid #2a3e65", background: "#192a4a", color: "#9cc4e7" }
+            ? { ...base, border: "1px solid var(--border-subtle)", background: "var(--control-bg)", color: "var(--text-secondary)" }
             : base;
     return (
         <button {...props} style={styles}>
@@ -686,19 +735,19 @@ function Button({ children, primary, ghost, ...props }) {
 
 function LabeledInput({ label, value, onChange, placeholder = "", type = "text" }) {
     return (
-        <label style={{ display: "grid", gap: 6 }}>
-            <span style={{ color: "#9cc4e7", fontSize: 13, fontWeight: 700 }}>{label}</span>
+        <label style={{ display: "grid", gap: 6 }}>␊
+            <span style={{ color: "var(--text-secondary)", fontSize: 13, fontWeight: 700 }}>{label}</span>
             <input
                 type={type}
                 value={value}
                 placeholder={placeholder}
                 onChange={(e) => onChange(e.target.value)}
                 style={{
-                    background: "#0f1626",
-                    border: "1px solid #2a3e65",
+                    background: "var(--input)",
+                    border: "1px solid var(--border-subtle)",
                     borderRadius: 10,
                     padding: "10px 12px",
-                    color: "#e3f2fd",
+                    color: "var(--text-primary)",
                     outline: "none",
                 }}
             />
@@ -709,16 +758,16 @@ function LabeledInput({ label, value, onChange, placeholder = "", type = "text" 
 function LabeledSelect({ label, value, onChange, options = [] }) {
     return (
         <label style={{ display: "grid", gap: 6 }}>
-            <span style={{ color: "#9cc4e7", fontSize: 13, fontWeight: 700 }}>{label}</span>
+            <span style={{ color: "var(--text-secondary)", fontSize: 13, fontWeight: 700 }}>{label}</span>
             <select
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
                 style={{
-                    background: "#0f1626",
-                    border: "1px solid #2a3e65",
+                    background: "var(--input)",
+                    border: "1px solid var(--border-subtle)",
                     borderRadius: 10,
                     padding: "10px 12px",
-                    color: "#e3f2fd",
+                    color: "var(--text-primary)",
                     outline: "none",
                 }}
             >

@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState, useCallback, useRef, useMemo, Fragment } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useIsMobile } from "../../../hooks/useIsMobile";
 import dynamic from "next/dynamic";
 import ReactCountryFlag from "react-country-flag";
@@ -314,10 +314,13 @@ export default function OrderDetailsPage() {
     const params = useParams();
     const { id } = params;
     const router = useRouter();
+    const searchParams = useSearchParams();
     const [order, setOrder] = useState(null);
     const [loading, setLoading] = useState(true);
     const [ownerUser, setOwnerUser] = useState(null);
     const [viewsCount, setViewsCount] = useState(0);
+    const highlightParam = searchParams?.get("highlight");
+    const shouldHighlight = highlightParam === "1";
 
     const { resolvedTheme } = useTheme?.() || { resolvedTheme: "dark" };
     const COLORS = useMemo(() => getColors(resolvedTheme), [resolvedTheme]);
@@ -347,8 +350,10 @@ export default function OrderDetailsPage() {
     const [sending, setSending] = useState(false);
     const [showPaywall, setShowPaywall] = useState(false);
 
+
     const bidPanelRef = useRef();
     const mapRef = useRef(null);
+    const highlightRef = useRef(null);
 
     const actionPillStyle = useMemo(() => ({
         display: "inline-flex",
@@ -509,6 +514,23 @@ export default function OrderDetailsPage() {
             })
             .catch(() => { });
     }, [order?.id]);
+
+    useEffect(() => {
+        if (!shouldHighlight || loading) return;
+        const node = highlightRef.current;
+        if (!node) return;
+
+        node.classList.add("page-highlight");
+        node.setAttribute("tabindex", "-1");
+        node.focus({ preventScroll: true });
+        node.scrollIntoView({ behavior: "smooth", block: "start" });
+
+        const timer = setTimeout(() => node.classList.remove("page-highlight"), 2000);
+        return () => {
+            clearTimeout(timer);
+            node.classList.remove("page-highlight");
+        };
+    }, [loading, shouldHighlight]);
 
     const cardStyle = useMemo(
         () => ({
@@ -980,6 +1002,8 @@ export default function OrderDetailsPage() {
                 )}
 
                 <div
+                    ref={highlightRef}
+                    tabIndex={shouldHighlight ? -1 : undefined}
                     style={{
                         background: isMobile ? "transparent" : COLORS.pageBg,
                         minHeight: "100dvh",

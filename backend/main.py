@@ -1901,7 +1901,6 @@ async def track_publish(
     finally:
         db.close()
 
-app.include_router(ws_router)
 
 
 @tracking_router.post("/track/sessions/{session_id}/share", response_model=List[schemas.TrackingShareOut])
@@ -2897,6 +2896,11 @@ async def notifications_ws(
                 await websocket.close()
         except Exception as close_e:
             print(f"[WS ERROR] Error closing WS (notifications): {close_e}")
+            # Подключаем WS-router после объявления всех WebSocket-эндпоинтов,
+# иначе поздно определённые сокеты (например, /ws/notifications)
+# не попадут в приложение и push-уведомления не будут доставляться.
+app.include_router(ws_router)
+
 
 # Подключи к FastAPI:
 

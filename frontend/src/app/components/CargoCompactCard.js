@@ -1021,19 +1021,17 @@ const CargoCompactCard = forwardRef(function CargoCompactCard(
                     className={limited ? "pw-blur pw-noevents" : ""}
                     style={{
                         display: "flex",
-                        flexDirection: "column",
-                        alignItems: "center",
-                        marginLeft: 14,
-                        // резерв справа под метку даты в правом-нижнем углу карточки,
-                        // чтобы кнопки её не перекрывали (на мобиле не нужен)
-                        marginRight: isMobile ? 36 : 84,   // ← добавили отступ справа на мобиле под стрелку
-                        /* важно: на мобиле не фиксируем ширину — иначе карточка «уезжает» */
-                        minWidth: isMobile ? 0 : 186,
-                        // при Grid на мобиле прижимаем блок действий вправо
-                        justifySelf: isMobile ? "end" : undefined,
+                        flexDirection: isMobile ? "row" : "column",
+                        flexWrap: isMobile ? "wrap" : "nowrap",
+                        alignItems: isMobile ? "stretch" : "center",
+                        justifyContent: isMobile ? "flex-start" : "center",
+                        marginLeft: isMobile ? 0 : 14,
+                        marginRight: isMobile ? 0 : 84,
+                        minWidth: isMobile ? "100%" : 186,
                         position: "relative",
-                        // зазор снизу, чтобы столбик чипов не касался бейджа даты
-                        paddingBottom: isMobile ? 34 : 0,
+                        paddingTop: isMobile ? 2 : 0,
+                        paddingBottom: isMobile ? 6 : 0,
+                        gap: isMobile ? 8 : 10,
                     }}
                 >
                     {allowActions && onShowMatches && (
@@ -1054,8 +1052,9 @@ const CargoCompactCard = forwardRef(function CargoCompactCard(
                                 boxShadow: newMatchesCount > 0 ? "var(--compact-card-matches-shadow)" : undefined,
                                 position: "relative",
                                 whiteSpace: "nowrap",
-                                marginBottom: isMobile ? 6 : 8,
+                                marginBottom: isMobile ? 0 : 8,
                                 transition: "background .18s",
+                                width: isMobile ? "100%" : undefined,
                             }}
                             title={
                                 newMatchesCount > 0
@@ -1668,11 +1667,11 @@ const CargoCompactCard = forwardRef(function CargoCompactCard(
                     {isMobile && (
                         <div style={{
                             display: "flex",
-                            flexDirection: "column",
-                            alignItems: "flex-end",
-                            gap: 6,
-                            marginTop: 6,
-                            paddingRight: 36 // запас под правый chevron, можно увеличить до 40–44 при необходимости
+                            flexWrap: "wrap",
+                            alignItems: "center",
+                            gap: 8,
+                            marginTop: 8,
+                            paddingRight: 0
                         }}>
                             {/* Чип Актив/Архив — как на десктопе, но компактный */}
                             {allowActions && (
@@ -1695,7 +1694,8 @@ const CargoCompactCard = forwardRef(function CargoCompactCard(
                                         fontSize: 12,
                                         whiteSpace: "nowrap",
                                         cursor: "pointer",
-                                        boxShadow: isActive ? "0 1px 5px #33de7b55" : "0 0 0 1px var(--compact-card-pill-border)"
+                                        boxShadow: isActive ? "0 1px 5px #33de7b55" : "0 0 0 1px var(--compact-card-pill-border)",
+                                        flex: "1 1 130px"
                                     }}
                                 >
                                     <span style={{ fontSize: 14 }}>{isActive ? "✓" : "—"}</span>
@@ -1710,8 +1710,10 @@ const CargoCompactCard = forwardRef(function CargoCompactCard(
                                     title={t("gps.request", "Запросить GPS")}
                                     style={{
                                         ...chipBase,
-                                        width: chipWidth || undefined,
-                                        justifyContent: "space-between",
+                                        flex: "1 1 130px",
+                                        minWidth: chipWidth || undefined,
+                                        justifyContent: "center",
+                                        gap: 8,
                                         background: "var(--compact-card-pill-bg)",
                                         color: "var(--compact-card-pill-text)",
                                         cursor: "pointer",
@@ -1729,8 +1731,10 @@ const CargoCompactCard = forwardRef(function CargoCompactCard(
                                 title={t("common.more", "Ещё")}
                                 style={{
                                     ...chipBase,
-                                    width: chipWidth || undefined,
-                                    justifyContent: "space-between",
+                                    flex: "1 1 130px",
+                                    minWidth: chipWidth || undefined,
+                                    justifyContent: "center",
+                                    gap: 8,
                                     background: "var(--compact-card-pill-bg)",
                                     color: "var(--compact-card-pill-text)",
                                     cursor: "pointer",

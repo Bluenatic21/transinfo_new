@@ -47,7 +47,7 @@ export default function EditTransportPage() {
         <TransportForm
             initialData={initialData}
             mode="edit"
-            onSuccess={() => router.push("/profile")}
+            onSuccess={() => router.push(`/transport/${params.id}?highlight=1`)}
         />
     );
 }

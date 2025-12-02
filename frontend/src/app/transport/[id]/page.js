@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState, useRef, useMemo, useCallback } from "react";
 import { FaEye } from "react-icons/fa";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { useIsMobile } from "../../../hooks/useIsMobile";
 import ReactCountryFlag from "react-country-flag";
@@ -359,9 +359,13 @@ export default function TransportDetailPage() {
     const [ownerUser, setOwnerUser] = useState(null);
     const [viewsCount, setViewsCount] = useState(0);
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const highlightParam = searchParams?.get("highlight");
+    const shouldHighlight = highlightParam === "1";
     const isMobile = useIsMobile();
     const [adrDropdownOpen, setAdrDropdownOpen] = useState(false);
     const adrDropdownRef = useRef();
+    const highlightRef = useRef(null);
     const [lightbox, setLightbox] = useState({ open: false, index: 0 });
     // Edge-swipe: запоминаем X старта жеста
     const dragStartX = useRef(0);
@@ -417,6 +421,23 @@ export default function TransportDetailPage() {
             })
             .catch(() => { });
     }, [transport?.id]);
+
+    useEffect(() => {
+        if (!shouldHighlight || loading) return;
+        const node = highlightRef.current;
+        if (!node) return;
+
+        node.classList.add("page-highlight");
+        node.setAttribute("tabindex", "-1");
+        node.focus({ preventScroll: true });
+        node.scrollIntoView({ behavior: "smooth", block: "start" });
+
+        const timer = setTimeout(() => node.classList.remove("page-highlight"), 2000);
+        return () => {
+            clearTimeout(timer);
+            node.classList.remove("page-highlight");
+        };
+    }, [loading, shouldHighlight]);
 
     useEffect(() => {
         if (!transport?.owner_id && !transport?.user) return;
@@ -566,20 +587,24 @@ export default function TransportDetailPage() {
                     }}
                 />
 
-                <div style={{
-                    background: colors.pageBg,
-                    minHeight: "100vh",
-                    color: colors.text,
-                    padding: "24px 16px 48px",
-                    maxWidth: 520,
-                    margin: "0 auto",
-                    fontSize: 16,
-                    lineHeight: 1.45,
-                    position: "relative",
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 12,
-                }}>
+                <div
+                    ref={highlightRef}
+                    tabIndex={shouldHighlight ? -1 : undefined}
+                    style={{
+                        background: colors.pageBg,
+                        minHeight: "100vh",
+                        color: colors.text,
+                        padding: "24px 16px 48px",
+                        maxWidth: 520,
+                        margin: "0 auto",
+                        fontSize: 16,
+                        lineHeight: 1.45,
+                        position: "relative",
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 12,
+                    }}
+                >
                     {/* Просмотры — правый верхний угол */}
                     <span
                         title={t("views.title", "Просмотры")}
@@ -902,17 +927,21 @@ export default function TransportDetailPage() {
     // === DESKTOP ВЕРСИЯ ===
     return (
         <>
-            <div style={{
-                background: colors.pageBg,
-                minHeight: "100vh",
-                color: colors.text,
-                padding: "40px 40px 80px 40px",
-                maxWidth: 1300,
-                margin: "0 auto",
-                borderRadius: 20,
-                boxShadow: colors.shadow,
-                position: "relative"
-            }}>
+            <div
+                ref={highlightRef}
+                tabIndex={shouldHighlight ? -1 : undefined}
+                style={{
+                    background: colors.pageBg,
+                    minHeight: "100vh",
+                    color: colors.text,
+                    padding: "40px 40px 80px 40px",
+                    maxWidth: 1300,
+                    margin: "0 auto",
+                    borderRadius: 20,
+                    boxShadow: colors.shadow,
+                    position: "relative"
+                }}
+            >
                 {/* Просмотры — правый верхний угол */}
                 <span
                     title={t("views.title", "Просмотры")}
