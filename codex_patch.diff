@@ -1,71 +1,436 @@
-diff --git a/frontend/src/app/i18n/dictionaries/ru.json b/frontend/src/app/i18n/dictionaries/ru.json
-index ea58f89c90f83d13784248bbc9fafdda88e78b95..a089c3b9ccb0b1e1dd5329ea132603f5b06866f9 100644
---- a/frontend/src/app/i18n/dictionaries/ru.json
-+++ b/frontend/src/app/i18n/dictionaries/ru.json
-@@ -42,57 +42,59 @@
-   "share.transportTitleShort": "Транспорт на Transinfo",
-   "share.origin": "Откуда",
-   "share.destination": "Куда",
-   "share.bodyType": "Тип кузова",
-   "share.weight": "Вес",
-   "share.defaultDescription": "Заявка на Transinfo со всеми деталями",
-   "share.transportDefaultDescription": "Транспорт на Transinfo со всеми деталями",
-   "nav.home": "Главная",
-   "nav.transport": "Транспорт",
-   "nav.cargo": "Грузы",
-   "nav.addTransport": "Добавить транспорт",
-   "nav.addCargo": "Добавить груз",
-   "nav.search": "Поиск",
-   "nav.login": "Войти",
-   "nav.register": "Регистрация",
-   "nav.profile": "Профиль",
-   "nav.logout": "Выйти",
-   "nav.admin": "Админ",
-   "nav.findUser": "Найти пользователя",
-   "nav.about": "О сервисе",
-   "nav.orders": "Грузы",
-   "nav.matches": "Соответствия",
-   "nav.createOrder": "Создать заявку",
-   "home.nav.transport": "Поиск свободных машин и маршрутов",
-   "home.nav.cargo": "Свежие предложения от грузовладельцев",
--  "home.nav.addTransport": "Разместить машину и получить отклики",
--  "home.nav.addCargo": "Создать заявку и найти перевозчика",
--  "home.nav.about": "Преимущества платформы и возможности",
--  "home.sections.latestOrders": "Последние заявки",
--  "home.sections.latestTransports": "Последние заявки транспорта",
--  "menu.open": "Меню",
--  "notifications.generic": "Уведомление",
-+  "home.nav.addTransport": "Разместить машину и получить отклики",
-+  "home.nav.addCargo": "Создать заявку и найти перевозчика",
-+  "home.nav.about": "Преимущества платформы и возможности",
-+  "home.sections.latestOrders": "Последние заявки",
-+  "home.sections.latestTransports": "Последние заявки транспорта",
-+  "menu.title": "Меню",
-+  "menu.open": "Меню",
-+  "menu.close": "Закрыть меню",
-+  "notifications.generic": "Уведомление",
-   "support.autoclose.warn": "Автоматическое закрытие из-за бездействия. Чат будет закрыт через 60 секунд.",
-   "support.autoclose.thanks": "Спасибо за обращение! Чат автоматически закрыт из-за бездействия. При необходимости напишите снова.",
-   "availability.constant": "постоянно",
-   "availability.systematic": "систематически",
-   "availability.perWeek.count": "{count} раза в неделю",
-   "availability.perMonth.count": "{count} раза в месяц",
-   "bargain.auction": "Торги",
-   "bargain.no": "Без торга",
-   "bargain.fixed": "Фикс",
-   "bargain.negotiable": "По договоренности",
-   "register.acceptPrefix": "Я принимаю условия",
-   "register.chooseRole": "Выберите роль для продолжения",
-   "error.register.roleRequired": "Выберите роль для регистрации",
-   "error.register.emailRequired": "Укажите email",
-   "error.register.emailInvalid": "Email указан некорректно",
-   "error.register.passwordRequired": "Введите пароль",
-   "error.register.passwordConfirmRequired": "Подтвердите пароль",
-   "error.register.organizationRequired": "Укажите организацию",
-   "error.register.contactRequired": "Укажите контактное лицо",
-   "error.register.countryRequired": "Укажите страну",
-   "error.register.cityRequired": "Укажите город",
-   "error.register.phoneRequired": "Укажите телефон",
-   "error.register.personTypeRequired": "Выберите юридический статус (ЮЛ/ИП/ФЛ)",
-   "error.register.termsRequired": "Необходимо согласие с пользовательским соглашением",
-   "error.register.generic": "Ошибка регистрации",
+diff --git a/frontend/src/app/orders/[id]/page.js b/frontend/src/app/orders/[id]/page.js
+index 4e0bc2f3c048c067e29143ca7779c263f11c94d8..e8bd70d0ac3292d4cecf705f1c02ee011c27a19c 100644
+--- a/frontend/src/app/orders/[id]/page.js
++++ b/frontend/src/app/orders/[id]/page.js
+@@ -302,64 +302,108 @@ export default function OrderDetailsPage() {
+     // Тип перевозки (если backend прислал RU)
+     const localizeTransportType = useCallback((raw) => {
+         const s = normalize(raw);
+         if (!s) return "";
+         if (s === "экспорт") return t("transport.type.export", "Экспорт");
+         if (s === "импорт") return t("transport.type.import", "Импорт");
+         if (s === "транзит") return t("transport.type.transit", "Транзит");
+         if (["внутренняя", "внутренний рынок", "по стране"].includes(s))
+             return t("transport.type.domestic", "Внутренняя");
+         return raw;
+     }, [t]);
+     const isMobile = useIsMobile();
+     const params = useParams();
+     const { id } = params;
+     const router = useRouter();
+     const searchParams = useSearchParams();
+     const [order, setOrder] = useState(null);
+     const [loading, setLoading] = useState(true);
+     const [ownerUser, setOwnerUser] = useState(null);
+     const [viewsCount, setViewsCount] = useState(0);
+     const highlightParam = searchParams?.get("highlight");
+     const shouldHighlight = highlightParam === "1";
+ 
+     const { resolvedTheme } = useTheme?.() || { resolvedTheme: "dark" };
+     const COLORS = useMemo(() => getColors(resolvedTheme), [resolvedTheme]);
+-    const routeColors = useMemo(
+-        () => ({
+-            barBackground:
+-                resolvedTheme === "light"
+-                    ? COLORS.accentSoft
+-                    : "linear-gradient(90deg, #183969 38%, #253759 100%)",
+-            barText: resolvedTheme === "light" ? COLORS.heading : "#fff",
+-            city: resolvedTheme === "light" ? COLORS.accent : "#8ecae6",
+-            arrow: resolvedTheme === "light" ? COLORS.highlight : "#43c8ff",
+-            text: resolvedTheme === "light" ? COLORS.text : "#fff",
+-            shadow: resolvedTheme === "light" ? "var(--shadow-soft)" : "0 2px 8px #43c8ff17",
+-        }),
+-        [COLORS.accent, COLORS.accentSoft, COLORS.heading, COLORS.highlight, COLORS.text, resolvedTheme]
+-    );
++    const routeColors = useMemo(
++        () => ({
++            barBackground:
++                resolvedTheme === "light"
++                    ? COLORS.accentSoft
++                    : "linear-gradient(90deg, #183969 38%, #253759 100%)",
++            barText: resolvedTheme === "light" ? COLORS.heading : "#fff",
++            city: resolvedTheme === "light" ? COLORS.accent : "#8ecae6",
++            arrow: resolvedTheme === "light" ? COLORS.highlight : "#43c8ff",
++            text: resolvedTheme === "light" ? COLORS.text : "#fff",
++            shadow: resolvedTheme === "light" ? "var(--shadow-soft)" : "0 2px 8px #43c8ff17",
++        }),
++        [COLORS.accent, COLORS.accentSoft, COLORS.heading, COLORS.highlight, COLORS.text, resolvedTheme]
++    );
++
++    const bidColors = useMemo(
++        () =>
++            resolvedTheme === "light"
++                ? {
++                      overlay: "linear-gradient(135deg, #e8f1ffcc, #dbeafecc)",
++                      panelBg: "var(--surface)",
++                      panelShadow: "0 12px 40px rgba(15, 23, 42, 0.14)",
++                      title: COLORS.heading,
++                      closeBg: "var(--control-bg)",
++                      closeBorder: `1px solid ${COLORS.border}`,
++                      closeText: COLORS.text,
++                      listBg: "var(--surface-soft)",
++                      listPrimary: COLORS.text,
++                      listSecondary: COLORS.muted,
++                      yourBadgeBg: "color-mix(in srgb, var(--brand-blue) 18%, #ffffff)",
++                      yourBadgeText: COLORS.heading,
++                      inputBg: "var(--input)",
++                      inputBorder: `1.2px solid ${COLORS.border}`,
++                      inputText: COLORS.text,
++                      primaryBtnBg: "#43c8ff",
++                      primaryBtnText: "#0b1a2f",
++                  }
++                : {
++                      overlay: "linear-gradient(135deg, #0a1628cc, #0f203acc)",
++                      panelBg: "#222e44",
++                      panelShadow: "0 8px 40px #43c8ff44",
++                      title: "#43c8ff",
++                      closeBg: "#1a2a44",
++                      closeBorder: "1px solid #2a4470",
++                      closeText: "#d7e9ff",
++                      listBg: "#182234",
++                      listPrimary: "#fff",
++                      listSecondary: "#8ecae6",
++                      yourBadgeBg: "#11284a",
++                      yourBadgeText: "#ffd600",
++                      inputBg: "#1a253a",
++                      inputBorder: "1.2px solid #2e415f",
++                      inputText: "#fff",
++                      primaryBtnBg: "#43c8ff",
++                      primaryBtnText: "#0b1a2f",
++                  },
++        [COLORS.border, COLORS.heading, COLORS.muted, COLORS.text, resolvedTheme]
++    );
+ 
+     const [showBidPanel, setShowBidPanel] = useState(false);
+     const [allBids, setAllBids] = useState([]);
+     const [loadingBids, setLoadingBids] = useState(false);
+     const [yourBid, setYourBid] = useState(null);
+     const [loadingBid, setLoadingBid] = useState(true);
+     const [amount, setAmount] = useState("");
+     const [bidCurrency, setBidCurrency] = useState("");
+     const [bidComment, setBidComment] = useState("");
+     const [sending, setSending] = useState(false);
+     const [showPaywall, setShowPaywall] = useState(false);
+ 
+ 
+     const bidPanelRef = useRef();
+     const mapRef = useRef(null);
+     const highlightRef = useRef(null);
+ 
+     const actionPillStyle = useMemo(() => ({
+         display: "inline-flex",
+         alignItems: "center",
+         gap: 8,
+         padding: isMobile ? "7px 12px" : "7px 14px",
+         borderRadius: 999,
+         border: `1px solid ${COLORS.border}`,
+         background: COLORS.pillBg,
+@@ -1099,240 +1143,242 @@ export default function OrderDetailsPage() {
+                                 <div style={{ position: "relative", display: "inline-block" }}>
+                                     <button
+                                         onClick={() => setShowBidPanel((v) => !v)}
+                                         style={{
+                                             ...actionPillStyle,
+                                             border: showBidPanel ? "1px solid #43c8ff" : actionPillStyle.border,
+                                             boxShadow: showBidPanel ? "0 0 0 1px rgba(67, 200, 255, 0.25)" : "none",
+                                         }}
+                                         title={t("bids.make", "Сделать ставку")}
+                                     >
+                                         <FaGavel style={{ fontSize: isMobile ? 17 : 19, color: "#43c8ff" }} />
+                                         {t("bids.title", "Ставки")}
+                                     </button>
+ 
+                                     {/* Оверлей ставок: привязан к кнопке, крупный */}
+                                     <AnimatePresence>
+                                         {showBidPanel && (
+                                             <div
+                                                 style={
+                                                     isMobile
+                                                         ? {
+                                                             position: "fixed",
+                                                             inset: 0,
+                                                             zIndex: 200,
+                                                             padding: "16px 14px 18px",
+-                                                            background: "linear-gradient(135deg, #0a1628cc, #0f203acc)",
+-                                                            backdropFilter: "blur(6px)",
++                                                            background: bidColors.overlay,
++                                                            backdropFilter: "blur(6px)",
+                                                             display: "flex",
+                                                             alignItems: "flex-start",
+                                                             justifyContent: "center",
+                                                             overflowY: "auto",
+                                                         }
+                                                         : {
+                                                             position: "absolute",
+                                                             top: "calc(100% + 8px)",
+                                                             right: 0,
+                                                             zIndex: 40,
+                                                             width: 720,
+                                                             maxHeight: "70vh",
+                                                         }
+                                                 }
+                                             >
+                                                 <motion.div
+                                                     ref={bidPanelRef}
+                                                     initial={{ opacity: 0, y: 20, scale: 0.97 }}
+                                                     animate={{ opacity: 1, y: 0, scale: 1 }}
+                                                     exit={{ opacity: 0, y: 20, scale: 0.97 }}
+                                                     transition={{ duration: 0.32 }}
+                                                     style={{
+-                                                        background: "#222e44",
+-                                                        borderRadius: 14,
+-                                                        boxShadow: "0 8px 40px #43c8ff44",
+-                                                        padding: isMobile ? "18px 16px 20px" : "22px",
++                                                        background: bidColors.panelBg,
++                                                        borderRadius: 14,
++                                                        boxShadow: bidColors.panelShadow,
++                                                        padding: isMobile ? "18px 16px 20px" : "22px",
+                                                         width: "100%",
+                                                         maxWidth: isMobile ? 520 : "100%",
+                                                         boxSizing: "border-box",
+                                                     }}
+                                                 >
+                                                     <div
+                                                         style={{
+                                                             display: "flex",
+                                                             alignItems: "center",
+                                                             justifyContent: "space-between",
+                                                             gap: 12,
+                                                             marginBottom: 10,
+                                                         }}
+                                                     >
+-                                                        <div style={{ fontWeight: 800, color: "#43c8ff", fontSize: 16 }}>
+-                                                            {t("bids.title", "Ставки")} ({loadingBids ? "..." : allBids.length})
+-                                                        </div>
+-                                                        {isMobile && (
+-                                                            <button
+-                                                                onClick={() => setShowBidPanel(false)}
+-                                                                style={{
+-                                                                    background: "#1a2a44",
+-                                                                    border: "1px solid #2a4470",
+-                                                                    color: "#d7e9ff",
+-                                                                    borderRadius: 10,
+-                                                                    padding: "8px 12px",
+-                                                                    fontWeight: 700,
++                                                        <div style={{ fontWeight: 800, color: bidColors.title, fontSize: 16 }}>
++                                                            {t("bids.title", "Ставки")} ({loadingBids ? "..." : allBids.length})
++                                                        </div>
++                                                        {isMobile && (
++                                                            <button
++                                                                onClick={() => setShowBidPanel(false)}
++                                                                style={{
++                                                                    background: bidColors.closeBg,
++                                                                    border: bidColors.closeBorder,
++                                                                    color: bidColors.closeText,
++                                                                    borderRadius: 10,
++                                                                    padding: "8px 12px",
++                                                                    fontWeight: 700,
+                                                                     fontSize: 14,
+                                                                     minWidth: 86,
+                                                                 }}
+                                                             >
+                                                                 {t("common.close", "Закрыть")}
+                                                             </button>
+                                                         )}
+                                                     </div>
+ 
+                                                     {/* список ставок — делаем выше */}
+                                                     <div
+                                                         style={{
+                                                             maxHeight: isMobile ? "46vh" : 360, /* было 150 */
+                                                             overflowY: "auto",
+                                                             marginBottom: 12,
+                                                             borderRadius: 8,
+-                                                            background: "#182234",
+-                                                            padding: 6,
+-                                                        }}
+-                                                    >
+-                                                        {allBids.length === 0 && (
+-                                                            <div style={{ color: "#8ecae6", fontSize: 15 }}>{t("bids.noneYet", "Ставок пока нет.")}</div>
+-                                                        )}
+-                                                        {allBids.length > 0 &&
+-                                                            allBids
+-                                                                .sort((a, b) => b.amount - a.amount)
+-                                                                .map((bid) => (
++                                                            background: bidColors.listBg,
++                                                            padding: 6,
++                                                        }}
++                                                    >
++                                                        {allBids.length === 0 && (
++                                                            <div style={{ color: bidColors.listSecondary, fontSize: 15 }}>
++                                                                {t("bids.noneYet", "Ставок пока нет.")}
++                                                            </div>
++                                                        )}
++                                                        {allBids.length > 0 &&
++                                                            allBids
++                                                                .sort((a, b) => b.amount - a.amount)
++                                                                .map((bid) => (
+                                                                     <div
+                                                                         key={bid.id}
+                                                                         style={{
+                                                                             display: "flex",
+                                                                             alignItems: "center",
+                                                                             gap: 9,
+-                                                                            padding: "5px 2px",
+-                                                                            fontSize: 16,
+-                                                                        }}
+-                                                                    >
+-                                                                        <span style={{ color: "#fff", fontWeight: 700 }}>
+-                                                                            {formatPrice(bid.amount, bid.currency)}
+-                                                                        </span>
+-                                                                        <span style={{ color: "#8ecae6", fontSize: 14 }}>
+-                                                                            {bid.username || bid.user_email}
+-                                                                        </span>
+-                                                                        {yourBid && bid.id === yourBid.id && (
+-                                                                            <span
+-                                                                                style={{
+-                                                                                    color: "#ffd600",
+-                                                                                    background: "#11284a",
+-                                                                                    borderRadius: 6,
+-                                                                                    padding: "2px 8px",
+-                                                                                    fontWeight: 600,
++                                                                            padding: "5px 2px",
++                                                                            fontSize: 16,
++                                                                        }}
++                                                                    >
++                                                                        <span style={{ color: bidColors.listPrimary, fontWeight: 700 }}>
++                                                                            {formatPrice(bid.amount, bid.currency)}
++                                                                        </span>
++                                                                        <span style={{ color: bidColors.listSecondary, fontSize: 14 }}>
++                                                                            {bid.username || bid.user_email}
++                                                                        </span>
++                                                                        {yourBid && bid.id === yourBid.id && (
++                                                                            <span
++                                                                                style={{
++                                                                                    color: bidColors.yourBadgeText,
++                                                                                    background: bidColors.yourBadgeBg,
++                                                                                    borderRadius: 6,
++                                                                                    padding: "2px 8px",
++                                                                                    fontWeight: 600,
+                                                                                     marginLeft: 8,
+                                                                                 }}
+                                                                             >
+                                                                                 {t("bids.yourBid", "Ваша ставка")}
+                                                                             </span>
+                                                                         )}
+                                                                     </div>
+                                                                 ))}
+                                                     </div>
+ 
+                                                     {/* форма ставки */}
+                                                     <div
+                                                         style={{
+                                                             display: "flex",
+                                                             alignItems: isMobile ? "stretch" : "center",
+                                                             gap: isMobile ? 10 : 9,
+                                                             marginTop: isMobile ? 12 : 7,
+                                                             flexWrap: isMobile ? "nowrap" : "wrap",
+                                                             flexDirection: isMobile ? "column" : "row",
+                                                         }}
+                                                     >
+                                                         <input
+                                                             type="number"
+                                                             placeholder={t("form.amount", "Сумма")}
+                                                             value={amount}
+                                                             onChange={(e) => setAmount(e.target.value)}
+                                                             style={{
+-                                                                background: "#1a253a",
+-                                                                color: "#fff",
+-                                                                border: "1.2px solid #2e415f",
+-                                                                borderRadius: 8,
+-                                                                padding: "9px 12px",
++                                                                background: bidColors.inputBg,
++                                                                color: bidColors.inputText,
++                                                                border: bidColors.inputBorder,
++                                                                borderRadius: 8,
++                                                                padding: "9px 12px",
+                                                                 fontSize: 16,
+                                                                 width: isMobile ? "100%" : 95,
+                                                                 boxSizing: "border-box",
+                                                             }}
+                                                             min={0}
+                                                             disabled={sending}
+                                                         />
+                                                         <select
+                                                             value={bidCurrency}
+                                                             onChange={(e) => setBidCurrency(e.target.value)}
+                                                             style={{
+-                                                                background: "#1a253a",
+-                                                                color: "#fff",
+-                                                                border: "1.2px solid #2e415f",
+-                                                                borderRadius: 8,
+-                                                                padding: "9px 10px",
++                                                                background: bidColors.inputBg,
++                                                                color: bidColors.inputText,
++                                                                border: bidColors.inputBorder,
++                                                                borderRadius: 8,
++                                                                padding: "9px 10px",
+                                                                 fontSize: 16,
+                                                                 width: isMobile ? "100%" : 96,
+                                                                 boxSizing: "border-box",
+                                                             }}
+                                                             disabled={sending}
+                                                         >
+                                                             {CURRENCIES.map((cur) => (
+                                                                 <option key={cur} value={cur}>
+                                                                     {cur}
+                                                                 </option>
+                                                             ))}
+                                                         </select>
+                                                         <input
+                                                             type="text"
+                                                             placeholder={t("form.comment", "Комментарий")}
+                                                             value={bidComment}
+                                                             onChange={(e) => setBidComment(e.target.value)}
+                                                             style={{
+-                                                                background: "#1a253a",
+-                                                                color: "#fff",
+-                                                                border: "1.2px solid #2e415f",
+-                                                                borderRadius: 8,
+-                                                                padding: "9px 12px",
++                                                                background: bidColors.inputBg,
++                                                                color: bidColors.inputText,
++                                                                border: bidColors.inputBorder,
++                                                                borderRadius: 8,
++                                                                padding: "9px 12px",
+                                                                 fontSize: 16,
+                                                                 flex: 1,
+                                                                 minWidth: isMobile ? "100%" : 180,
+                                                                 boxSizing: "border-box",
+                                                             }}
+                                                             disabled={sending}
+                                                         />
+                                                         <button
+                                                             onClick={handleSendBid}
+                                                             style={{
+-                                                                background: "#43c8ff",
+-                                                                color: "#0b1a2f",
+-                                                                border: "none",
++                                                                background: bidColors.primaryBtnBg,
++                                                                color: bidColors.primaryBtnText,
++                                                                border: "none",
+                                                                 borderRadius: 10,
+                                                                 padding: isMobile ? "10px 14px" : "8px 18px",
+                                                                 fontWeight: 800,
+                                                                 fontSize: 16,
+                                                                 cursor: "pointer",
+                                                                 minWidth: isMobile ? "100%" : 120,
+                                                                 maxWidth: isMobile ? "100%" : 170,
+                                                                 boxSizing: "border-box",
+                                                                 whiteSpace: "nowrap",
+                                                             }}
+                                                             disabled={sending || !amount}
+                                                         >
+                                                             {sending ? "..." : t("bids.make", "Сделать ставку")}
+                                                         </button>
+                                                     </div>
+                                                 </motion.div>
+                                             </div>
+                                         )}
+                                     </AnimatePresence>
+                                 </div>
+                             )}
+ 
+                             <span style={{ display: "inline-flex" }}>
+                             <SaveToggleButton type="order" id={order.id} variant="bar" />
+                         </span>

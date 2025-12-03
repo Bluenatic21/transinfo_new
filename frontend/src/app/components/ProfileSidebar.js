@@ -38,6 +38,8 @@ export default function ProfileSidebar({ variant = "desktop" }) {
             .then(data => setUser(data));
     }, []);
 
+    const iconColor = "var(--sidebar-icon)";
+
     const baseStyle = {
         minWidth: 280,
         background: "var(--sidebar-bg)",
@@ -120,7 +122,7 @@ export default function ProfileSidebar({ variant = "desktop" }) {
                     }}
                 >
                     <span style={{ fontSize: 18 }}>
-                        <FaLanguage color="#b3f1fc" />
+                        <FaLanguage style={{ color: iconColor }} />
                     </span>
                     <span>{t("lang.title", "Язык")}</span>
                     <span style={{ marginLeft: "auto" }}>
@@ -133,7 +135,7 @@ export default function ProfileSidebar({ variant = "desktop" }) {
             {/* Основной профиль */}
             <SidebarLink
                 href="/profile"
-                icon={<FaIdCard color="#3ac6ff" />}
+                icon={<FaIdCard style={{ color: iconColor }} />}
                 active={pathname === "/profile" && !searchParams.toString()}
             >{t("sidebar.myProfile", "Мой профиль")}</SidebarLink>
 
@@ -159,14 +161,14 @@ export default function ProfileSidebar({ variant = "desktop" }) {
                     cursor: "pointer"
                 }}
             >
-                <span style={{ fontSize: 18 }}><FaMapMarker color="#43c8ff" /></span>
+                <span style={{ fontSize: 18, color: iconColor }}><FaMapMarker /></span>
                 {t("live.title", "GPS мониторинг")}
             </button>
 
             {/* Сохранённые */}
             <SidebarLink
                 href="/profile?saved=1"
-                icon={<FaBookmark color="#ffda6b" />}
+                icon={<FaBookmark style={{ color: iconColor }} />}
                 active={!!searchParams.get("saved")}
             >{t("sidebar.saved", "Сохранённые")}</SidebarLink>
 
@@ -174,7 +176,7 @@ export default function ProfileSidebar({ variant = "desktop" }) {
             {user.role?.toLowerCase() === "owner" && (
                 <SidebarLink
                     href="/profile?orders=1"
-                    icon={<FaFileAlt color="#ffd600" />}
+                    icon={<FaFileAlt style={{ color: iconColor }} />}
                     active={!!searchParams.get("orders")}
                 >{t("sidebar.orders", "Заявки")}</SidebarLink>
             )}
@@ -183,13 +185,13 @@ export default function ProfileSidebar({ variant = "desktop" }) {
                 <>
                     <SidebarLink
                         href="/profile?transports=1"
-                        icon={<FaTruck color="#00ffaa" />}
+                        icon={<FaTruck style={{ color: iconColor }} />}
                         active={!!searchParams.get("transports")}
                     >{t("sidebar.transports", "Транспорт")}</SidebarLink>
 
                     <SidebarLink
                         href="/profile?mybids=1"
-                        icon={<FaDollarSign color="#34c759" />}
+                        icon={<FaDollarSign style={{ color: iconColor }} />}
                         active={!!searchParams.get("mybids")}
                     >{t("sidebar.bids", "Ставки")}</SidebarLink>
                 </>
@@ -200,22 +202,22 @@ export default function ProfileSidebar({ variant = "desktop" }) {
                 <>
                     <SidebarLink
                         href="/profile?orders=1"
-                        icon={<FaFileAlt color="#ffd600" />}
-                        active={!!searchParams.get("orders")}
-                    >{t("sidebar.orders", "Заявки")}</SidebarLink>
-                    <SidebarLink
-                        href="/profile?transports=1"
-                        icon={<FaTruck color="#00ffaa" />}
-                        active={!!searchParams.get("transports")}
-                    >{t("sidebar.transports", "Транспорт")}</SidebarLink>
-                    <SidebarLink
-                        href="/profile?mybids=1"
-                        icon={<FaDollarSign color="#34c759" />}
-                        active={!!searchParams.get("mybids")}
-                    >{t("sidebar.bids", "Ставки")}</SidebarLink>
+                        icon={<FaFileAlt style={{ color: iconColor }} />}
+                    active={!!searchParams.get("orders")}
+                >{t("sidebar.orders", "Заявки")}</SidebarLink>
+                <SidebarLink
+                    href="/profile?transports=1"
+                    icon={<FaTruck style={{ color: iconColor }} />}
+                    active={!!searchParams.get("transports")}
+                >{t("sidebar.transports", "Транспорт")}</SidebarLink>
+                <SidebarLink
+                    href="/profile?mybids=1"
+                    icon={<FaDollarSign style={{ color: iconColor }} />}
+                    active={!!searchParams.get("mybids")}
+                >{t("sidebar.bids", "Ставки")}</SidebarLink>
                     <SidebarLink
                         href="/profile?employees=1"
-                        icon={<FaUserCog color="#8bc6fc" />}
+                        icon={<FaUserCog style={{ color: iconColor }} />}
                         active={!!searchParams.get("employees")}
                     >{t("sidebar.employees", "Сотрудники")}</SidebarLink>
                 </>
@@ -224,17 +226,17 @@ export default function ProfileSidebar({ variant = "desktop" }) {
                 <>
                     <SidebarLink
                         href="/profile?orders=1"
-                        icon={<FaFileAlt color="#ffd600" />}
+                    icon={<FaFileAlt style={{ color: iconColor }} />}
                         active={!!searchParams.get("orders")}
                     >{t("sidebar.orders", "Заявки")}</SidebarLink>
                     <SidebarLink
                         href="/profile?transports=1"
-                        icon={<FaTruck color="#00ffaa" />}
+                    icon={<FaTruck style={{ color: iconColor }} />}
                         active={!!searchParams.get("transports")}
                     >{t("sidebar.transports", "Транспорт")}</SidebarLink>
                     <SidebarLink
                         href="/profile?mybids=1"
-                        icon={<FaDollarSign color="#34c759" />}
+                    icon={<FaDollarSign style={{ color: iconColor }} />}
                         active={!!searchParams.get("mybids")}
                     >{t("sidebar.bids", "Ставки")}</SidebarLink>
                 </>
@@ -243,7 +245,7 @@ export default function ProfileSidebar({ variant = "desktop" }) {
             {/* Контакты */}
             <SidebarLink
                 href="/profile?contacts=1"
-                icon={<FaUserFriends color="#b3f1fc" />}
+                icon={<FaUserFriends style={{ color: iconColor }} />}
                 active={!!searchParams.get("contacts")}
             >
                 <>
@@ -259,14 +261,14 @@ export default function ProfileSidebar({ variant = "desktop" }) {
             {/* Заблокированные */}
             <SidebarLink
                 href="/profile?blocked=1"
-                icon={<FaUserSlash color="#ff9aa2" />}
+                icon={<FaUserSlash style={{ color: iconColor }} />}
                 active={!!searchParams.get("blocked")}
             >{t("sidebar.blocked", "Заблокированные")}</SidebarLink>
 
             {/* Отзывы */}
             <SidebarLink
                 href="/profile?reviews=1"
-                icon={<FaRegComments color="#72ebff" />}
+                icon={<FaRegComments style={{ color: iconColor }} />}
                 active={!!searchParams.get("reviews")}
             >{t("sidebar.reviews", "Отзывы")}</SidebarLink>
 
@@ -293,7 +295,7 @@ export default function ProfileSidebar({ variant = "desktop" }) {
                 }}
             >
                 <span style={{ fontSize: 18 }}>
-                    <Headset size={18} color="#72ebff" />
+                    <Headset size={18} color={iconColor} />
                 </span>
                 {t("sidebar.support", "Поддержка")}
             </button>
@@ -329,7 +331,7 @@ export default function ProfileSidebar({ variant = "desktop" }) {
                     }}
                 >
                     <span style={{ fontSize: 18 }}>
-                        <FaSignOutAlt color="#ff7b7b" />
+                        <FaSignOutAlt style={{ color: iconColor }} />
                     </span>
                     {t("sidebar.logout", "Выйти")}
                 </button>
@@ -339,7 +341,7 @@ export default function ProfileSidebar({ variant = "desktop" }) {
             {isAdmin && (
                 <SidebarLink
                     href="/admin"
-                    icon={<FaUserShield color="#43c8ff" />}
+                    icon={<FaUserShield style={{ color: iconColor }} />}
                     active={false}
                 >{t("sidebar.admin", "Админ-панель")}</SidebarLink>
             )}

@@ -339,6 +339,50 @@ export default function OrderDetailsPage() {
         [COLORS.accent, COLORS.accentSoft, COLORS.heading, COLORS.highlight, COLORS.text, resolvedTheme]
     );
 
+    const bidColors = useMemo(
+        () =>
+            resolvedTheme === "light"
+                ? {
+                      overlay: "linear-gradient(135deg, #e8f1ffcc, #dbeafecc)",
+                      panelBg: "var(--surface)",
+                      panelShadow: "0 12px 40px rgba(15, 23, 42, 0.14)",
+                      title: COLORS.heading,
+                      closeBg: "var(--control-bg)",
+                      closeBorder: `1px solid ${COLORS.border}`,
+                      closeText: COLORS.text,
+                      listBg: "var(--surface-soft)",
+                      listPrimary: COLORS.text,
+                      listSecondary: COLORS.muted,
+                      yourBadgeBg: "color-mix(in srgb, var(--brand-blue) 18%, #ffffff)",
+                      yourBadgeText: COLORS.heading,
+                      inputBg: "var(--input)",
+                      inputBorder: `1.2px solid ${COLORS.border}`,
+                      inputText: COLORS.text,
+                      primaryBtnBg: "#43c8ff",
+                      primaryBtnText: "#0b1a2f",
+                  }
+                : {
+                      overlay: "linear-gradient(135deg, #0a1628cc, #0f203acc)",
+                      panelBg: "#222e44",
+                      panelShadow: "0 8px 40px #43c8ff44",
+                      title: "#43c8ff",
+                      closeBg: "#1a2a44",
+                      closeBorder: "1px solid #2a4470",
+                      closeText: "#d7e9ff",
+                      listBg: "#182234",
+                      listPrimary: "#fff",
+                      listSecondary: "#8ecae6",
+                      yourBadgeBg: "#11284a",
+                      yourBadgeText: "#ffd600",
+                      inputBg: "#1a253a",
+                      inputBorder: "1.2px solid #2e415f",
+                      inputText: "#fff",
+                      primaryBtnBg: "#43c8ff",
+                      primaryBtnText: "#0b1a2f",
+                  },
+        [COLORS.border, COLORS.heading, COLORS.muted, COLORS.text, resolvedTheme]
+    );
+
     const [showBidPanel, setShowBidPanel] = useState(false);
     const [allBids, setAllBids] = useState([]);
     const [loadingBids, setLoadingBids] = useState(false);
@@ -1121,7 +1165,7 @@ export default function OrderDetailsPage() {
                                                             inset: 0,
                                                             zIndex: 200,
                                                             padding: "16px 14px 18px",
-                                                            background: "linear-gradient(135deg, #0a1628cc, #0f203acc)",
+                                                            background: bidColors.overlay,
                                                             backdropFilter: "blur(6px)",
                                                             display: "flex",
                                                             alignItems: "flex-start",
@@ -1145,9 +1189,9 @@ export default function OrderDetailsPage() {
                                                     exit={{ opacity: 0, y: 20, scale: 0.97 }}
                                                     transition={{ duration: 0.32 }}
                                                     style={{
-                                                        background: "#222e44",
+                                                        background: bidColors.panelBg,
                                                         borderRadius: 14,
-                                                        boxShadow: "0 8px 40px #43c8ff44",
+                                                        boxShadow: bidColors.panelShadow,
                                                         padding: isMobile ? "18px 16px 20px" : "22px",
                                                         width: "100%",
                                                         maxWidth: isMobile ? 520 : "100%",
@@ -1163,16 +1207,16 @@ export default function OrderDetailsPage() {
                                                             marginBottom: 10,
                                                         }}
                                                     >
-                                                        <div style={{ fontWeight: 800, color: "#43c8ff", fontSize: 16 }}>
+                                                        <div style={{ fontWeight: 800, color: bidColors.title, fontSize: 16 }}>
                                                             {t("bids.title", "Ставки")} ({loadingBids ? "..." : allBids.length})
                                                         </div>
                                                         {isMobile && (
                                                             <button
                                                                 onClick={() => setShowBidPanel(false)}
                                                                 style={{
-                                                                    background: "#1a2a44",
-                                                                    border: "1px solid #2a4470",
-                                                                    color: "#d7e9ff",
+                                                                    background: bidColors.closeBg,
+                                                                    border: bidColors.closeBorder,
+                                                                    color: bidColors.closeText,
                                                                     borderRadius: 10,
                                                                     padding: "8px 12px",
                                                                     fontWeight: 700,
@@ -1192,12 +1236,14 @@ export default function OrderDetailsPage() {
                                                             overflowY: "auto",
                                                             marginBottom: 12,
                                                             borderRadius: 8,
-                                                            background: "#182234",
+                                                            background: bidColors.listBg,
                                                             padding: 6,
                                                         }}
                                                     >
                                                         {allBids.length === 0 && (
-                                                            <div style={{ color: "#8ecae6", fontSize: 15 }}>{t("bids.noneYet", "Ставок пока нет.")}</div>
+                                                            <div style={{ color: bidColors.listSecondary, fontSize: 15 }}>
+                                                                {t("bids.noneYet", "Ставок пока нет.")}
+                                                            </div>
                                                         )}
                                                         {allBids.length > 0 &&
                                                             allBids
@@ -1213,17 +1259,17 @@ export default function OrderDetailsPage() {
                                                                             fontSize: 16,
                                                                         }}
                                                                     >
-                                                                        <span style={{ color: "#fff", fontWeight: 700 }}>
+                                                                        <span style={{ color: bidColors.listPrimary, fontWeight: 700 }}>
                                                                             {formatPrice(bid.amount, bid.currency)}
                                                                         </span>
-                                                                        <span style={{ color: "#8ecae6", fontSize: 14 }}>
+                                                                        <span style={{ color: bidColors.listSecondary, fontSize: 14 }}>
                                                                             {bid.username || bid.user_email}
                                                                         </span>
                                                                         {yourBid && bid.id === yourBid.id && (
                                                                             <span
                                                                                 style={{
-                                                                                    color: "#ffd600",
-                                                                                    background: "#11284a",
+                                                                                    color: bidColors.yourBadgeText,
+                                                                                    background: bidColors.yourBadgeBg,
                                                                                     borderRadius: 6,
                                                                                     padding: "2px 8px",
                                                                                     fontWeight: 600,
@@ -1254,9 +1300,9 @@ export default function OrderDetailsPage() {
                                                             value={amount}
                                                             onChange={(e) => setAmount(e.target.value)}
                                                             style={{
-                                                                background: "#1a253a",
-                                                                color: "#fff",
-                                                                border: "1.2px solid #2e415f",
+                                                                background: bidColors.inputBg,
+                                                                color: bidColors.inputText,
+                                                                border: bidColors.inputBorder,
                                                                 borderRadius: 8,
                                                                 padding: "9px 12px",
                                                                 fontSize: 16,
@@ -1270,9 +1316,9 @@ export default function OrderDetailsPage() {
                                                             value={bidCurrency}
                                                             onChange={(e) => setBidCurrency(e.target.value)}
                                                             style={{
-                                                                background: "#1a253a",
-                                                                color: "#fff",
-                                                                border: "1.2px solid #2e415f",
+                                                                background: bidColors.inputBg,
+                                                                color: bidColors.inputText,
+                                                                border: bidColors.inputBorder,
                                                                 borderRadius: 8,
                                                                 padding: "9px 10px",
                                                                 fontSize: 16,
@@ -1293,9 +1339,9 @@ export default function OrderDetailsPage() {
                                                             value={bidComment}
                                                             onChange={(e) => setBidComment(e.target.value)}
                                                             style={{
-                                                                background: "#1a253a",
-                                                                color: "#fff",
-                                                                border: "1.2px solid #2e415f",
+                                                                background: bidColors.inputBg,
+                                                                color: bidColors.inputText,
+                                                                border: bidColors.inputBorder,
                                                                 borderRadius: 8,
                                                                 padding: "9px 12px",
                                                                 fontSize: 16,
@@ -1308,8 +1354,8 @@ export default function OrderDetailsPage() {
                                                         <button
                                                             onClick={handleSendBid}
                                                             style={{
-                                                                background: "#43c8ff",
-                                                                color: "#0b1a2f",
+                                                                background: bidColors.primaryBtnBg,
+                                                                color: bidColors.primaryBtnText,
                                                                 border: "none",
                                                                 borderRadius: 10,
                                                                 padding: isMobile ? "10px 14px" : "8px 18px",
