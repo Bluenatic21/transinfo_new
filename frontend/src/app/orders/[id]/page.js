@@ -737,6 +737,18 @@ export default function OrderDetailsPage() {
         fontSize: isMobile ? 14.5 : 16,
     };
 
+    const loadingPillStyle = useMemo(
+        () => ({
+            background: resolvedTheme === "light" ? COLORS.accentSoft : "#11284a",
+            color: resolvedTheme === "light" ? COLORS.heading : "#43c8ff",
+            borderRadius: 8,
+            padding: `2px ${isMobile ? "10px" : "11px"}`,
+            fontSize: isMobile ? 13 : 14,
+            fontWeight: 500,
+        }),
+        [COLORS.accentSoft, COLORS.heading, isMobile, resolvedTheme]
+    );
+
 
     // ── Готовим секции как переменные, чтобы легко переставить местами ─────────────────
     const transportSection =
@@ -761,14 +773,7 @@ export default function OrderDetailsPage() {
                             {localizeLoadingTypes(loadingTypes).map((label, i) => (
                                 <span
                                     key={i}
-                                    style={{
-                                        background: "#11284a",
-                                        color: "#43c8ff",
-                                        borderRadius: 8,
-                                        padding: "2px 10px",
-                                        fontSize: isMobile ? 13 : 14,
-                                        fontWeight: 500,
-                                    }}
+                                    style={loadingPillStyle}
                                 >
                                     {label}
                                 </span>

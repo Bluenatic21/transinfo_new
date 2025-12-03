@@ -3,6 +3,7 @@ import dynamic from "next/dynamic";
 import { useEffect, useState, use as usePromise } from "react";
 import { useLang } from "@/app/i18n/LangProvider";
 import { api } from "@/config/env";
+import { WORLD_BOUNDS } from "@/app/constants/mapBounds";
 
 // ВАЖНО: импортируем компоненты карты только на клиенте
 const MapContainer = dynamic(
@@ -72,8 +73,14 @@ export default function PublicTrackPage({ params }) {
                     zoom={5}
                     style={{ width: "100%", height: "100%" }}
                     preferCanvas
+                    maxBounds={WORLD_BOUNDS}
+                    maxBoundsViscosity={1}
                 >
-                    <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                    <TileLayer
+                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                        bounds={WORLD_BOUNDS}
+                        noWrap
+                    />
                     <LiveTrackLayer sessionId={resolved.session_id} shareToken={resolved.share} />
                 </MapContainer>
             </div>

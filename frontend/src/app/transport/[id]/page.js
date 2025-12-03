@@ -312,6 +312,15 @@ export default function TransportDetailPage() {
         circle: colors.border,
         text: colors.infoText,
     };
+    const loadingPillStyle = {
+        background: resolvedTheme === "light" ? colors.accentSoft : "#11284a",
+        color: resolvedTheme === "light" ? colors.heading : "#43c8ff",
+        borderRadius: 8,
+        padding: "2px 11px",
+        marginLeft: 6,
+        fontSize: 14,
+        fontWeight: 500,
+    };
     // Витрины: label = перевод, value = канон (RU)
     const BODY_TYPES = useMemo(() => getTruckBodyTypes(t), [t]);
     const TRANSPORT_KIND_OPTS = useMemo(() => getTransportKindOptions(t), [t]);
@@ -752,15 +761,7 @@ export default function TransportDetailPage() {
                             <b>{t("loading.types", "Типы загрузки")}:</b>{" "}
                             {Array.isArray(load_types) && load_types.length
                                 ? localizeLoadingTypes(load_types).map((label, i) =>
-                                    <span key={i} style={{
-                                        background: "#11284a",
-                                        color: "#43c8ff",
-                                        borderRadius: 8,
-                                        padding: "2px 11px",
-                                        marginLeft: 6,
-                                        fontSize: 14,
-                                        fontWeight: 500
-                                    }}>{label}</span>
+                                    <span key={i} style={loadingPillStyle}>{label}</span>
                                 ) : "—"}
                         </div>
                         {specialStr && <div><b>{t("features.other", "Особенности")}:</b> {specialStr}</div>}
@@ -1068,7 +1069,7 @@ export default function TransportDetailPage() {
                         >
                             <div
                                 style={{
-                                    color: "#cfe3ff",
+                                    color: resolvedTheme === "light" ? colors.heading : "#cfe3ff",
                                     fontWeight: 750,
                                     fontSize: 17,
                                     marginBottom: 10,
@@ -1164,7 +1165,7 @@ export default function TransportDetailPage() {
                                     </span>
                                 )}
                             </div>
-                            <div style={{ color: "#fff", fontSize: 15 }}>
+                            <div style={{ color: resolvedTheme === "light" ? colors.heading : "#fff", fontSize: 15 }}>
                                 <b>{t("transport.available", "Доступен")}:</b> {readyDateInterval}
                             </div>
                         </Section>
@@ -1223,15 +1224,7 @@ export default function TransportDetailPage() {
                             <div>
                                 <b>{t("loading.types", "Типы загрузки")}:</b>{" "}
                                 {localizeLoadingTypes(load_types).map((label, i) =>
-                                    <span key={i} style={{
-                                        background: resolvedTheme === "light" ? colors.accentSoft : "#11284a",
-                                        color: colors.accent,
-                                        borderRadius: 8,
-                                        padding: "2px 11px",
-                                        marginLeft: 6,
-                                        fontSize: 14,
-                                        fontWeight: 500
-                                    }}>{label}</span>
+                                    <span key={i} style={loadingPillStyle}>{label}</span>
                                 )}
                             </div>
                         )}

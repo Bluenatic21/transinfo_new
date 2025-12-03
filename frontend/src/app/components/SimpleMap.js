@@ -88,6 +88,7 @@ import { api } from "@/config/env";
 import MapPinOverlay from "./MapPinOverlay";
 import { useCrossHover } from "../../hooks/useCrossHover";
 import { useUser } from "../UserContext";
+import { WORLD_BOUNDS } from "../constants/mapBounds";
 
 // API base централизовано через @/config/env
 
@@ -1563,6 +1564,8 @@ export default function SimpleMap({
                 zoom={5}
                 scrollWheelZoom={true}
                 zoomControl={!hideSearch}
+                maxBounds={WORLD_BOUNDS}
+                maxBoundsViscosity={1}
                 className={radiusMode ? "radius-mode" : undefined}
                 style={{
                     height: mapHeight,
@@ -1586,6 +1589,8 @@ export default function SimpleMap({
                     key="osm"
                     attribution='&copy; <a href="https://osm.org/copyright">OpenStreetMap</a> contributors'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    bounds={WORLD_BOUNDS}
+                    noWrap
                 />
                 <MapUpdater />
                 <Pane name="your-halo" style={{ zIndex: 250, pointerEvents: "none" }}>{mainPin}</Pane>

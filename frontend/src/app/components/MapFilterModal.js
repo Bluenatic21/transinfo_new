@@ -3,6 +3,7 @@ import dynamic from "next/dynamic";
 import LocationAutocomplete from "./LocationAutocomplete";
 import { useMap, useMapEvents } from "react-leaflet";
 import { useLang } from "../i18n/LangProvider";
+import { WORLD_BOUNDS } from "../constants/mapBounds";
 
 // Dynamic imports для SSR
 const MapContainer = dynamic(() => import("react-leaflet").then(mod => mod.MapContainer), { ssr: false });
@@ -106,10 +107,14 @@ export default function MapFilterModal({ open, onSelect, onClose, onOpenChange, 
                         center={center}
                         zoom={selected ? 10 : 6}
                         style={{ width: "100%", height: "100%", borderRadius: 16 }}
+                        maxBounds={WORLD_BOUNDS}
+                        maxBoundsViscosity={1}
                     >
                         <TileLayer
                             attribution='&copy; <a href="https://osm.org/copyright">OpenStreetMap</a> contributors'
                             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                            bounds={WORLD_BOUNDS}
+                            noWrap
                         />
                         <ClickableMap onMapClick={handleMapClick} />
 

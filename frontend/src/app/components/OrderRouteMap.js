@@ -5,6 +5,7 @@ import "leaflet/dist/leaflet.css";
 import axios from "axios";
 import L from "leaflet";
 import { useLang } from "../i18n/LangProvider";
+import { WORLD_BOUNDS } from "../constants/mapBounds";
 
 // ---- НАСТРОЙКИ ----
 const ORS_API_KEY = "5b3ce3597851110001cf6248e0d64cb4a6fd46e0a42286775eb9d392";
@@ -270,10 +271,14 @@ export default function OrderRouteMap({ from, to, waypoints = [] }) {
                     zoom={7}
                     style={{ width: "100%", height: 280, position: "relative", zIndex: 1 }}
                     scrollWheelZoom={true}
+                    maxBounds={WORLD_BOUNDS}
+                    maxBoundsViscosity={1}
                 >
                     <TileLayer
                         attribution='&copy; OpenStreetMap'
                         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                        bounds={WORLD_BOUNDS}
+                        noWrap
                     />
                     {routeCoords.length > 1 && (
                         <>

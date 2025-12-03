@@ -8,6 +8,7 @@ import { useUser } from "@/app/UserContext";
 import GpsRequestsSection from "@/app/components/GpsRequestsSection";
 import { useIsMobile } from "../../hooks/useIsMobile";
 import { useLang } from "@/app/i18n/LangProvider";
+import { WORLD_BOUNDS } from "../constants/mapBounds";
 
 const LiveTrackLayer = dynamic(() => import("@/app/components/LiveTrackLayer"), { ssr: false });
 
@@ -387,8 +388,18 @@ export default function MonitoringSection() {
                             {tab === "incoming" ? (
                                 selected ? (
                                     <div style={{ height: PANEL_H, borderRadius: 16, overflow: "hidden" }}>
-                                        <MapContainer center={[54, 39]} zoom={5} style={{ height: "100%" }}>
-                                            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                                        <MapContainer
+                                            center={[54, 39]}
+                                            zoom={5}
+                                            style={{ height: "100%" }}
+                                            maxBounds={WORLD_BOUNDS}
+                                            maxBoundsViscosity={1}
+                                        >
+                                            <TileLayer
+                                                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                                                bounds={WORLD_BOUNDS}
+                                                noWrap
+                                            />
                                             <LiveTrackLayer
                                                 sessionId={selected}
                                                 token={(typeof window !== "undefined" && localStorage.getItem("token")) || ""}
@@ -453,8 +464,18 @@ export default function MonitoringSection() {
                             </button>
                         </div>
                         <div style={{ height: "calc(72vh - 40px)", borderRadius: 16, overflow: "hidden", margin: 8 }}>
-                            <MapContainer center={[54, 39]} zoom={5} style={{ height: "100%" }}>
-                                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                            <MapContainer
+                                center={[54, 39]}
+                                zoom={5}
+                                style={{ height: "100%" }}
+                                maxBounds={WORLD_BOUNDS}
+                                maxBoundsViscosity={1}
+                            >
+                                <TileLayer
+                                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                                    bounds={WORLD_BOUNDS}
+                                    noWrap
+                                />
                                 <LiveTrackLayer
                                     sessionId={selected}
                                     token={(typeof window !== "undefined" && localStorage.getItem("token")) || ""}
