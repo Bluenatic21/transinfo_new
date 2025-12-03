@@ -1,165 +1,71 @@
-diff --git a/frontend/src/app/components/SaveToggleButton.jsx b/frontend/src/app/components/SaveToggleButton.jsx
-index 8927d5c30811c8430325b8488d18e6bfde47a441..48e5b61b359d692957d94b6c0a4ce5e9f310ae09 100644
---- a/frontend/src/app/components/SaveToggleButton.jsx
-+++ b/frontend/src/app/components/SaveToggleButton.jsx
-@@ -1,45 +1,47 @@
- /* src/app/components/SaveToggleButton.jsx */
- "use client";
- import { FaRegBookmark, FaBookmark } from "react-icons/fa";
- import { useUser } from "@/app/UserContext";
- import React, { useMemo, useState, useEffect } from "react";
--import { useLang } from "../i18n/LangProvider";
-+import { useLang } from "../i18n/LangProvider";
-+import { useTheme } from "@/app/providers/ThemeProvider";
- /**
-  * Переключатель с надёжным оптимистичным UI.
-  * Теперь текст — это ДЕЙСТВИЕ:
-  * - сохранено → «Убрать из сохранённых» (в bar-версии — «Убрать»)
-  * - не сохранено → «Сохранить»
-  */
- export default function SaveToggleButton({
-     type,               // "order" | "transport"
-     id,                 // ID сущности
-     size = 18,
-     onChanged,
-     variant = "default" // "default" | "bar"
--}) {
--    const { t } = useLang();
-+}) {
-+    const { t } = useLang();
-+    const { resolvedTheme } = useTheme?.() || { resolvedTheme: "dark" };
-     const {
-         user,
-         savedOrders = [],
-         savedTransports = [],
-         saveOrder,
-         unsaveOrder,
-         saveTransport,
-         unsaveTransport,
-     } = useUser();
- 
-     // Истинное состояние из контекста
-     const isSavedFromCtx = useMemo(() => {
-         if (type === "order") return savedOrders.some(o => String(o.id) === String(id));
-         return savedTransports.some(t => String(t.id) === String(id));
-     }, [type, id, savedOrders, savedTransports]);
- 
-     // Оптимистичное состояние до подтверждения контекстом
-     const [localSaved, setLocalSaved] = useState(null);            // null -> берем из контекста
-     const [pendingExpected, setPendingExpected] = useState(null);  // чего ждём от контекста: true/false
-     const [busy, setBusy] = useState(false);
- 
-     const effectiveSaved = (localSaved ?? isSavedFromCtx);
- 
-     // Снимаем локальный оверрайд только когда контекст подтвердит ожидаемое
-     useEffect(() => {
-@@ -76,79 +78,94 @@ export default function SaveToggleButton({
-             onChanged?.(next);
-             // ничего не сбрасываем тут — дождёмся апдейта контекста в useEffect
-         } catch (e) {
-             console.error("[SaveToggleButton] toggle error:", e);
-             setLocalSaved(null);
-             setPendingExpected(null);
-         } finally {
-             setBusy(false);
-         }
-     };
- 
-     // Подсказка по ролям
-     let titleHint = effectiveSaved
-         ? t("saved.titleHint.in", "Сейчас: в сохранённых. Нажмите, чтобы убрать.")
-         : t("saved.titleHint.add", "Нажмите, чтобы добавить в сохранённые.");
-     if (user?.role === "OWNER" && type === "order") titleHint += " " + t("saved.hint.visibleToTransportManagers", "Доступно перевозчикам/менеджерам.");
-     if (user?.role === "TRANSPORT" && type === "transport") titleHint += " " + t("saved.hint.visibleToOwnersManagers", "Доступно владельцам/менеджерам.");
- 
-     // Тексты действия
-     const actionLabel =
-         effectiveSaved
-             ? (variant === "bar" ? t("saved.removeShort", "Убрать") : t("saved.removeLong", "Убрать из сохранённых"))
-             : t("saved.save", "Сохранить");
- 
-     // Нижняя панель карточки (компактная)
--    if (variant === "bar") {
--        const color = effectiveSaved ? "#ffd600" : "#e0f1ff";
--        const borderColor = effectiveSaved ? "#ffd60066" : "#213759";
-+    if (variant === "bar") {
-+        const lightMode = resolvedTheme === "light";
-+        const color = lightMode
-+            ? (effectiveSaved ? "#b98a00" : "var(--text-primary)")
-+            : (effectiveSaved ? "#ffd600" : "#e0f1ff");
-+        const borderColor = lightMode
-+            ? (effectiveSaved
-+                ? "color-mix(in srgb, #f0c419 55%, var(--border-subtle))"
-+                : "color-mix(in srgb, var(--brand-blue) 26%, var(--border-subtle))")
-+            : (effectiveSaved ? "#ffd60066" : "#213759");
-+        const background = lightMode
-+            ? "color-mix(in srgb, var(--brand-blue) 10%, #ffffff)"
-+            : "#132642";
-+        const boxShadow = lightMode
-+            ? (effectiveSaved
-+                ? "0 0 0 1px color-mix(in srgb, #f0c419 26%, transparent)"
-+                : "0 1px 2px rgba(15, 23, 42, 0.08)")
-+            : (effectiveSaved ? "0 0 0 1px rgba(255, 214, 0, 0.18)" : "none");
- 
-         return (
-             <button
-                 aria-pressed={effectiveSaved}
-                 aria-label={actionLabel}
-                 title={titleHint}
-                 onClick={(e) => { e.stopPropagation(); toggle(); }}
-                 disabled={busy}
-                 style={{
-                     display: "inline-flex",
-                     alignItems: "center",
-                     gap: 8,
-                     padding: "7px 14px",
-                     borderRadius: 999,
--                    border: `1px solid ${borderColor}`,
--                    background: "#132642",
--                    color,
--                    fontWeight: 600,
--                    fontSize: 14,
--                    cursor: busy ? "default" : "pointer",
--                    opacity: busy ? 0.6 : 1,
--                    transition: "opacity .15s ease, color .15s ease, border-color .15s ease, box-shadow .15s ease",
--                    boxShadow: effectiveSaved ? "0 0 0 1px rgba(255, 214, 0, 0.18)" : "none",
--                }}
--            >
--                {effectiveSaved ? <FaBookmark size={size} /> : <FaRegBookmark size={size} />}
-+                    border: `1px solid ${borderColor}`,
-+                    background,
-+                    color,
-+                    fontWeight: 600,
-+                    fontSize: 14,
-+                    cursor: busy ? "default" : "pointer",
-+                    opacity: busy ? 0.6 : 1,
-+                    transition: "opacity .15s ease, color .15s ease, border-color .15s ease, box-shadow .15s ease",
-+                    boxShadow,
-+                }}
-+            >
-+                {effectiveSaved ? <FaBookmark size={size} /> : <FaRegBookmark size={size} />}
-                 <span>{actionLabel}</span>
-             </button>
-         );
-     }
- 
-     // Обычный вариант
-     return (
-         <button
-             aria-pressed={effectiveSaved}
-             aria-label={actionLabel}
-             title={titleHint}
-             onClick={(e) => { e.stopPropagation(); toggle(); }}
-             disabled={busy}
-             style={{
-                 display: "inline-flex",
-                 alignItems: "center",
-                 gap: 6,
-                 background: "none",
-                 color: "inherit",
-                 border: 0,
-                 cursor: busy ? "default" : "pointer",
-                 opacity: busy ? 0.6 : 1,
-                 transition: "opacity .15s ease"
-             }}
-         >
+diff --git a/frontend/src/app/i18n/dictionaries/ru.json b/frontend/src/app/i18n/dictionaries/ru.json
+index ea58f89c90f83d13784248bbc9fafdda88e78b95..a089c3b9ccb0b1e1dd5329ea132603f5b06866f9 100644
+--- a/frontend/src/app/i18n/dictionaries/ru.json
++++ b/frontend/src/app/i18n/dictionaries/ru.json
+@@ -42,57 +42,59 @@
+   "share.transportTitleShort": "Транспорт на Transinfo",
+   "share.origin": "Откуда",
+   "share.destination": "Куда",
+   "share.bodyType": "Тип кузова",
+   "share.weight": "Вес",
+   "share.defaultDescription": "Заявка на Transinfo со всеми деталями",
+   "share.transportDefaultDescription": "Транспорт на Transinfo со всеми деталями",
+   "nav.home": "Главная",
+   "nav.transport": "Транспорт",
+   "nav.cargo": "Грузы",
+   "nav.addTransport": "Добавить транспорт",
+   "nav.addCargo": "Добавить груз",
+   "nav.search": "Поиск",
+   "nav.login": "Войти",
+   "nav.register": "Регистрация",
+   "nav.profile": "Профиль",
+   "nav.logout": "Выйти",
+   "nav.admin": "Админ",
+   "nav.findUser": "Найти пользователя",
+   "nav.about": "О сервисе",
+   "nav.orders": "Грузы",
+   "nav.matches": "Соответствия",
+   "nav.createOrder": "Создать заявку",
+   "home.nav.transport": "Поиск свободных машин и маршрутов",
+   "home.nav.cargo": "Свежие предложения от грузовладельцев",
+-  "home.nav.addTransport": "Разместить машину и получить отклики",
+-  "home.nav.addCargo": "Создать заявку и найти перевозчика",
+-  "home.nav.about": "Преимущества платформы и возможности",
+-  "home.sections.latestOrders": "Последние заявки",
+-  "home.sections.latestTransports": "Последние заявки транспорта",
+-  "menu.open": "Меню",
+-  "notifications.generic": "Уведомление",
++  "home.nav.addTransport": "Разместить машину и получить отклики",
++  "home.nav.addCargo": "Создать заявку и найти перевозчика",
++  "home.nav.about": "Преимущества платформы и возможности",
++  "home.sections.latestOrders": "Последние заявки",
++  "home.sections.latestTransports": "Последние заявки транспорта",
++  "menu.title": "Меню",
++  "menu.open": "Меню",
++  "menu.close": "Закрыть меню",
++  "notifications.generic": "Уведомление",
+   "support.autoclose.warn": "Автоматическое закрытие из-за бездействия. Чат будет закрыт через 60 секунд.",
+   "support.autoclose.thanks": "Спасибо за обращение! Чат автоматически закрыт из-за бездействия. При необходимости напишите снова.",
+   "availability.constant": "постоянно",
+   "availability.systematic": "систематически",
+   "availability.perWeek.count": "{count} раза в неделю",
+   "availability.perMonth.count": "{count} раза в месяц",
+   "bargain.auction": "Торги",
+   "bargain.no": "Без торга",
+   "bargain.fixed": "Фикс",
+   "bargain.negotiable": "По договоренности",
+   "register.acceptPrefix": "Я принимаю условия",
+   "register.chooseRole": "Выберите роль для продолжения",
+   "error.register.roleRequired": "Выберите роль для регистрации",
+   "error.register.emailRequired": "Укажите email",
+   "error.register.emailInvalid": "Email указан некорректно",
+   "error.register.passwordRequired": "Введите пароль",
+   "error.register.passwordConfirmRequired": "Подтвердите пароль",
+   "error.register.organizationRequired": "Укажите организацию",
+   "error.register.contactRequired": "Укажите контактное лицо",
+   "error.register.countryRequired": "Укажите страну",
+   "error.register.cityRequired": "Укажите город",
+   "error.register.phoneRequired": "Укажите телефон",
+   "error.register.personTypeRequired": "Выберите юридический статус (ЮЛ/ИП/ФЛ)",
+   "error.register.termsRequired": "Необходимо согласие с пользовательским соглашением",
+   "error.register.generic": "Ошибка регистрации",

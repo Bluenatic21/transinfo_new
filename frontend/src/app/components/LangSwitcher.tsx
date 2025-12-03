@@ -1,5 +1,6 @@
 "use client";
 import React from "react";
+import ReactCountryFlag from "react-country-flag";
 import { useLang } from "../i18n/LangProvider";
 
 type LangCode = "ka" | "ru" | "en" | "tr" | "az" | "hy" | "uk";
@@ -9,15 +10,15 @@ const LANGS: Array<{
     code: LangCode;
     key: string;
     fallback: string;
-    flag: string;
+    countryCode: string;
 }> = [
-        { code: "ka", key: "lang.ka", fallback: "Georgian", flag: "🇬🇪" },
-        { code: "ru", key: "lang.ru", fallback: "Russian", flag: "🇷🇺" },
-        { code: "en", key: "lang.en", fallback: "English", flag: "🇬🇧" }, // можно 🇺🇸
-        { code: "tr", key: "lang.tr", fallback: "Turkish", flag: "🇹🇷" },
-        { code: "az", key: "lang.az", fallback: "Azerbaijani", flag: "🇦🇿" },
-        { code: "hy", key: "lang.hy", fallback: "Armenian", flag: "🇦🇲" },
-        { code: "uk", key: "lang.uk", fallback: "Ukrainian", flag: "🇺🇦" },
+        { code: "ka", key: "lang.ka", fallback: "Georgian", countryCode: "GE" },
+        { code: "ru", key: "lang.ru", fallback: "Russian", countryCode: "RU" },
+        { code: "en", key: "lang.en", fallback: "English", countryCode: "GB" }, // можно 🇺🇸
+        { code: "tr", key: "lang.tr", fallback: "Turkish", countryCode: "TR" },
+        { code: "az", key: "lang.az", fallback: "Azerbaijani", countryCode: "AZ" },
+        { code: "hy", key: "lang.hy", fallback: "Armenian", countryCode: "AM" },
+        { code: "uk", key: "lang.uk", fallback: "Ukrainian", countryCode: "UA" },
     ];
 
 export default function LangSwitcher({ variant = "full" }: { variant?: Variant }) {
@@ -70,7 +71,18 @@ export default function LangSwitcher({ variant = "full" }: { variant?: Variant }
                 style={baseBtnStyle}
             >
                 <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
-                    <span style={{ fontSize: 18, lineHeight: 1 }}>{current.flag}</span>
+                    <ReactCountryFlag
+                        countryCode={current.countryCode}
+                        svg
+                        aria-label={t(current.key, current.fallback)}
+                        style={{
+                            width: 20,
+                            height: 14,
+                            borderRadius: 4,
+                            boxShadow: "0 0 0 1px rgba(0,0,0,0.25)",
+                            objectFit: "cover",
+                        }}
+                    />
                     {variant === "full" && (
                         <span style={{ whiteSpace: "nowrap" }}>{t(current.key, current.fallback)}</span>
                     )}
@@ -120,7 +132,18 @@ export default function LangSwitcher({ variant = "full" }: { variant?: Variant }
                                     outline: "none"
                                 }}
                             >
-                                <span style={{ fontSize: 18, lineHeight: 1 }}>{l.flag}</span>
+                                <ReactCountryFlag
+                                    countryCode={l.countryCode}
+                                    svg
+                                    aria-label={t(l.key, l.fallback)}
+                                    style={{
+                                        width: 20,
+                                        height: 14,
+                                        borderRadius: 4,
+                                        boxShadow: "0 0 0 1px rgba(0,0,0,0.25)",
+                                        objectFit: "cover",
+                                    }}
+                                />
                                 <span style={{ flex: 1 }}>{t(l.key, l.fallback)}</span>
                                 {selected && <span aria-hidden>✓</span>}
                             </li>
