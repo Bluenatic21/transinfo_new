@@ -1105,6 +1105,9 @@ function OrderCard({
         iconShadow: "var(--order-card-icon-shadow, 0 1px 8px #43c8ff17)",
     };
 
+    const rateNoVatColor = isLight ? cardColors.label : "#ff4d4f";
+
+
     const commentPalette = isLight
         ? {
             popoverBg: "#ffffff",
@@ -1903,7 +1906,7 @@ function OrderCard({
                             )}
                             {rateNoVat && (
                                 <span>
-                                    <span style={{ color: cardColors.label }}>{t("rate.noVat", "Без НДС:")}</span> <b>{`${rateNoVat} ${rateCurrency}`}</b>
+                                    <span style={{ color: rateNoVatColor }}>{t("rate.noVat", "Без НДС:")}</span> <b>{`${rateNoVat} ${rateCurrency}`}</b>
                                 </span>
                             )}
                             {rateCash && (
