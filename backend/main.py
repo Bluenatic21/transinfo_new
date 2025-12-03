@@ -383,7 +383,6 @@ def admin_required(current_user: UserModel = Depends(get_current_user)):
         )
     return current_user
 
-import logging
 
 logging.basicConfig(
     filename="backend_debug.log",   # файл будет рядом с main.py
@@ -1900,7 +1899,6 @@ async def track_publish(
                             track_watchers.pop(key, None)
     finally:
         db.close()
-
 
 
 @tracking_router.post("/track/sessions/{session_id}/share", response_model=List[schemas.TrackingShareOut])
@@ -3543,9 +3541,9 @@ def unsave_transport(
 def get_my_transports(
     db: Session = Depends(get_db),
     current_user: UserModel = Depends(get_current_user)
-    ):
+):
     # "Мои" — ВСЕГДА только записи текущего пользователя
-    
+
     my_filters = [TransportModel.owner_id == current_user.id]
     if current_user.email:
         my_filters.append(and_(
@@ -3554,7 +3552,7 @@ def get_my_transports(
         ))
     transports = (
         db.query(TransportModel)
-       .filter(or_(*my_filters))
+        .filter(or_(*my_filters))
         .order_by(TransportModel.created_at.desc())
         .all()
     )
@@ -3596,11 +3594,12 @@ def get_account_transports(
         if current_user.email:
             trs_filters.append(and_(
                 TransportModel.owner_id.is_(None),
-                func.lower(TransportModel.email) == func.lower(current_user.email),
+                func.lower(TransportModel.email) == func.lower(
+                    current_user.email),
             ))
         trs = (
             db.query(TransportModel)
-           .filter(or_(*trs_filters))
+            .filter(or_(*trs_filters))
             .order_by(TransportModel.created_at.desc())
             .all()
         )
@@ -3634,7 +3633,7 @@ def get_account_transports(
 
     transports = (
         db.query(TransportModel)
-         .filter(or_(*account_filters))
+        .filter(or_(*account_filters))
         .order_by(TransportModel.created_at.desc())
         .all()
     )
@@ -3732,7 +3731,8 @@ def upload_avatar(
 
     # Генерируем уникальное имя файла
     avatar_filename = f"avatars/{uuid4().hex}{ext}"
-    save_path = os.path.join("static", avatar_filename)
+   # Сохраняем аватар точно в той папке, которая раздаётся FastAPI через STATIC_DIR
+    save_path = os.path.join(STATIC_DIR, avatar_filename)
     os.makedirs(os.path.dirname(save_path), exist_ok=True)
 
     # Записываем файл правильно!

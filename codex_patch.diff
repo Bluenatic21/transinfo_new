@@ -1,190 +1,58 @@
-diff --git a/frontend/src/app/components/TransportList.js b/frontend/src/app/components/TransportList.js
-index 380c62ab82d7e5aeb2255a2d61a7ed25fbca9c4a..175b951bf5b2ca5157407eb61e3da1de82de6c41 100644
---- a/frontend/src/app/components/TransportList.js
-+++ b/frontend/src/app/components/TransportList.js
-@@ -1379,58 +1379,89 @@ function TransportCard({ transport, expanded, onToggle }) {
-       // Доп. случаи из бэка
-       if (s.includes("по рабочим дням") || s.includes("по будням"))
-         return t("transport.regularity.weekdays", "по рабочим дням");
-       if (s.includes("по выходным"))
-         return t("transport.regularity.weekends", "по выходным");
-       // Шаблон: "<n> раз(а) в <день|неделю|месяц|год>"
-       const m = s.match(/(\d+)\s*раз[а]?\s*в\s*(день|неделю|месяц|год)/i);
-       if (m) {
-         const n = m[1];
-         const unit = m[2];
-         const unitI18n =
-           unit === "день"
-             ? t("units.perDay", "в день")
-             : unit === "неделю"
-             ? t("units.perWeek", "в неделю")
-             : unit === "месяц"
-             ? t("units.perMonth", "в месяц")
-             : t("units.perYear", "в год");
-         return `${unitI18n} ${n} ${t("regularity.times", "раз(а)")}`;
-       }
-       return reg;
-     },
-     [t]
-   );
-   const [adrDropdownOpen, setAdrDropdownOpen] = useState(false);
--  const router = useRouter();
--  const isMobile = useIsMobile();
--  const [ownerProfile, setOwnerProfile] = useState(null);
--
--  // --- Internal comments (только для аккаунта менеджера)
--  const isManagerAccount = ["manager", "employee"].includes(
--    (me?.role || "").toLowerCase()
--  );
-+  const router = useRouter();
-+  const isMobile = useIsMobile();
-+  const [ownerProfile, setOwnerProfile] = useState(null);
-+
-+  const cardColors = {
-+    bg: "var(--transport-card-bg, rgba(23, 38, 60, 0.97))",
-+    text: "var(--transport-card-text, #e3f2fd)",
-+    shadow: "var(--transport-card-shadow, 0 2px 24px #001844cc)",
-+    shadowExpanded:
-+      "var(--transport-card-shadow-expanded, 0 4px 32px #43c8ff55, 0 2px 24px #001844cc)",
-+    border: "var(--transport-card-border, #1e88e5)",
-+    borderActive: "var(--transport-card-border-active, #43c8ff)",
-+    sectionBg: "var(--transport-card-section-bg, rgba(28, 37, 52, 0.95))",
-+    sectionBorder: "var(--transport-card-section-border, #193158)",
-+    heading: "var(--transport-card-heading, #43c8ff)",
-+    label: "var(--transport-card-label, #8ecae6)",
-+    chipBg: "var(--transport-card-chip-bg, #1a273f)",
-+    chipFg: "var(--transport-card-chip-fg, #cfe9ff)",
-+    chipShadow: "var(--transport-card-chip-shadow, 0 2px 8px #23416711)",
-+    routeBg:
-+      "var(--transport-card-route-bg, linear-gradient(90deg, #183969 38%, #253759 100%))",
-+    routeFg: "var(--transport-card-route-fg, #ffffff)",
-+    iconBg: "var(--transport-card-icon-bg, #162239)",
-+    iconFg: "var(--transport-card-icon-fg, #43c8ff)",
-+    iconShadow: "var(--transport-card-icon-shadow, 0 1px 8px #43c8ff17)",
-+    metaBg: "var(--transport-card-meta-bg, #193158cc)",
-+    metaFg: "var(--transport-card-meta-fg, #cfe9ff)",
-+    metaShadow: "var(--transport-card-meta-shadow, 0 2px 8px #23416711)",
-+    buttonBg: "var(--transport-card-button-bg, #192b42)",
-+    buttonFg: "var(--transport-card-button-fg, #43c8ff)",
-+    buttonShadow: "var(--transport-card-button-shadow, 0 1px 6px #43c8ff10)",
-+    tooltipBg: "var(--transport-card-tooltip-bg, #222e43)",
-+    tooltipFg: "var(--transport-card-tooltip-fg, #53ee5c)",
-+  };
-+
-+  // --- Internal comments (только для аккаунта менеджера)
-+  const isManagerAccount = ["manager", "employee"].includes(
-+    (me?.role || "").toLowerCase()
-+  );
-   const avatarPalette = isLight
-     ? {
-         border: "2px solid #193158",
-         background: "#1c2842",
-       }
-     : {
-         border: `2px solid ${cardColors.sectionBorder}`,
-         background: cardColors.sectionBg,
-       };
-   // --- гостевой режим ---
-   const isGuest = !me;
-   const requireAuth = useCallback(() => {
-     alert(
-       t(
-         "auth.loginOrRegister",
-         "Чтобы увидеть детали и контакты — войдите или зарегистрируйтесь."
-       )
-     );
-   }, [t]);
-   const [intCommentOpen, setIntCommentOpen] = useState(false);
-   const [intCommentText, setIntCommentText] = useState("");
-   const [intComments, setIntComments] = useState([]);
-   const intCommentBtnRef = useRef(null);
-   const intCommentPopoverRef = useRef(null);
+diff --git a/backend/main.py b/backend/main.py
+index f99fb1de34b67fc87ffe549d5ba083dd7fe66a97..570ea5c017ac450b6f59d2202e557e70bed45f3c 100644
+--- a/backend/main.py
++++ b/backend/main.py
+@@ -3710,51 +3710,52 @@ def email_from_token(token):
+     payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+     return payload.get("sub")
  
-@@ -1490,84 +1521,53 @@ function TransportCard({ transport, expanded, onToggle }) {
-     ? transport.adr_class.filter(Boolean)
-     : typeof transport.adr_class === "string" && transport.adr_class
-     ? transport.adr_class
-         .split(",")
-         .map((x) => x.trim())
-         .filter(Boolean)
-     : [];
-   const toLocations = Array.isArray(transport.to_locations)
-     ? transport.to_locations
-     : [];
-   const { openMessenger } = useMessenger();
  
-   const { clickedItemId } = useMapHover();
-   const ref = useRef();
+ @app.post("/profile/avatar")
+ def upload_avatar(
+     file: UploadFile = File(...),
+     db: Session = Depends(get_db),
+     authorization: str = Header(None),
+ ):
+     if not authorization or not authorization.startswith("Bearer "):
+         raise HTTPException(401, "Not authenticated")
+     token = authorization[7:]
+     current_user = db.query(UserModel).filter(
+         UserModel.email == email_from_token(token)).first()
+     if not current_user:
+         raise HTTPException(401, "User not found")
  
-   useEffect(() => {
-     if (clickedItemId === transport.id && ref.current) {
-       ref.current.scrollIntoView({ behavior: "smooth", block: "center" });
-       ref.current.classList.add("highlight");
-       setTimeout(() => {
-         ref.current?.classList.remove("highlight");
-       }, 1100);
-     }
-   }, [clickedItemId, transport.id]);
+     # Только png или jpg!
+     ext = os.path.splitext(file.filename)[-1].lower()
+     if ext not in [".png", ".jpg", ".jpeg", ".doc", ".docx"]:
+         raise HTTPException(400, "Только .png, .jpg, .doc, .docx файлы!")
  
--  const cardColors = {
--    bg: "var(--transport-card-bg, rgba(23, 38, 60, 0.97))",
--    text: "var(--transport-card-text, #e3f2fd)",
--    shadow: "var(--transport-card-shadow, 0 2px 24px #001844cc)",
--    shadowExpanded:
--      "var(--transport-card-shadow-expanded, 0 4px 32px #43c8ff55, 0 2px 24px #001844cc)",
--    border: "var(--transport-card-border, #1e88e5)",
--    borderActive: "var(--transport-card-border-active, #43c8ff)",
--    sectionBg: "var(--transport-card-section-bg, rgba(28, 37, 52, 0.95))",
--    sectionBorder: "var(--transport-card-section-border, #193158)",
--    heading: "var(--transport-card-heading, #43c8ff)",
--    label: "var(--transport-card-label, #8ecae6)",
--    chipBg: "var(--transport-card-chip-bg, #1a273f)",
--    chipFg: "var(--transport-card-chip-fg, #cfe9ff)",
--    chipShadow: "var(--transport-card-chip-shadow, 0 2px 8px #23416711)",
--    routeBg:
--      "var(--transport-card-route-bg, linear-gradient(90deg, #183969 38%, #253759 100%))",
--    routeFg: "var(--transport-card-route-fg, #ffffff)",
--    iconBg: "var(--transport-card-icon-bg, #162239)",
--    iconFg: "var(--transport-card-icon-fg, #43c8ff)",
--    iconShadow: "var(--transport-card-icon-shadow, 0 1px 8px #43c8ff17)",
--    metaBg: "var(--transport-card-meta-bg, #193158cc)",
--    metaFg: "var(--transport-card-meta-fg, #cfe9ff)",
--    metaShadow: "var(--transport-card-meta-shadow, 0 2px 8px #23416711)",
--    buttonBg: "var(--transport-card-button-bg, #192b42)",
--    buttonFg: "var(--transport-card-button-fg, #43c8ff)",
--    buttonShadow: "var(--transport-card-button-shadow, 0 1px 6px #43c8ff10)",
--    tooltipBg: "var(--transport-card-tooltip-bg, #222e43)",
--    tooltipFg: "var(--transport-card-tooltip-fg, #53ee5c)",
--  };
--
--  const commentPalette = isLight
--    ? {
--        popoverBg: "#ffffff",
-+  const commentPalette = isLight
-+    ? {
-+        popoverBg: "#ffffff",
-         popoverBorder: "#d4e4ff",
-         popoverShadow: "0 12px 32px rgba(15, 23, 42, 0.12)",
-         threadBg: "#f4f7fd",
-         threadBorder: "#d9e5f5",
-         commentText: "#0f172a",
-         meta: "#475569",
-         textareaBg: "#ffffff",
-         textareaBorder: "#cbd5e1",
-         textareaColor: "#0f172a",
-       }
-     : {
-         popoverBg: "#0f1f3a",
-         popoverBorder: "#203a63",
-         popoverShadow: "0 10px 30px #00000055",
-         threadBg: "#11213b",
-         threadBorder: "#24446e",
-         commentText: "#cfe8ff",
-         meta: "#9ec3ff",
-         textareaBg: "#132445",
-         textareaBorder: "#24446e",
-         textareaColor: "#eaf5ff",
-       };
+     # Генерируем уникальное имя файла
+     avatar_filename = f"avatars/{uuid4().hex}{ext}"
+-    save_path = os.path.join("static", avatar_filename)
++    # Сохраняем аватар точно в той папке, которая раздаётся FastAPI через STATIC_DIR
++    save_path = os.path.join(STATIC_DIR, avatar_filename)
+     os.makedirs(os.path.dirname(save_path), exist_ok=True)
  
-   // На светлой теме фон панели остаётся тёмным, поэтому фиксируем светлые цвета
-   // имени/контактного лица, чтобы текст не "пропадал" на фоне.
+     # Записываем файл правильно!
+     contents = file.file.read()
+     with open(save_path, "wb") as f:
+         f.write(contents)
+     if len(contents) < 100:  # На всякий случай, проверь размер
+         raise HTTPException(400, "Файл слишком маленький или не картинка!")
+ 
+     current_user.avatar = f"/static/{avatar_filename}"
+     db.commit()
+     db.refresh(current_user)
+     return {"avatar": current_user.avatar}
+ 
+ 
+ @app.patch("/profile", response_model=UserProfile)
+ def update_profile(
+     user_update: UserUpdate,
+     db: Session = Depends(get_db),
+     authorization: str = Header(None),  # <-- вот так!
+ ):
+     if not authorization or not authorization.startswith("Bearer "):
+         raise HTTPException(401, "Not authenticated")
+     token = authorization[7:]
+     current_user = db.query(UserModel).filter(
