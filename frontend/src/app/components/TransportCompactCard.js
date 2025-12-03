@@ -729,14 +729,29 @@ export default function TransportCompactCard({
                     <span style={{
                         flex: 1,
                         minWidth: 0,
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 8,
                         overflow: "hidden",
                         textOverflow: "ellipsis",
                         /* на мобилке разрешаем перенос, чтобы не резалось зря */
                         whiteSpace: isMobile ? "normal" : "nowrap"
                     }}>
                         {/* Маленькая иконка перед типом кузова — только на мобилке */}
-                        {isMobile && <FaTruck size={14} style={{ marginRight: 6, verticalAlign: -2 }} />}
-                        {findBodyLabelByValue(transport.truck_type) || "—"}
+                        {isMobile && (
+                            <FaTruck
+                                size={14}
+                                style={{ flexShrink: 0, verticalAlign: -2 }}
+                            />
+                        )}
+                        <span style={{
+                            flex: 1,
+                            minWidth: 0,
+                            overflow: "hidden",
+                            textOverflow: "ellipsis"
+                        }}>
+                            {findBodyLabelByValue(transport.truck_type) || "—"}
+                        </span>
                     </span>
                     {!hideLive && hasLive && canSeeLive && (
                         <span

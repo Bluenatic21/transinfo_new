@@ -1,105 +1,194 @@
-diff --git a/frontend/src/app/components/TransportCompactCard.js b/frontend/src/app/components/TransportCompactCard.js
-index 1c93e1364bb5a762fc7eb1b8991228ac8afe7821..a3ae155ed368e6c7a4ab92c1ea251de0b4437be6 100644
---- a/frontend/src/app/components/TransportCompactCard.js
-+++ b/frontend/src/app/components/TransportCompactCard.js
-@@ -332,67 +332,83 @@ export default function TransportCompactCard({
-     // Автоскролл только по внешнему фокусу (isFocused)
+diff --git a/frontend/src/app/components/TransportListMobile.jsx b/frontend/src/app/components/TransportListMobile.jsx
+index 6c1b02525bc0dc7668f3a7b82f5e79d2b6d43944..3c70029a67ef2f7607323bf5844777142b137eec 100644
+--- a/frontend/src/app/components/TransportListMobile.jsx
++++ b/frontend/src/app/components/TransportListMobile.jsx
+@@ -1,58 +1,60 @@
+ "use client";
+ import React, { useMemo, useState, useEffect, useRef } from "react";
+ import { useMapHover } from "./MapHoverContext";
+ import MobileFilterSheet from "./mobile/MobileFilterSheet";
+ import MobileMapSheet from "./mobile/MobileMapSheet";
+-import TransportCardMobile from "./TransportCardMobile";
+-import { useUser } from "../UserContext";
+-import { useLang } from "../i18n/LangProvider";
+-import { api } from "@/config/env";
++import TransportCardMobile from "./TransportCardMobile";
++import { useUser } from "../UserContext";
++import { useLang } from "../i18n/LangProvider";
++import { useTheme } from "../providers/ThemeProvider";
++import { api } from "@/config/env";
+ 
+ /**
+  * Мобильный список транспорта:
+  * - липкая шапка с «Карта / Фильтр»
+  * - безопасная нормализация входа
+  * - live-превью количества по текущим настройкам фильтра в шторке
+  */
+ export default function TransportListMobile({
+     transports = [],
+     loading = false,
+     fetchTransports,
+     filters,
+     setFilters,
+     handleResetFilters,
+     visibleIds,
+     setFiltersFromMap,
+     onFilteredIdsChange,
+     estimatedCount, // используем как стартовое значение, дальше считаем превью внутри
+     onLoadMore,
+     hasMore,
+-}) {
+-    const { t } = useLang();
+-    // синхронизация «карта ↔ список»: по клику на пин прокручиваем к карточке и подсвечиваем
+-    const cardRefs = useRef(new Map());
++}) {
++    const { t } = useLang();
++    const { resolvedTheme } = useTheme?.() || { resolvedTheme: "dark" };
++    // синхронизация «карта ↔ список»: по клику на пин прокручиваем к карточке и подсвечиваем
++    const cardRefs = useRef(new Map());
+     const { clickedItemId } = useMapHover();
+     // авторизованный fetch для превью-запросов
+     const { authFetchWithRefresh } = useUser();
+ 
      useEffect(() => {
-         if (isFocused && cardRef && cardRef.current) {
-             cardRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+         if (!clickedItemId) return;
+         const el = cardRefs.current.get(clickedItemId);
+         if (el) {
+             try {
+                 el.scrollIntoView({ behavior: "smooth", block: "center" });
+             } catch { }
+             el.classList.add("highlight");
+             setTimeout(() => el.classList.remove("highlight"), 1100);
+             try {
+                 setMapOpen(false);
+             } catch { }
          }
-     }, [isFocused]);
+     }, [clickedItemId]);
  
-     // Красивая анимация подсветки при фокусе (isFocused)
-     useEffect(() => {
-         if (!isFocused || !cardRef.current) return;
-         const node = cardRef.current;
-         node.classList.add("flash-highlight");
-         setTimeout(() => {
-             node.classList.remove("flash-highlight");
-         }, 1400);
-     }, [isFocused]);
+     // хуки всегда сверху
+     const [filterOpen, setFilterOpen] = useState(false);
+     const [mapOpen, setMapOpen] = useState(false);
  
-     // Автоскролл по ховеру (хук должен быть на верхнем уровне, а не в JSX)
-     useEffect(() => {
-         if (!enableHoverScroll) return;
-         if (!hoveredItemId || hoveredItemId !== transport?.id) return;
-         cardRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-     }, [hoveredItemId, enableHoverScroll, transport?.id]);
- 
-     // --- Компактный текст доступности ---
--    function parseDateDMY(str) {
--        if (!str) return null;
--        const s = String(str).trim();
--        const iso = s.match(/^(\d{4})-(\d{2})-(\d{2})(?:T.*)?$/);
--        if (iso) return `${iso[1]}-${iso[2]}-${iso[3]}`; // уже ISO
--        const parts = s.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{2,4})$/);
--        if (!parts) return s;
--        const [, d, m, y] = parts;
--        return `${String(y).padStart(4, "20")}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
--    }
--    function formatAvail(from, to) {
--        if (from && to && from !== to) {
--            return `${new Date(parseDateDMY(from)).toLocaleDateString(intl, { day: "2-digit", month: "2-digit", year: "2-digit" })} — ${new Date(parseDateDMY(to)).toLocaleDateString(intl, { day: "2-digit", month: "2-digit", year: "2-digit" })}`;
--        }
--        if (from) return new Date(parseDateDMY(from)).toLocaleDateString(intl, { day: "2-digit", month: "2-digit", year: "2-digit" });
--        return "—";
--    }
-+    function parseDateDMY(str) {
-+        if (!str) return null;
-+        const s = String(str).trim();
-+
-+        // 1) Попробуем нативный парсер, он корректно понимает "MM/DD/YYYY" → Dec 3, 2025
-+        const direct = new Date(s);
-+        if (!isNaN(direct)) return direct;
-+
-+        // 2) ISO YYYY-MM-DD (с optional временем)
-+        const iso = s.match(/^(\d{4})-(\d{2})-(\d{2})(?:T.*)?$/);
-+        if (iso) return new Date(`${iso[1]}-${iso[2]}-${iso[3]}`);
-+
-+        // 3) dd.mm.yyyy / dd-mm-yyyy / dd/mm/yyyy
-+        const parts = s.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{2,4})$/);
-+        if (parts) {
-+            const [, d, m, y] = parts;
-+            return new Date(`${String(y).padStart(4, "0")}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`);
-+        }
-+
-+        return null;
-+    }
-+    function formatAvail(from, to) {
-+        const render = (v) => {
-+            const d = parseDateDMY(v);
-+            return d ? d.toLocaleDateString(intl, { day: "2-digit", month: "2-digit", year: "2-digit" }) : "—";
-+        };
-+
-+        if (from && to && from !== to) {
-+            return `${render(from)} — ${render(to)}`;
-+        }
-+        if (from) return render(from);
-+        return "—";
-+    }
-     const availText =
-         transport?.mode === "постоянно"
-             ? (transport?.regularity
-                 ? `${t("availability.constant", "постоянно")} — ${localizeRegularity(transport.regularity)}`
-                 : t("availability.constant", "постоянно"))
-             : formatAvail(transport.ready_date_from, transport.ready_date_to);
- 
-     const metaItems = useMemo(() => {
-         const items = [];
-         if (transport.transport_kind) {
-             items.push({
-                 key: "kind",
-                 content: (
-                     <span
-                         className={limited ? "pw-blur pw-noevents" : ""}
-                         style={{ display: "inline-flex", alignItems: "center", gap: 6, color: "var(--compact-card-meta-accent)" }}
-                     >
-                         <FaTruck style={{ marginRight: 3, verticalAlign: -2 }} />
-                         <span style={{ fontWeight: 700 }}>{findKindLabelByValue(transport.transport_kind)}</span>
-                     </span>
-                 ),
-             });
+     const [previewCount, setPreviewCount] = useState(
+         Number.isFinite(estimatedCount) ? estimatedCount : undefined
+@@ -116,56 +118,57 @@ export default function TransportListMobile({
+                         : `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
+                 .join("&");
+             const pageQuery = `page=1&page_size=1`;
+             // NEW: если в фильтре есть даты — просим API включить «постоянно»
+             const hasDate = !!(norm?.ready_date_from || norm?.ready_date_to);
+             const queryString = [q, pageQuery, hasDate ? "include_permanent=1" : null]
+                 .filter(Boolean)
+                 .join("&");
+             const url = api(`/transports?${queryString}`);
+             const resp = await authFetchWithRefresh(url, { cache: "no-store", signal: abort.signal });
+             const totalHeader = resp.headers.get("X-Total-Count") || resp.headers.get("x-total-count");
+             const nextVal = totalHeader
+                 ? (parseInt(totalHeader, 10) || 0)
+                 : (async () => { try { return (Array.isArray(await resp.clone().json()) ? 1 : 0); } catch { return 0; } })();
+             if (reqId === previewReqRef.current) {
+                 const val = typeof nextVal.then === "function" ? await nextVal : nextVal;
+                 setPreviewCount(Number.isFinite(val) ? val : 0);
+             }
+         } catch (e) {
+             // оставляем предыдущее значение, чтобы не мигало
          }
-         items.push({
-             key: "avail",
+     };
+ 
+     const surface = "var(--surface, #182337)";
+     const headerBg = "var(--header-bg, #212c46)";
+-    const accent = "var(--brand-blue, #43c8ff)";
+-    const textPrimary = "var(--text-primary, #0f172a)";
+-    const textSecondary = "var(--text-secondary, #8fb3d9)";
+-    const controlBg = "var(--control-bg, #ffffff)";
+-    const controlBorder = "var(--border-subtle, rgba(255,255,255,.15))";
+-    const surfaceSoft = "var(--surface-soft, #eef1f6)";
++    const accent = "var(--brand-blue, #43c8ff)";
++    const textPrimary = "var(--text-primary, #0f172a)";
++    const textSecondary = "var(--text-secondary, #8fb3d9)";
++    const controlBg = "var(--control-bg, #ffffff)";
++    const controlBorder = "var(--border-subtle, rgba(255,255,255,.15))";
++    const surfaceSoft = "var(--surface-soft, #eef1f6)";
++    const headingColor = resolvedTheme === "light" ? textPrimary : accent;
+ 
+     const toolbarBtnStyle = {
+         border: `1px solid ${controlBorder}`,
+         background: controlBg,
+         color: textPrimary,
+         padding: "8px 12px",
+         borderRadius: 12,
+         fontWeight: 800,
+         fontSize: 13,
+         boxShadow: "var(--shadow-soft, none)",
+         transition: "transform var(--transition-fast, 150ms ease-out)",
+     };
+ 
+     const rows = useMemo(() => {
+         const arr = Array.isArray(transports) ? transports : [];
+         const normalized = arr.map((t) => normalizeTransport(t));
+ 
+         const radiusActive =
+             Number(filters?.map_radius) > 0 &&
+             Array.isArray(filters?.map_center) &&
+             filters.map_center.length === 2;
+ 
+         if (radiusActive && Array.isArray(visibleIds)) {
+             return normalized.filter((t) => visibleIds.includes(t.id || t.uid));
+         }
+@@ -188,53 +191,53 @@ export default function TransportListMobile({
+                             margin: "12px 0",
+                             height: 110,
+                             opacity: 0.7,
+                         }}
+                     />
+                 ))}
+             </div>
+         );
+     }
+ 
+     return (
+         <div style={{ background: surface, minHeight: "100vh", paddingBottom: 64 }}>
+             {/* липкая шапка */}
+             <div
+                 style={{
+                     position: "sticky",
+                     top: 0,
+                     zIndex: 10,
+                     background: headerBg,
+                     padding: "18px 16px 10px 16px",
+                     display: "flex",
+                     alignItems: "center",
+                     justifyContent: "space-between",
+                 }}
+             >
+-                <span style={{ fontWeight: 800, fontSize: 21, color: accent }}>
+-                    {t("transport.title", "Транспорт")}
+-                </span>
++                <span style={{ fontWeight: 800, fontSize: 21, color: headingColor }}>
++                    {t("transport.title", "Транспорт")}
++                </span>
+                 <div style={{ display: "flex", gap: 8 }}>
+                     <button onClick={() => setMapOpen(true)} style={toolbarBtnStyle}>
+                         {t("common.map", "Карта")}
+                     </button>
+                     <button onClick={() => setFilterOpen(true)} style={toolbarBtnStyle}>
+                         {t("common.filter", "Фильтр")}
+                     </button>
+                 </div>
+             </div>
+ 
+             {rows.map((t) => (
+                 <div
+                     key={t.id || t.uid}
+                     ref={(el) => {
+                         if (el && (t?.id || t?.uid)) {
+                             cardRefs.current.set(t.id || t.uid, el);
+                         }
+                     }}
+                 >
+                     <TransportCardMobile transport={t.raw || t} />
+                 </div>
+             ))}
+ 
+             <div
+                 ref={loadMoreRef}

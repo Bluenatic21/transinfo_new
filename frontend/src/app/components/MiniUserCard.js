@@ -183,18 +183,29 @@ export default function MiniUserCard({ user, attachment = null }) {
                             marginLeft: 7
                         }}>{getRoleRu(role)}</span>
                     </div>
-                    {email &&
-                        <div style={{
-                            fontSize: 14,
-                            color: palette.textSecondary,
-                            marginTop: 1
-                        }}>
-                            <a href={`mailto:${email}`} style={{ color: palette.textSecondary, textDecoration: "none" }}>
-                                <FaEnvelope style={{ marginRight: 5 }} />
+                    {email && (
+                        <div
+                            style={{
+                                fontSize: 14,
+                                color: palette.textSecondary,
+                                marginTop: 1,
+                            }}
+                        >
+                            <a
+                                href={`mailto:${email}`}
+                                style={{
+                                    color: palette.textSecondary,
+                                    textDecoration: "none",
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    gap: 6,
+                                }}
+                            >
+                                <FaEnvelope />
                                 {email}
                             </a>
                         </div>
-                    }
+                    )}
                     {/* ЗВЁЗДЫ СТАВИМ СТРОГО ПОД EMAIL */}
                     <div style={{ marginTop: 6 }}>
                         <RatingStars value={ratingValue} size={16} showNumber />

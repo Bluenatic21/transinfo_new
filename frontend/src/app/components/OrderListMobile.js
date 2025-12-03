@@ -8,6 +8,7 @@ import MobileFilterSheet from "./mobile/MobileFilterSheet";
 import MobileMapSheet from "./mobile/MobileMapSheet";
 import { useUser } from "../UserContext";
 import { useLang } from "../i18n/LangProvider";
+import { useTheme } from "../providers/ThemeProvider";
 import { api } from "@/config/env";
 
 export default function OrderListMobile({
@@ -28,6 +29,7 @@ export default function OrderListMobile({
     const cardRefs = useRef(new Map());
     const { clickedItemId } = useMapHover();
     const { authFetchWithRefresh } = useUser();
+    const { resolvedTheme } = useTheme?.() || { resolvedTheme: "dark" };
 
     useEffect(() => {
         if (!clickedItemId) return;
@@ -57,6 +59,7 @@ export default function OrderListMobile({
     const textMuted = "var(--text-muted, #9ca3af)";
     const controlBg = "var(--control-bg, #ffffff)";
     const controlBorder = "var(--border-subtle, rgba(255,255,255,.15))";
+    const headingColor = resolvedTheme === "light" ? textPrimary : accent;
 
     const toolbarBtnStyle = {
         border: `1px solid ${controlBorder}`,
@@ -153,7 +156,7 @@ export default function OrderListMobile({
                     justifyContent: "space-between",
                 }}
             >
-                <span style={{ fontWeight: 800, fontSize: 21, color: accent }}>
+                <span style={{ fontWeight: 800, fontSize: 21, color: headingColor }}>
                     {t("orders.title", "Заявки")}
                 </span>
                 <div style={{ display: "flex", gap: 8 }}>

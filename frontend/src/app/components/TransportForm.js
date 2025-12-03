@@ -1982,6 +1982,7 @@ export default function TransportForm({
                             name="crew"
                             value={form.crew}
                             onChange={handleChange}
+                            onClick={(e) => e.stopPropagation()}
                             className="mobile-add-select"
                           >
                             <option value="1">

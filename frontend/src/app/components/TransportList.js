@@ -2438,7 +2438,9 @@ function TransportCard({ transport, expanded, onToggle }) {
                 )}
                 {transport.rate_without_vat && (
                   <span>
-                    <span style={{ color: "#8ecae6" }}>
+                    <span
+                      style={{ color: isLight ? cardColors.text : "#8ecae6" }}
+                    >
                       {t("transport.withoutVat", "Без НДС:")}
                     </span>{" "}
                     <b>
@@ -2957,19 +2959,6 @@ function TransportCard({ transport, expanded, onToggle }) {
               {t("common.showDetails", "Показать детали")}
             </button>
           </div>
-        </div>
-      )}
-      {ownerProfile && (
-        <div
-          style={{
-            gridColumn: "1 / -1",
-            background: "rgba(25,40,72,0.96)",
-            borderRadius: 11,
-            padding: "6px 15px",
-            /* ...ваш существующий код панели... */
-          }}
-        >
-          {/* ...содержимое панели... */}
         </div>
       )}
       {/* === Гостевой оверлей: блюр + перехват кликов === */}

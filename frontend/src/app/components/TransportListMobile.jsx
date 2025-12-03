@@ -6,6 +6,7 @@ import MobileMapSheet from "./mobile/MobileMapSheet";
 import TransportCardMobile from "./TransportCardMobile";
 import { useUser } from "../UserContext";
 import { useLang } from "../i18n/LangProvider";
+import { useTheme } from "../providers/ThemeProvider";
 import { api } from "@/config/env";
 
 /**
@@ -29,6 +30,7 @@ export default function TransportListMobile({
     hasMore,
 }) {
     const { t } = useLang();
+    const { resolvedTheme } = useTheme?.() || { resolvedTheme: "dark" };
     // синхронизация «карта ↔ список»: по клику на пин прокручиваем к карточке и подсвечиваем
     const cardRefs = useRef(new Map());
     const { clickedItemId } = useMapHover();
@@ -144,6 +146,7 @@ export default function TransportListMobile({
     const controlBg = "var(--control-bg, #ffffff)";
     const controlBorder = "var(--border-subtle, rgba(255,255,255,.15))";
     const surfaceSoft = "var(--surface-soft, #eef1f6)";
+    const headingColor = resolvedTheme === "light" ? textPrimary : accent;
 
     const toolbarBtnStyle = {
         border: `1px solid ${controlBorder}`,
@@ -210,7 +213,7 @@ export default function TransportListMobile({
                     justifyContent: "space-between",
                 }}
             >
-                <span style={{ fontWeight: 800, fontSize: 21, color: accent }}>
+                <span style={{ fontWeight: 800, fontSize: 21, color: headingColor }}>
                     {t("transport.title", "Транспорт")}
                 </span>
                 <div style={{ display: "flex", gap: 8 }}>
