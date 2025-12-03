@@ -7,7 +7,7 @@ import { useLang } from "../i18n/LangProvider";
 import useAudioUnlock from "../lib/useAudioUnlock";
 import { useCallTones } from "../lib/useCallTones";
 import { abs } from "@/config/env";
-// test commit from Bluenatic21
+// --- Компактный текст доступности ---
 // Полноэкранный центрированный оверлей голосового вызова.
 // + Перетаскивание/сворачивание в «пузырь».
 // + Одна запись статуса на звонок, антидребезг, игнор своих сигналов.
