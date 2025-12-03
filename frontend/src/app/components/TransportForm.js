@@ -2761,17 +2761,14 @@ export default function TransportForm({
 
       <button
         type="submit"
+        className="cta-button"
         style={{
-          background: "linear-gradient(90deg,#46b9fc,#40e7fc 80%)",
-          color: "#0a2336",
           fontWeight: 800,
           fontSize: 19,
-          border: "none",
           borderRadius: 13,
           padding: "15px 36px",
           width: "100%",
           marginTop: 18,
-          boxShadow: "0 2px 14px #30cfff35",
           cursor: sending ? "not-allowed" : "pointer",
           opacity: sending ? 0.7 : 1,
           letterSpacing: 0.03,

@@ -139,6 +139,24 @@
 
 /* disabled:* */
 
+/* Theme-aware CTA button helper */
+.cta-button {
+  background: var(--cta-gradient);
+  color: var(--cta-text);
+  box-shadow: var(--cta-shadow);
+  border: 0;
+  transition: transform .06s ease, opacity .18s ease, background .2s ease;
+}
+
+.cta-button:hover:not(:disabled) {
+  background: var(--cta-gradient-hover, var(--cta-gradient));
+}
+
+.cta-button:disabled {
+  cursor: not-allowed;
+  opacity: .7;
+}
+
 /* Локализация: немного уменьшенные базовые размеры для грузинского языка */
 html:lang(ka) {
   --ka-font-scale: 0.95;
@@ -561,11 +579,14 @@ html[data-theme="light"] {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  flex: 1;
+  min-width: 0;
 }
 
 .adr-modal-title-row {
   display: flex;
   align-items: baseline;
+  flex-wrap: wrap;
   gap: 8px;
 }
 
@@ -576,6 +597,7 @@ html[data-theme="light"] {
 
 .adr-modal-name {
   font-weight: 600;
+  word-break: break-word;
 }
 
 .adr-modal-desc {

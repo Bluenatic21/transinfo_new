@@ -3270,19 +3270,15 @@ export default function OrderForm({ order = null, onSaved }) {
                 {isMobile ? (
                     <div className="sticky-actions">
                         <button
-                            className="primary"
+                            className="primary cta-button"
                             type="submit"
                             disabled={loading}
                             style={{
-                                background: "linear-gradient(90deg, #38bdf8 0%, #22d3ee 100%)",
-                                color: "var(--text-primary)",
                                 fontWeight: 700,
                                 fontSize: 18,
-                                border: 0,
                                 borderRadius: 16,
                                 width: "100%",
                                 padding: "20px 0",
-                                boxShadow: "0 12px 28px -12px rgba(56,189,248,0.6)",
                                 cursor: loading ? "not-allowed" : "pointer",
                                 opacity: loading ? 0.7 : 1,
                                 transition: "transform .06s ease, opacity .18s",
@@ -3310,19 +3306,15 @@ export default function OrderForm({ order = null, onSaved }) {
                     </div>
                 ) : (
                     <button
-                        className="primary"
+                        className="primary cta-button"
                         type="submit"
                         disabled={loading}
                         style={{
-                            background: "linear-gradient(90deg, #38bdf8 0%, #22d3ee 100%)",
-                            color: "var(--text-primary)",
                             fontWeight: 700,
                             fontSize: 18,
-                            border: 0,
                             borderRadius: 16,
                             width: "100%",
                             padding: "20px 0",
-                            boxShadow: "0 12px 28px -12px rgba(56,189,248,0.6)",
                             cursor: loading ? "not-allowed" : "pointer",
                             opacity: loading ? 0.7 : 1,
                             transition: "transform .06s ease, opacity .18s",
