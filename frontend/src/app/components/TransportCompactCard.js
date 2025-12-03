@@ -357,18 +357,34 @@ export default function TransportCompactCard({
     function parseDateDMY(str) {
         if (!str) return null;
         const s = String(str).trim();
+
+        // 1) Попробуем нативный парсер, он корректно понимает "MM/DD/YYYY" → Dec 3, 2025
+        const direct = new Date(s);
+        if (!isNaN(direct)) return direct;
+
+        // 2) ISO YYYY-MM-DD (с optional временем)
         const iso = s.match(/^(\d{4})-(\d{2})-(\d{2})(?:T.*)?$/);
-        if (iso) return `${iso[1]}-${iso[2]}-${iso[3]}`; // уже ISO
+        if (iso) return new Date(`${iso[1]}-${iso[2]}-${iso[3]}`);
+
+        // 3) dd.mm.yyyy / dd-mm-yyyy / dd/mm/yyyy
         const parts = s.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{2,4})$/);
-        if (!parts) return s;
-        const [, d, m, y] = parts;
-        return `${String(y).padStart(4, "20")}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+        if (parts) {
+            const [, d, m, y] = parts;
+            return new Date(`${String(y).padStart(4, "0")}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`);
+        }
+
+        return null;
     }
     function formatAvail(from, to) {
+        const render = (v) => {
+            const d = parseDateDMY(v);
+            return d ? d.toLocaleDateString(intl, { day: "2-digit", month: "2-digit", year: "2-digit" }) : "—";
+        };
+
         if (from && to && from !== to) {
-            return `${new Date(parseDateDMY(from)).toLocaleDateString(intl, { day: "2-digit", month: "2-digit", year: "2-digit" })} — ${new Date(parseDateDMY(to)).toLocaleDateString(intl, { day: "2-digit", month: "2-digit", year: "2-digit" })}`;
+            return `${render(from)} — ${render(to)}`;
         }
-        if (from) return new Date(parseDateDMY(from)).toLocaleDateString(intl, { day: "2-digit", month: "2-digit", year: "2-digit" });
+        if (from) return render(from);
         return "—";
     }
     const availText =
@@ -477,7 +493,7 @@ export default function TransportCompactCard({
                 alt={iso}
                 src={`https://flagcdn.com/16x12/${cc}.png`}
                 srcSet={`https://flagcdn.com/32x24/${cc}.png 2x, https://flagcdn.com/48x36/${cc}.png 3x`}
-                style={{ width: 18, height: 12, marginRight: 6, borderRadius: 2, display: "inline-block", boxShadow: "0 0 0 2px #14233d" }}
+                style={{ width: 18, height: 12, marginRight: 6, borderRadius: 2, display: "inline-block" }}
                 loading="lazy"
             />
         );

@@ -79,7 +79,6 @@ export default function LangSwitcher({ variant = "full" }: { variant?: Variant }
                             width: 20,
                             height: 14,
                             borderRadius: 4,
-                            boxShadow: "0 0 0 1px rgba(0,0,0,0.25)",
                             objectFit: "cover",
                         }}
                     />
@@ -140,7 +139,6 @@ export default function LangSwitcher({ variant = "full" }: { variant?: Variant }
                                         width: 20,
                                         height: 14,
                                         borderRadius: 4,
-                                        boxShadow: "0 0 0 1px rgba(0,0,0,0.25)",
                                         objectFit: "cover",
                                     }}
                                 />
