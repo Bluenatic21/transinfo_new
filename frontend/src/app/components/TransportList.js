@@ -2412,7 +2412,7 @@ function TransportCard({ transport, expanded, onToggle }) {
               style={{
                 fontSize: 15,
                 fontWeight: 700,
-                color: "#43c8ff",
+                color: cardColors.heading,
                 marginBottom: 3,
               }}
             >
