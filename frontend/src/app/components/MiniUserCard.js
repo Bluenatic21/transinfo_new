@@ -133,26 +133,26 @@ export default function MiniUserCard({ user, attachment = null }) {
                 borderRadius: 13,
                 width: "auto",
                 maxWidth: "100%",
-                padding: "10px 18px",
+                padding: "8px 14px",
                 boxShadow: palette.cardShadow,
                 border: palette.cardBorder,
                 display: "flex",
                 flexDirection: "column",
-                gap: 5,
+                gap: 4,
                 marginBottom: 2,
                 alignItems: "flex-start"
             }}
         >
             {/* Верхняя строка: аватар, имя, роль, рейтинг */}
             <div style={{
-                display: "flex", alignItems: "center", gap: 13, marginBottom: 3
+                display: "flex", alignItems: "center", gap: 10, marginBottom: 3
             }}>
                 <Link href={`/profile/${id}`}>
                     <img
                         src={avatarSrc}
                         alt="avatar"
-                        width={42}
-                        height={42}
+                        width={38}
+                        height={38}
                         style={{
                             borderRadius: 10,
                             objectFit: "cover",
@@ -166,7 +166,7 @@ export default function MiniUserCard({ user, attachment = null }) {
                 <div>
                     <div style={{
                         display: "flex", alignItems: "center", gap: 8, fontWeight: 700,
-                        fontSize: 17, color: palette.textPrimary, marginBottom: 0
+                        fontSize: 16, color: palette.textPrimary, marginBottom: 0
                     }}>
                         <span>
                             <Link href={`/profile/${id}`} style={{ color: palette.textPrimary, textDecoration: "none" }}>
@@ -178,7 +178,7 @@ export default function MiniUserCard({ user, attachment = null }) {
                         )}
                         <span style={{
                             fontWeight: 600,
-                            fontSize: 13,
+                            fontSize: 12,
                             color: palette.role,
                             marginLeft: 7
                         }}>{getRoleRu(role)}</span>
@@ -186,7 +186,7 @@ export default function MiniUserCard({ user, attachment = null }) {
                     {email && (
                         <div
                             style={{
-                                fontSize: 14,
+                                fontSize: 13,
                                 color: palette.textSecondary,
                                 marginTop: 1,
                             }}
@@ -196,25 +196,25 @@ export default function MiniUserCard({ user, attachment = null }) {
                                 style={{
                                     color: palette.textSecondary,
                                     textDecoration: "none",
-                                    display: "inline-flex",
-                                    alignItems: "center",
-                                    gap: 6,
-                                }}
-                            >
-                                <FaEnvelope />
-                                {email}
-                            </a>
-                        </div>
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: 5,
+                            }}
+                        >
+                            <FaEnvelope />
+                            {email}
+                        </a>
+                    </div>
                     )}
                     {/* ЗВЁЗДЫ СТАВИМ СТРОГО ПОД EMAIL */}
-                    <div style={{ marginTop: 6 }}>
-                        <RatingStars value={ratingValue} size={16} showNumber />
+                    <div style={{ marginTop: 4 }}>
+                        <RatingStars value={ratingValue} size={15} showNumber />
                     </div>
                 </div>
             </div>
             {/* Мессенджеры и телефон — всё в одну строку */}
             <div style={{
-                display: "flex", alignItems: "center", gap: 12, marginTop: 4,
+                display: "flex", alignItems: "center", gap: 10, marginTop: 3,
                 width: "100%", justifyContent: "flex-start"
             }}>
                 <button
@@ -251,8 +251,8 @@ export default function MiniUserCard({ user, attachment = null }) {
                     <a href={`tel:${phone}`} style={{
                         ...contactIconStyle(palette),
                         fontWeight: 700,
-                        marginLeft: 5,
-                        fontSize: 16,
+                        marginLeft: 4,
+                        fontSize: 15,
                         color: palette.phoneText
                     }}>
                         <FaPhoneAlt style={{ marginRight: 5 }} />
@@ -268,10 +268,10 @@ const contactIconStyle = (palette) => ({
     background: palette.contactBg,
     color: palette.contactText,
     borderRadius: 8,
-    padding: "4px 10px 4px 8px",
+    padding: "3px 9px 3px 7px",
     textDecoration: "none",
     fontWeight: 700,
-    fontSize: 15,
+    fontSize: 14,
     display: "flex",
     alignItems: "center",
     transition: "background 0.14s, color 0.14s"
@@ -281,8 +281,8 @@ const messengerIconStyle = (palette) => ({
     background: palette.messengerBg,
     color: palette.messengerText,
     borderRadius: 7,
-    padding: "6px 8px",
-    fontSize: 18,
+    padding: "5px 7px",
+    fontSize: 17,
     display: "flex",
     alignItems: "center",
     justifyContent: "center",

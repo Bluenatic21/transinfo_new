@@ -1906,7 +1906,7 @@ function OrderCard({
                     right: 17,
                     bottom: 12,
                     zIndex: 11,
-                    background: "rgba(25,40,72,0.96)",
+                    background: "#0c5b86",
                     borderRadius: 11,
                     padding: "6px 15px",
                     minHeight: 44,
