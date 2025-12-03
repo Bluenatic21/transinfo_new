@@ -20,6 +20,7 @@ const SEGMENT_COLORS = {
 function FitMapToRoute({ routeCoords, from, to }) {
     const map = useMap();
     useEffect(() => {
+        if (!map) return;
         let bounds = null;
         if (routeCoords && routeCoords.length > 1) {
             bounds = L.latLngBounds(routeCoords);
@@ -27,9 +28,9 @@ function FitMapToRoute({ routeCoords, from, to }) {
             bounds = L.latLngBounds([from, to]);
         }
         if (bounds && bounds.isValid()) {
-            setTimeout(() => {
+            map.whenReady(() => {
                 map.fitBounds(bounds, { padding: [60, 60] });
-            }, 250);
+            });
         }
     }, [map, JSON.stringify(routeCoords), JSON.stringify(from), JSON.stringify(to)]);
     return null;

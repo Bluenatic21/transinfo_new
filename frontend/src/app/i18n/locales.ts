@@ -1,7 +1,7 @@
-export type Locale = "ka" | "ru" | "en" | "tr" | "az" | "hy";
+export type Locale = "ka" | "ru" | "en" | "tr" | "az" | "hy" | "uk";
 
 // список поддерживаемых локалей (важно: как const)
-export const SUPPORTED_LOCALES = ["ka", "ru", "en", "tr", "az", "hy"] as const;
+export const SUPPORTED_LOCALES = ["ka", "ru", "en", "tr", "az", "hy", "uk"] as const;
 
 // дефолтная локаль
 export const DEFAULT_LOCALE: Locale = "ka";
@@ -14,6 +14,7 @@ export const LOCALE_LABELS: Record<Locale, string> = {
     tr: "Türkçe",
     az: "Azərbaycanca",
     hy: "Հայերեն",
+    uk: "Українська",
 };
 
 // опционально: хелпер нормализации строки в Locale

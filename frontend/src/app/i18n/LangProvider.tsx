@@ -14,6 +14,7 @@ import en from "./dictionaries/en.json";
 import tr from "./dictionaries/tr.json";
 import az from "./dictionaries/az.json";
 import hy from "./dictionaries/hy.json";
+import uk from "./dictionaries/uk.json";
 
 // тип словаря: ключ -> строка
 type Dict = Record<string, string>;
@@ -26,6 +27,7 @@ const DICTS: Record<Locale, Dict> = {
   tr,
   az,
   hy,
+  uk,
 };
 
 type Ctx = {
@@ -93,7 +95,7 @@ export function LangProvider({
     const ruDict = DICTS["ru"] || {};
     return (key: string, fallback?: string) => {
       // для en / tr / az / hy: lang → ru → fallback → key
-      if (lang === "en" || lang === "tr" || lang === "az" || lang === "hy") {
+      if (lang === "en" || lang === "tr" || lang === "az" || lang === "hy" || lang === "uk") {
         return dict[key] ?? ruDict[key] ?? fallback ?? key;
       }
       // остальные: dict → fallback → key

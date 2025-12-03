@@ -2,7 +2,7 @@
 import React from "react";
 import { useLang } from "../i18n/LangProvider";
 
-type LangCode = "ka" | "ru" | "en" | "tr" | "az" | "hy";
+type LangCode = "ka" | "ru" | "en" | "tr" | "az" | "hy" | "uk";
 type Variant = "full" | "compact";
 
 const LANGS: Array<{
@@ -17,6 +17,7 @@ const LANGS: Array<{
         { code: "tr", key: "lang.tr", fallback: "Turkish", flag: "🇹🇷" },
         { code: "az", key: "lang.az", fallback: "Azerbaijani", flag: "🇦🇿" },
         { code: "hy", key: "lang.hy", fallback: "Armenian", flag: "🇦🇲" },
+        { code: "uk", key: "lang.uk", fallback: "Ukrainian", flag: "🇺🇦" },
     ];
 
 export default function LangSwitcher({ variant = "full" }: { variant?: Variant }) {
