@@ -1,194 +1,57 @@
-diff --git a/frontend/src/app/components/TransportListMobile.jsx b/frontend/src/app/components/TransportListMobile.jsx
-index 6c1b02525bc0dc7668f3a7b82f5e79d2b6d43944..3c70029a67ef2f7607323bf5844777142b137eec 100644
---- a/frontend/src/app/components/TransportListMobile.jsx
-+++ b/frontend/src/app/components/TransportListMobile.jsx
-@@ -1,58 +1,60 @@
- "use client";
- import React, { useMemo, useState, useEffect, useRef } from "react";
- import { useMapHover } from "./MapHoverContext";
- import MobileFilterSheet from "./mobile/MobileFilterSheet";
- import MobileMapSheet from "./mobile/MobileMapSheet";
--import TransportCardMobile from "./TransportCardMobile";
--import { useUser } from "../UserContext";
--import { useLang } from "../i18n/LangProvider";
--import { api } from "@/config/env";
-+import TransportCardMobile from "./TransportCardMobile";
-+import { useUser } from "../UserContext";
-+import { useLang } from "../i18n/LangProvider";
-+import { useTheme } from "../providers/ThemeProvider";
-+import { api } from "@/config/env";
- 
- /**
-  * Мобильный список транспорта:
-  * - липкая шапка с «Карта / Фильтр»
-  * - безопасная нормализация входа
-  * - live-превью количества по текущим настройкам фильтра в шторке
-  */
- export default function TransportListMobile({
-     transports = [],
-     loading = false,
-     fetchTransports,
-     filters,
-     setFilters,
-     handleResetFilters,
-     visibleIds,
-     setFiltersFromMap,
-     onFilteredIdsChange,
-     estimatedCount, // используем как стартовое значение, дальше считаем превью внутри
-     onLoadMore,
-     hasMore,
--}) {
--    const { t } = useLang();
--    // синхронизация «карта ↔ список»: по клику на пин прокручиваем к карточке и подсвечиваем
--    const cardRefs = useRef(new Map());
-+}) {
-+    const { t } = useLang();
-+    const { resolvedTheme } = useTheme?.() || { resolvedTheme: "dark" };
-+    // синхронизация «карта ↔ список»: по клику на пин прокручиваем к карточке и подсвечиваем
-+    const cardRefs = useRef(new Map());
-     const { clickedItemId } = useMapHover();
-     // авторизованный fetch для превью-запросов
-     const { authFetchWithRefresh } = useUser();
- 
-     useEffect(() => {
-         if (!clickedItemId) return;
-         const el = cardRefs.current.get(clickedItemId);
-         if (el) {
-             try {
-                 el.scrollIntoView({ behavior: "smooth", block: "center" });
-             } catch { }
-             el.classList.add("highlight");
-             setTimeout(() => el.classList.remove("highlight"), 1100);
-             try {
-                 setMapOpen(false);
-             } catch { }
-         }
-     }, [clickedItemId]);
- 
-     // хуки всегда сверху
-     const [filterOpen, setFilterOpen] = useState(false);
-     const [mapOpen, setMapOpen] = useState(false);
- 
-     const [previewCount, setPreviewCount] = useState(
-         Number.isFinite(estimatedCount) ? estimatedCount : undefined
-@@ -116,56 +118,57 @@ export default function TransportListMobile({
-                         : `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
-                 .join("&");
-             const pageQuery = `page=1&page_size=1`;
-             // NEW: если в фильтре есть даты — просим API включить «постоянно»
-             const hasDate = !!(norm?.ready_date_from || norm?.ready_date_to);
-             const queryString = [q, pageQuery, hasDate ? "include_permanent=1" : null]
-                 .filter(Boolean)
-                 .join("&");
-             const url = api(`/transports?${queryString}`);
-             const resp = await authFetchWithRefresh(url, { cache: "no-store", signal: abort.signal });
-             const totalHeader = resp.headers.get("X-Total-Count") || resp.headers.get("x-total-count");
-             const nextVal = totalHeader
-                 ? (parseInt(totalHeader, 10) || 0)
-                 : (async () => { try { return (Array.isArray(await resp.clone().json()) ? 1 : 0); } catch { return 0; } })();
-             if (reqId === previewReqRef.current) {
-                 const val = typeof nextVal.then === "function" ? await nextVal : nextVal;
-                 setPreviewCount(Number.isFinite(val) ? val : 0);
-             }
-         } catch (e) {
-             // оставляем предыдущее значение, чтобы не мигало
-         }
-     };
- 
-     const surface = "var(--surface, #182337)";
-     const headerBg = "var(--header-bg, #212c46)";
--    const accent = "var(--brand-blue, #43c8ff)";
--    const textPrimary = "var(--text-primary, #0f172a)";
--    const textSecondary = "var(--text-secondary, #8fb3d9)";
--    const controlBg = "var(--control-bg, #ffffff)";
--    const controlBorder = "var(--border-subtle, rgba(255,255,255,.15))";
--    const surfaceSoft = "var(--surface-soft, #eef1f6)";
-+    const accent = "var(--brand-blue, #43c8ff)";
-+    const textPrimary = "var(--text-primary, #0f172a)";
-+    const textSecondary = "var(--text-secondary, #8fb3d9)";
-+    const controlBg = "var(--control-bg, #ffffff)";
-+    const controlBorder = "var(--border-subtle, rgba(255,255,255,.15))";
-+    const surfaceSoft = "var(--surface-soft, #eef1f6)";
-+    const headingColor = resolvedTheme === "light" ? textPrimary : accent;
- 
-     const toolbarBtnStyle = {
-         border: `1px solid ${controlBorder}`,
-         background: controlBg,
-         color: textPrimary,
-         padding: "8px 12px",
-         borderRadius: 12,
-         fontWeight: 800,
-         fontSize: 13,
-         boxShadow: "var(--shadow-soft, none)",
-         transition: "transform var(--transition-fast, 150ms ease-out)",
-     };
- 
-     const rows = useMemo(() => {
-         const arr = Array.isArray(transports) ? transports : [];
-         const normalized = arr.map((t) => normalizeTransport(t));
- 
-         const radiusActive =
-             Number(filters?.map_radius) > 0 &&
-             Array.isArray(filters?.map_center) &&
-             filters.map_center.length === 2;
- 
-         if (radiusActive && Array.isArray(visibleIds)) {
-             return normalized.filter((t) => visibleIds.includes(t.id || t.uid));
-         }
-@@ -188,53 +191,53 @@ export default function TransportListMobile({
-                             margin: "12px 0",
-                             height: 110,
-                             opacity: 0.7,
-                         }}
-                     />
-                 ))}
-             </div>
-         );
-     }
- 
-     return (
-         <div style={{ background: surface, minHeight: "100vh", paddingBottom: 64 }}>
-             {/* липкая шапка */}
-             <div
-                 style={{
-                     position: "sticky",
-                     top: 0,
-                     zIndex: 10,
-                     background: headerBg,
-                     padding: "18px 16px 10px 16px",
-                     display: "flex",
-                     alignItems: "center",
-                     justifyContent: "space-between",
-                 }}
-             >
--                <span style={{ fontWeight: 800, fontSize: 21, color: accent }}>
--                    {t("transport.title", "Транспорт")}
--                </span>
-+                <span style={{ fontWeight: 800, fontSize: 21, color: headingColor }}>
-+                    {t("transport.title", "Транспорт")}
-+                </span>
-                 <div style={{ display: "flex", gap: 8 }}>
-                     <button onClick={() => setMapOpen(true)} style={toolbarBtnStyle}>
-                         {t("common.map", "Карта")}
-                     </button>
-                     <button onClick={() => setFilterOpen(true)} style={toolbarBtnStyle}>
-                         {t("common.filter", "Фильтр")}
-                     </button>
-                 </div>
-             </div>
- 
-             {rows.map((t) => (
-                 <div
-                     key={t.id || t.uid}
-                     ref={(el) => {
-                         if (el && (t?.id || t?.uid)) {
-                             cardRefs.current.set(t.id || t.uid, el);
-                         }
+diff --git a/frontend/src/app/components/TransportList.js b/frontend/src/app/components/TransportList.js
+index 0d4c8898f5eb9d3105d27f55115028bfc33f16b1..389236268a2780993e79697a89b637e28d7995cb 100644
+--- a/frontend/src/app/components/TransportList.js
++++ b/frontend/src/app/components/TransportList.js
+@@ -2467,51 +2467,51 @@ function TransportCard({ transport, expanded, onToggle }) {
+                       background: "#43c8ff",
+                       color: "#1c2534",
+                       fontWeight: 700,
+                       borderRadius: 6,
+                       padding: "2px 9px",
+                       fontSize: 14,
+                       marginTop: 4,
+                       display: "inline-block",
                      }}
-                 >
-                     <TransportCardMobile transport={t.raw || t} />
-                 </div>
-             ))}
- 
-             <div
-                 ref={loadMoreRef}
+                   >
+                     {t("transport.noBargain", "Без торга")}
+                   </span>
+                 )}
+               </div>
+             )}
+           </div>
+         </div>
+       </div>{" "}
+       {/* /transport-card-grid */}
+       {/* --- НИЖНЯЯ ПАНЕЛЬ: ЛЕВО — инфо, ПРАВО — ВСЕ кнопки (включая «заметку») --- */}
+       {ownerProfile && (
+         <div
+           className={isLimited ? "pw-blur pw-overlay pw-noevents" : ""}
+           style={{
+             gridColumn: "1 / -1",
+-            background: "rgba(25,40,72,0.96)",
++            background: "#0c5b86",
+             borderRadius: 11,
+             padding: "6px 15px",
+             /* небольшой отступ, чтобы панель визуально “дышала” от секций */
+             marginTop: 4,
+             minHeight: 44,
+             display: "flex",
+             alignItems: "center",
+             gap: 14,
+             justifyContent: "space-between",
+             fontSize: 15,
+             flexWrap: "wrap",
+           }}
+         >
+           {/* ЛЕВЫЙ блок (автор/орг) */}
+           <div
+             style={{
+               display: "flex",
+               alignItems: "center",
+               gap: 10,
+               minWidth: 0,
+               cursor: "pointer",
+               flex: "1 1 260px",
+             }}
+             onClick={() => router.push(`/profile/${ownerProfile.id}`)}
+             title={t("profile.open", "Перейти в профиль")}

@@ -1534,6 +1534,32 @@ function TransportCard({ transport, expanded, onToggle }) {
     tooltipFg: "var(--transport-card-tooltip-fg, #53ee5c)",
   };
 
+  const commentPalette = isLight
+    ? {
+        popoverBg: "#ffffff",
+        popoverBorder: "#d4e4ff",
+        popoverShadow: "0 12px 32px rgba(15, 23, 42, 0.12)",
+        threadBg: "#f4f7fd",
+        threadBorder: "#d9e5f5",
+        commentText: "#0f172a",
+        meta: "#475569",
+        textareaBg: "#ffffff",
+        textareaBorder: "#cbd5e1",
+        textareaColor: "#0f172a",
+      }
+    : {
+        popoverBg: "#0f1f3a",
+        popoverBorder: "#203a63",
+        popoverShadow: "0 10px 30px #00000055",
+        threadBg: "#11213b",
+        threadBorder: "#24446e",
+        commentText: "#cfe8ff",
+        meta: "#9ec3ff",
+        textareaBg: "#132445",
+        textareaBorder: "#24446e",
+        textareaColor: "#eaf5ff",
+      };
+
   // На светлой теме фон панели остаётся тёмным, поэтому фиксируем светлые цвета
   // имени/контактного лица, чтобы текст не "пропадал" на фоне.
   const infoPrimaryColor = "#ffffff";
@@ -1717,7 +1743,7 @@ function TransportCard({ transport, expanded, onToggle }) {
         position: "relative",
         width: "100%",
         boxSizing: "border-box",
-        overflow: "hidden",
+        overflow: "visible",
       }}
     >
       {/* ВЕРХНИЙ ПРАВЫЙ БЛОК: дата + просмотры */}
@@ -2489,7 +2515,7 @@ function TransportCard({ transport, expanded, onToggle }) {
           className={isLimited ? "pw-blur pw-overlay pw-noevents" : ""}
           style={{
             gridColumn: "1 / -1",
-            background: "rgba(25,40,72,0.96)",
+            background: "#0c5b86",
             borderRadius: 11,
             padding: "6px 15px",
             /* небольшой отступ, чтобы панель визуально “дышала” от секций */
@@ -2661,12 +2687,13 @@ function TransportCard({ transport, expanded, onToggle }) {
                       top: "110%",
                       width: 520,
                       maxWidth: "min(92vw, 520px)",
-                      background: "#0f1f3a",
-                      border: "1px solid #203a63",
+                      background: commentPalette.popoverBg,
+                      border: `1px solid ${commentPalette.popoverBorder}`,
                       borderRadius: 12,
                       padding: 12,
-                      boxShadow: "0 10px 30px #00000055",
-                      zIndex: 20,
+                      boxShadow: commentPalette.popoverShadow,
+                      zIndex: 60,
+                      color: commentPalette.commentText,
                     }}
                     onMouseDown={(e) => e.stopPropagation()}
                   >
@@ -2675,15 +2702,15 @@ function TransportCard({ transport, expanded, onToggle }) {
                       style={{
                         maxHeight: 220,
                         overflowY: "auto",
-                        background: "#11213b",
-                        border: "1px solid #24446e",
+                        background: commentPalette.threadBg,
+                        border: `1px solid ${commentPalette.threadBorder}`,
                         borderRadius: 8,
                         padding: 8,
                         marginBottom: 8,
                       }}
                     >
                       {(intComments?.length || 0) === 0 ? (
-                        <div style={{ color: "#8ecae6", fontSize: 14 }}>
+                        <div style={{ color: cardColors.label, fontSize: 14 }}>
                           {t("comments.none", "Пока нет комментариев")}
                         </div>
                       ) : (
@@ -2694,7 +2721,7 @@ function TransportCard({ transport, expanded, onToggle }) {
                               display: "flex",
                               gap: 10,
                               padding: "6px 4px",
-                              borderBottom: "1px solid #1c2f4f",
+                              borderBottom: `1px solid ${commentPalette.threadBorder}`,
                             }}
                           >
                             <img
@@ -2708,7 +2735,7 @@ function TransportCard({ transport, expanded, onToggle }) {
                               height={28}
                               style={{
                                 borderRadius: "50%",
-                                border: "1px solid #203a63",
+                                border: `1px solid ${commentPalette.popoverBorder}`,
                                 objectFit: "cover",
                               }}
                               onError={(e) =>
@@ -2736,7 +2763,7 @@ function TransportCard({ transport, expanded, onToggle }) {
                                 </b>
                                 <span
                                   style={{
-                                    color: cardColors.label,
+                                    color: commentPalette.meta,
                                     fontSize: 11,
                                   }}
                                 >
@@ -2756,7 +2783,7 @@ function TransportCard({ transport, expanded, onToggle }) {
                               </div>
                               <div
                                 style={{
-                                  color: "#cfe8ff",
+                                  color: commentPalette.commentText,
                                   whiteSpace: "pre-wrap",
                                   fontSize: 14,
                                 }}
@@ -2781,9 +2808,9 @@ function TransportCard({ transport, expanded, onToggle }) {
                       style={{
                         width: "100%",
                         borderRadius: 8,
-                        border: "1px solid #24446e",
-                        background: "#132445",
-                        color: "#eaf5ff",
+                        border: `1px solid ${commentPalette.textareaBorder}`,
+                        background: commentPalette.textareaBg,
+                        color: commentPalette.textareaColor,
                         padding: 8,
                       }}
                     />
@@ -2793,7 +2820,7 @@ function TransportCard({ transport, expanded, onToggle }) {
                         display: "flex",
                         alignItems: "center",
                         gap: 6,
-                        color: "#9ec3ff",
+                        color: commentPalette.meta,
                         fontSize: 12,
                         marginTop: 6,
                         marginBottom: 4,
