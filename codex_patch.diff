@@ -1,139 +1,164 @@
-diff --git a/frontend/src/config/env.ts b/frontend/src/config/env.ts
-index 891c1cd13b3966953943239101acd8637cb2ef2c..4e60d6ac4c2583d107f2eb44bbcb8307649ae6d5 100644
---- a/frontend/src/config/env.ts
-+++ b/frontend/src/config/env.ts
-@@ -1,87 +1,126 @@
- // src/config/env.ts
- type AppEnv = 'production' | 'staging' | 'development';
+diff --git a/frontend/src/app/components/TransportList.js b/frontend/src/app/components/TransportList.js
+index 59a00f6183ee2f055c3a5c9b1d9e3f81cef8d8f8..56633c8e903e597bf71178fa9f0bdd17f07171a2 100644
+--- a/frontend/src/app/components/TransportList.js
++++ b/frontend/src/app/components/TransportList.js
+@@ -1675,72 +1675,73 @@ function TransportCard({ transport, expanded, onToggle }) {
  
- export const APP_ENV: AppEnv =
-   (process.env.NEXT_PUBLIC_APP_ENV as AppEnv) ||
-   (process.env.NODE_ENV === 'production' ? 'production' : 'development');
+   useEffect(() => {
+     const ownerId = transport.owner_id || transport.user_id;
+     if (ownerId) {
+       fetch(api(`/users/${ownerId}`))
+         .then((res) => res.json())
+         .then(setOwnerProfile)
+         .catch(() => setOwnerProfile(null));
+     }
+   }, [transport.owner_id, transport.user_id]);
  
- // Базовые хосты по окружениям
- const HOST_BY_ENV: Record<AppEnv, string> = {
-   production: 'https://www.transinfo.ge',
-   staging: 'https://staging.transinfo.ge',
-   development: 'http://127.0.0.1:3000'
- };
+   useEffect(() => {
+     if (!adrDropdownOpen) return;
+     function handleClick() {
+       setAdrDropdownOpen(false);
+     }
+     document.addEventListener("mousedown", handleClick);
+     return () => document.removeEventListener("mousedown", handleClick);
+   }, [adrDropdownOpen]);
  
- // В проде закрепляемся на prod-домене
- export const BASE =
-   APP_ENV === 'production' ? 'https://www.transinfo.ge' : HOST_BY_ENV[APP_ENV];
- 
-+// Текущий origin в браузере — помогает избежать рассинхрона env и фактического домена
-+// (например, prod сборка открыта с www., а API/WS прописаны на transinfo.ge → CORS/mixed content)
-+const RUNTIME_BASE =
-+  typeof window !== 'undefined' && window?.location?.origin
-+    ? window.location.origin
-+    : '';
-+
- // База API
- // По умолчанию (как раньше) ходим на `${BASE}/api`.
- // Локально можно переопределить через переменные окружения,
- // чтобы сразу стучаться в FastAPI (например http://127.0.0.1:8004).
- const ENV_API_BASE =
-   process.env.NEXT_PUBLIC_API_URL ||
-   process.env.NEXT_PUBLIC_API_BASE_URL ||
-   process.env.NEXT_PUBLIC_DEV_API_URL ||
-   '';
- 
--export const API_BASE =
--  ENV_API_BASE.trim()
--    ? ENV_API_BASE.replace(/\/$/, '')
--    : `${BASE}/api`;
-+// Если в проде env указывает на другой домен, чем открытый сайт, — игнорируем его,
-+// чтобы избежать CORS/префлайт блокировок.
-+const SHOULD_FORCE_RUNTIME_BASE = (() => {
-+  if (!ENV_API_BASE || APP_ENV !== 'production' || !RUNTIME_BASE) return false;
-+  try {
-+    const envHost = new URL(ENV_API_BASE).host;
-+    const runtimeHost = new URL(RUNTIME_BASE).host;
-+    return envHost !== runtimeHost;
-+  } catch {
-+    return false;
-+  }
-+})();
-+
-+const EFFECTIVE_BASE =
-+  (APP_ENV === 'production' && RUNTIME_BASE ? RUNTIME_BASE : BASE).replace(/\/$/, '');
-+
-+export const API_BASE = (() => {
-+  if (ENV_API_BASE.trim() && !SHOULD_FORCE_RUNTIME_BASE) {
-+    return ENV_API_BASE.replace(/\/$/, '');
-+  }
-+  return `${EFFECTIVE_BASE}/api`;
-+})();
- 
- // Совместимость с существующим кодом
- export const API = API_BASE;
- 
- /** Склеивает абсолютный URL к API */
- export function api(path = ''): string {
-   const p = path.startsWith('/') ? path : `/${path}`;
-   return `${API_BASE}${p}`;
- }
- 
- // alias под старые импорты
- export const withApi = api;
- 
- /** Абсолютный URL к сайту (assets и пр.) */
- export function abs(path = ''): string {
-   const p = path.startsWith('/') ? path : `/${path}`;
-   return `${BASE}${p}`;
- }
- 
- /** WebSocket URL */
- const ENV_WS_BASE = (
-   process.env.NEXT_PUBLIC_WS_URL ||
-   process.env.NEXT_PUBLIC_WS_BASE ||
-   ''
- ).trim();
- 
- export function ws(path = ''): string {
-   const p = path.startsWith('/') ? path : `/${path}`;
- 
--  // Если явно задан WS‑URL в env (локальная дев-база) — используем его
-+  // Если явно задан WS‑URL в env (локальная дев-база) — используем его,
-+  // но в проде перепроверяем, что домен совпадает с текущим (иначе mixed content/CORS).
-   if (ENV_WS_BASE) {
-+    try {
-+      if (
-+        APP_ENV === 'production' &&
-+        RUNTIME_BASE &&
-+        new URL(ENV_WS_BASE).host !== new URL(RUNTIME_BASE).host
-+      ) {
-+        const host = RUNTIME_BASE.replace(/^https?:\/\//, '');
-+        const proto = RUNTIME_BASE.startsWith('https') ? 'wss' : 'ws';
-+        return `${proto}://${host}${p}`;
-+      }
-+    } catch {}
-+
-     return `${ENV_WS_BASE.replace(/\/$/, '')}${p}`;
-   }
- 
--  // Иначе старое поведение: тот же хост, что и BASE
--  const host = BASE.replace(/^https?:\/\//, '');
--  const proto = BASE.startsWith('https') ? 'wss' : 'ws';
-+  // Иначе старое поведение: тот же хост, что и BASE (или фактический runtime-домен)
-+  const base = RUNTIME_BASE || BASE;
-+  const host = base.replace(/^https?:\/\//, '');
-+  const proto = base.startsWith('https') ? 'wss' : 'ws';
-   return `${proto}://${host}${p}`;
- }
- 
- 
- // Иногда в коде встречается makeWsUrl — оставляем алиас
- export const makeWsUrl = ws;
- 
- export default {
-   APP_ENV,
-   BASE,
-   API_BASE,
-   API,
-   api,
-   withApi,
-   abs,
-   ws,
-   makeWsUrl
- };
+   // --- Карточка: FLEX как у грузов
+   return (
+     <div
+       ref={ref}
+       data-transport-id={transport.id}
+-      style={{
+-        background: cardColors.bg,
+-        borderRadius: 20,
+-        /* паддинг снизу больше не нужен — панель кнопок внутри сетки */
+-        padding: "18px",
+-        color: cardColors.text,
+-        boxShadow: expanded ? cardColors.shadowExpanded : cardColors.shadow,
+-        borderLeft: expanded
+-          ? `8px solid ${cardColors.borderActive}`
+-          : `8px solid ${cardColors.border}`,
+-        display: "grid",
+-        gridTemplateColumns: "1fr", // одна колонка у карточки
+-        rowGap: 14, // вертикальный зазор между секциями и нижней панелью
+-        alignItems: "stretch",
+-        minHeight: 120,
+-        marginBottom: 16,
+-        transition: "box-shadow .18s, border-color .18s",
+-        position: "relative",
+-        width: "100%",
+-        boxSizing: "border-box",
+-      }}
+-    >
++      style={{
++        background: cardColors.bg,
++        borderRadius: 20,
++        /* паддинг снизу больше не нужен — панель кнопок внутри сетки */
++        padding: "18px",
++        color: cardColors.text,
++        boxShadow: expanded ? cardColors.shadowExpanded : cardColors.shadow,
++        borderLeft: expanded
++          ? `8px solid ${cardColors.borderActive}`
++          : `8px solid ${cardColors.border}`,
++        display: "grid",
++        gridTemplateColumns: "1fr", // одна колонка у карточки
++        rowGap: 14, // вертикальный зазор между секциями и нижней панелью
++        alignItems: "stretch",
++        minHeight: 120,
++        marginBottom: 16,
++        transition: "box-shadow .18s, border-color .18s",
++        position: "relative",
++        width: "100%",
++        boxSizing: "border-box",
++        overflow: "hidden",
++      }}
++    >
+       {/* ВЕРХНИЙ ПРАВЫЙ БЛОК: дата + просмотры */}
+       {(transport.created_at || typeof transport?.views === "number") && (
+         <span
+           style={{
+             position: "absolute",
+             top: 11,
+             right: 16,
+             display: "flex",
+             alignItems: "center",
+             gap: 8,
+             zIndex: 2,
+             pointerEvents: "auto",
+             userSelect: "none",
+           }}
+         >
+           {transport.created_at && (
+             <span
+               style={{
+                 fontSize: 12,
+                 color: cardColors.metaFg,
+                 background: cardColors.metaBg,
+                 padding: "2px 10px",
+                 borderRadius: 11,
+                 fontWeight: 500,
+                 letterSpacing: 0.1,
+@@ -2467,57 +2468,56 @@ function TransportCard({ transport, expanded, onToggle }) {
+                       borderRadius: 6,
+                       padding: "2px 9px",
+                       fontSize: 14,
+                       marginTop: 4,
+                       display: "inline-block",
+                     }}
+                   >
+                     {t("transport.noBargain", "Без торга")}
+                   </span>
+                 )}
+               </div>
+             )}
+           </div>
+         </div>
+       </div>{" "}
+       {/* /transport-card-grid */}
+       {/* --- НИЖНЯЯ ПАНЕЛЬ: ЛЕВО — инфо, ПРАВО — ВСЕ кнопки (включая «заметку») --- */}
+       {ownerProfile && (
+         <div
+           className={isLimited ? "pw-blur pw-overlay pw-noevents" : ""}
+           style={{
+             gridColumn: "1 / -1",
+             background: "rgba(25,40,72,0.96)",
+             borderRadius: 11,
+             padding: "6px 15px",
+-            /* небольшой отступ, чтобы панель визуально “дышала” от секций */
+-            marginTop: 4,
+-            minHeight: 44,
+-            boxShadow: "0 2px 8px #23416722",
+-            display: "flex",
+-            alignItems: "center",
+-            gap: 14,
++            /* небольшой отступ, чтобы панель визуально “дышала” от секций */
++            marginTop: 4,
++            minHeight: 44,
++            display: "flex",
++            alignItems: "center",
++            gap: 14,
+             justifyContent: "space-between",
+             fontSize: 15,
+             flexWrap: "wrap",
+           }}
+         >
+           {/* ЛЕВЫЙ блок (автор/орг) */}
+           <div
+             style={{
+               display: "flex",
+               alignItems: "center",
+               gap: 10,
+               minWidth: 0,
+               cursor: "pointer",
+               flex: "1 1 260px",
+             }}
+             onClick={() => router.push(`/profile/${ownerProfile.id}`)}
+             title={t("profile.open", "Перейти в профиль")}
+           >
+             <UserAvatar
+               user={ownerProfile}
+               size={40}
+               style={{
+                 border: `2px solid ${cardColors.sectionBorder}`,
+                 background: cardColors.sectionBg,
+                 marginRight: 12,

@@ -1717,6 +1717,7 @@ function TransportCard({ transport, expanded, onToggle }) {
         position: "relative",
         width: "100%",
         boxSizing: "border-box",
+        overflow: "hidden",
       }}
     >
       {/* ВЕРХНИЙ ПРАВЫЙ БЛОК: дата + просмотры */}
@@ -2492,7 +2493,6 @@ function TransportCard({ transport, expanded, onToggle }) {
             /* небольшой отступ, чтобы панель визуально “дышала” от секций */
             marginTop: 4,
             minHeight: 44,
-            boxShadow: "0 2px 8px #23416722",
             display: "flex",
             alignItems: "center",
             gap: 14,
