@@ -1,57 +1,165 @@
-diff --git a/frontend/src/app/layout.tsx b/frontend/src/app/layout.tsx
-index 82a9b771d1fa7160e8fe1ee87a875e143b776766..11d9d2de50a2e880f70aba73ab5a34c67111e53d 100644
---- a/frontend/src/app/layout.tsx
-+++ b/frontend/src/app/layout.tsx
-@@ -27,51 +27,51 @@ const BOOT_I18N: Record<Locale, string> = {
-   ka: "იტვირთება…",
-   ru: "Загрузка…",
-   en: "Loading…",
-   tr: "Yükleniyor…",
-   az: "Yüklənir…",
-   hy: "Բեռնվում է…",
- };
+diff --git a/frontend/src/app/components/SaveToggleButton.jsx b/frontend/src/app/components/SaveToggleButton.jsx
+index 8927d5c30811c8430325b8488d18e6bfde47a441..48e5b61b359d692957d94b6c0a4ce5e9f310ae09 100644
+--- a/frontend/src/app/components/SaveToggleButton.jsx
++++ b/frontend/src/app/components/SaveToggleButton.jsx
+@@ -1,45 +1,47 @@
+ /* src/app/components/SaveToggleButton.jsx */
+ "use client";
+ import { FaRegBookmark, FaBookmark } from "react-icons/fa";
+ import { useUser } from "@/app/UserContext";
+ import React, { useMemo, useState, useEffect } from "react";
+-import { useLang } from "../i18n/LangProvider";
++import { useLang } from "../i18n/LangProvider";
++import { useTheme } from "@/app/providers/ThemeProvider";
+ /**
+  * Переключатель с надёжным оптимистичным UI.
+  * Теперь текст — это ДЕЙСТВИЕ:
+  * - сохранено → «Убрать из сохранённых» (в bar-версии — «Убрать»)
+  * - не сохранено → «Сохранить»
+  */
+ export default function SaveToggleButton({
+     type,               // "order" | "transport"
+     id,                 // ID сущности
+     size = 18,
+     onChanged,
+     variant = "default" // "default" | "bar"
+-}) {
+-    const { t } = useLang();
++}) {
++    const { t } = useLang();
++    const { resolvedTheme } = useTheme?.() || { resolvedTheme: "dark" };
+     const {
+         user,
+         savedOrders = [],
+         savedTransports = [],
+         saveOrder,
+         unsaveOrder,
+         saveTransport,
+         unsaveTransport,
+     } = useUser();
  
- export const metadata: Metadata = {
-   title: "Transinfo",
-   description: "Logistics platform & messenger",
-   icons: { icon: "/favicon.ico" },
- };
+     // Истинное состояние из контекста
+     const isSavedFromCtx = useMemo(() => {
+         if (type === "order") return savedOrders.some(o => String(o.id) === String(id));
+         return savedTransports.some(t => String(t.id) === String(id));
+     }, [type, id, savedOrders, savedTransports]);
  
- export default async function RootLayout({
-   children,
- }: {
-   children: React.ReactNode;
- }) {
-   const cookieStore = await cookies();
-   const hdrs = await headers();
-   const rawLangCookie = cookieStore.get("lang")?.value || null;
+     // Оптимистичное состояние до подтверждения контекстом
+     const [localSaved, setLocalSaved] = useState(null);            // null -> берем из контекста
+     const [pendingExpected, setPendingExpected] = useState(null);  // чего ждём от контекста: true/false
+     const [busy, setBusy] = useState(false);
  
-   const accept = hdrs.get("accept-language") || "";
-   const pickFromAccept = (al: string): Locale | null => {
--    const supported = ["ka", "ru", "en", "tr", "az", "hy"];
-+    const supported = ["ka", "ru", "en", "tr", "az", "hy", "uk"];
-     const list = al.split(",").map((s) => s.trim().split(";")[0].toLowerCase());
-     const hit = list.map((code) => code.slice(0, 2)).find((code) => supported.includes(code));
-     return (hit as Locale) ?? null;
-   };
+     const effectiveSaved = (localSaved ?? isSavedFromCtx);
  
-   const chosen: Locale = normalizeLocale(
-     rawLangCookie ?? pickFromAccept(accept) ?? DEFAULT_LOCALE
-   );
+     // Снимаем локальный оверрайд только когда контекст подтвердит ожидаемое
+     useEffect(() => {
+@@ -76,79 +78,94 @@ export default function SaveToggleButton({
+             onChanged?.(next);
+             // ничего не сбрасываем тут — дождёмся апдейта контекста в useEffect
+         } catch (e) {
+             console.error("[SaveToggleButton] toggle error:", e);
+             setLocalSaved(null);
+             setPendingExpected(null);
+         } finally {
+             setBusy(false);
+         }
+     };
  
-   return (
-     <html
-       lang={chosen}
-       data-booting="1"
-       data-theme="light"
-       suppressHydrationWarning
-       className={`${GeistSans.variable} ${GeistMono.variable}`}
-     >
-       <head>
-         <meta
-           name="viewport"
-           content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover"
-         />
-         <meta name="color-scheme" content="light dark" />
-         {/* Ранняя инициализация глобальной переменной для легаси-кода */}
-         <script
+     // Подсказка по ролям
+     let titleHint = effectiveSaved
+         ? t("saved.titleHint.in", "Сейчас: в сохранённых. Нажмите, чтобы убрать.")
+         : t("saved.titleHint.add", "Нажмите, чтобы добавить в сохранённые.");
+     if (user?.role === "OWNER" && type === "order") titleHint += " " + t("saved.hint.visibleToTransportManagers", "Доступно перевозчикам/менеджерам.");
+     if (user?.role === "TRANSPORT" && type === "transport") titleHint += " " + t("saved.hint.visibleToOwnersManagers", "Доступно владельцам/менеджерам.");
+ 
+     // Тексты действия
+     const actionLabel =
+         effectiveSaved
+             ? (variant === "bar" ? t("saved.removeShort", "Убрать") : t("saved.removeLong", "Убрать из сохранённых"))
+             : t("saved.save", "Сохранить");
+ 
+     // Нижняя панель карточки (компактная)
+-    if (variant === "bar") {
+-        const color = effectiveSaved ? "#ffd600" : "#e0f1ff";
+-        const borderColor = effectiveSaved ? "#ffd60066" : "#213759";
++    if (variant === "bar") {
++        const lightMode = resolvedTheme === "light";
++        const color = lightMode
++            ? (effectiveSaved ? "#b98a00" : "var(--text-primary)")
++            : (effectiveSaved ? "#ffd600" : "#e0f1ff");
++        const borderColor = lightMode
++            ? (effectiveSaved
++                ? "color-mix(in srgb, #f0c419 55%, var(--border-subtle))"
++                : "color-mix(in srgb, var(--brand-blue) 26%, var(--border-subtle))")
++            : (effectiveSaved ? "#ffd60066" : "#213759");
++        const background = lightMode
++            ? "color-mix(in srgb, var(--brand-blue) 10%, #ffffff)"
++            : "#132642";
++        const boxShadow = lightMode
++            ? (effectiveSaved
++                ? "0 0 0 1px color-mix(in srgb, #f0c419 26%, transparent)"
++                : "0 1px 2px rgba(15, 23, 42, 0.08)")
++            : (effectiveSaved ? "0 0 0 1px rgba(255, 214, 0, 0.18)" : "none");
+ 
+         return (
+             <button
+                 aria-pressed={effectiveSaved}
+                 aria-label={actionLabel}
+                 title={titleHint}
+                 onClick={(e) => { e.stopPropagation(); toggle(); }}
+                 disabled={busy}
+                 style={{
+                     display: "inline-flex",
+                     alignItems: "center",
+                     gap: 8,
+                     padding: "7px 14px",
+                     borderRadius: 999,
+-                    border: `1px solid ${borderColor}`,
+-                    background: "#132642",
+-                    color,
+-                    fontWeight: 600,
+-                    fontSize: 14,
+-                    cursor: busy ? "default" : "pointer",
+-                    opacity: busy ? 0.6 : 1,
+-                    transition: "opacity .15s ease, color .15s ease, border-color .15s ease, box-shadow .15s ease",
+-                    boxShadow: effectiveSaved ? "0 0 0 1px rgba(255, 214, 0, 0.18)" : "none",
+-                }}
+-            >
+-                {effectiveSaved ? <FaBookmark size={size} /> : <FaRegBookmark size={size} />}
++                    border: `1px solid ${borderColor}`,
++                    background,
++                    color,
++                    fontWeight: 600,
++                    fontSize: 14,
++                    cursor: busy ? "default" : "pointer",
++                    opacity: busy ? 0.6 : 1,
++                    transition: "opacity .15s ease, color .15s ease, border-color .15s ease, box-shadow .15s ease",
++                    boxShadow,
++                }}
++            >
++                {effectiveSaved ? <FaBookmark size={size} /> : <FaRegBookmark size={size} />}
+                 <span>{actionLabel}</span>
+             </button>
+         );
+     }
+ 
+     // Обычный вариант
+     return (
+         <button
+             aria-pressed={effectiveSaved}
+             aria-label={actionLabel}
+             title={titleHint}
+             onClick={(e) => { e.stopPropagation(); toggle(); }}
+             disabled={busy}
+             style={{
+                 display: "inline-flex",
+                 alignItems: "center",
+                 gap: 6,
+                 background: "none",
+                 color: "inherit",
+                 border: 0,
+                 cursor: busy ? "default" : "pointer",
+                 opacity: busy ? 0.6 : 1,
+                 transition: "opacity .15s ease"
+             }}
+         >

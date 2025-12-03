@@ -4,6 +4,7 @@ import { FaRegBookmark, FaBookmark } from "react-icons/fa";
 import { useUser } from "@/app/UserContext";
 import React, { useMemo, useState, useEffect } from "react";
 import { useLang } from "../i18n/LangProvider";
+import { useTheme } from "@/app/providers/ThemeProvider";
 /**
  * Переключатель с надёжным оптимистичным UI.
  * Теперь текст — это ДЕЙСТВИЕ:
@@ -18,6 +19,7 @@ export default function SaveToggleButton({
     variant = "default" // "default" | "bar"
 }) {
     const { t } = useLang();
+    const { resolvedTheme } = useTheme?.() || { resolvedTheme: "dark" };
     const {
         user,
         savedOrders = [],
@@ -99,8 +101,23 @@ export default function SaveToggleButton({
 
     // Нижняя панель карточки (компактная)
     if (variant === "bar") {
-        const color = effectiveSaved ? "#ffd600" : "#e0f1ff";
-        const borderColor = effectiveSaved ? "#ffd60066" : "#213759";
+        const lightMode = resolvedTheme === "light";
+        const color = lightMode
+            ? (effectiveSaved ? "#b98a00" : "var(--text-primary)")
+            : (effectiveSaved ? "#ffd600" : "#e0f1ff");
+        const borderColor = lightMode
+            ? (effectiveSaved
+                ? "color-mix(in srgb, #f0c419 55%, var(--border-subtle))"
+                : "color-mix(in srgb, var(--brand-blue) 26%, var(--border-subtle))")
+            : (effectiveSaved ? "#ffd60066" : "#213759");
+        const background = lightMode
+            ? "color-mix(in srgb, var(--brand-blue) 10%, #ffffff)"
+            : "#132642";
+        const boxShadow = lightMode
+            ? (effectiveSaved
+                ? "0 0 0 1px color-mix(in srgb, #f0c419 26%, transparent)"
+                : "0 1px 2px rgba(15, 23, 42, 0.08)")
+            : (effectiveSaved ? "0 0 0 1px rgba(255, 214, 0, 0.18)" : "none");
 
         return (
             <button
@@ -116,14 +133,14 @@ export default function SaveToggleButton({
                     padding: "7px 14px",
                     borderRadius: 999,
                     border: `1px solid ${borderColor}`,
-                    background: "#132642",
+                    background,
                     color,
                     fontWeight: 600,
                     fontSize: 14,
                     cursor: busy ? "default" : "pointer",
                     opacity: busy ? 0.6 : 1,
                     transition: "opacity .15s ease, color .15s ease, border-color .15s ease, box-shadow .15s ease",
-                    boxShadow: effectiveSaved ? "0 0 0 1px rgba(255, 214, 0, 0.18)" : "none",
+                    boxShadow,
                 }}
             >
                 {effectiveSaved ? <FaBookmark size={size} /> : <FaRegBookmark size={size} />}
