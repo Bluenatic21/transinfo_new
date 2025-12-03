@@ -1113,6 +1113,42 @@ export function MessengerProvider({ children }) {
           return;
         }
 
+        if (data?.event === "message.updated" && data?.message) {
+          const incoming = data.message;
+          const target = data.chat_id || incoming.chat_id;
+
+          setMessages((prev) => {
+            if (chatIdRef.current !== target) return prev;
+            return prev.map((msg) =>
+              msg.id === incoming.id ||
+                (msg.client_id && incoming.client_id &&
+                  msg.client_id === incoming.client_id)
+                ? { ...msg, ...incoming, edited: true }
+                : msg
+            );
+          });
+
+          setAllMessages((prev) => {
+            if (!target) return prev;
+            const arr = prev[target] || [];
+            const idx = arr.findIndex(
+              (m) =>
+                m.id === incoming.id ||
+                (m.client_id && incoming.client_id &&
+                  m.client_id === incoming.client_id)
+            );
+            const next = arr.slice();
+            if (idx === -1) next.push({ ...incoming, edited: true });
+            else next[idx] = { ...next[idx], ...incoming, edited: true };
+            return { ...prev, [target]: next };
+          });
+
+          try {
+            ensureChatInSidebar(target, { lastMessage: incoming });
+          } catch {}
+          return;
+        }
+
         // Эфемерные action-события
         try {
           const action = data?.action;
@@ -1621,6 +1657,51 @@ export function MessengerProvider({ children }) {
     },
     [chatId, authFetchWithRefresh, fetchChatList, ensureChatInSidebar, peerUser]
   );
+
+  const editMessage = useCallback(
+    async (messageId, content) => {
+      if (!chatId || !messageId) return null;
+      const payload = { content };
+      const res = await authFetchWithRefresh(
+        api(`/chat/${chatId}/messages/${messageId}`),
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      if (!res.ok) throw new Error("edit_failed");
+
+      const data = await res.json();
+      const patched = {
+        ...data,
+        edited: true,
+        edited_at: data.edited_at || new Date().toISOString(),
+      };
+
+      setMessages((prev) => {
+        if (chatIdRef.current !== chatId) return prev;
+        return prev.map((m) => (m.id === patched.id ? { ...m, ...patched } : m));
+      });
+
+      setAllMessages((prev) => {
+        const arr = prev[chatId] || [];
+        const idx = arr.findIndex((m) => m.id === patched.id);
+        const next = arr.slice();
+        if (idx === -1) next.push(patched);
+        else next[idx] = { ...next[idx], ...patched };
+        return { ...prev, [chatId]: next };
+      });
+
+      try {
+        ensureChatInSidebar(chatId, { peer: peerUser, lastMessage: patched });
+      } catch {}
+
+      return patched;
+    },
+    [authFetchWithRefresh, chatId, ensureChatInSidebar, peerUser]
+  );
   // --- ПУБЛИЧНЫЙ API: отправка карточки звонка (в конкретный чат) ---
   const sendCallMessage = useCallback(
     async (data = {}, targetChatId = null) => {
@@ -1872,6 +1953,7 @@ export function MessengerProvider({ children }) {
         messages,
         setMessages,
         sendMessage,
+        editMessage,
         sendCallMessage,
         chatId,
         setChatId,

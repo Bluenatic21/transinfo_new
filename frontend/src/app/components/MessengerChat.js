@@ -1279,6 +1279,7 @@ export default function MessengerChat({
   const {
     messages,
     sendMessage,
+    editMessage,
     fetchMessages,
     markChatRead,
     pendingAttachment,
@@ -1571,6 +1572,7 @@ export default function MessengerChat({
   }, [chatId, fetchMessages, connectWS]);
 
   const [input, setInput] = useState("");
+  const [editingMessage, setEditingMessage] = useState(null);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const [sending, setSending] = useState(false);
@@ -1591,6 +1593,9 @@ export default function MessengerChat({
     try {
       initialJumpDoneRef.current = false;
     } catch { }
+  }, [chatId]);
+  useEffect(() => {
+    setEditingMessage(null);
   }, [chatId]);
   const textareaRef = useRef(null);
   const [messagesLimit, setMessagesLimit] = useState(30);
@@ -1802,6 +1807,27 @@ export default function MessengerChat({
   const [pendingVoice, setPendingVoice] = useState(null); // { blob, url }
   const shouldStackInput = isMobile && !!pendingVoice;
   const [hoveredMsgId, setHoveredMsgId] = useState(null);
+
+  const cancelEdit = useCallback(() => {
+    setEditingMessage(null);
+    setInput("");
+  }, []);
+
+  const beginEdit = useCallback(
+    (msg) => {
+      if (!msg || msg.sender_id !== user?.id) return;
+      if (msg.message_type && msg.message_type !== "text") return;
+      setEditingMessage({ id: msg.id, content: msg.content || "" });
+      setInput(msg.content || "");
+      setPendingAttachment(null);
+      setPendingVoice(null);
+      setShowEmojiPicker(false);
+      try {
+        textareaRef.current?.focus();
+      } catch { }
+    },
+    [setPendingAttachment, setPendingVoice, user?.id]
+  );
 
   // Функция подгрузки старых сообщений (до первого загруженного id).
   // Не используем filteredMessages, чтобы избежать TDZ и не грузить во время поиска.
@@ -2452,6 +2478,19 @@ export default function MessengerChat({
 
       setSending(true);
 
+      if (editingMessage) {
+        try {
+          await editMessage(editingMessage.id, msg);
+        } catch (err) {
+          console.warn("edit message failed", err);
+        } finally {
+          setSending(false);
+          setEditingMessage(null);
+          setInput("");
+        }
+        return;
+      }
+
       // если чата ещё нет (режим предпросмотра) — создаём
       let effectiveChatId = chatId;
       // Если это саппорт-чат, текущий тикет закрыт, и мы НЕ агент поддержки — создаём новый тикет
@@ -2686,12 +2725,19 @@ export default function MessengerChat({
       sendMessage,
       pendingVoice,
       setPendingAttachment,
+      editingMessage,
+      editMessage,
       sending,
     ]
   );
 
   const handleKeyDown = useCallback(
     (e) => {
+      if (e.key === "Escape" && editingMessage) {
+        e.preventDefault();
+        cancelEdit();
+        return;
+      }
       const textarea = textareaRef.current;
       const isActiveTextarea =
         textarea &&
@@ -2711,7 +2757,7 @@ export default function MessengerChat({
         handleSend(e);
       }
     },
-    [handleSend]
+    [cancelEdit, editingMessage, handleSend]
   );
   const addEmoji = (emojiObject) => {
     if (!textareaRef.current) return;
@@ -3648,7 +3694,30 @@ export default function MessengerChat({
               justifyContent: isMine ? "flex-end" : "flex-start",
             }}
           >
+            {isMine && msg.message_type === "text" && (
+              <button
+                type="button"
+                onClick={() => beginEdit(msg)}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: "var(--chat-bubble-meta)",
+                  cursor: "pointer",
+                  padding: 0,
+                  display: "inline-flex",
+                  alignItems: "center",
+                }}
+                title={t("chat.editMessage", "Редактировать сообщение")}
+              >
+                <FaEdit />
+              </button>
+            )}
             {msg.sent_at ? new Date(msg.sent_at).toLocaleString() : ""}
+            {(msg.edited || msg.edited_at) && (
+              <span style={{ opacity: 0.7 }}>
+                {t("chat.edited", "изменено")}
+              </span>
+            )}
             {isMine && msg.id === lastMyMsgId && (
               <span
                 style={{
@@ -4209,6 +4278,41 @@ export default function MessengerChat({
             />
           </div>
         </div>
+
+        {editingMessage && (
+          <div
+            className="flex items-start gap-3 px-3 py-2 rounded-lg text-sm"
+            style={{
+              background: "var(--chat-menu-bg)",
+              border: "1px solid var(--chat-menu-border)",
+              color: "var(--chat-menu-fg)",
+              marginBottom: 8,
+            }}
+          >
+            <FaEdit />
+            <div style={{ flex: 1 }}>
+              <div style={{ fontWeight: 700 }}>
+                {t("chat.editing", "Редактирование сообщения")}
+              </div>
+              <div style={{ opacity: 0.8, whiteSpace: "pre-wrap" }}>
+                {editingMessage.content}
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={cancelEdit}
+              style={{
+                background: "none",
+                border: "none",
+                color: "var(--chat-menu-fg)",
+                cursor: "pointer",
+                fontWeight: 700,
+              }}
+            >
+              {t("common.cancel", "Отмена")}
+            </button>
+          </div>
+        )}
 
         {pendingVoice && (
           <div

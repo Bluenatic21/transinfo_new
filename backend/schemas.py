@@ -252,6 +252,10 @@ class ChatMessageCreate(ChatMessageBase):
     pass
 
 
+class ChatMessageUpdate(ChatMessageBase):
+    pass
+
+
 class ChatMessageOut(ChatMessageBase):
     id: int
     sender_id: int

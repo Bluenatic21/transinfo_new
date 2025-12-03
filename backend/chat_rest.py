@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, Query, HTTPException, Body, Request, Response
+from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import func
 from typing import List
@@ -25,7 +26,7 @@ from models import (
     UserRole,
 )
 from schemas import (
-    ChatMessageCreate, ChatMessageOut,
+    ChatMessageCreate, ChatMessageOut, ChatMessageUpdate,
     ChatMessageReactionIn, ChatMessageReactionOut,
     ChatParticipantOut, UserShort
 )
@@ -1104,6 +1105,64 @@ async def send_chat_message(
 
 
 # --- РЕАКЦИИ (коллекция и одиночная) ---
+@router.put("/chat/{chat_id}/messages/{message_id}", response_model=ChatMessageOut)
+async def edit_message(
+    chat_id: int,
+    message_id: int,
+    payload: ChatMessageUpdate,
+    db: Session = Depends(get_db),
+    user=Depends(get_current_user),
+):
+    part = db.query(ChatParticipant).filter_by(
+        chat_id=chat_id, user_id=user.id).first()
+    if not part:
+        raise HTTPException(403, _i18n("error.accessDenied", "Нет доступа"))
+
+    msg = db.query(ChatMessage).filter_by(
+        id=message_id, chat_id=chat_id).first()
+    if not msg:
+        raise HTTPException(404, _i18n(
+            "error.message.notFound", "Сообщение не найдено"))
+
+    if msg.sender_id != getattr(user, "id", None):
+        raise HTTPException(403, _i18n(
+            "error.message.editForbidden", "Можно редактировать только свои сообщения"))
+
+    if msg.message_type not in (None, "", "text"):
+        raise HTTPException(400, _i18n(
+            "error.message.editType", "Редактировать можно только текстовые сообщения"))
+
+    content = (payload.content or "").strip()
+    if not content:
+        raise HTTPException(400, _i18n(
+            "error.message.empty", "Сообщение не может быть пустым"))
+
+    msg.content = content
+    try:
+        msg.edited_at = datetime.utcnow()
+    except Exception:
+        pass
+    db.add(msg)
+    db.commit()
+    db.refresh(msg)
+
+    out = ChatMessageOut.from_orm(msg)
+    outgoing = jsonable_encoder(out)
+    if isinstance(outgoing, dict):
+        outgoing.setdefault("edited", True)
+        outgoing.setdefault("edited_at", datetime.utcnow().isoformat())
+    try:
+        await ws_emit_to_chat(
+            chat_id,
+            "message.updated",
+            {"chat_id": chat_id, "message": outgoing},
+        )
+    except Exception:
+        pass
+
+    return out
+
+
 @router.post("/chat/{chat_id}/messages/{message_id}/reactions", response_model=List[ChatMessageReactionOut])
 def add_message_reaction(
     chat_id: int,

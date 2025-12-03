@@ -1,233 +1,313 @@
-diff --git a/frontend/src/app/orders/[id]/page.js b/frontend/src/app/orders/[id]/page.js
-index 418ad8edcdd76683b13c85e37a611d515f641495..79cebf6138c526f79b312c6932411a9b697d518c 100644
---- a/frontend/src/app/orders/[id]/page.js
-+++ b/frontend/src/app/orders/[id]/page.js
-@@ -575,69 +575,81 @@ export default function OrderDetailsPage() {
-         authFetchWithRefresh(api(`/orders/${order.id}/view`), { method: "POST" })
-             .then(r => r.ok ? r.json() : null)
-             .then(data => {
-                 if (data && typeof data.views === "number") setViewsCount(data.views);
-             })
-             .catch(() => { });
-     }, [order?.id]);
+diff --git a/frontend/src/app/components/MessengerContext.js b/frontend/src/app/components/MessengerContext.js
+index 7e9e33263c938a84f35510548f4e1af672434002..7f0c41a4a1d9162d62fde37c2f37e1705c6f4a57 100644
+--- a/frontend/src/app/components/MessengerContext.js
++++ b/frontend/src/app/components/MessengerContext.js
+@@ -1065,80 +1065,116 @@ export function MessengerProvider({ children }) {
+             return prev.map((m, i) =>
+               i === lastIdx ? { ...m, is_read: true } : m
+             );
+           });
+           setAllMessages((prev) => {
+             const arr = prev[data.chat_id] || [];
+             let lastIdx = -1;
+             for (let i = arr.length - 1; i >= 0; --i) {
+               if (arr[i].sender_id === getCurrentUser()?.id) {
+                 lastIdx = i;
+                 break;
+               }
+             }
+             if (lastIdx === -1) return prev;
+             return {
+               ...prev,
+               [data.chat_id]: arr.map((m, i) =>
+                 i === lastIdx ? { ...m, is_read: true } : m
+               ),
+             };
+           });
+           return;
+         }
  
-     useEffect(() => {
-         if (!shouldHighlight || loading) return;
-         const node = highlightRef.current;
-         if (!node) return;
- 
-         node.classList.add("page-highlight");
-         node.setAttribute("tabindex", "-1");
-         node.focus({ preventScroll: true });
-         node.scrollIntoView({ behavior: "smooth", block: "start" });
- 
-         const timer = setTimeout(() => node.classList.remove("page-highlight"), 2000);
-         return () => {
-             clearTimeout(timer);
-             node.classList.remove("page-highlight");
-         };
-     }, [loading, shouldHighlight]);
- 
--    const cardStyle = useMemo(
--        () => ({
--            background: COLORS.cardBg,
--            border: `1px solid ${COLORS.border}`,
--            borderRadius: 16,
-+    const cardStyle = useMemo(
-+        () => ({
-+            background: COLORS.cardBg,
-+            border: `1px solid ${COLORS.border}`,
-+            borderRadius: 16,
-             padding: isMobile ? 14 : 18,
-             display: "flex",
-             flexDirection: "column",
-             gap: isMobile ? 10 : 12,
-             boxShadow: COLORS.shadow,
-         }),
--        [COLORS.border, COLORS.cardBg, COLORS.shadow, isMobile]
--    );
+         // реакции
+-        if (
+-          data?.event === "reaction_update" &&
+-          data.message_id &&
+-          Array.isArray(data.reactions)
+-        ) {
++        if (
++          data?.event === "reaction_update" &&
++          data.message_id &&
++          Array.isArray(data.reactions)
++        ) {
+           setMessages((prev) =>
+             prev.map((msg) =>
+               msg.id === data.message_id
+                 ? { ...msg, reactions: data.reactions }
+                 : msg
+             )
+           );
+           setAllMessages((prev) => {
+             const arr = prev[data.chat_id] || [];
+             return {
+               ...prev,
+               [data.chat_id]: arr.map((msg) =>
+                 msg.id === data.message_id
+                   ? { ...msg, reactions: data.reactions }
+                   : msg
+               ),
+             };
+           });
+-          return;
+-        }
 -
--    // На мобильных «голый» текст загрузки выглядел как пустой экран
--    // из‑за наследования цвета. Делаем явный, контрастный лоадер,
--    // как в странице транспорта.
--    if (loading) {
--        return (
-+        [COLORS.border, COLORS.cardBg, COLORS.shadow, isMobile]
-+    );
+-        // Эфемерные action-события
+-        try {
+-          const action = data?.action;
+-          const cid = data?.chat_id || data?.data?.chat_id;
++          return;
++        }
 +
-+    const loadingPillStyle = useMemo(
-+        () => ({
-+            background: resolvedTheme === "light" ? COLORS.accentSoft : "#11284a",
-+            color: resolvedTheme === "light" ? COLORS.heading : "#43c8ff",
-+            borderRadius: 8,
-+            padding: `2px ${isMobile ? "10px" : "11px"}`,
-+            fontSize: isMobile ? 13 : 14,
-+            fontWeight: 500,
-+        }),
-+        [COLORS.accentSoft, COLORS.heading, isMobile, resolvedTheme]
-+    );
++        if (data?.event === "message.updated" && data?.message) {
++          const incoming = data.message;
++          const target = data.chat_id || incoming.chat_id;
 +
-+    // На мобильных «голый» текст загрузки выглядел как пустой экран
-+    // из‑за наследования цвета. Делаем явный, контрастный лоадер,
-+    // как в странице транспорта.
-+    if (loading) {
-+        return (
-             <div
-                 aria-busy="true"
-                 style={{
-                     padding: 32,
-                     color: "#c9eaff",
-                     minHeight: "calc(100dvh - 110px)",
-                     display: "grid",
-                     placeItems: "center",
-                 }}
-             >
-                 <div className="boot-spinner">
-                     <span className="boot-dot" />
-                     <span className="boot-dot" />
-                     <span className="boot-dot" />
-                 </div>
-                 <p className="boot-text">{t("common.loading", "Загрузка…")}</p>
-             </div>
++          setMessages((prev) => {
++            if (chatIdRef.current !== target) return prev;
++            return prev.map((msg) =>
++              msg.id === incoming.id ||
++                (msg.client_id && incoming.client_id &&
++                  msg.client_id === incoming.client_id)
++                ? { ...msg, ...incoming, edited: true }
++                : msg
++            );
++          });
++
++          setAllMessages((prev) => {
++            if (!target) return prev;
++            const arr = prev[target] || [];
++            const idx = arr.findIndex(
++              (m) =>
++                m.id === incoming.id ||
++                (m.client_id && incoming.client_id &&
++                  m.client_id === incoming.client_id)
++            );
++            const next = arr.slice();
++            if (idx === -1) next.push({ ...incoming, edited: true });
++            else next[idx] = { ...next[idx], ...incoming, edited: true };
++            return { ...prev, [target]: next };
++          });
++
++          try {
++            ensureChatInSidebar(target, { lastMessage: incoming });
++          } catch {}
++          return;
++        }
++
++        // Эфемерные action-события
++        try {
++          const action = data?.action;
++          const cid = data?.chat_id || data?.data?.chat_id;
+ 
+           if (action === "message.new" && data?.data) {
+             const inc = data.data;
+             const target = cid || inc.chat_id;
+ 
+             if (chatIdRef.current === target) {
+               setMessages((prev) => {
+                 if (prev.some((m) => m.id === inc.id)) return prev;
+                 const i = prev.findIndex(
+                   (m) =>
+                     m.client_id &&
+                     inc.client_id &&
+                     m.client_id === inc.client_id
+                 );
+                 const next = prev.slice();
+                 if (i !== -1) next[i] = inc;
+                 else next.push(inc);
+                 return next.slice().sort(_cmpMsgAsc);
+               });
+               setAllMessages((prev) => {
+                 const arr = prev[target] || [];
+                 if (arr.some((m) => m.id === inc.id)) return prev;
+                 const j = arr.findIndex(
+                   (m) =>
+                     m.client_id &&
+@@ -1596,56 +1632,101 @@ export function MessengerProvider({ children }) {
+         });
+         // сразу дописываем превью последнего сообщения и корректного peer в карточку
+         try {
+           ensureChatInSidebar(chatId, { peer: peerUser, lastMessage: data });
+         } catch {}
+ 
+         fetchChatList();
+         window.dispatchEvent(new CustomEvent("inbox_update"));
+       } else {
+         // пометим как неотправленное
+         setMessages((prev) =>
+           prev.map((m) =>
+             m.client_id === client_id ? { ...m, _failed: true } : m
+           )
          );
-     }
-     if (!order || order.detail === "Order not found") {
-         return <div style={{ padding: 16, color: "#f88" }}>{t("order.notFound", "Заявка не найдена")}</div>;
-     }
- 
-     // --- Карта: вычисляем координаты ТОЛЬКО после загрузки order ---
-     const fromCoords =
-@@ -654,55 +666,55 @@ export default function OrderDetailsPage() {
-             : [];
- 
-     // --- Детали ---
-     const mainCargo =
-         Array.isArray(order.cargo_items) && order.cargo_items.length > 0 ? order.cargo_items[0] : {};
-     const from =
-         Array.isArray(order.from_locations) && order.from_locations.length > 0
-             ? order.from_locations.join(", ")
-             : "";
-     const to =
-         Array.isArray(order.to_locations) && order.to_locations.length > 0
-             ? order.to_locations.join(", ")
-             : "";
-     const loadDate = order.load_date || "";
-     const unloadDate = order.unload_date || "";
-     const truckType = order.truck_type || "";
-     const transportType = order.transport_type || "";
-     const loadingTypes = Array.isArray(order.loading_types) ? order.loading_types : [];
-     const gpsMonitoring = order.gps_monitoring ? t("common.yes", "Да") : "";
-     const adr = order.adr ? t("common.yes", "Да") : "";
-     const adrClass = order.adr_class || "";
-     const tempMode = order.temp_mode ? t("common.yes", "Да") : "";
-     const tempFrom = order.temp_from || "";
-     const tempTo = order.temp_to || "";
-     const hasCustoms = order.has_customs ? t("common.yes", "Да") : t("common.no", "Нет");
--    const customsInfo = order.customs_info || "";
--    const paymentScenario = order.payment_scenario || "";
--    const paymentDays = order.payment_days || "";
--    const prepayAmount = order.prepay_amount || "";
--    const postpayDays = order.postpay_days || "";
-+    const customsInfo = order.customs_info || "";
-+    const paymentScenario = order.payment_scenario || "";
-+    const paymentDays = order.payment_days || "";
-+    const prepayAmount = order.prepay_amount || "";
-+    const postpayDays = order.postpay_days || "";
-     const paymentComment = order.payment_comment || "";
-     const rateType = order.rate_type || "";
-     const rateWithVat = order.rate_with_vat || "";
-     const rateNoVat = order.rate_no_vat || "";
-     const rateCash = order.rate_cash || "";
-     const currency = order.rate_currency || order.currency || "₾";
-     const rateToCard = order.rate_to_card ? t("common.yes", "Да") : "";
-     const prominentPrice = (() => {
-         const amount = rateWithVat || rateNoVat || rateCash || order?.price || "";
-         const curr = currency || "";
-         if (!amount) return "";
-         return `${amount} ${curr}`.trim();
-     })();
-     const comment = order.comment || "";
-     const description = order.description || "";
-     const phone = order.phone || "";
-     const email = order.email || "";
-     const username = order.username || "";
-     const createdAt = order.created_at
-         ? new Date(order.created_at).toLocaleString("ru-RU", {
-             day: "2-digit",
-             month: "2-digit",
-             year: "2-digit",
-             hour: "2-digit",
-             minute: "2-digit"
-@@ -710,67 +722,55 @@ export default function OrderDetailsPage() {
-         : "";
-     const attachments = Array.isArray(order.attachments) ? order.attachments : [];
-     const norm = normalizeAttachments(attachments);
-     const imageItems = norm.filter((x) => x.kind === "image");
-     const fileItems = norm.filter((x) => x.kind === "file");
-     const docItems = norm.filter((x) => x.kind === "file");
- 
-     const truckQuantity =
-         order.truck_quantity !== undefined && order.truck_quantity !== null ? order.truck_quantity : "";
-     const cargos =
-         Array.isArray(order.cargo_items) && order.cargo_items.length > 0 ? order.cargo_items : [];
-     const routes = Array.isArray(order.routes) && order.routes.length > 0 ? order.routes.join(", ") : "";
- 
-     // Стили для секций
-     const sectionTitleStyle = {
-         fontWeight: 750,
-         fontSize: isMobile ? 16.5 : 19,
-         color: resolvedTheme === "light" ? COLORS.heading : "#cfe3ff",
-         marginBottom: isMobile ? 10 : 12,
-         display: "flex",
-         alignItems: "center",
-         gap: 10,
-         letterSpacing: 0.1,
-     };
- 
--    const sectionTextStyle = {
--        lineHeight: 1.45,
--        fontSize: isMobile ? 14.5 : 16,
--    };
--
--    const loadingPillStyle = useMemo(
--        () => ({
--            background: resolvedTheme === "light" ? COLORS.accentSoft : "#11284a",
--            color: resolvedTheme === "light" ? COLORS.heading : "#43c8ff",
--            borderRadius: 8,
--            padding: `2px ${isMobile ? "10px" : "11px"}`,
--            fontSize: isMobile ? 13 : 14,
--            fontWeight: 500,
--        }),
--        [COLORS.accentSoft, COLORS.heading, isMobile, resolvedTheme]
--    );
--
-+    const sectionTextStyle = {
-+        lineHeight: 1.45,
-+        fontSize: isMobile ? 14.5 : 16,
-+    };
+         setAllMessages((prev) => {
+           const arr = prev[chatId] || [];
+           return {
+             ...prev,
+             [chatId]: arr.map((m) =>
+               m.client_id === client_id ? { ...m, _failed: true } : m
+             ),
+           };
+         });
+       }
+-    },
+-    [chatId, authFetchWithRefresh, fetchChatList, ensureChatInSidebar, peerUser]
+-  );
+-  // --- ПУБЛИЧНЫЙ API: отправка карточки звонка (в конкретный чат) ---
+-  const sendCallMessage = useCallback(
+-    async (data = {}, targetChatId = null) => {
++    },
++    [chatId, authFetchWithRefresh, fetchChatList, ensureChatInSidebar, peerUser]
++  );
 +
++  const editMessage = useCallback(
++    async (messageId, content) => {
++      if (!chatId || !messageId) return null;
++      const payload = { content };
++      const res = await authFetchWithRefresh(
++        api(`/chat/${chatId}/messages/${messageId}`),
++        {
++          method: "PUT",
++          headers: { "Content-Type": "application/json" },
++          body: JSON.stringify(payload),
++        }
++      );
++
++      if (!res.ok) throw new Error("edit_failed");
++
++      const data = await res.json();
++      const patched = {
++        ...data,
++        edited: true,
++        edited_at: data.edited_at || new Date().toISOString(),
++      };
++
++      setMessages((prev) => {
++        if (chatIdRef.current !== chatId) return prev;
++        return prev.map((m) => (m.id === patched.id ? { ...m, ...patched } : m));
++      });
++
++      setAllMessages((prev) => {
++        const arr = prev[chatId] || [];
++        const idx = arr.findIndex((m) => m.id === patched.id);
++        const next = arr.slice();
++        if (idx === -1) next.push(patched);
++        else next[idx] = { ...next[idx], ...patched };
++        return { ...prev, [chatId]: next };
++      });
++
++      try {
++        ensureChatInSidebar(chatId, { peer: peerUser, lastMessage: patched });
++      } catch {}
++
++      return patched;
++    },
++    [authFetchWithRefresh, chatId, ensureChatInSidebar, peerUser]
++  );
++  // --- ПУБЛИЧНЫЙ API: отправка карточки звонка (в конкретный чат) ---
++  const sendCallMessage = useCallback(
++    async (data = {}, targetChatId = null) => {
+       const id = targetChatId || chatIdRef.current || chatId;
+       if (!id) return;
  
-     // ── Готовим секции как переменные, чтобы легко переставить местами ─────────────────
-     const transportSection =
-         (truckType || transportType || truckQuantity || loadingTypes.length > 0 || gpsMonitoring || order.adr || tempMode)
-             ? (
-                 <div
-                     key="transport"
-                     style={{
-                         ...cardStyle,
-                         ...sectionTextStyle,
-                         minHeight: 180,
-                         height: "100%",
-                     }}
-                 >
-                     <div style={sectionTitleStyle}>{icons.truck}{t("transport.title", "Транспорт")}</div>
-                     {truckType && (<div><b>{t("truck.bodyType", "Тип кузова")}:</b> {findBodyLabelByValue(truckType)}</div>)}
-                     {transportType && (<div><b>{t("transport.transportType", "Тип перевозки")}:</b> {localizeTransportType(transportType)}</div>)}
-                     {truckQuantity && (<div><b>{t("transport.truckCount", "Количество машин")}:</b> {truckQuantity}</div>)}
-                     {loadingTypes.length > 0 && (
-                         <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                             <b style={{ marginRight: 6 }}>{t("loading.types", "Типы загрузки")}:</b>
-                             {localizeLoadingTypes(loadingTypes).map((label, i) => (
-                                 <span
-                                     key={i}
-                                     style={loadingPillStyle}
+       // нормализуем полезную нагрузку карточки
+       const safe = {
+         status: data.status || data.state || "ended", // ended|missed|rejected|canceled
+         direction: data.direction || "outgoing", // incoming|outgoing
+         duration:
+           (typeof data.duration === "number" ? data.duration : data.seconds) ||
+           null,
+       };
+       const payload = JSON.stringify(safe);
+ 
+       // --- оптимистичное добавление в нужный чат ---
+       const client_id = `c${Date.now()}-${Math.random()
+         .toString(36)
+         .slice(2, 8)}`;
+       const me = getCurrentUser && getCurrentUser();
+       const _client_ts = Date.now();
+       const _client_seq = (optimisticSeqRef.current =
+         optimisticSeqRef.current + 1);
+       const optimistic = {
+         id: `tmp:${client_id}`,
+         client_id,
+         sender_id: me?.id,
+@@ -1845,60 +1926,61 @@ export function MessengerProvider({ children }) {
+         try {
+           wsRef.current.close();
+         } catch {}
+         wsRef.current = null;
+       }
+       setMessages([]);
+       setPeerUser(null);
+       setPendingAttachment(null);
+     }
+   }, []);
+ 
+   // --- selectors for ephemeral state ---
+   const getSupportTyping = useCallback((id) => {
+     return !!supportTypingRef.current.get(id);
+   }, []);
+   const getSupportQueue = useCallback((id) => {
+     return supportQueueRef.current.get(id) || null;
+   }, []);
+ 
+   return (
+     <MessengerContext.Provider
+       value={{
+         isOpen,
+         openMessenger,
+         closeMessenger,
+-        hideMessengerUi,
+-        markChatRead,
+-        messages,
+-        setMessages,
+-        sendMessage,
+-        sendCallMessage,
+-        chatId,
+-        setChatId,
+-        peerUser,
+-        setPeerUser,
++        hideMessengerUi,
++        markChatRead,
++        messages,
++        setMessages,
++        sendMessage,
++        editMessage,
++        sendCallMessage,
++        chatId,
++        setChatId,
++        peerUser,
++        setPeerUser,
+         unread,
+         fetchUnreadCount,
+         chatList,
+         fetchChatList, // reload first page
+         fetchMoreChats, // load next page (append)
+         chatListEOF,
+         chatListLoading,
+         currentUser,
+         connectWS,
+         pendingAttachment,
+         setPendingAttachment,
+         allMessages,
+         setAllMessages,
+         notificationsSocket,
+         fetchMessages: fetchMessagesById,
+         fetchOlderMessages: fetchOlderMessagesById,
+         mutedGroups,
+         muteGroup,
+         unmuteGroup,
+         pinnedChats,
+         pinChat,
+         unpinChat,
+         // helpers
+         isSupportChat,
+         getChatById,
