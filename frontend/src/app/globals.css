@@ -557,10 +557,12 @@ html[data-theme="light"] {
   padding: 4px 2px;
 }
 
+
 .adr-modal-item {
-  display: flex;
-  gap: 12px;
+  display: grid;
+  grid-template-columns: auto 1fr;
   align-items: flex-start;
+  gap: 12px;
   padding: 10px 12px;
   border-radius: 14px;
   border: 1.5px solid var(--border-subtle, #2c3f62);

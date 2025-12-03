@@ -1,8 +1,26 @@
 diff --git a/frontend/src/app/globals.css b/frontend/src/app/globals.css
-index baf9458761b3d7ea432f9aaa7f0ec1c704554167..7592f2b5e705b74d6835616e93775904a32067bc 100644
+index e50c39ac62d1c091b04ea3c86e45a7c8dfdb30d1..3abccd446f7ab8f90c923bd6e068ea105a8982ef 100644
 --- a/frontend/src/app/globals.css
 +++ b/frontend/src/app/globals.css
-@@ -535,70 +535,74 @@ html[data-theme="light"] {
+@@ -535,60 +535,62 @@ html[data-theme="light"] {
+ .adr-modal-title {
+   font-weight: 700;
+   font-size: 17px;
+ }
+ 
+ .adr-modal-close {
+   width: 34px;
+   height: 34px;
+   border-radius: 50%;
+   border: 1.5px solid var(--border-subtle, #2c3f62);
+   background: var(--control-bg, #0f1b30);
+   color: var(--text-primary, #eaf1ff);
+   font-size: 20px;
+   line-height: 1;
+ }
+ 
+ .adr-modal-list {
+   display: flex;
    flex-direction: column;
    gap: 10px;
    max-height: 60vh;
@@ -10,16 +28,28 @@ index baf9458761b3d7ea432f9aaa7f0ec1c704554167..7592f2b5e705b74d6835616e93775904
    padding: 4px 2px;
  }
  
- .adr-modal-item {
-   display: flex;
-   gap: 12px;
-   align-items: flex-start;
-   padding: 10px 12px;
-   border-radius: 14px;
-   border: 1.5px solid var(--border-subtle, #2c3f62);
-   background: color-mix(in srgb, var(--bg-card-soft, #16233c) 88%, transparent);
-   box-shadow: 0 3px 10px rgba(12, 19, 35, .2);
- }
+-.adr-modal-item {
+-  display: flex;
+-  gap: 12px;
+-  align-items: flex-start;
+-  padding: 10px 12px;
+-  border-radius: 14px;
+-  border: 1.5px solid var(--border-subtle, #2c3f62);
+-  background: color-mix(in srgb, var(--bg-card-soft, #16233c) 88%, transparent);
+-  box-shadow: 0 3px 10px rgba(12, 19, 35, .2);
+-}
++
++.adr-modal-item {
++  display: grid;
++  grid-template-columns: auto 1fr;
++  align-items: flex-start;
++  gap: 12px;
++  padding: 10px 12px;
++  border-radius: 14px;
++  border: 1.5px solid var(--border-subtle, #2c3f62);
++  background: color-mix(in srgb, var(--bg-card-soft, #16233c) 88%, transparent);
++  box-shadow: 0 3px 10px rgba(12, 19, 35, .2);
++}
  
  .adr-modal-item input[type="checkbox"] {
    width: 20px;
@@ -28,66 +58,20 @@ index baf9458761b3d7ea432f9aaa7f0ec1c704554167..7592f2b5e705b74d6835616e93775904
    accent-color: var(--accent, #5fd8ff);
  }
  
--.adr-modal-label {
--  display: flex;
--  flex-direction: column;
--  gap: 2px;
--}
--
--.adr-modal-title-row {
--  display: flex;
--  align-items: baseline;
--  gap: 8px;
--}
-+.adr-modal-label {
-+  display: flex;
-+  flex-direction: column;
-+  gap: 2px;
-+  flex: 1;
-+  min-width: 0;
-+}
-+
-+.adr-modal-title-row {
-+  display: flex;
-+  align-items: baseline;
-+  flex-wrap: wrap;
-+  gap: 8px;
-+}
+ .adr-modal-label {
+   display: flex;
+   flex-direction: column;
+   gap: 2px;
+   flex: 1;
+   min-width: 0;
+ }
+ 
+ .adr-modal-title-row {
+   display: flex;
+   align-items: baseline;
+   flex-wrap: wrap;
+   gap: 8px;
+ }
  
  .adr-modal-code {
    font-weight: 800;
-   color: var(--brand-blue, #5fd8ff);
- }
- 
--.adr-modal-name {
--  font-weight: 600;
--}
-+.adr-modal-name {
-+  font-weight: 600;
-+  word-break: break-word;
-+}
- 
- .adr-modal-desc {
-   color: var(--text-secondary, #c9def6);
-   font-size: 14px;
- }
- 
- .adr-modal-footer {
-   display: flex;
-   gap: 10px;
-   margin-top: 12px;
- }
- 
- .adr-modal-action {
-   flex: 1;
-   padding: 10px 12px;
-   border-radius: 12px;
-   border: 1.5px solid var(--brand-blue, #5fd8ff);
-   background: color-mix(in srgb, var(--brand-blue, #5fd8ff) 22%, transparent);
-   color: var(--brand-blue, #5fd8ff);
-   font-weight: 700;
- }
- 
- .adr-modal-action.secondary {
-   border-color: var(--border-subtle, #2c3f62);
-   background: var(--control-bg, #0f1b30);

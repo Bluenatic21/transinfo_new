@@ -431,35 +431,37 @@ function LoadingTypeDropdown({ value, onChange, options }) {
               {t("common.noOptions", "Нет вариантов")}
             </div>
           )}
-          {filtered.map((opt) => (
-            <label
-              key={opt}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 7,
-                padding: "8px 12px",
-                cursor: "pointer",
-                background: value.includes(opt)
-                  ? `color-mix(in srgb, ${palette.accent} 12%, transparent)`
-                  : "",
-                fontWeight: value.includes(opt) ? 700 : 400,
-                color: value.includes(opt) ? "#b4e1fd" : "#e3f2fd",
-              }}
-            >
-              <input
-                type="checkbox"
-                checked={value.includes(opt)}
-                style={{ accentColor: "#2dc7ff" }}
-                onChange={() => {
-                  if (value.includes(opt))
-                    onChange(value.filter((x) => x !== opt));
-                  else onChange([...value, opt]);
+          {filtered.map((opt) => {
+            const isSelected = value.includes(opt);
+            return (
+              <label
+                key={opt}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 7,
+                  padding: "8px 12px",
+                  cursor: "pointer",
+                  background: isSelected
+                    ? `color-mix(in srgb, ${palette.accent} 12%, transparent)`
+                    : "",
+                  fontWeight: isSelected ? 700 : 400,
+                  color: isSelected ? palette.accent : palette.text,
                 }}
-              />
-              {opt}
-            </label>
-          ))}
+              >
+                <input
+                  type="checkbox"
+                  checked={isSelected}
+                  style={{ accentColor: palette.accent }}
+                  onChange={() => {
+                    if (isSelected) onChange(value.filter((x) => x !== opt));
+                    else onChange([...value, opt]);
+                  }}
+                />
+                {opt}
+              </label>
+            );
+          })}
         </div>
       )}
     </div>
