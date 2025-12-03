@@ -1,543 +1,575 @@
 /* styles/theme.css */
 :root {
-    /* brand */
-    --brand-blue: #81CAFF;
-    --brand-teal: #20C5B4;
-    --brand-orange: #FE9805;
-    --brand-navy: #111B27;
+  /* brand */
+  --brand-blue: #81caff;
+  --brand-teal: #20c5b4;
+  --brand-orange: #fe9805;
+  --brand-navy: #111b27;
 
-    /* contacts */
-    --contact-secondary-name: #cfe9ff;
+  /* contacts */
+  --contact-secondary-name: #cfe9ff;
 
-    /* CTA buttons (shared between order & transport forms) */
-    --cta-gradient: linear-gradient(90deg, #38bdf8 0%, #22d3ee 100%);
-    --cta-gradient-hover: linear-gradient(90deg, #38bdf8 0%, #67e8f9 100%);
-    --cta-text: #0f172a;
-    --cta-shadow: 0 12px 28px -12px rgba(56, 189, 248, 0.6);
+  /* CTA buttons (shared between order & transport forms) */
+  --cta-gradient: linear-gradient(90deg, #38bdf8 0%, #22d3ee 100%);
+  --cta-gradient-hover: linear-gradient(90deg, #38bdf8 0%, #67e8f9 100%);
+  --cta-text: #0f172a;
+  --cta-shadow: 0 12px 28px -12px rgba(56, 189, 248, 0.6);
 
-    /* Avatar contrast background */
-    --avatar-contrast-bg: #0e1625;
+  /* Avatar contrast background */
+  --avatar-contrast-bg: #0e1625;
 
-    /* Call overlay */
-    --call-overlay-bg: #17263a;
-    --call-overlay-text: #e6eef8;
-    --call-overlay-border: rgba(255, 255, 255, 0.06);
-    --call-overlay-avatar-bg: rgba(255, 255, 255, 0.06);
-    --call-overlay-shadow: 0 22px 60px rgba(0, 0, 0, 0.46);
-    --call-overlay-mini-shadow: 0 16px 40px rgba(0, 0, 0, 0.46);
-    --call-overlay-btn-neutral-bg: #213651;
-    --call-overlay-btn-neutral-text: #e6eef8;
-    --call-overlay-mini-btn-bg: #233854;
-    --call-overlay-mini-btn-text: #e6eef8;
+  /* Call overlay */
+  --call-overlay-bg: #17263a;
+  --call-overlay-text: #e6eef8;
+  --call-overlay-border: rgba(255, 255, 255, 0.06);
+  --call-overlay-avatar-bg: rgba(255, 255, 255, 0.06);
+  --call-overlay-shadow: 0 22px 60px rgba(0, 0, 0, 0.46);
+  --call-overlay-mini-shadow: 0 16px 40px rgba(0, 0, 0, 0.46);
+  --call-overlay-btn-neutral-bg: #213651;
+  --call-overlay-btn-neutral-text: #e6eef8;
+  --call-overlay-mini-btn-bg: #233854;
+  --call-overlay-mini-btn-text: #e6eef8;
 
-    /* neutral gray scale */
-    --gray-50: #F5F7FA;
-    --gray-75: #EEF1F6;
-    --gray-100: #E1E5ED;
-    --gray-200: #CBD2E1;
-    --gray-300: #A8B1C5;
-    --gray-600: #4B5565;
-    --gray-800: #111827;
+  /* neutral gray scale */
+  --gray-50: #f5f7fa;
+  --gray-75: #eef1f6;
+  --gray-100: #e1e5ed;
+  --gray-200: #cbd2e1;
+  --gray-300: #a8b1c5;
+  --gray-600: #4b5565;
+  --gray-800: #111827;
 
-    /* timing */
-    --transition-fast: 150ms ease-out;
-    --transition-normal: 220ms ease-out;
+  /* timing */
+  --transition-fast: 150ms ease-out;
+  --transition-normal: 220ms ease-out;
 }
 
 /* Тёмная тема (по умолчанию) */
 :root[data-theme="dark"] {
-    color-scheme: dark;
-    --bg-body: #050B12;
-    --bg-header: #0C141F;
-    --bg-card: #101927;
-    --bg-card-soft: #0B111C;
-    --header-bg: var(--bg-body);
+  color-scheme: dark;
+  --bg-body: #050b12;
+  --bg-header: #0c141f;
+  --bg-card: #101927;
+  --bg-card-soft: #0b111c;
+  --header-bg: var(--bg-body);
 
-    --border-subtle: rgba(255, 255, 255, 0.06);
-    --border-strong: rgba(255, 255, 255, 0.12);
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --border-strong: rgba(255, 255, 255, 0.12);
 
-    --text-primary: #F9FAFB;
-    --text-secondary: #9CA3AF;
-    --text-muted: #6B7280;
-    --text-on-brand: #FFFFFF;
+  --text-primary: #f9fafb;
+  --text-secondary: #9ca3af;
+  --text-muted: #6b7280;
+  --text-on-brand: #ffffff;
 
-    --control-bg: #101927;
-    --control-bg-hover: #151F2E;
-    --input: var(--control-bg);
-    --input-placeholder: #9bb0c5;
+  --control-bg: #101927;
+  --control-bg-hover: #151f2e;
+  --input: var(--control-bg);
+  --input-placeholder: #9bb0c5;
 
-    --shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.55);
+  --shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.55);
 
-    --cta-gradient: linear-gradient(90deg, #38bdf8 0%, #22d3ee 100%);
-    --cta-gradient-hover: linear-gradient(90deg, #38bdf8 0%, #67e8f9 100%);
-    --cta-text: var(--text-primary);
-    --cta-shadow: 0 12px 28px -12px rgba(56, 189, 248, 0.6);
+  --cta-gradient: linear-gradient(90deg, #38bdf8 0%, #22d3ee 100%);
+  --cta-gradient-hover: linear-gradient(90deg, #38bdf8 0%, #67e8f9 100%);
+  --cta-text: var(--text-primary);
+  --cta-shadow: 0 12px 28px -12px rgba(56, 189, 248, 0.6);
 
-    --avatar-contrast-bg: #0e1625;
+  --avatar-contrast-bg: #0e1625;
 
-    /* legacy tokens for Tailwind и старых стилей */
-    --bg: 5 11 18;
-    --fg: 249 250 251;
-    --muted: 156 163 175;
-    --card: 16 25 39;
-    --border: 36 51 66;
-    --primary: 129 202 255;
-    --accent: 254 152 5;
+  /* legacy tokens for Tailwind и старых стилей */
+  --bg: 5 11 18;
+  --fg: 249 250 251;
+  --muted: 156 163 175;
+  --card: 16 25 39;
+  --border: 36 51 66;
+  --primary: 129 202 255;
+  --accent: 254 152 5;
 
-    /* Messenger bubbles */
-    --chat-bubble-self-bg: #123a72;
-    --chat-bubble-peer-bg: #101b2d;
-    --chat-bubble-self-text: #e6f2ff;
-    --chat-bubble-peer-text: #e8edf7;
-    --chat-bubble-meta: #9fb7d8;
-    --chat-bubble-self-accent: #3b82f6;
-    --chat-bubble-peer-accent: #3aa7c5;
-    --chat-bubble-self-border: #3b82f6;
-    --chat-bubble-peer-border: #2c3f61;
-    --chat-info-card-bg: #29395b;
-    --chat-info-card-text: #caf7e4;
-    --chat-info-card-title: #43c8ff;
-    --chat-info-card-border: #3b82f633;
-    --chat-info-card-shadow: 0 1px 7px #22535b16;
-    --chat-translation-bg: rgba(0, 0, 0, 0.12);
-    --chat-translation-text: #d7e8ff;
-    --chat-reaction-shadow: 0 2px 12px #0002;
-    --chat-input-bg: #232b3c;
-    --chat-input-border: #364869;
-    --chat-input-text: #e8f1ff;
-    --contact-secondary-name: #cfe9ff;
+  /* Messenger bubbles */
+  --chat-bubble-self-bg: #123a72;
+  --chat-bubble-peer-bg: #101b2d;
+  --chat-bubble-self-text: #e6f2ff;
+  --chat-bubble-peer-text: #e8edf7;
+  --chat-bubble-meta: #9fb7d8;
+  --chat-bubble-self-accent: #3b82f6;
+  --chat-bubble-peer-accent: #3aa7c5;
+  --chat-bubble-self-border: #3b82f6;
+  --chat-bubble-peer-border: #2c3f61;
+  --chat-info-card-bg: #29395b;
+  --chat-info-card-text: #caf7e4;
+  --chat-info-card-title: #43c8ff;
+  --chat-info-card-border: #3b82f633;
+  --chat-info-card-shadow: 0 1px 7px #22535b16;
+  --chat-translation-bg: rgba(0, 0, 0, 0.12);
+  --chat-translation-text: #d7e8ff;
+  --chat-reaction-shadow: 0 2px 12px #0002;
+  --chat-input-bg: #232b3c;
+  --chat-input-border: #364869;
+  --chat-input-text: #e8f1ff;
+  --contact-secondary-name: #cfe9ff;
 }
 
 /* Светлая тема */
 :root[data-theme="light"] {
-    color-scheme: light;
-    /* Мягкая светлая палитра с более тёмными текстами для читаемости */
-    --bg-body: #F4F6FB;
-    --bg-header: #FFFFFF;
-    --bg-card: #FFFFFF;
-    --bg-card-soft: #E9EDF5;
+  color-scheme: light;
+  /* Мягкая светлая палитра с более тёмными текстами для читаемости */
+  --bg-body: #f4f6fb;
+  --bg-header: #ffffff;
+  --bg-card: #ffffff;
+  --bg-card-soft: #e9edf5;
 
-    --border-subtle: #D7DEEA;
-    --border-strong: #C4CCDD;
+  --border-subtle: #d7deea;
+  --border-strong: #c4ccdd;
 
-    --text-primary: #0F172A;
-    --text-secondary: #334155;
-    --text-muted: #4B5565;
-    --text-on-brand: #FFFFFF;
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #4b5565;
+  --text-on-brand: #ffffff;
 
-    --control-bg: #FBFCFF;
-    --control-bg-hover: #EEF3FB;
-    --input: var(--control-bg);
-    --input-placeholder: #94a3b8;
+  --control-bg: #fbfcff;
+  --control-bg-hover: #eef3fb;
+  --input: var(--control-bg);
+  --input-placeholder: #94a3b8;
 
-    --shadow-soft: 0 10px 28px rgba(15, 23, 42, 0.08);
+  --shadow-soft: 0 10px 28px rgba(15, 23, 42, 0.08);
 
-    --cta-gradient: linear-gradient(90deg, #2563eb 0%, #0ea5e9 100%);
-    --cta-gradient-hover: linear-gradient(90deg, #1d4ed8 0%, #0284c7 100%);
-    --cta-text: #f8fafc;
-    --cta-shadow: 0 10px 24px -10px rgba(37, 99, 235, 0.35);
+  --cta-gradient: linear-gradient(90deg, #2563eb 0%, #0ea5e9 100%);
+  --cta-gradient-hover: linear-gradient(90deg, #1d4ed8 0%, #0284c7 100%);
+  --cta-text: #f8fafc;
+  --cta-shadow: 0 10px 24px -10px rgba(37, 99, 235, 0.35);
 
-    --avatar-contrast-bg: #000000;
+  --avatar-contrast-bg: #000000;
 
-    /* legacy tokens for Tailwind и старых стилей */
-    --bg: 244 246 251;
-    --fg: 15 23 42;
-    --muted: 51 65 85;
-    --card: 255 255 255;
-    --border: 215 222 234;
-    --primary: 129 202 255;
-    --accent: 254 152 5;
+  /* legacy tokens for Tailwind и старых стилей */
+  --bg: 244 246 251;
+  --fg: 15 23 42;
+  --muted: 51 65 85;
+  --card: 255 255 255;
+  --border: 215 222 234;
+  --primary: 129 202 255;
+  --accent: 254 152 5;
 
-    /* Messenger bubbles */
-    --chat-bubble-self-bg: #e5f2ff;
-    --chat-bubble-peer-bg: #f6f8fb;
-    --chat-bubble-self-text: #0f172a;
-    --chat-bubble-peer-text: #0f172a;
-    --chat-bubble-meta: #5e6b7c;
-    --chat-bubble-self-accent: #3b82f6;
-    --chat-bubble-peer-accent: #6aa5d8;
-    --chat-bubble-self-border: #9ec7ff;
-    --chat-bubble-peer-border: #c8d3e2;
-    --chat-info-card-bg: #eef4ff;
-    --chat-info-card-text: #0f172a;
-    --chat-info-card-title: #1d4ed8;
-    --chat-translation-bg: #eef2f7;
-    --chat-translation-text: #0f172a;
-    --chat-reaction-shadow: 0 2px 12px rgba(15, 23, 42, 0.12);
-    --chat-input-bg: #ffffff;
-    --chat-input-border: #cbd5e1;
-    --chat-input-text: #0f172a;
-    --contact-secondary-name: var(--text-secondary);
+  /* Messenger bubbles */
+  --chat-bubble-self-bg: #e5f2ff;
+  --chat-bubble-peer-bg: #f6f8fb;
+  --chat-bubble-self-text: #0f172a;
+  --chat-bubble-peer-text: #0f172a;
+  --chat-bubble-meta: #5e6b7c;
+  --chat-bubble-self-accent: #3b82f6;
+  --chat-bubble-peer-accent: #6aa5d8;
+  --chat-bubble-self-border: #9ec7ff;
+  --chat-bubble-peer-border: #c8d3e2;
+  --chat-info-card-bg: #eef4ff;
+  --chat-info-card-text: #0f172a;
+  --chat-info-card-title: #1d4ed8;
+  --chat-translation-bg: #eef2f7;
+  --chat-translation-text: #0f172a;
+  --chat-reaction-shadow: 0 2px 12px rgba(15, 23, 42, 0.12);
+  --chat-input-bg: #ffffff;
+  --chat-input-border: #cbd5e1;
+  --chat-input-text: #0f172a;
+  --contact-secondary-name: var(--text-secondary);
 
-    /* Call overlay */
-    --call-overlay-bg: var(--bg-card);
-    --call-overlay-text: var(--text-primary);
-    --call-overlay-border: var(--border-subtle);
-    --call-overlay-avatar-bg: var(--avatar-contrast-bg);
-    --call-overlay-shadow: var(--shadow-soft);
-    --call-overlay-mini-shadow: var(--shadow-soft);
-    --call-overlay-btn-neutral-bg: var(--control-bg);
-    --call-overlay-btn-neutral-text: var(--text-primary);
-    --call-overlay-mini-btn-bg: var(--control-bg);
-    --call-overlay-mini-btn-text: var(--text-primary);
+  /* Call overlay */
+  --call-overlay-bg: var(--bg-card);
+  --call-overlay-text: var(--text-primary);
+  --call-overlay-border: var(--border-subtle);
+  --call-overlay-avatar-bg: var(--avatar-contrast-bg);
+  --call-overlay-shadow: var(--shadow-soft);
+  --call-overlay-mini-shadow: var(--shadow-soft);
+  --call-overlay-btn-neutral-bg: var(--control-bg);
+  --call-overlay-btn-neutral-text: var(--text-primary);
+  --call-overlay-mini-btn-bg: var(--control-bg);
+  --call-overlay-mini-btn-text: var(--text-primary);
 }
 
 /* === Header design tokens === */
 :root {
-    --header-bg: var(--bg-body);
-    --header-fg: var(--text-primary);
-    --header-muted: var(--text-secondary);
-    --header-shadow: 0 2px 16px 0 rgba(0, 32, 84, 0.09);
+  --header-bg: var(--bg-body);
+  --header-fg: var(--text-primary);
+  --header-muted: var(--text-secondary);
+  --header-shadow: 0 2px 16px 0 rgba(0, 32, 84, 0.09);
 }
 
 :root[data-theme="light"] {
-    --header-bg: var(--bg-body);
-    --header-fg: var(--text-primary);
-    --header-muted: var(--text-secondary);
-    --header-shadow: 0 2px 10px rgb(0 0 0 / 8%);
+  --header-bg: var(--bg-body);
+  --header-fg: var(--text-primary);
+  --header-muted: var(--text-secondary);
+  --header-shadow: 0 2px 10px rgb(0 0 0 / 8%);
 }
 
 /* Общие алиасы */
 :root {
-    --surface: var(--bg-card);
-    --surface-soft: var(--bg-card-soft);
-    --text: var(--text-primary);
+  --surface: var(--bg-card);
+  --surface-soft: var(--bg-card-soft);
+  --text: var(--text-primary);
 
-    /* Compact cards (orders + transport) */
-    --compact-card-bg: #19233b;
-    --compact-card-shadow: 0 2px 8px #121e3844;
-    --compact-card-border-strong: #50e2ff;
-    --compact-card-chip-bg: #193158cc;
-    --compact-card-chip-border: #2a4872;
-    --compact-card-chip-text: #cfe9ff;
-    --compact-card-timestamp-bg: #193158bb;
-    --compact-card-timestamp-text: #8ecae6cc;
-    --compact-card-title: #43c8ff;
-    --compact-card-text-primary: #e3f2fd;
-    --compact-card-text-secondary: #8dbef7;
-    --compact-card-accent: #6dd6ff;
-    --compact-card-pill-bg: #23385a;
-    --compact-card-pill-border: #2a4872;
-    --compact-card-pill-text: #d6e9ff;
-    --compact-card-pill-danger-bg: rgba(239, 68, 68, .12);
-    --compact-card-pill-danger-border: #ef4444;
-    --compact-card-pill-danger-text: #fecaca;
-    --compact-card-action-active-bg: #33de7b;
-    --compact-card-action-active-shadow: #33de7b55;
-    --compact-card-action-active-text: #ffffff;
-    --compact-card-action-archive-bg: #8e9cb6;
-    --compact-card-action-archive-text: #ffffff;
-    --compact-card-owner-mine-bg: #123524;
-    --compact-card-owner-mine-border: #29d17d;
-    --compact-card-owner-mine-text: #0f3d2c;
-    --compact-card-owner-mine-strong: #a9f5cd;
-    --compact-card-owner-other-bg: #162846;
-    --compact-card-owner-other-border: #2a4872;
-    --compact-card-owner-other-text: #9ecbff;
-    --compact-card-owner-other-strong: #cfe9ff;
-    --compact-card-price: #43c8ff;
-    --compact-card-info-text: #9cc4e7;
-    --compact-card-matches-bg: #23314b;
-    --compact-card-matches-new-bg: #2ea043;
-    --compact-card-matches-shadow: 0 0 7px #2ea04399;
-    --compact-card-matches-text: #e8edf7;
-    --compact-card-action-bg: #243356;
-    --compact-card-action-bg-strong: #1a3555;
-    --compact-card-action-shadow: #22304b55;
-    --compact-card-action-icon: #7aa3cc;
-    --compact-card-badge-outline: #19233b;
-    --compact-card-gps-bg: #14324b;
-    --compact-card-gps-shadow: 0 1px 5px #14324b55;
-    --compact-card-gps-text: #b3d5fa;
-    --compact-card-edit-bg: #1a68c7;
-    --compact-card-edit-text: #d6e9ff;
-    --compact-card-delete-bg: #db2344;
-    --compact-card-delete-text: #ffd6e0;
+  /* Compact cards (orders + transport) */
+  --compact-card-bg: #19233b;
+  --compact-card-shadow: 0 2px 8px #121e3844;
+  --compact-card-border-strong: #50e2ff;
+  --compact-card-chip-bg: #193158cc;
+  --compact-card-chip-border: #2a4872;
+  --compact-card-chip-text: #cfe9ff;
+  --compact-card-timestamp-bg: #193158bb;
+  --compact-card-timestamp-text: #8ecae6cc;
+  --compact-card-title: #43c8ff;
+  --compact-card-text-primary: #e3f2fd;
+  --compact-card-text-secondary: #8dbef7;
+  --compact-card-accent: #6dd6ff;
+  --compact-card-pill-bg: #23385a;
+  --compact-card-pill-border: #2a4872;
+  --compact-card-pill-text: #d6e9ff;
+  --compact-card-pill-danger-bg: rgba(239, 68, 68, 0.12);
+  --compact-card-pill-danger-border: #ef4444;
+  --compact-card-pill-danger-text: #fecaca;
+  --compact-card-action-active-bg: #33de7b;
+  --compact-card-action-active-shadow: #33de7b55;
+  --compact-card-action-active-text: #ffffff;
+  --compact-card-action-archive-bg: #8e9cb6;
+  --compact-card-action-archive-text: #ffffff;
+  --compact-card-owner-mine-bg: #123524;
+  --compact-card-owner-mine-border: #29d17d;
+  --compact-card-owner-mine-text: #0f3d2c;
+  --compact-card-owner-mine-strong: #a9f5cd;
+  --compact-card-owner-other-bg: #162846;
+  --compact-card-owner-other-border: #2a4872;
+  --compact-card-owner-other-text: #9ecbff;
+  --compact-card-owner-other-strong: #cfe9ff;
+  --compact-card-price: #e11d48;
+  --compact-card-info-text: #9cc4e7;
+  --compact-card-matches-bg: #23314b;
+  --compact-card-matches-new-bg: #2ea043;
+  --compact-card-matches-shadow: 0 0 7px #2ea04399;
+  --compact-card-matches-text: #e8edf7;
+  --compact-card-action-bg: #243356;
+  --compact-card-action-bg-strong: #1a3555;
+  --compact-card-action-shadow: #22304b55;
+  --compact-card-action-icon: #7aa3cc;
+  --compact-card-badge-outline: #19233b;
+  --compact-card-gps-bg: #14324b;
+  --compact-card-gps-shadow: 0 1px 5px #14324b55;
+  --compact-card-gps-text: #b3d5fa;
+  --compact-card-edit-bg: #1a68c7;
+  --compact-card-edit-text: #d6e9ff;
+  --compact-card-delete-bg: #db2344;
+  --compact-card-delete-text: #ffd6e0;
 
-    /* Bids panel (desktop + mobile) */
-    --bids-panel-bg: #22304b;
-    --bids-panel-border: #193158;
-    --bids-panel-shadow: 0 10px 40px #001844cc;
-    --bids-panel-title: #43c8ff;
-    --bids-panel-text: #e3f2fd;
-    --bids-panel-muted: #9cc4e7;
-    --bids-panel-username: #43c8ff;
-    --bids-panel-comment: #b3d5fa;
-    --bids-panel-amount: #ffd600;
-    --bids-panel-amount-accepted: #53ee5c;
-    --bids-panel-close-bg: #182740;
-    --bids-panel-close-text: #43c8ff;
+  /* Bids panel (desktop + mobile) */
+  --bids-panel-bg: #22304b;
+  --bids-panel-border: #193158;
+  --bids-panel-shadow: 0 10px 40px #001844cc;
+  --bids-panel-title: #43c8ff;
+  --bids-panel-text: #e3f2fd;
+  --bids-panel-muted: #9cc4e7;
+  --bids-panel-username: #43c8ff;
+  --bids-panel-comment: #b3d5fa;
+  --bids-panel-amount: #ffd600;
+  --bids-panel-amount-accepted: #53ee5c;
+  --bids-panel-close-bg: #182740;
+  --bids-panel-close-text: #43c8ff;
 
-    --bids-card-bg: #182740;
-    --bids-card-bg-accepted: #183f26;
-    --bids-card-border: #203554;
-    --bids-card-border-accepted: #53ee5c;
-    --bids-status-accepted: #53ee5c;
-    --bids-status-rejected: #fe6686;
+  --bids-card-bg: #182740;
+  --bids-card-bg-accepted: #183f26;
+  --bids-card-border: #203554;
+  --bids-card-border-accepted: #53ee5c;
+  --bids-status-accepted: #53ee5c;
+  --bids-status-rejected: #fe6686;
 
-    --bids-action-accept-bg: #33de7b;
-    --bids-action-accept-text: #192b42;
-    --bids-action-reject-bg: #fe6686;
-    --bids-action-reject-text: #ffffff;
+  --bids-action-accept-bg: #33de7b;
+  --bids-action-accept-text: #192b42;
+  --bids-action-reject-bg: #fe6686;
+  --bids-action-reject-text: #ffffff;
 }
 
 /* === Footer tokens === */
 :root {
-    --footer-brand-color: var(--accent);
+  --footer-brand-color: var(--accent);
 }
 
 :root[data-theme="light"] {
-    --footer-brand-color: #ffffff;
+  --footer-brand-color: #ffffff;
 }
 
 /* Light overrides for compact cards */
 :root[data-theme="light"] {
-    --compact-card-bg: #ffffff;
-    --compact-card-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
-    --compact-card-border-strong: #38bdf8;
-    --compact-card-chip-bg: #e7f1ff;
-    --compact-card-chip-border: #cbd5e1;
-    --compact-card-chip-text: #092669;
-    --compact-card-timestamp-bg: #edf2f7;
-    --compact-card-timestamp-text: #475569;
-    --compact-card-title: #0f235a;
-    --compact-card-text-primary: #0f172a;
-    --compact-card-text-secondary: #334155;
-    --compact-card-accent: #0ea5e9;
-    --compact-card-pill-bg: #eef2f7;
-    --compact-card-pill-border: #d7deea;
-    --compact-card-pill-text: #0f172a;
-    --compact-card-pill-danger-bg: rgba(239, 68, 68, .12);
-    --compact-card-pill-danger-border: #ef4444;
-    --compact-card-pill-danger-text: #991b1b;
-    --compact-card-action-active-bg: #1f7a5c;
-    --compact-card-action-active-shadow: rgba(31, 122, 92, 0.38);
-    --compact-card-action-active-text: #f8fffb;
-    --compact-card-action-archive-bg: #556179;
-    --compact-card-action-archive-text: #f8fafc;
-    --compact-card-owner-mine-bg: #ecfdf3;
-    --compact-card-owner-mine-border: #bbf7d0;
-    --compact-card-owner-mine-text: #065f46;
-    --compact-card-owner-mine-strong: #0f172a;
-    --compact-card-owner-other-bg: #e0e7ff;
-    --compact-card-owner-other-border: #c7d2fe;
-    --compact-card-owner-other-text: #1f2937;
-    --compact-card-owner-other-strong: #1d4ed8;
-    --compact-card-price: #e11d48;
-    --compact-card-info-text: #475569;
-    --compact-card-matches-bg: #e2e8f0;
-    --compact-card-matches-new-bg: #22c55e;
-    --compact-card-matches-shadow: 0 0 8px rgba(34, 197, 94, 0.28);
-    --compact-card-matches-text: #0f172a;
-    --compact-card-action-bg: #e2e8f0;
-    --compact-card-action-bg-strong: #dbeafe;
-    --compact-card-action-shadow: 0 1px 6px rgba(15, 23, 42, 0.14);
-    --compact-card-action-icon: #0f235a;
-    --compact-card-badge-outline: #ffffff;
-    --compact-card-gps-bg: #c5d9f1;
-    --compact-card-gps-shadow: 0 1px 5px rgba(12, 74, 110, 0.16);
-    --compact-card-gps-text: #0f2947;
-    --compact-card-edit-bg: #1f4fa3;
-    --compact-card-edit-text: #e7eefc;
-    --compact-card-delete-bg: #c81e40;
-    --compact-card-delete-text: #fff1f5;
+  --compact-card-bg: #ffffff;
+  --compact-card-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
+  --compact-card-border-strong: #38bdf8;
+  --compact-card-chip-bg: #e7f1ff;
+  --compact-card-chip-border: #cbd5e1;
+  --compact-card-chip-text: #092669;
+  --compact-card-timestamp-bg: #edf2f7;
+  --compact-card-timestamp-text: #475569;
+  --compact-card-title: #0f235a;
+  --compact-card-text-primary: #0f172a;
+  --compact-card-text-secondary: #334155;
+  --compact-card-accent: #0ea5e9;
+  --compact-card-pill-bg: #eef2f7;
+  --compact-card-pill-border: #d7deea;
+  --compact-card-pill-text: #0f172a;
+  --compact-card-pill-danger-bg: rgba(239, 68, 68, 0.12);
+  --compact-card-pill-danger-border: #ef4444;
+  --compact-card-pill-danger-text: #991b1b;
+  --compact-card-action-active-bg: #1f7a5c;
+  --compact-card-action-active-shadow: rgba(31, 122, 92, 0.38);
+  --compact-card-action-active-text: #f8fffb;
+  --compact-card-action-archive-bg: #556179;
+  --compact-card-action-archive-text: #f8fafc;
+  --compact-card-owner-mine-bg: #ecfdf3;
+  --compact-card-owner-mine-border: #bbf7d0;
+  --compact-card-owner-mine-text: #065f46;
+  --compact-card-owner-mine-strong: #0f172a;
+  --compact-card-owner-other-bg: #e0e7ff;
+  --compact-card-owner-other-border: #c7d2fe;
+  --compact-card-owner-other-text: #1f2937;
+  --compact-card-owner-other-strong: #1d4ed8;
+  --compact-card-price: #e11d48;
+  --compact-card-info-text: #475569;
+  --compact-card-matches-bg: #e2e8f0;
+  --compact-card-matches-new-bg: #22c55e;
+  --compact-card-matches-shadow: 0 0 8px rgba(34, 197, 94, 0.28);
+  --compact-card-matches-text: #0f172a;
+  --compact-card-action-bg: #e2e8f0;
+  --compact-card-action-bg-strong: #dbeafe;
+  --compact-card-action-shadow: 0 1px 6px rgba(15, 23, 42, 0.14);
+  --compact-card-action-icon: #0f235a;
+  --compact-card-badge-outline: #ffffff;
+  --compact-card-gps-bg: #c5d9f1;
+  --compact-card-gps-shadow: 0 1px 5px rgba(12, 74, 110, 0.16);
+  --compact-card-gps-text: #0f2947;
+  --compact-card-edit-bg: #1f4fa3;
+  --compact-card-edit-text: #e7eefc;
+  --compact-card-delete-bg: #c81e40;
+  --compact-card-delete-text: #fff1f5;
 
-    --bids-panel-bg: #ffffff;
-    --bids-panel-border: #d7deea;
-    --bids-panel-shadow: 0 14px 36px rgba(15, 23, 42, 0.16);
-    --bids-panel-title: #0f235a;
-    --bids-panel-text: #0f172a;
-    --bids-panel-muted: #475569;
-    --bids-panel-username: #0ea5e9;
-    --bids-panel-comment: #334155;
-    --bids-panel-amount: #d97706;
-    --bids-panel-amount-accepted: #15803d;
-    --bids-panel-close-bg: #eef2f7;
-    --bids-panel-close-text: #0f235a;
+  --bids-panel-bg: #ffffff;
+  --bids-panel-border: #d7deea;
+  --bids-panel-shadow: 0 14px 36px rgba(15, 23, 42, 0.16);
+  --bids-panel-title: #0f235a;
+  --bids-panel-text: #0f172a;
+  --bids-panel-muted: #475569;
+  --bids-panel-username: #0ea5e9;
+  --bids-panel-comment: #334155;
+  --bids-panel-amount: #d97706;
+  --bids-panel-amount-accepted: #15803d;
+  --bids-panel-close-bg: #eef2f7;
+  --bids-panel-close-text: #0f235a;
 
-    --bids-card-bg: #f8fafc;
-    --bids-card-bg-accepted: #ecfdf3;
-    --bids-card-border: #e2e8f0;
-    --bids-card-border-accepted: #22c55e;
-    --bids-status-accepted: #15803d;
-    --bids-status-rejected: #dc2626;
+  --bids-card-bg: #f8fafc;
+  --bids-card-bg-accepted: #ecfdf3;
+  --bids-card-border: #e2e8f0;
+  --bids-card-border-accepted: #22c55e;
+  --bids-status-accepted: #15803d;
+  --bids-status-rejected: #dc2626;
 
-    --bids-action-accept-bg: #22c55e;
-    --bids-action-accept-text: #0f172a;
-    --bids-action-reject-bg: #f43f5e;
-    --bids-action-reject-text: #ffffff;
+  --bids-action-accept-bg: #22c55e;
+  --bids-action-accept-text: #0f172a;
+  --bids-action-reject-bg: #f43f5e;
+  --bids-action-reject-text: #ffffff;
 }
 
 /* === Sidebar tokens === */
 :root[data-theme="dark"] {
-    --sidebar-bg: rgba(24, 38, 60, 0.97);
-    --sidebar-border: #24385b;
-    --sidebar-title: #4fc3f7;
-    --sidebar-title-shadow: 0 1px 10px #112b4dcc;
-    --sidebar-link: #e3f2fd;
-    --sidebar-icon: #7fb1d3;
-    --sidebar-link-hover-bg: rgba(67, 200, 255, 0.12);
-    --sidebar-link-hover: #bde8ff;
-    --sidebar-shadow: 4px 0 32px #0a1c34aa;
+  --sidebar-bg: rgba(24, 38, 60, 0.97);
+  --sidebar-border: #24385b;
+  --sidebar-title: #4fc3f7;
+  --sidebar-title-shadow: 0 1px 10px #112b4dcc;
+  --sidebar-link: #e3f2fd;
+  --sidebar-icon: #7fb1d3;
+  --sidebar-link-hover-bg: rgba(67, 200, 255, 0.12);
+  --sidebar-link-hover: #bde8ff;
+  --sidebar-shadow: 4px 0 32px #0a1c34aa;
 }
 
 :root[data-theme="light"] {
-    --sidebar-bg: #E1F2FF;
-    --sidebar-border: color-mix(in srgb, #E1F2FF 55%, #a3b7c9);
-    --sidebar-title: var(--brand-navy);
-    --sidebar-title-shadow: none;
-    --sidebar-link: var(--text-primary);
-    --sidebar-icon: #0f4f7b;
-    --sidebar-link-hover-bg: color-mix(in srgb, var(--brand-blue) 16%, transparent);
-    --sidebar-link-hover: var(--brand-navy);
-    --sidebar-shadow: 4px 0 24px rgba(15, 23, 42, 0.08);
+  --sidebar-bg: #e1f2ff;
+  --sidebar-border: color-mix(in srgb, #e1f2ff 55%, #a3b7c9);
+  --sidebar-title: var(--brand-navy);
+  --sidebar-title-shadow: none;
+  --sidebar-link: var(--text-primary);
+  --sidebar-icon: #0f4f7b;
+  --sidebar-link-hover-bg: color-mix(
+    in srgb,
+    var(--brand-blue) 16%,
+    transparent
+  );
+  --sidebar-link-hover: var(--brand-navy);
+  --sidebar-shadow: 4px 0 24px rgba(15, 23, 42, 0.08);
 }
 
 /* === Orders/Transport list shells === */
 :root[data-theme="dark"] {
-    --orders-panel-bg: rgba(23, 38, 60, 0.98);
-    --orders-panel-border: rgba(255, 255, 255, 0.06);
-    --orders-panel-shadow: 0 4px 24px #00184455;
-    --orders-heading: #43c8ff;
-    --orders-muted: #9fb3c8;
+  --orders-panel-bg: rgba(23, 38, 60, 0.98);
+  --orders-panel-border: rgba(255, 255, 255, 0.06);
+  --orders-panel-shadow: 0 4px 24px #00184455;
+  --orders-heading: #43c8ff;
+  --orders-muted: #9fb3c8;
 
-    --orders-tabs-bg: rgba(11, 19, 36, 0.9);
-    --orders-tabs-border: rgba(255, 255, 255, 0.04);
-    --orders-tabs-shadow: 0 12px 26px rgba(0, 16, 44, 0.6);
+  --orders-tabs-bg: rgba(11, 19, 36, 0.9);
+  --orders-tabs-border: rgba(255, 255, 255, 0.04);
+  --orders-tabs-shadow: 0 12px 26px rgba(0, 16, 44, 0.6);
 
-    --orders-tab-border: rgba(255, 255, 255, 0.08);
-    --orders-tab-inactive-bg: rgba(255, 255, 255, 0.06);
-    --orders-tab-inactive-fg: #cbd5e1;
-    --orders-tab-shadow: 0 1px 8px rgba(0, 0, 0, 0.35);
+  --orders-tab-border: rgba(255, 255, 255, 0.08);
+  --orders-tab-inactive-bg: rgba(255, 255, 255, 0.06);
+  --orders-tab-inactive-fg: #cbd5e1;
+  --orders-tab-shadow: 0 1px 8px rgba(0, 0, 0, 0.35);
 
-    --orders-tab-active-bg: rgba(67, 200, 255, 0.18);
-    --orders-tab-active-fg: #b9ecff;
-    --orders-tab-active-border: rgba(67, 200, 255, 0.6);
-    --orders-tab-active-shadow: 0 6px 18px rgba(0, 24, 68, 0.46);
+  --orders-tab-active-bg: rgba(67, 200, 255, 0.18);
+  --orders-tab-active-fg: #b9ecff;
+  --orders-tab-active-border: rgba(67, 200, 255, 0.6);
+  --orders-tab-active-shadow: 0 6px 18px rgba(0, 24, 68, 0.46);
 }
 
 :root[data-theme="light"] {
-    --orders-panel-bg: #E1F2FF;
-    --orders-panel-border: color-mix(in srgb, #E1F2FF 55%, #a3b7c9);
-    --orders-panel-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
-    --orders-heading: var(--brand-navy);
-    --orders-muted: var(--text-secondary);
+  --orders-panel-bg: #e1f2ff;
+  --orders-panel-border: color-mix(in srgb, #e1f2ff 55%, #a3b7c9);
+  --orders-panel-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+  --orders-heading: var(--brand-navy);
+  --orders-muted: var(--text-secondary);
 
-    --orders-tabs-bg: rgba(255, 255, 255, 0.9);
-    --orders-tabs-border: var(--border-subtle);
-    --orders-tabs-shadow: 0 10px 26px rgba(15, 23, 42, 0.08);
+  --orders-tabs-bg: rgba(255, 255, 255, 0.9);
+  --orders-tabs-border: var(--border-subtle);
+  --orders-tabs-shadow: 0 10px 26px rgba(15, 23, 42, 0.08);
 
-    --orders-tab-border: var(--border-subtle);
-    --orders-tab-inactive-bg: var(--control-bg);
-    --orders-tab-inactive-fg: var(--text-secondary);
-    --orders-tab-shadow: 0 1px 8px rgba(15, 23, 42, 0.04);
+  --orders-tab-border: var(--border-subtle);
+  --orders-tab-inactive-bg: var(--control-bg);
+  --orders-tab-inactive-fg: var(--text-secondary);
+  --orders-tab-shadow: 0 1px 8px rgba(15, 23, 42, 0.04);
 
-    --orders-tab-active-bg: color-mix(in srgb, var(--brand-blue) 24%, #ffffff);
-    --orders-tab-active-fg: var(--brand-navy);
-    --orders-tab-active-border: color-mix(in srgb, var(--brand-blue) 46%, var(--border-subtle));
-    --orders-tab-active-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+  --orders-tab-active-bg: color-mix(in srgb, var(--brand-blue) 24%, #ffffff);
+  --orders-tab-active-fg: var(--brand-navy);
+  --orders-tab-active-border: color-mix(
+    in srgb,
+    var(--brand-blue) 46%,
+    var(--border-subtle)
+  );
+  --orders-tab-active-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
 }
 
 /* === Order card tokens === */
 :root[data-theme="dark"] {
-    --order-card-bg: rgba(23, 38, 60, 0.98);
-    --order-card-text: #e3f2fd;
-    --order-card-shadow: 0 2px 24px #001844cc;
-    --order-card-shadow-expanded: 0 4px 32px #43c8ff55, 0 2px 24px #001844cc;
-    --order-card-border: #1e88e5;
-    --order-card-border-active: #43c8ff;
-    --order-card-section-bg: rgba(28, 37, 52, 0.92);
-    --order-card-section-border: #193158;
-    --order-card-heading: #43c8ff;
-    --order-card-label: #8ecae6;
-    --order-card-chip-bg: #193158bb;
-    --order-card-chip-fg: #cfe9ff;
-    --order-card-chip-shadow: 0 2px 8px #23416711;
-    --order-card-route-bg: linear-gradient(90deg, #183969 38%, #253759 100%);
-    --order-card-route-fg: #ffffff;
-    --order-card-icon-bg: #162239;
-    --order-card-icon-fg: #43c8ff;
-    --order-card-icon-shadow: 0 1px 8px #43c8ff17;
+  --order-card-bg: rgba(23, 38, 60, 0.98);
+  --order-card-text: #e3f2fd;
+  --order-card-shadow: 0 2px 24px #001844cc;
+  --order-card-shadow-expanded: 0 4px 32px #43c8ff55, 0 2px 24px #001844cc;
+  --order-card-border: #1e88e5;
+  --order-card-border-active: #43c8ff;
+  --order-card-section-bg: rgba(28, 37, 52, 0.92);
+  --order-card-section-border: #193158;
+  --order-card-heading: #43c8ff;
+  --order-card-label: #8ecae6;
+  --order-card-chip-bg: #193158bb;
+  --order-card-chip-fg: #cfe9ff;
+  --order-card-chip-shadow: 0 2px 8px #23416711;
+  --order-card-route-bg: linear-gradient(90deg, #183969 38%, #253759 100%);
+  --order-card-route-fg: #ffffff;
+  --order-card-icon-bg: #162239;
+  --order-card-icon-fg: #43c8ff;
+  --order-card-icon-shadow: 0 1px 8px #43c8ff17;
 }
 
 :root[data-theme="light"] {
-    --order-card-bg: #ffffff;
-    --order-card-text: #0f172a;
-    --order-card-shadow: 0 10px 26px rgba(15, 23, 42, 0.08);
-    --order-card-shadow-expanded: 0 16px 36px rgba(15, 23, 42, 0.12);
-    --order-card-border: color-mix(in srgb, var(--brand-blue) 36%, var(--border-subtle));
-    --order-card-border-active: color-mix(in srgb, var(--brand-blue) 64%, #0ea5e9);
-    --order-card-section-bg: #f4f7fd;
-    --order-card-section-border: var(--border-subtle);
-    --order-card-heading: var(--brand-navy);
-    --order-card-label: var(--text-secondary);
-    --order-card-chip-bg: #eef3fb;
-    --order-card-chip-fg: var(--text-primary);
-    --order-card-chip-shadow: 0 4px 10px rgba(15, 23, 42, 0.08);
-    --order-card-route-bg: linear-gradient(90deg, #f1f7ff 25%, #e6f1ff 100%);
-    --order-card-route-fg: var(--text-primary);
-    --order-card-icon-bg: #e8f2ff;
-    --order-card-icon-fg: var(--brand-navy);
-    --order-card-icon-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
+  --order-card-bg: #ffffff;
+  --order-card-text: #0f172a;
+  --order-card-shadow: 0 10px 26px rgba(15, 23, 42, 0.08);
+  --order-card-shadow-expanded: 0 16px 36px rgba(15, 23, 42, 0.12);
+  --order-card-border: color-mix(
+    in srgb,
+    var(--brand-blue) 36%,
+    var(--border-subtle)
+  );
+  --order-card-border-active: color-mix(
+    in srgb,
+    var(--brand-blue) 64%,
+    #0ea5e9
+  );
+  --order-card-section-bg: #f4f7fd;
+  --order-card-section-border: var(--border-subtle);
+  --order-card-heading: var(--brand-navy);
+  --order-card-label: var(--text-secondary);
+  --order-card-chip-bg: #eef3fb;
+  --order-card-chip-fg: var(--text-primary);
+  --order-card-chip-shadow: 0 4px 10px rgba(15, 23, 42, 0.08);
+  --order-card-route-bg: linear-gradient(90deg, #f1f7ff 25%, #e6f1ff 100%);
+  --order-card-route-fg: var(--text-primary);
+  --order-card-icon-bg: #e8f2ff;
+  --order-card-icon-fg: var(--brand-navy);
+  --order-card-icon-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
 }
 
 /* === Transport card tokens === */
 :root[data-theme="dark"] {
-    --transport-card-bg: rgba(23, 38, 60, 0.97);
-    --transport-card-text: #e3f2fd;
-    --transport-card-shadow: 0 2px 24px #001844cc;
-    --transport-card-shadow-expanded: 0 4px 32px #43c8ff55, 0 2px 24px #001844cc;
-    --transport-card-border: #1e88e5;
-    --transport-card-border-active: #43c8ff;
-    --transport-card-section-bg: rgba(28, 37, 52, 0.95);
-    --transport-card-section-border: #193158;
-    --transport-card-heading: #43c8ff;
-    --transport-card-label: #8ecae6;
-    --transport-card-chip-bg: #1a273f;
-    --transport-card-chip-fg: #cfe9ff;
-    --transport-card-chip-shadow: 0 2px 8px #23416711;
-    --transport-card-route-bg: linear-gradient(90deg, #183969 38%, #253759 100%);
-    --transport-card-route-fg: #ffffff;
-    --transport-card-icon-bg: #162239;
-    --transport-card-icon-fg: #43c8ff;
-    --transport-card-icon-shadow: 0 1px 8px #43c8ff17;
-    --transport-card-meta-bg: #193158cc;
-    --transport-card-meta-fg: #cfe9ff;
-    --transport-card-meta-shadow: 0 2px 8px #23416711;
-    --transport-card-button-bg: #192b42;
-    --transport-card-button-fg: #43c8ff;
-    --transport-card-button-shadow: 0 1px 6px #43c8ff10;
-    --transport-card-tooltip-bg: #222e43;
-    --transport-card-tooltip-fg: #53ee5c;
-    --transport-card-tag-border: #234167;
+  --transport-card-bg: rgba(23, 38, 60, 0.97);
+  --transport-card-text: #e3f2fd;
+  --transport-card-shadow: 0 2px 24px #001844cc;
+  --transport-card-shadow-expanded: 0 4px 32px #43c8ff55, 0 2px 24px #001844cc;
+  --transport-card-border: #1e88e5;
+  --transport-card-border-active: #43c8ff;
+  --transport-card-section-bg: rgba(28, 37, 52, 0.95);
+  --transport-card-section-border: #193158;
+  --transport-card-heading: #43c8ff;
+  --transport-card-label: #8ecae6;
+  --transport-card-chip-bg: #1a273f;
+  --transport-card-chip-fg: #cfe9ff;
+  --transport-card-chip-shadow: 0 2px 8px #23416711;
+  --transport-card-route-bg: linear-gradient(90deg, #183969 38%, #253759 100%);
+  --transport-card-route-fg: #ffffff;
+  --transport-card-icon-bg: #162239;
+  --transport-card-icon-fg: #43c8ff;
+  --transport-card-icon-shadow: 0 1px 8px #43c8ff17;
+  --transport-card-meta-bg: #193158cc;
+  --transport-card-meta-fg: #cfe9ff;
+  --transport-card-meta-shadow: 0 2px 8px #23416711;
+  --transport-card-button-bg: #192b42;
+  --transport-card-button-fg: #43c8ff;
+  --transport-card-button-shadow: 0 1px 6px #43c8ff10;
+  --transport-card-tooltip-bg: #222e43;
+  --transport-card-tooltip-fg: #53ee5c;
+  --transport-card-tag-border: #234167;
 }
 
 :root[data-theme="light"] {
-    --transport-card-bg: #ffffff;
-    --transport-card-text: #0f172a;
-    --transport-card-shadow: 0 10px 26px rgba(15, 23, 42, 0.08);
-    --transport-card-shadow-expanded: 0 16px 36px rgba(15, 23, 42, 0.12);
-    --transport-card-border: color-mix(in srgb, var(--brand-blue) 36%, var(--border-subtle));
-    --transport-card-border-active: color-mix(in srgb, var(--brand-blue) 64%, #0ea5e9);
-    --transport-card-section-bg: #f4f7fd;
-    --transport-card-section-border: var(--border-subtle);
-    --transport-card-heading: var(--brand-navy);
-    --transport-card-label: var(--text-secondary);
-    --transport-card-chip-bg: #eef3fb;
-    --transport-card-chip-fg: var(--text-primary);
-    --transport-card-chip-shadow: 0 4px 10px rgba(15, 23, 42, 0.08);
-    --transport-card-route-bg: linear-gradient(90deg, #f1f7ff 25%, #e6f1ff 100%);
-    --transport-card-route-fg: var(--text-primary);
-    --transport-card-icon-bg: #e8f2ff;
-    --transport-card-icon-fg: var(--brand-navy);
-    --transport-card-icon-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
-    --transport-card-meta-bg: color-mix(in srgb, var(--brand-blue) 16%, #eef3fb);
-    --transport-card-meta-fg: var(--text-primary);
-    --transport-card-meta-shadow: 0 4px 10px rgba(15, 23, 42, 0.08);
-    --transport-card-button-bg: color-mix(in srgb, var(--brand-blue) 18%, #f5f8ff);
-    --transport-card-button-fg: var(--brand-navy);
-    --transport-card-button-shadow: 0 2px 10px rgba(15, 23, 42, 0.08);
-    --transport-card-tooltip-bg: #0f172a;
-    --transport-card-tooltip-fg: #16a34a;
-    --transport-card-tag-border: color-mix(in srgb, var(--brand-blue) 30%, var(--border-subtle));
+  --transport-card-bg: #ffffff;
+  --transport-card-text: #0f172a;
+  --transport-card-shadow: 0 10px 26px rgba(15, 23, 42, 0.08);
+  --transport-card-shadow-expanded: 0 16px 36px rgba(15, 23, 42, 0.12);
+  --transport-card-border: color-mix(
+    in srgb,
+    var(--brand-blue) 36%,
+    var(--border-subtle)
+  );
+  --transport-card-border-active: color-mix(
+    in srgb,
+    var(--brand-blue) 64%,
+    #0ea5e9
+  );
+  --transport-card-section-bg: #f4f7fd;
+  --transport-card-section-border: var(--border-subtle);
+  --transport-card-heading: var(--brand-navy);
+  --transport-card-label: var(--text-secondary);
+  --transport-card-chip-bg: #eef3fb;
+  --transport-card-chip-fg: var(--text-primary);
+  --transport-card-chip-shadow: 0 4px 10px rgba(15, 23, 42, 0.08);
+  --transport-card-route-bg: linear-gradient(90deg, #f1f7ff 25%, #e6f1ff 100%);
+  --transport-card-route-fg: var(--text-primary);
+  --transport-card-icon-bg: #e8f2ff;
+  --transport-card-icon-fg: var(--brand-navy);
+  --transport-card-icon-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
+  --transport-card-meta-bg: color-mix(in srgb, var(--brand-blue) 16%, #eef3fb);
+  --transport-card-meta-fg: var(--text-primary);
+  --transport-card-meta-shadow: 0 4px 10px rgba(15, 23, 42, 0.08);
+  --transport-card-button-bg: color-mix(
+    in srgb,
+    var(--brand-blue) 18%,
+    #f5f8ff
+  );
+  --transport-card-button-fg: var(--brand-navy);
+  --transport-card-button-shadow: 0 2px 10px rgba(15, 23, 42, 0.08);
+  --transport-card-tooltip-bg: #0f172a;
+  --transport-card-tooltip-fg: #16a34a;
+  --transport-card-tag-border: color-mix(
+    in srgb,
+    var(--brand-blue) 30%,
+    var(--border-subtle)
+  );
 }
