@@ -370,6 +370,30 @@ export default function OrderDetailsPage() {
         transition: "border-color .15s ease, box-shadow .15s ease, opacity .15s ease, transform .12s ease",
     }), [COLORS.border, COLORS.heading, COLORS.pillBg, isMobile]);
 
+    const backButtonStyle = useMemo(
+        () =>
+            isMobile
+                ? {
+                    ...actionPillStyle,
+                    padding: "8px 12px",
+                    boxShadow: COLORS.shadow,
+                    fontWeight: 700,
+                    whiteSpace: "nowrap",
+                }
+                : {
+                    background: COLORS.accent,
+                    color: "#ffffff",
+                    border: `1px solid ${COLORS.border}`,
+                    borderRadius: 10,
+                    padding: "11px 18px",
+                    fontWeight: 800,
+                    fontSize: 18,
+                    boxShadow: COLORS.shadow,
+                    cursor: "pointer",
+                },
+        [COLORS.accent, COLORS.border, COLORS.shadow, actionPillStyle, isMobile]
+    );
+
     // Для edge-swipe назад
     const dragStartX = useRef(0);
 
@@ -1046,30 +1070,31 @@ export default function OrderDetailsPage() {
                         style={{
                             display: "flex",
                             alignItems: "center",
-                            justifyContent: "space-between",
+                            justifyContent: isMobile ? "flex-start" : "space-between",
                             marginBottom: isMobile ? 14 : 24,
-                            gap: 12,
+                            gap: isMobile ? 10 : 12,
+                            flexWrap: isMobile ? "nowrap" : "wrap",
+                            overflowX: isMobile ? "auto" : "visible",
+                            paddingBottom: isMobile ? 4 : 0,
                         }}
                     >
                         <button
-                            style={{
-                                background: COLORS.accent,
-                                color: "#ffffff",
-                                border: `1px solid ${COLORS.border}`,
-                                borderRadius: 10,
-                                padding: isMobile ? "9px 14px" : "11px 18px",
-                                fontWeight: 800,
-                                fontSize: isMobile ? 16 : 18,
-                                boxShadow: COLORS.shadow,
-                                cursor: "pointer",
-                            }}
+                            style={backButtonStyle}
                             onClick={() => router.back()}
                             aria-label={t("common.back", "Назад")}
                         >
-                            ← {t("common.back", "Назад")}
+                            {isMobile ? "<" : `← ${t("common.back", "Назад")}`}
                         </button>
 
-                        <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                        <div
+                            style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 10,
+                                flexWrap: isMobile ? "nowrap" : "wrap",
+                                overflowX: isMobile ? "auto" : "visible",
+                            }}
+                        >
                             {isBargainAllowed(order.rate_type) && (
                                 <div style={{ position: "relative", display: "inline-block" }}>
                                     <button
@@ -1309,18 +1334,27 @@ export default function OrderDetailsPage() {
                             )}
 
                             <span style={{ display: "inline-flex" }}>
-                                <SaveToggleButton type="order" id={order.id} variant="bar" />
-                            </span>
+                            <SaveToggleButton type="order" id={order.id} variant="bar" />
+                        </span>
 
-                            <OrderShareButtons
-                                order={order}
-                                variant="pills"
-                                style={{ marginLeft: 2, rowGap: 6 }}
-                            />
-                            {!loadingBid && yourBid && (
-                                <span
-                                    style={{
-                                        background: "#172b3f",
+                        <OrderShareButtons
+                            order={order}
+                            variant="pills"
+                            style={{ marginLeft: 2, rowGap: 6 }}
+                            buttonStyle={
+                                isMobile
+                                    ? {
+                                        ...actionPillStyle,
+                                        padding: "7px 12px",
+                                        whiteSpace: "nowrap",
+                                    }
+                                    : undefined
+                            }
+                        />
+                        {!loadingBid && yourBid && (
+                            <span
+                                style={{
+                                    background: "#172b3f",
                                         color: "#ffd600",
                                         borderRadius: 7,
                                         padding: isMobile ? "3px 8px" : "3px 10px",

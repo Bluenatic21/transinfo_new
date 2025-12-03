@@ -356,11 +356,12 @@ export default function TransportCompactCard({
     // --- Компактный текст доступности ---
     function parseDateDMY(str) {
         if (!str) return null;
-        const s = String(str);
-        if (s.includes("-")) return s; // уже YYYY-MM-DD
-        const parts = s.split(/[./-]/);
-        if (parts.length !== 3) return s;
-        const [d, m, y] = parts;
+        const s = String(str).trim();
+        const iso = s.match(/^(\d{4})-(\d{2})-(\d{2})(?:T.*)?$/);
+        if (iso) return `${iso[1]}-${iso[2]}-${iso[3]}`; // уже ISO
+        const parts = s.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{2,4})$/);
+        if (!parts) return s;
+        const [, d, m, y] = parts;
         return `${String(y).padStart(4, "20")}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
     }
     function formatAvail(from, to) {

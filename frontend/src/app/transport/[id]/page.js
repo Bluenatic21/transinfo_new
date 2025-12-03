@@ -370,6 +370,25 @@ export default function TransportDetailPage() {
     // Edge-swipe: запоминаем X старта жеста
     const dragStartX = useRef(0);
 
+    const mobileActionPillStyle = useMemo(
+        () => ({
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 8,
+            padding: "7px 12px",
+            borderRadius: 999,
+            border: `1px solid ${colors.border}`,
+            background: colors.pillBg,
+            color: colors.heading,
+            fontWeight: 700,
+            fontSize: 14,
+            cursor: "pointer",
+            boxShadow: colors.shadow,
+            whiteSpace: "nowrap",
+        }),
+        [colors.border, colors.heading, colors.pillBg, colors.shadow]
+    );
+
 
     useEffect(() => {
         function handleClickOutside(e) {
@@ -630,20 +649,33 @@ export default function TransportDetailPage() {
                         <FaEye />
                         <span style={{ fontVariantNumeric: "tabular-nums" }}>{viewsCount}</span>
                     </span>
-                    <button
+                    <div
                         style={{
-                            marginBottom: 16,
-                            background: colors.accent,
-                            color: "#ffffff",
-                            border: `1px solid ${colors.border}`,
-                            borderRadius: 8,
-                            padding: "10px 19px",
-                            fontWeight: 800,
-                            fontSize: 17,
-                            boxShadow: colors.shadow
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 10,
+                            margin: "0 0 10px",
+                            flexWrap: "nowrap",
+                            overflowX: "auto",
+                            paddingBottom: 4,
                         }}
-                        onClick={() => router.back()}
-                    >← {t("common.back", "Назад")}</button>
+                    >
+                        <button
+                            style={mobileActionPillStyle}
+                            onClick={() => router.back()}
+                            aria-label={t("common.back", "Назад")}
+                        >
+                            {"<"}
+                        </button>
+
+                        <SaveToggleButton type="transport" id={transport.id} variant="bar" />
+                        <TransportShareButtons
+                            transport={transport}
+                            variant="pills"
+                            style={{ rowGap: 6 }}
+                            buttonStyle={{ ...mobileActionPillStyle, padding: "7px 12px" }}
+                        />
+                    </div>
                     <div style={{
                         fontWeight: 900, fontSize: 22, letterSpacing: 0.01,
                         margin: "0 0 3px 0"
@@ -661,15 +693,6 @@ export default function TransportDetailPage() {
                             })}
                         </div>
                     )}
-                    {/* Сохранить — в мобильном хедере, сразу под датой */}
-                    <div style={{ display: "flex", gap: 10, margin: "6px 0 12px", flexWrap: "wrap" }}>
-                        <SaveToggleButton type="transport" id={transport.id} variant="bar" />
-                        <TransportShareButtons
-                            transport={transport}
-                            variant="pills"
-                            style={{ rowGap: 6 }}
-                        />
-                    </div>
                     {ownerUser && (
                         <div style={{ marginBottom: 12 }}>
                             <MiniUserCard user={ownerUser} transport={transport} />

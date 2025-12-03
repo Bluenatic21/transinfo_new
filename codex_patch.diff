@@ -1,75 +1,251 @@
-diff --git a/frontend/src/app/orders/[id]/page.js b/frontend/src/app/orders/[id]/page.js
-index 15e6036107901fb3aace8dfbf24102eaa20266fe..8bd2d34db9239ed5ce8e3ab243cb2a93422b8bca 100644
---- a/frontend/src/app/orders/[id]/page.js
-+++ b/frontend/src/app/orders/[id]/page.js
-@@ -634,60 +634,60 @@ export default function OrderDetailsPage() {
-     const phone = order.phone || "";
-     const email = order.email || "";
-     const username = order.username || "";
-     const createdAt = order.created_at
-         ? new Date(order.created_at).toLocaleString("ru-RU", {
-             day: "2-digit",
-             month: "2-digit",
-             year: "2-digit",
-             hour: "2-digit",
-             minute: "2-digit"
-         })
-         : "";
-     const attachments = Array.isArray(order.attachments) ? order.attachments : [];
-     const norm = normalizeAttachments(attachments);
-     const imageItems = norm.filter((x) => x.kind === "image");
-     const fileItems = norm.filter((x) => x.kind === "file");
-     const docItems = norm.filter((x) => x.kind === "file");
+diff --git a/frontend/src/app/transport/[id]/page.js b/frontend/src/app/transport/[id]/page.js
+index 3a9af5ff3f6f14cdb1ef92846a76815eebc0e69b..3f1527e89b77bc061e9dde523082444311e4e612 100644
+--- a/frontend/src/app/transport/[id]/page.js
++++ b/frontend/src/app/transport/[id]/page.js
+@@ -346,51 +346,70 @@ export default function TransportDetailPage() {
+     }, [BODY_TYPES]);
  
-     const truckQuantity =
-         order.truck_quantity !== undefined && order.truck_quantity !== null ? order.truck_quantity : "";
-     const cargos =
-         Array.isArray(order.cargo_items) && order.cargo_items.length > 0 ? order.cargo_items : [];
-     const routes = Array.isArray(order.routes) && order.routes.length > 0 ? order.routes.join(", ") : "";
- 
-     // Стили для секций
--    const sectionTitleStyle = {
--        fontWeight: 750,
--        fontSize: isMobile ? 16.5 : 19,
--        color: "#cfe3ff",
--        marginBottom: isMobile ? 10 : 12,
--        display: "flex",
--        alignItems: "center",
--        gap: 10,
--        letterSpacing: 0.1,
--    };
-+    const sectionTitleStyle = {
-+        fontWeight: 750,
-+        fontSize: isMobile ? 16.5 : 19,
-+        color: resolvedTheme === "light" ? COLORS.heading : "#cfe3ff",
-+        marginBottom: isMobile ? 10 : 12,
-+        display: "flex",
-+        alignItems: "center",
-+        gap: 10,
-+        letterSpacing: 0.1,
-+    };
- 
-     const sectionTextStyle = {
-         lineHeight: 1.45,
-         fontSize: isMobile ? 14.5 : 16,
-     };
+     // Локализация списка видов загрузки (данные остаются каноном)
+     const localizeLoadingTypes = useCallback((arr) => {
+         const i18n = LOADING_TYPES_I18N || [];
+         return (arr || []).map(v => {
+             const idx = LOADING_TYPES.findIndex(x => String(x).toLowerCase() === String(v).toLowerCase());
+             return idx >= 0 ? (i18n[idx] || v) : v;
+         });
+     }, [LOADING_TYPES_I18N]);
+     const { id } = useParams();
+     const [transport, setTransport] = useState(null);
+     const [loading, setLoading] = useState(true);
+     const [ownerUser, setOwnerUser] = useState(null);
+     const [viewsCount, setViewsCount] = useState(0);
+     const router = useRouter();
+     const searchParams = useSearchParams();
+     const highlightParam = searchParams?.get("highlight");
+     const shouldHighlight = highlightParam === "1";
+     const isMobile = useIsMobile();
+     const [adrDropdownOpen, setAdrDropdownOpen] = useState(false);
+     const adrDropdownRef = useRef();
+     const highlightRef = useRef(null);
+     const [lightbox, setLightbox] = useState({ open: false, index: 0 });
+     // Edge-swipe: запоминаем X старта жеста
+-    const dragStartX = useRef(0);
++    const dragStartX = useRef(0);
++
++    const mobileActionPillStyle = useMemo(
++        () => ({
++            display: "inline-flex",
++            alignItems: "center",
++            gap: 8,
++            padding: "7px 12px",
++            borderRadius: 999,
++            border: `1px solid ${colors.border}`,
++            background: colors.pillBg,
++            color: colors.heading,
++            fontWeight: 700,
++            fontSize: 14,
++            cursor: "pointer",
++            boxShadow: colors.shadow,
++            whiteSpace: "nowrap",
++        }),
++        [colors.border, colors.heading, colors.pillBg, colors.shadow]
++    );
  
  
-     // ── Готовим секции как переменные, чтобы легко переставить местами ─────────────────
-     const transportSection =
-         (truckType || transportType || truckQuantity || loadingTypes.length > 0 || gpsMonitoring || order.adr || tempMode)
-             ? (
+     useEffect(() => {
+         function handleClickOutside(e) {
+             if (adrDropdownRef.current && !adrDropdownRef.current.contains(e.target)) {
+                 setAdrDropdownOpen(false);
+             }
+         }
+         if (adrDropdownOpen) {
+             document.addEventListener("mousedown", handleClickOutside);
+         } else {
+             document.removeEventListener("mousedown", handleClickOutside);
+         }
+         return () => document.removeEventListener("mousedown", handleClickOutside);
+     }, [adrDropdownOpen]);
+ 
+     useEffect(() => {
+         if (!id) return;
+         const token = localStorage.getItem("token");
+         if (!token) {
+             setTransport(null);
+             setLoading(false);
+             return;
+         }
+         fetch(api(`/transports/${id}`), {
+@@ -584,119 +603,123 @@ export default function TransportDetailPage() {
+                         zIndex: 50,
+                         touchAction: "none",
+                         background: "transparent"
+                     }}
+                 />
+ 
                  <div
-                     key="transport"
+                     ref={highlightRef}
+                     tabIndex={shouldHighlight ? -1 : undefined}
                      style={{
-                         ...cardStyle,
-                         ...sectionTextStyle,
-                         minHeight: 180,
-                         height: "100%",
+                         background: colors.pageBg,
+                         minHeight: "100vh",
+                         color: colors.text,
+                         padding: "24px 16px 48px",
+                         maxWidth: 520,
+                         margin: "0 auto",
+                         fontSize: 16,
+                         lineHeight: 1.45,
+                         position: "relative",
+                         display: "flex",
+                         flexDirection: "column",
+                         gap: 12,
                      }}
                  >
-                     <div style={sectionTitleStyle}>{icons.truck}{t("transport.title", "Транспорт")}</div>
-                     {truckType && (<div><b>{t("truck.bodyType", "Тип кузова")}:</b> {findBodyLabelByValue(truckType)}</div>)}
-                     {transportType && (<div><b>{t("transport.transportType", "Тип перевозки")}:</b> {localizeTransportType(transportType)}</div>)}
-                     {truckQuantity && (<div><b>{t("transport.truckCount", "Количество машин")}:</b> {truckQuantity}</div>)}
-                     {loadingTypes.length > 0 && (
+                     {/* Просмотры — правый верхний угол */}
+-                    <span
+-                        title={t("views.title", "Просмотры")}
+-                        style={{
+-                            position: "absolute",
++                    <span
++                        title={t("views.title", "Просмотры")}
++                        style={{
++                            position: "absolute",
+                             top: 8,
+                             right: 10,
+                             zIndex: 60,
+                             display: "inline-flex",
+                             alignItems: "center",
+                             gap: 6,
+                             padding: "3px 9px",
+                             borderRadius: 999,
+                             background: colors.accentSoft,
+                             border: `1px solid ${colors.border}`,
+                             color: colors.heading,
+                             fontWeight: 700,
+                             fontSize: 12,
+                             pointerEvents: "none",
+                             boxShadow: colors.shadow,
+                         }}
+                     >
+-                        <FaEye />
+-                        <span style={{ fontVariantNumeric: "tabular-nums" }}>{viewsCount}</span>
+-                    </span>
+-                    <button
+-                        style={{
+-                            marginBottom: 16,
+-                            background: colors.accent,
+-                            color: "#ffffff",
+-                            border: `1px solid ${colors.border}`,
+-                            borderRadius: 8,
+-                            padding: "10px 19px",
+-                            fontWeight: 800,
+-                            fontSize: 17,
+-                            boxShadow: colors.shadow
+-                        }}
+-                        onClick={() => router.back()}
+-                    >← {t("common.back", "Назад")}</button>
+-                    <div style={{
+-                        fontWeight: 900, fontSize: 22, letterSpacing: 0.01,
+-                        margin: "0 0 3px 0"
+-                    }}>
+-                        {findBodyLabelByValue(truck_type)} <span style={{ fontWeight: 400 }}>•</span> {findKindLabelByValue(transport_kind)}
+-                    </div>
+-                    {created_at && (
+-                        <div style={{ color: "#89b1dd", fontSize: 14, marginBottom: 10, marginTop: 1 }}>
+-                            {new Date(created_at).toLocaleString("ru-RU", {
+-                                day: "2-digit",
+-                                month: "2-digit",
+-                                year: "2-digit",
+-                                hour: "2-digit",
+-                                minute: "2-digit"
+-                            })}
+-                        </div>
+-                    )}
+-                    {/* Сохранить — в мобильном хедере, сразу под датой */}
+-                    <div style={{ display: "flex", gap: 10, margin: "6px 0 12px", flexWrap: "wrap" }}>
+-                        <SaveToggleButton type="transport" id={transport.id} variant="bar" />
+-                        <TransportShareButtons
+-                            transport={transport}
+-                            variant="pills"
+-                            style={{ rowGap: 6 }}
+-                        />
++                        <FaEye />
++                        <span style={{ fontVariantNumeric: "tabular-nums" }}>{viewsCount}</span>
++                    </span>
++                    <div
++                        style={{
++                            display: "flex",
++                            alignItems: "center",
++                            gap: 10,
++                            margin: "0 0 10px",
++                            flexWrap: "nowrap",
++                            overflowX: "auto",
++                            paddingBottom: 4,
++                        }}
++                    >
++                        <button
++                            style={mobileActionPillStyle}
++                            onClick={() => router.back()}
++                            aria-label={t("common.back", "Назад")}
++                        >
++                            {"<"}
++                        </button>
++
++                        <SaveToggleButton type="transport" id={transport.id} variant="bar" />
++                        <TransportShareButtons
++                            transport={transport}
++                            variant="pills"
++                            style={{ rowGap: 6 }}
++                            buttonStyle={{ ...mobileActionPillStyle, padding: "7px 12px" }}
++                        />
++                    </div>
++                    <div style={{
++                        fontWeight: 900, fontSize: 22, letterSpacing: 0.01,
++                        margin: "0 0 3px 0"
++                    }}>
++                        {findBodyLabelByValue(truck_type)} <span style={{ fontWeight: 400 }}>•</span> {findKindLabelByValue(transport_kind)}
+                     </div>
+-                    {ownerUser && (
+-                        <div style={{ marginBottom: 12 }}>
+-                            <MiniUserCard user={ownerUser} transport={transport} />
+-                        </div>
+-                    )}
++                    {created_at && (
++                        <div style={{ color: "#89b1dd", fontSize: 14, marginBottom: 10, marginTop: 1 }}>
++                            {new Date(created_at).toLocaleString("ru-RU", {
++                                day: "2-digit",
++                                month: "2-digit",
++                                year: "2-digit",
++                                hour: "2-digit",
++                                minute: "2-digit"
++                            })}
++                        </div>
++                    )}
++                    {ownerUser && (
++                        <div style={{ marginBottom: 12 }}>
++                            <MiniUserCard user={ownerUser} transport={transport} />
++                        </div>
++                    )}
+                     <Section colors={colors} title={<>{icons.route}{t("route.title", "Маршрут и дата")}</>}>
+                         <div style={{ marginBottom: 5, display: "flex", alignItems: "center" }}>
+                             <b>{t("route.from", "Откуда")}:</b>
+                             <FlagIcon colors={colors} country={getCountryCode(from_location)} />
+                             {from_location}
+                         </div>
+                         <div style={{ marginBottom: 5, display: "flex", alignItems: "center" }}>
+                             <b>{t("route.to", "Куда")}:</b>
+                             {Array.isArray(to_locations) && to_locations.length > 0
+                                 ? to_locations.map((l, i) => (
+                                     <span key={i} style={{ display: "flex", alignItems: "center", marginRight: 9 }}>
+                                         <FlagIcon colors={colors} country={getCountryCode(typeof l === "string" ? l : l.location)} />
+                                         {typeof l === "string" ? l : l.location}
+                                         {i !== to_locations.length - 1 ? <span style={{ margin: "0 4px", color: "#b7e1fd" }}>•</span> : null}
+                                     </span>
+                                 ))
+                                 : <>
+                                     <FlagIcon colors={colors} country={getCountryCode(toStr)} />
+                                     {toStr}
+                                 </>
+                             }
+                         </div>
+                         <div style={{ marginBottom: 5 }}><b>{t("transport.available", "Доступен")}:</b> {readyDateInterval}</div>
+                     </Section>
+                     <Section colors={colors} title={<>{icons.params}{t("transport.params", "Параметры транспорта")}</>}>

@@ -568,6 +568,7 @@ html[data-theme="light"] {
   border: 1.5px solid var(--border-subtle, #2c3f62);
   background: color-mix(in srgb, var(--bg-card-soft, #16233c) 88%, transparent);
   box-shadow: 0 3px 10px rgba(12, 19, 35, .2);
+  transition: border-color .18s ease, box-shadow .18s ease, background .18s ease;
 }
 
 .adr-modal-item input[type="checkbox"] {
@@ -575,6 +576,16 @@ html[data-theme="light"] {
   height: 20px;
   margin-top: 2px;
   accent-color: var(--accent, #5fd8ff);
+}
+
+.adr-modal-item:has(input[type="checkbox"]:checked) {
+  border-color: var(--brand-blue, #5fd8ff);
+  background: color-mix(in srgb, var(--brand-blue, #5fd8ff) 18%, var(--bg-card-soft, #16233c));
+  box-shadow: 0 6px 18px rgba(95, 216, 255, 0.25);
+}
+
+.adr-modal-item:has(input[type="checkbox"]:checked) .adr-modal-code {
+  color: #fff;
 }
 
 .adr-modal-label {
