@@ -659,7 +659,7 @@ export default function OrderDetailsPage() {
     const sectionTitleStyle = {
         fontWeight: 750,
         fontSize: isMobile ? 16.5 : 19,
-        color: "#cfe3ff",
+        color: resolvedTheme === "light" ? COLORS.heading : "#cfe3ff",
         marginBottom: isMobile ? 10 : 12,
         display: "flex",
         alignItems: "center",

@@ -1,77 +1,75 @@
-diff --git a/frontend/src/app/globals.css b/frontend/src/app/globals.css
-index e50c39ac62d1c091b04ea3c86e45a7c8dfdb30d1..3abccd446f7ab8f90c923bd6e068ea105a8982ef 100644
---- a/frontend/src/app/globals.css
-+++ b/frontend/src/app/globals.css
-@@ -535,60 +535,62 @@ html[data-theme="light"] {
- .adr-modal-title {
-   font-weight: 700;
-   font-size: 17px;
- }
+diff --git a/frontend/src/app/orders/[id]/page.js b/frontend/src/app/orders/[id]/page.js
+index 15e6036107901fb3aace8dfbf24102eaa20266fe..8bd2d34db9239ed5ce8e3ab243cb2a93422b8bca 100644
+--- a/frontend/src/app/orders/[id]/page.js
++++ b/frontend/src/app/orders/[id]/page.js
+@@ -634,60 +634,60 @@ export default function OrderDetailsPage() {
+     const phone = order.phone || "";
+     const email = order.email || "";
+     const username = order.username || "";
+     const createdAt = order.created_at
+         ? new Date(order.created_at).toLocaleString("ru-RU", {
+             day: "2-digit",
+             month: "2-digit",
+             year: "2-digit",
+             hour: "2-digit",
+             minute: "2-digit"
+         })
+         : "";
+     const attachments = Array.isArray(order.attachments) ? order.attachments : [];
+     const norm = normalizeAttachments(attachments);
+     const imageItems = norm.filter((x) => x.kind === "image");
+     const fileItems = norm.filter((x) => x.kind === "file");
+     const docItems = norm.filter((x) => x.kind === "file");
  
- .adr-modal-close {
-   width: 34px;
-   height: 34px;
-   border-radius: 50%;
-   border: 1.5px solid var(--border-subtle, #2c3f62);
-   background: var(--control-bg, #0f1b30);
-   color: var(--text-primary, #eaf1ff);
-   font-size: 20px;
-   line-height: 1;
- }
+     const truckQuantity =
+         order.truck_quantity !== undefined && order.truck_quantity !== null ? order.truck_quantity : "";
+     const cargos =
+         Array.isArray(order.cargo_items) && order.cargo_items.length > 0 ? order.cargo_items : [];
+     const routes = Array.isArray(order.routes) && order.routes.length > 0 ? order.routes.join(", ") : "";
  
- .adr-modal-list {
-   display: flex;
-   flex-direction: column;
-   gap: 10px;
-   max-height: 60vh;
-   overflow: auto;
-   padding: 4px 2px;
- }
+     // Стили для секций
+-    const sectionTitleStyle = {
+-        fontWeight: 750,
+-        fontSize: isMobile ? 16.5 : 19,
+-        color: "#cfe3ff",
+-        marginBottom: isMobile ? 10 : 12,
+-        display: "flex",
+-        alignItems: "center",
+-        gap: 10,
+-        letterSpacing: 0.1,
+-    };
++    const sectionTitleStyle = {
++        fontWeight: 750,
++        fontSize: isMobile ? 16.5 : 19,
++        color: resolvedTheme === "light" ? COLORS.heading : "#cfe3ff",
++        marginBottom: isMobile ? 10 : 12,
++        display: "flex",
++        alignItems: "center",
++        gap: 10,
++        letterSpacing: 0.1,
++    };
  
--.adr-modal-item {
--  display: flex;
--  gap: 12px;
--  align-items: flex-start;
--  padding: 10px 12px;
--  border-radius: 14px;
--  border: 1.5px solid var(--border-subtle, #2c3f62);
--  background: color-mix(in srgb, var(--bg-card-soft, #16233c) 88%, transparent);
--  box-shadow: 0 3px 10px rgba(12, 19, 35, .2);
--}
-+
-+.adr-modal-item {
-+  display: grid;
-+  grid-template-columns: auto 1fr;
-+  align-items: flex-start;
-+  gap: 12px;
-+  padding: 10px 12px;
-+  border-radius: 14px;
-+  border: 1.5px solid var(--border-subtle, #2c3f62);
-+  background: color-mix(in srgb, var(--bg-card-soft, #16233c) 88%, transparent);
-+  box-shadow: 0 3px 10px rgba(12, 19, 35, .2);
-+}
+     const sectionTextStyle = {
+         lineHeight: 1.45,
+         fontSize: isMobile ? 14.5 : 16,
+     };
  
- .adr-modal-item input[type="checkbox"] {
-   width: 20px;
-   height: 20px;
-   margin-top: 2px;
-   accent-color: var(--accent, #5fd8ff);
- }
  
- .adr-modal-label {
-   display: flex;
-   flex-direction: column;
-   gap: 2px;
-   flex: 1;
-   min-width: 0;
- }
- 
- .adr-modal-title-row {
-   display: flex;
-   align-items: baseline;
-   flex-wrap: wrap;
-   gap: 8px;
- }
- 
- .adr-modal-code {
-   font-weight: 800;
+     // ── Готовим секции как переменные, чтобы легко переставить местами ─────────────────
+     const transportSection =
+         (truckType || transportType || truckQuantity || loadingTypes.length > 0 || gpsMonitoring || order.adr || tempMode)
+             ? (
+                 <div
+                     key="transport"
+                     style={{
+                         ...cardStyle,
+                         ...sectionTextStyle,
+                         minHeight: 180,
+                         height: "100%",
+                     }}
+                 >
+                     <div style={sectionTitleStyle}>{icons.truck}{t("transport.title", "Транспорт")}</div>
+                     {truckType && (<div><b>{t("truck.bodyType", "Тип кузова")}:</b> {findBodyLabelByValue(truckType)}</div>)}
+                     {transportType && (<div><b>{t("transport.transportType", "Тип перевозки")}:</b> {localizeTransportType(transportType)}</div>)}
+                     {truckQuantity && (<div><b>{t("transport.truckCount", "Количество машин")}:</b> {truckQuantity}</div>)}
+                     {loadingTypes.length > 0 && (
