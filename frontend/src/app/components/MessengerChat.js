@@ -82,6 +82,7 @@ import {
   FaInfoCircle,
   FaBell,
   FaBellSlash,
+  FaTimes,
 } from "react-icons/fa";
 import { useAvatarFly } from "../../hooks/useAvatarFly";
 import { useIsMobile } from "../../hooks/useIsMobile";
@@ -3136,6 +3137,7 @@ export default function MessengerChat({
         : msg.content == null
           ? ""
           : String(msg.content);
+    const isBeingEdited = editingMessage?.id === msg.id;
 
     // ---- CALL (карточка звонка) ----
     if (msg.message_type === "call") {
@@ -3562,7 +3564,7 @@ export default function MessengerChat({
     return (
       <div
         key={mkey}
-        className="msg-container"
+        className={`msg-container${isBeingEdited ? " msg-container--editing" : ""}`}
         id={`msg-${mkey}`}
         ref={(el) => {
           if (el && searchMsg) matchRefs.current[idx] = el;
@@ -3589,6 +3591,7 @@ export default function MessengerChat({
         }}
       >
         <div
+          className={`msg-bubble${isBeingEdited ? " msg-bubble--editing" : ""}`}
           style={{
             background: isMine
               ? "var(--chat-bubble-self-bg)"
@@ -3604,6 +3607,7 @@ export default function MessengerChat({
             position: "relative",
             minHeight: 40,
             wordBreak: "break-word",
+            transition: "box-shadow 120ms ease, transform 120ms ease, border-color 120ms ease",
           }}
         >
           {searchMsg
@@ -4280,36 +4284,27 @@ export default function MessengerChat({
         </div>
 
         {editingMessage && (
-          <div
-            className="flex items-start gap-3 px-3 py-2 rounded-lg text-sm"
-            style={{
-              background: "var(--chat-menu-bg)",
-              border: "1px solid var(--chat-menu-border)",
-              color: "var(--chat-menu-fg)",
-              marginBottom: 8,
-            }}
-          >
-            <FaEdit />
-            <div style={{ flex: 1 }}>
-              <div style={{ fontWeight: 700 }}>
-                {t("chat.editing", "Редактирование сообщения")}
+          <div className="chat-edit-banner" role="status">
+            <div className="chat-edit-banner__body">
+              <div className="chat-edit-banner__label">
+                <FaEdit />
+                <span>{t("chat.editing", "Редактирование сообщения")}</span>
               </div>
-              <div style={{ opacity: 0.8, whiteSpace: "pre-wrap" }}>
-                {editingMessage.content}
+              <div className="chat-edit-banner__text">
+                {editingMessage.content || t("chat.empty", "Пустое сообщение")}
               </div>
             </div>
             <button
               type="button"
               onClick={cancelEdit}
-              style={{
-                background: "none",
-                border: "none",
-                color: "var(--chat-menu-fg)",
-                cursor: "pointer",
-                fontWeight: 700,
-              }}
+              className="chat-edit-banner__cancel"
+              aria-label={t(
+                "chat.cancelEditing",
+                "Отменить редактирование сообщения"
+              )}
+              title={t("common.cancel", "Отмена")}
             >
-              {t("common.cancel", "Отмена")}
+              <FaTimes />
             </button>
           </div>
         )}
@@ -4360,7 +4355,11 @@ export default function MessengerChat({
             onKeyDownCapture={handleKeyDown}
             enterKeyHint="send"
             placeholder={
-              inputLocked ? "Диалог закрыт..." : "Напишите сообщение..."
+              inputLocked
+                ? "Диалог закрыт..."
+                : editingMessage
+                  ? t("chat.editPlaceholder", "Измените сообщение...")
+                  : "Напишите сообщение..."
             }
             disabled={inputLocked}
             style={{

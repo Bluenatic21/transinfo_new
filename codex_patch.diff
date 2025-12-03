@@ -1,142 +1,165 @@
-diff --git a/frontend/src/app/components/TransportList.js b/frontend/src/app/components/TransportList.js
-index bc7950208d1ecd5c4de9a964cf845f689fec27cb..83c4f29c9d658f4dd1c87c5564bc8621bb09c8f3 100644
---- a/frontend/src/app/components/TransportList.js
-+++ b/frontend/src/app/components/TransportList.js
-@@ -1384,55 +1384,64 @@ function TransportCard({ transport, expanded, onToggle }) {
-       // Шаблон: "<n> раз(а) в <день|неделю|месяц|год>"
-       const m = s.match(/(\d+)\s*раз[а]?\s*в\s*(день|неделю|месяц|год)/i);
-       if (m) {
-         const n = m[1];
-         const unit = m[2];
-         const unitI18n =
-           unit === "день"
-             ? t("units.perDay", "в день")
-             : unit === "неделю"
-             ? t("units.perWeek", "в неделю")
-             : unit === "месяц"
-             ? t("units.perMonth", "в месяц")
-             : t("units.perYear", "в год");
-         return `${unitI18n} ${n} ${t("regularity.times", "раз(а)")}`;
-       }
-       return reg;
-     },
-     [t]
-   );
-   const [adrDropdownOpen, setAdrDropdownOpen] = useState(false);
-   const router = useRouter();
-   const isMobile = useIsMobile();
-   const [ownerProfile, setOwnerProfile] = useState(null);
+diff --git a/frontend/src/app/globals.css b/frontend/src/app/globals.css
+index add4692c6ab390b7bc86395608c3031b798ad2df..cf9ff8b38d9a8a7edf6f44d8e64330c924eeca06 100644
+--- a/frontend/src/app/globals.css
++++ b/frontend/src/app/globals.css
+@@ -1182,55 +1182,155 @@ html[data-booting] body> :not(#boot-loader) {
+     height: calc(100dvh - 52px - 64px);
+     /* header ~52 + composer ~64 */
+     overflow-y: auto;
+     -webkit-overflow-scrolling: touch;
+   }
  
-   // --- Internal comments (только для аккаунта менеджера)
--  const isManagerAccount = ["manager", "employee"].includes(
--    (me?.role || "").toLowerCase()
--  );
--  // --- гостевой режим ---
--  const isGuest = !me;
-+  const isManagerAccount = ["manager", "employee"].includes(
-+    (me?.role || "").toLowerCase()
-+  );
-+  const avatarPalette = isLight
-+    ? {
-+        border: "2px solid #193158",
-+        background: "#1c2842",
-+      }
-+    : {
-+        border: `2px solid ${cardColors.sectionBorder}`,
-+        background: cardColors.sectionBg,
-+      };
-+  // --- гостевой режим ---
-+  const isGuest = !me;
-   const requireAuth = useCallback(() => {
-     alert(
-       t(
-         "auth.loginOrRegister",
-         "Чтобы увидеть детали и контакты — войдите или зарегистрируйтесь."
-       )
-     );
-   }, [t]);
-   const [intCommentOpen, setIntCommentOpen] = useState(false);
-   const [intCommentText, setIntCommentText] = useState("");
-   const [intComments, setIntComments] = useState([]);
-   const intCommentBtnRef = useRef(null);
-   const intCommentPopoverRef = useRef(null);
+   /* Липкие шапка и composer */
+   .chat-root .chat-header {
+     position: sticky;
+     top: env(safe-area-inset-top);
+     z-index: 20;
+     background-color: rgba(14, 27, 42, 0.85) !important;
+     backdrop-filter: blur(8px);
+   }
  
-   async function loadInternalCommentsLocal() {
-     if (!isManagerAccount) return;
-     const token = localStorage.getItem("token");
-     const r = await fetch(
-       api(`/internal_comments?transport_id=${transport.id}`),
-       {
-         headers: token ? { Authorization: "Bearer " + token } : {},
-       }
-     );
-     const data = await r.json();
-     setIntComments(Array.isArray(data) ? data : []);
-@@ -2520,59 +2529,58 @@ function TransportCard({ transport, expanded, onToggle }) {
-             padding: "6px 15px",
-             /* небольшой отступ, чтобы панель визуально “дышала” от секций */
-             marginTop: 4,
-             minHeight: 44,
-             display: "flex",
-             alignItems: "center",
-             gap: 14,
-             justifyContent: "space-between",
-             fontSize: 15,
-             flexWrap: "wrap",
-           }}
-         >
-           {/* ЛЕВЫЙ блок (автор/орг) */}
-           <div
-             style={{
-               display: "flex",
-               alignItems: "center",
-               gap: 10,
-               minWidth: 0,
-               cursor: "pointer",
-               flex: "1 1 260px",
-             }}
-             onClick={() => router.push(`/profile/${ownerProfile.id}`)}
-             title={t("profile.open", "Перейти в профиль")}
-           >
--            <UserAvatar
--              user={ownerProfile}
--              size={40}
--              style={{
--                border: `2px solid ${cardColors.sectionBorder}`,
--                background: cardColors.sectionBg,
--                marginRight: 12,
--              }}
--            />
-+            <UserAvatar
-+              user={ownerProfile}
-+              size={40}
-+              style={{
-+                ...avatarPalette,
-+                marginRight: 12,
-+              }}
-+            />
-             <span
-               style={{
-                 fontWeight: 700,
-                 color: infoPrimaryColor,
-                 fontSize: 15,
-                 whiteSpace: "nowrap",
-                 maxWidth: 130,
-                 overflow: "hidden",
-                 textOverflow: "ellipsis",
-               }}
-             >
-               {ownerProfile.organization}
-             </span>
-             {ownerProfile.contact_person && (
-               <span
-                 style={{
-                   color: infoSecondaryColor,
-                   fontSize: 14,
-                   maxWidth: 110,
-                   whiteSpace: "nowrap",
-                   overflow: "hidden",
-                   textOverflow: "ellipsis",
-                 }}
-               >
-                 {ownerProfile.contact_person}
+   .chat-root .composer {
+     position: sticky;
+     bottom: env(safe-area-inset-bottom);
+     z-index: 20;
+     background-color: rgba(14, 27, 42, 0.92) !important;
+     backdrop-filter: blur(8px);
+     padding-bottom: calc(12px + env(safe-area-inset-bottom));
+   }
+ 
+   /* Подавляем случайные белые переопределения */
+-  .chat-root .bg-white,
+-  .chat-root [class*="bg-white"] {
+-    background-color: transparent !important;
+-  }
+-}
++  .chat-root .bg-white,
++  .chat-root [class*="bg-white"] {
++    background-color: transparent !important;
++  }
++}
++
++/* --- Chat edit banner (WhatsApp/Viber style) --- */
++.chat-edit-banner {
++  display: flex;
++  align-items: flex-start;
++  gap: 12px;
++  padding: 10px 12px;
++  margin-bottom: 8px;
++  border-radius: 14px;
++  background: var(--chat-menu-bg);
++  border: 1px solid var(--chat-menu-border);
++  color: var(--chat-menu-fg);
++  position: relative;
++  overflow: hidden;
++  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.12);
++}
++
++:root[data-theme="light"] .chat-edit-banner {
++  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
++}
++
++.chat-edit-banner::before {
++  content: "";
++  position: absolute;
++  inset: 0;
++  width: 4px;
++  background: var(--chat-bubble-self-accent);
++  border-radius: 12px 0 0 12px;
++}
++
++.chat-edit-banner__body {
++  display: flex;
++  flex-direction: column;
++  gap: 4px;
++  flex: 1;
++  min-width: 0;
++}
++
++.chat-edit-banner__label {
++  display: inline-flex;
++  align-items: center;
++  gap: 6px;
++  font-weight: 700;
++  font-size: 12px;
++  letter-spacing: 0.04em;
++  text-transform: uppercase;
++  color: var(--chat-bubble-self-accent);
++}
++
++.chat-edit-banner__label svg {
++  font-size: 13px;
++}
++
++.chat-edit-banner__text {
++  color: var(--chat-menu-fg);
++  opacity: 0.9;
++  font-size: 14px;
++  line-height: 1.35;
++  word-break: break-word;
++  display: -webkit-box;
++  -webkit-line-clamp: 2;
++  -webkit-box-orient: vertical;
++  overflow: hidden;
++}
++
++.chat-edit-banner__cancel {
++  background: transparent;
++  border: none;
++  color: var(--chat-menu-fg);
++  opacity: 0.8;
++  cursor: pointer;
++  display: inline-flex;
++  align-items: center;
++  justify-content: center;
++  width: 32px;
++  height: 32px;
++  border-radius: 50%;
++  transition: background 120ms ease, opacity 120ms ease;
++}
++
++.chat-edit-banner__cancel:hover {
++  background: var(--chat-menu-active-bg);
++  opacity: 1;
++}
++
++.msg-container--editing {
++  scroll-margin: 96px;
++}
++
++.msg-bubble--editing {
++  box-shadow: 0 0 0 2px var(--chat-bubble-self-accent),
++    0 8px 22px rgba(0, 0, 0, 0.18);
++  border-color: var(--chat-bubble-self-accent) !important;
++  transform: translateY(-1px);
++}
++
++:root[data-theme="light"] .msg-bubble--editing {
++  box-shadow: 0 0 0 2px var(--chat-bubble-self-accent),
++    0 12px 26px rgba(15, 23, 42, 0.12);
++}
+ 
+ /* --- Login mobile overrides --- */
+ @media (max-width: 480px) {
+   .login-form-root {
+     max-width: 100%;
+     margin: 0;
+     border-radius: 18px 18px 0 0;
+     padding: 20px 16px 16px;
+     box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.45);
+   }
+ 
+   /* --- Auth modal mobile full-screen --- */
+   @media (max-width: 480px) {
+     .auth-modal__inner {
+       width: 100%;
+       max-width: none;
+       height: 100dvh;
+       max-height: 100dvh;
+       border-radius: 18px 18px 0 0;
+       margin: 0;
+     }
+   }
+ 
+ 
+   .login-form-title {
