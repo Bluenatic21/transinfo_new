@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 import asyncio
 from collections import defaultdict
 import heapq
+import html
 from typing import Iterator, TypeVar
 from jose import jwt, JWTError
 from auth import get_token_from_header_or_cookie, SECRET_KEY, ALGORITHM
@@ -14,7 +15,9 @@ import json
 
 from database import get_db
 from auth import get_current_user
-from models import Transport, Order, NotificationType, Notification
+from email_utils import send_email
+from i18n_email import SUPPORTED as EMAIL_LANGS, DEFAULT as DEFAULT_EMAIL_LANG
+from models import Transport, Order, NotificationType, Notification, User
 # используем ту же модель/алиас, что и в проекте
 from models import UserBlock as UB
 
@@ -153,6 +156,109 @@ AUTO_MATCH_MAX_NOTIFICATIONS_PER_ENTITY = int(
 AUTO_MATCH_LOOKBACK_DAYS = int(
     os.getenv("AUTO_MATCH_LOOKBACK_DAYS", "90")
 )
+
+SITE_URL = os.getenv("SITE_URL", "https://transinfo.ge").rstrip("/")
+
+EMAIL_SUBJECTS = {
+    "ru": "Новое уведомление в Transinfo",
+    "ka": "Transinfo-ში ახალი შეტყობინება",
+    "en": "New notification on Transinfo",
+    "tr": "Transinfo'da yeni bildirim",
+    "az": "Transinfo-da yeni bildiriş",
+    "hy": "Նոր ծանուցում Transinfo-ում",
+}
+
+EMAIL_BODY_TEXTS = {
+    "ru": {
+        "intro": "У вас новое уведомление:",
+        "cta": "Открыть сайт",
+        "footer": "Вы также можете увидеть это уведомление в приложении или на сайте Transinfo.",
+    },
+    "ka": {
+        "intro": "თქვენ გაქვთ ახალი შეტყობინება:",
+        "cta": "გახსენი საიტი",
+        "footer": "შეტყობინებას ასევე იპოვით Transinfo-ს აპში ან საიტზე.",
+    },
+    "en": {
+        "intro": "You have a new notification:",
+        "cta": "Open the site",
+        "footer": "You can also view this notification in the Transinfo app or on the website.",
+    },
+    "tr": {
+        "intro": "Yeni bir bildiriminiz var:",
+        "cta": "Siteyi aç",
+        "footer": "Bu bildirimi Transinfo uygulamasında veya web sitesinde de görebilirsiniz.",
+    },
+    "az": {
+        "intro": "Yeni bildirişiniz var:",
+        "cta": "Saytı aç",
+        "footer": "Bu bildirişi Transinfo tətbiqində və ya saytda da görə bilərsiniz.",
+    },
+    "hy": {
+        "intro": "Դուք ունեք նոր ծանուցում.",
+        "cta": "Բացել կայքը",
+        "footer": "Ծանուցումը հասանելի է նաև Transinfo հավելվածում կամ կայքում։",
+    },
+}
+
+
+def _normalize_lang(lang: str | None) -> str:
+    if not lang:
+        return DEFAULT_EMAIL_LANG
+    lang = lang.lower().strip()
+    if "-" in lang:
+        lang = lang.split("-", 1)[0]
+    if lang == "am":
+        lang = "hy"
+    return lang if lang in EMAIL_LANGS else DEFAULT_EMAIL_LANG
+
+
+def _detect_user_lang(user: User) -> str:
+    data = getattr(user, "profile_data", None) or {}
+    if isinstance(data, dict):
+        for key in ("lang", "language", "ui_lang", "locale", "preferred_lang"):
+            val = data.get(key)
+            if isinstance(val, str) and val.strip():
+                return _normalize_lang(val)
+
+    return _normalize_lang(None)
+
+
+def _build_email(lang: str, message: str, created_at: datetime | None) -> tuple[str, str]:
+    lang = _normalize_lang(lang)
+    subject = EMAIL_SUBJECTS.get(lang, EMAIL_SUBJECTS[DEFAULT_EMAIL_LANG])
+    texts = EMAIL_BODY_TEXTS.get(lang, EMAIL_BODY_TEXTS[DEFAULT_EMAIL_LANG])
+    msg_safe = html.escape(message)
+    created_str = (
+        created_at.isoformat(sep=" ", timespec="seconds")
+        if created_at
+        else ""
+    )
+
+    html_body = f"""
+    <div style="font-family:Arial,Helvetica,sans-serif;font-size:15px;color:#1a2436">
+      <p>{texts['intro']}</p>
+      <p style="font-size:16px;margin:12px 0"><b>{msg_safe}</b></p>
+      {f"<p style='color:#59708f;font-size:13px;margin:8px 0'>" + created_str + "</p>" if created_str else ""}
+      <p style="margin:18px 0">
+        <a href="{SITE_URL}" style="background:#0ea5e9;color:#fff;text-decoration:none;padding:10px 16px;border-radius:8px;display:inline-block">{texts['cta']}</a>
+      </p>
+      <p style="color:#59708f">{texts['footer']}</p>
+    </div>
+    """
+    return subject, html_body
+
+
+def _send_email_notification(db: Session, user_id: int, message: str, created_at: datetime | None) -> None:
+    try:
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user or not user.email:
+            return
+        lang = _detect_user_lang(user)
+        subject, html_body = _build_email(lang, message, created_at)
+        send_email(user.email, subject, html_body)
+    except Exception as e:
+        print(f"[WARN] Email notification failed: {e}")
 
 
 def _parse_km(val, default=0.0):
@@ -442,6 +548,11 @@ def create_notification(
         # Flush to assign primary key/values without ending the surrounding
         # transaction – the caller is responsible for committing later.
         db.flush()
+
+    try:
+        _send_email_notification(db, user_id, notif.message, notif.created_at)
+    except Exception as e:
+        print("[WARN] Email notification dispatch failed:", e)
 
     event = {
         "event": "new_notification",
