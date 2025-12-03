@@ -228,7 +228,23 @@ def _build_email(lang: str, message: str, created_at: datetime | None) -> tuple[
     lang = _normalize_lang(lang)
     subject = EMAIL_SUBJECTS.get(lang, EMAIL_SUBJECTS[DEFAULT_EMAIL_LANG])
     texts = EMAIL_BODY_TEXTS.get(lang, EMAIL_BODY_TEXTS[DEFAULT_EMAIL_LANG])
-    msg_safe = html.escape(message)
+    # message может быть в формате "key|{json}|fallback" (как на фронте в renderNotif).
+    # Для писем берём человекочитаемый fallback‑текст.
+    display_message = message or ""
+    try:
+        if "|" in display_message:
+            parts = display_message.split("|")
+            # Ожидаемый формат: key | {json} | fallback
+            if len(parts) >= 3:
+                display_message = parts[-1] or parts[0]
+            else:
+                # На всякий случай: key | fallback
+                display_message = parts[-1] or parts[0]
+    except Exception:
+        # В крайнем случае оставляем исходную строку
+        display_message = message or ""
+
+    msg_safe = html.escape(display_message)
     created_str = (
         created_at.isoformat(sep=" ", timespec="seconds")
         if created_at
@@ -686,7 +702,8 @@ def find_and_notify_auto_match_for_order(order: Order, db: Session):
         Transport.ready_date_from.isnot(None),
     )
     if cutoff is not None:
-        transport_query = transport_query.filter(Transport.created_at >= cutoff)
+        transport_query = transport_query.filter(
+            Transport.created_at >= cutoff)
 
     total_candidates = transport_query.order_by(None).count()
     print(
@@ -725,7 +742,8 @@ def find_and_notify_auto_match_for_order(order: Order, db: Session):
                     continue
 
             # Локация
-            matched_loc, loc_reason, nearest_km = _check_location_match(tr, order)
+            matched_loc, loc_reason, nearest_km = _check_location_match(
+                tr, order)
             if not matched_loc:
                 continue
 
@@ -1003,7 +1021,6 @@ def find_matching_orders_for_transport(
     return results
 
 
-
 def find_matching_orders(order_data: Order, db: Session, exclude_user_id=None):
     """
     Находит совпадающие заказы к заказу по типу/дате (используется в некоторых местах UI).
@@ -1085,7 +1102,6 @@ def find_matching_transports(order: Order, db: Session, exclude_user_id=None):
         f"[MATCH DEBUG] order_id={getattr(order, 'id', None)}: {len(results)} matches found"
     )
     return results
-
 
 
 def nearest_orders_for_transport(transport: Transport, db: Session, limit: int = 10):

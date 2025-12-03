@@ -14,7 +14,7 @@ from models import (
     Notification,
     NotificationType,
 )
-from notifications import push_notification
+from notifications import push_notification, _send_email_notification as send_notification_email
 
 router = APIRouter(prefix="/contacts", tags=["contacts"])
 
@@ -43,7 +43,8 @@ def _emit_contacts_update(*user_ids: int):
         # уведомления через отдельный цикл, чтобы фронт получил сигнал сразу
         try:
             for uid in ids:
-                asyncio.run(push_notification(uid, {"event": "contacts_update"}))
+                asyncio.run(push_notification(
+                    uid, {"event": "contacts_update"}))
         except Exception:
             pass
     except Exception:
@@ -155,6 +156,14 @@ def _notify(
     db.commit()
     db.refresh(n)
 
+    # После сохранения записи шлём e‑mail с тем же текстом уведомления.
+    # Используем общий helper из notifications.py, чтобы формат писем был единым.
+    try:
+        send_notification_email(db, user_id, message, n.created_at)
+    except Exception as e:
+        # Не роняем ручку контактов, просто логируем
+        print(f"[WARN] Email notification (contacts) failed: {e}")
+
     # соберём полезный payload для фронта / WS
     # строковое представление типа (работает и с Enum, и со строкой)
     type_str = (
@@ -195,12 +204,12 @@ def _notify(
         try:
             asyncio.run(
                 push_notification(
-                    user_id, {"event": "new_notification", "notification": payload}
+                    user_id, {"event": "new_notification",
+                              "notification": payload}
                 )
             )
         except Exception:
             pass
-
 
 
 # ------------ routes ------------

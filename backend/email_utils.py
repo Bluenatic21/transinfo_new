@@ -31,7 +31,7 @@ def _cfg():
     port = int(os.getenv("SMTP_PORT", "587"))
     user = os.getenv("SMTP_USER", "") or ""
     pwd = os.getenv("SMTP_PASSWORD", "") or os.getenv("SMTP_PASS", "") or ""
-    from_email = os.getenv("FROM_EMAIL", user or "no-reply@transinfo.ge")
+    from_email = os.getenv("FROM_EMAIL", user or "noreply@transinfo.ge")
     use_tls = _bool("SMTP_USE_TLS", True)
     use_ssl = _bool("SMTP_USE_SSL", False)
     debug = 1 if _bool("SMTP_DEBUG", False) else 0
