@@ -1,165 +1,221 @@
-diff --git a/frontend/src/app/globals.css b/frontend/src/app/globals.css
-index add4692c6ab390b7bc86395608c3031b798ad2df..cf9ff8b38d9a8a7edf6f44d8e64330c924eeca06 100644
---- a/frontend/src/app/globals.css
-+++ b/frontend/src/app/globals.css
-@@ -1182,55 +1182,155 @@ html[data-booting] body> :not(#boot-loader) {
-     height: calc(100dvh - 52px - 64px);
-     /* header ~52 + composer ~64 */
-     overflow-y: auto;
-     -webkit-overflow-scrolling: touch;
-   }
+diff --git a/frontend/src/app/profile/[id]/page.js b/frontend/src/app/profile/[id]/page.js
+index b95a8a59f283b7ded1d3065d3681824c7f6d2ad7..1b6cd22f7e79c393f2b31a0edde7d72d5782634e 100644
+--- a/frontend/src/app/profile/[id]/page.js
++++ b/frontend/src/app/profile/[id]/page.js
+@@ -66,54 +66,55 @@ function YourReviewCard({ review }) {
+         {ts && (
+           <>
+             <span style={{ opacity: 0.5 }}>•</span>
+             <span style={{ color: "#b0bec5", fontWeight: 500 }}>{ts}</span>
+           </>
+         )}
+       </div>
+       {review?.comment ? (
+         <div
+           style={{
+             marginTop: 6,
+             color: "#b0bec5",
+             fontSize: 14,
+             lineHeight: 1.3,
+           }}
+         >
+           {review.comment}
+         </div>
+       ) : null}
+     </div>
+   );
+ }
  
-   /* Липкие шапка и composer */
-   .chat-root .chat-header {
-     position: sticky;
-     top: env(safe-area-inset-top);
-     z-index: 20;
-     background-color: rgba(14, 27, 42, 0.85) !important;
-     backdrop-filter: blur(8px);
-   }
+ export default function OtherUserProfile() {
+   const { t } = useLang?.() || { t: (_k, f) => f };
+-  const { resolvedTheme } = useTheme();
+-  const isLightTheme = resolvedTheme === "light";
+-  const reviewTitleColor = isLightTheme ? "#0f1b2a" : "#e3f2fd";
+-  const reviewDotColor = isLightTheme ? "#0284c7" : "#72ebff";
++  const { resolvedTheme } = useTheme();
++  const isLightTheme = resolvedTheme === "light";
++  const reviewTitleColor = isLightTheme ? "#0f1b2a" : "#e3f2fd";
++  const reviewDotColor = isLightTheme ? "#0284c7" : "#72ebff";
++  const reviewHeadingColor = isLightTheme ? "#0f3b66" : "#43c8ff";
+   const params = useParams();
+   const id = params.id;
+   const cleanId = Array.isArray(id) ? id[0] : id;
+   const numericId = cleanId.replace(/^\[|\]$/g, "");
+   const { user: currentUser } = useUser();
+   const [user, setUser] = useState(null);
+   const [loading, setLoading] = useState(true);
+   const [yourReview, setYourReview] = useState(null);
+   const [reviewLoading, setReviewLoading] = useState(false);
+   const [reviewReloadKey, setReviewReloadKey] = useState(0);
+   const isMobile = useIsMobile();
  
-   .chat-root .composer {
-     position: sticky;
-     bottom: env(safe-area-inset-bottom);
-     z-index: 20;
-     background-color: rgba(14, 27, 42, 0.92) !important;
-     backdrop-filter: blur(8px);
-     padding-bottom: calc(12px + env(safe-area-inset-bottom));
-   }
+   const { openMessenger } = useMessenger
+     ? useMessenger()
+     : { openMessenger: null };
  
-   /* Подавляем случайные белые переопределения */
--  .chat-root .bg-white,
--  .chat-root [class*="bg-white"] {
--    background-color: transparent !important;
--  }
--}
-+  .chat-root .bg-white,
-+  .chat-root [class*="bg-white"] {
-+    background-color: transparent !important;
-+  }
-+}
-+
-+/* --- Chat edit banner (WhatsApp/Viber style) --- */
-+.chat-edit-banner {
-+  display: flex;
-+  align-items: flex-start;
-+  gap: 12px;
-+  padding: 10px 12px;
-+  margin-bottom: 8px;
-+  border-radius: 14px;
-+  background: var(--chat-menu-bg);
-+  border: 1px solid var(--chat-menu-border);
-+  color: var(--chat-menu-fg);
-+  position: relative;
-+  overflow: hidden;
-+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.12);
-+}
-+
-+:root[data-theme="light"] .chat-edit-banner {
-+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
-+}
-+
-+.chat-edit-banner::before {
-+  content: "";
-+  position: absolute;
-+  inset: 0;
-+  width: 4px;
-+  background: var(--chat-bubble-self-accent);
-+  border-radius: 12px 0 0 12px;
-+}
-+
-+.chat-edit-banner__body {
-+  display: flex;
-+  flex-direction: column;
-+  gap: 4px;
-+  flex: 1;
-+  min-width: 0;
-+}
-+
-+.chat-edit-banner__label {
-+  display: inline-flex;
-+  align-items: center;
-+  gap: 6px;
-+  font-weight: 700;
-+  font-size: 12px;
-+  letter-spacing: 0.04em;
-+  text-transform: uppercase;
-+  color: var(--chat-bubble-self-accent);
-+}
-+
-+.chat-edit-banner__label svg {
-+  font-size: 13px;
-+}
-+
-+.chat-edit-banner__text {
-+  color: var(--chat-menu-fg);
-+  opacity: 0.9;
-+  font-size: 14px;
-+  line-height: 1.35;
-+  word-break: break-word;
-+  display: -webkit-box;
-+  -webkit-line-clamp: 2;
-+  -webkit-box-orient: vertical;
-+  overflow: hidden;
-+}
-+
-+.chat-edit-banner__cancel {
-+  background: transparent;
-+  border: none;
-+  color: var(--chat-menu-fg);
-+  opacity: 0.8;
-+  cursor: pointer;
-+  display: inline-flex;
-+  align-items: center;
-+  justify-content: center;
-+  width: 32px;
-+  height: 32px;
-+  border-radius: 50%;
-+  transition: background 120ms ease, opacity 120ms ease;
-+}
-+
-+.chat-edit-banner__cancel:hover {
-+  background: var(--chat-menu-active-bg);
-+  opacity: 1;
-+}
-+
-+.msg-container--editing {
-+  scroll-margin: 96px;
-+}
-+
-+.msg-bubble--editing {
-+  box-shadow: 0 0 0 2px var(--chat-bubble-self-accent),
-+    0 8px 22px rgba(0, 0, 0, 0.18);
-+  border-color: var(--chat-bubble-self-accent) !important;
-+  transform: translateY(-1px);
-+}
-+
-+:root[data-theme="light"] .msg-bubble--editing {
-+  box-shadow: 0 0 0 2px var(--chat-bubble-self-accent),
-+    0 12px 26px rgba(15, 23, 42, 0.12);
-+}
- 
- /* --- Login mobile overrides --- */
- @media (max-width: 480px) {
-   .login-form-root {
-     max-width: 100%;
-     margin: 0;
-     border-radius: 18px 18px 0 0;
-     padding: 20px 16px 16px;
-     box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.45);
-   }
- 
-   /* --- Auth modal mobile full-screen --- */
-   @media (max-width: 480px) {
-     .auth-modal__inner {
-       width: 100%;
-       max-width: none;
-       height: 100dvh;
-       max-height: 100dvh;
-       border-radius: 18px 18px 0 0;
-       margin: 0;
+   useEffect(() => {
+     function profileCardChatListener() {
+       handleChatClick();
      }
-   }
- 
- 
-   .login-form-title {
+     window.addEventListener("profileCardChatClick", profileCardChatListener);
+     return () => {
+       window.removeEventListener(
+         "profileCardChatClick",
+         profileCardChatListener
+@@ -206,68 +207,69 @@ export default function OtherUserProfile() {
+         }}
+       >
+         <div style={{ flex: 1 }}>
+           <ProfileCard user={user} readOnly={!isOwnProfile} setUser={setUser} />
+           {!isOwnProfile &&
+             (reviewLoading ? (
+               <div>{t("reviews.checking", "Проверка отзыва...")}</div>
+             ) : yourReview ? (
+               <YourReviewCard review={yourReview} />
+             ) : (
+               <section
+                 style={{
+                   marginTop: 18,
+                   paddingTop: 16,
+                   borderTop: "1px solid #193158",
+                 }}
+               >
+                 <div
+                   style={{
+                     display: "flex",
+                     alignItems: "center",
+                     justifyContent: "space-between",
+                     marginBottom: 10,
+                   }}
+                 >
+-                  <h3 style={{ fontWeight: 700, color: "#43c8ff" }}>
+-                    {t("reviews.rateUser", "Оценить пользователя")}
+-                  </h3>
++                  <h3 style={{ fontWeight: 700, color: reviewHeadingColor }}>
++                    {t("reviews.rateUser", "Оценить пользователя")}
++                  </h3>
+                   <span style={{ fontSize: 12, opacity: 0.7 }}>
+                     {t(
+                       "reviews.scoreAffects",
+                       "Ваша оценка влияет на общий рейтинг"
+                     )}
+                   </span>
+                 </div>
+-                <LeaveReview
+-                  targetUserId={user.id}
+-                  onReviewSent={(saved) => {
+-                    setYourReview(saved);
+-                    setReviewReloadKey((k) => k + 1);
+-                  }}
+-                  className="max-w-3xl"
+-                />
++                <LeaveReview
++                  targetUserId={user.id}
++                  onReviewSent={(saved) => {
++                    setYourReview(saved);
++                    setReviewReloadKey((k) => k + 1);
++                  }}
++                  className="max-w-3xl"
++                  isLightTheme={isLightTheme}
++                />
+               </section>
+             ))}
+           {/* Отзывы — как в собственном профиле */}
+           <section
+             style={{
+               marginTop: 16,
+               paddingTop: 12,
+               borderTop: "1px solid #233a5a",
+             }}
+           >
+             <div
+               style={{
+                 display: "flex",
+                 alignItems: "center",
+                 gap: 10,
+                 marginBottom: 14,
+               }}
+             >
+               <span
+                 style={{
+                   width: 10,
+                   height: 10,
+                   borderRadius: 999,
+                   background: reviewDotColor,
+                 }}
+@@ -293,64 +295,65 @@ export default function OtherUserProfile() {
+   // --- Мобильная версия ---
+   return (
+     <div className="profile-page-root">
+       <ProfileCard user={user} readOnly={!isOwnProfile} />
+       {!isOwnProfile &&
+         (reviewLoading ? (
+           <div>{t("reviews.checking", "Проверка отзыва...")}</div>
+         ) : yourReview ? (
+           <YourReviewCard review={yourReview} />
+         ) : (
+           <section
+             style={{
+               marginTop: 14,
+               paddingTop: 12,
+               borderTop: "1px solid #193158",
+             }}
+           >
+             <div
+               style={{
+                 display: "flex",
+                 alignItems: "center",
+                 justifyContent: "space-between",
+                 marginBottom: 8,
+               }}
+             >
+-              <h3 style={{ fontWeight: 700, color: "#43c8ff" }}>
+-                {t("reviews.rateUser", "Оценить пользователя")}
+-              </h3>
++              <h3 style={{ fontWeight: 700, color: reviewHeadingColor }}>
++                {t("reviews.rateUser", "Оценить пользователя")}
++              </h3>
+               <span style={{ fontSize: 12, opacity: 0.7 }}>
+                 {t("reviews.scoreVisible", "Оценка видна другим")}
+               </span>
+             </div>
+-            <LeaveReview
+-              targetUserId={user.id}
+-              onReviewSent={(saved) => {
+-                setYourReview(saved);
+-                setReviewReloadKey((k) => k + 1);
+-              }}
+-            />
++            <LeaveReview
++              targetUserId={user.id}
++              onReviewSent={(saved) => {
++                setYourReview(saved);
++                setReviewReloadKey((k) => k + 1);
++              }}
++              isLightTheme={isLightTheme}
++            />
+           </section>
+         ))}
+       {/* Отзывы — как в собственном профиле */}
+       <section
+         style={{
+           marginTop: 16,
+           paddingTop: 12,
+           borderTop: "1px solid #233a5a",
+         }}
+       >
+         <div
+           style={{
+             display: "flex",
+             alignItems: "center",
+             gap: 10,
+             marginBottom: 14,
+           }}
+         >
+           <span
+             style={{
+               width: 10,
+               height: 10,
+               borderRadius: 999,
+               background: reviewDotColor,
+             }}

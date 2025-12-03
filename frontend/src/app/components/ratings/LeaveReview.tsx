@@ -10,13 +10,15 @@ type Props = {
     /** Коллбек после успешной отправки — чтобы показать «ваш отзыв» */
     onReviewSent?: (saved: any) => void;
     className?: string;
+    /** Текущая тема, нужна для подбора цветов кнопки */
+    isLightTheme?: boolean;
 };
 
 /**
  * Оставить отзыв: 4 метрики (0..10) + комментарий
  * Визуально и по стилю вписывается в ваши карточки профиля.
  */
-export default function LeaveReview({ userId, targetUserId, onReviewSent, className }: Props) {
+export default function LeaveReview({ userId, targetUserId, onReviewSent, className, isLightTheme }: Props) {
     const { t } = useLang();
     const target = userId ?? targetUserId;
     const [stars10, setStars10] = useState<number>(10);
@@ -115,8 +117,8 @@ export default function LeaveReview({ userId, targetUserId, onReviewSent, classN
                     disabled={pending}
                     style={{
                         padding: "10px 18px",
-                        background: "#43c8ff",
-                        color: "#182337",
+                        background: isLightTheme ? "#0f3b66" : "#43c8ff",
+                        color: isLightTheme ? "#f2f6ff" : "#182337",
                         border: 0,
                         borderRadius: 10,
                         fontWeight: 700,

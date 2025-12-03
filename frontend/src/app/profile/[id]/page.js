@@ -92,6 +92,7 @@ export default function OtherUserProfile() {
   const isLightTheme = resolvedTheme === "light";
   const reviewTitleColor = isLightTheme ? "#0f1b2a" : "#e3f2fd";
   const reviewDotColor = isLightTheme ? "#0284c7" : "#72ebff";
+  const reviewHeadingColor = isLightTheme ? "#0f3b66" : "#43c8ff";
   const params = useParams();
   const id = params.id;
   const cleanId = Array.isArray(id) ? id[0] : id;
@@ -228,7 +229,7 @@ export default function OtherUserProfile() {
                     marginBottom: 10,
                   }}
                 >
-                  <h3 style={{ fontWeight: 700, color: "#43c8ff" }}>
+                  <h3 style={{ fontWeight: 700, color: reviewHeadingColor }}>
                     {t("reviews.rateUser", "Оценить пользователя")}
                   </h3>
                   <span style={{ fontSize: 12, opacity: 0.7 }}>
@@ -245,6 +246,7 @@ export default function OtherUserProfile() {
                     setReviewReloadKey((k) => k + 1);
                   }}
                   className="max-w-3xl"
+                  isLightTheme={isLightTheme}
                 />
               </section>
             ))}
@@ -315,7 +317,7 @@ export default function OtherUserProfile() {
                 marginBottom: 8,
               }}
             >
-              <h3 style={{ fontWeight: 700, color: "#43c8ff" }}>
+              <h3 style={{ fontWeight: 700, color: reviewHeadingColor }}>
                 {t("reviews.rateUser", "Оценить пользователя")}
               </h3>
               <span style={{ fontSize: 12, opacity: 0.7 }}>
@@ -328,6 +330,7 @@ export default function OtherUserProfile() {
                 setYourReview(saved);
                 setReviewReloadKey((k) => k + 1);
               }}
+              isLightTheme={isLightTheme}
             />
           </section>
         ))}
