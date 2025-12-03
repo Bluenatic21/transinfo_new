@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useUser } from "../UserContext";
 import { useLang } from "../i18n/LangProvider";
 import { api, abs } from "@/config/env";
@@ -36,6 +36,8 @@ export default function EditProfileForm({ user, onClose, onSave }) {
 
     const role = user.role || ""; // нужно для логики person_type
 
+    const formRef = useRef(null);
+
     const cardStyle = {
         background: "var(--bg-card)",
         color: "var(--text-primary)",
@@ -63,6 +65,12 @@ export default function EditProfileForm({ user, onClose, onSave }) {
         fontSize: 16,
         width: "100%",
     };
+
+    useEffect(() => {
+        if (formRef.current) {
+            formRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+    }, []);
 
     const handleChange = e => {
         setForm(f => ({ ...f, [e.target.name]: e.target.value }));
@@ -129,6 +137,7 @@ export default function EditProfileForm({ user, onClose, onSave }) {
 
     return (
         <form className="editProfileForm"
+            ref={formRef}
             onSubmit={handleSubmit}
             style={cardStyle}
         >
@@ -333,6 +342,14 @@ export default function EditProfileForm({ user, onClose, onSave }) {
   .editProfileForm textarea,
   .editProfileForm button {
     font-family: inherit;
+  }
+
+  .editProfileForm .profile-card-row {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+    width: 100%;
   }
 
   /* Сбросим возможные глобальные стили у контейнера аватара на всех брейкпоинтах */
