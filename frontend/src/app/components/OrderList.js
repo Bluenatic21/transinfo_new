@@ -1103,6 +1103,35 @@ function OrderCard({
         iconShadow: "var(--order-card-icon-shadow, 0 1px 8px #43c8ff17)",
     };
 
+    const commentPalette = isLight
+        ? {
+            popoverBg: "#ffffff",
+            popoverBorder: "#d4e4ff",
+            popoverShadow: "0 12px 32px rgba(15, 23, 42, 0.12)",
+            threadBg: "#f4f7fd",
+            threadBorder: "#d9e5f5",
+            commentText: "#0f172a",
+            meta: "#475569",
+            textareaBg: "#ffffff",
+            textareaBorder: "#cbd5e1",
+            textareaColor: "#0f172a",
+            badgeRing: "#e2e8f0",
+        }
+        : {
+            popoverBg: "#0f1f3a",
+            popoverBorder: "#203a63",
+            popoverShadow: "0 10px 30px #00000055",
+            threadBg: "#11213b",
+            threadBorder: "#24446e",
+            commentText: "#cfe8ff",
+            meta: "#9ec3ff",
+            textareaBg: "#132445",
+            textareaBorder: "#24446e",
+            textareaColor: "#eaf5ff",
+            badgeRing: "#0e1b2c",
+        };
+
+
     // На светлой теме фон панели остаётся тёмным, поэтому фиксируем светлые цвета
     // имени/контактного лица, чтобы текст не "пропадал" на фоне.
     const infoPrimaryColor = "#ffffff";
@@ -2002,7 +2031,7 @@ function OrderCard({
                                             display: "flex",
                                             alignItems: "center",
                                             justifyContent: "center",
-                                            boxShadow: "0 0 0 2px #0e1b2c",
+                                            boxShadow: `0 0 0 2px ${commentPalette.badgeRing}`,
                                         }}
                                     >
                                         {commentsMap[order.id].length}
@@ -2018,12 +2047,13 @@ function OrderCard({
                                         top: "110%",
                                         width: 520,
                                         maxWidth: "min(92vw, 520px)",
-                                        background: "#0f1f3a",
-                                        border: "1px solid #203a63",
+                                        background: commentPalette.popoverBg,
+                                        border: `1px solid ${commentPalette.popoverBorder}`,
                                         borderRadius: 12,
                                         padding: 12,
-                                        boxShadow: "0 10px 30px #00000055",
+                                        boxShadow: commentPalette.popoverShadow,
                                         zIndex: 20,
+                                        color: commentPalette.commentText,
                                     }}
                                     onMouseDown={(e) => e.stopPropagation()}
                                 >
@@ -2033,8 +2063,8 @@ function OrderCard({
                                         style={{
                                             maxHeight: 220,
                                             overflowY: "auto",
-                                            background: "#11213b",
-                                            border: "1px solid #24446e",
+                                            background: commentPalette.threadBg,
+                                            border: `1px solid ${commentPalette.threadBorder}`,
                                             borderRadius: 8,
                                             padding: 8,
                                             marginBottom: 8,
@@ -2050,7 +2080,7 @@ function OrderCard({
                                                         display: "flex",
                                                         gap: 10,
                                                         padding: "6px 4px",
-                                                        borderBottom: "1px solid #1c2f4f",
+                                                        borderBottom: `1px solid ${commentPalette.threadBorder}`,
                                                     }}
                                                 >
                                                     <img
@@ -2058,7 +2088,7 @@ function OrderCard({
                                                         alt="av"
                                                         width={28}
                                                         height={28}
-                                                        style={{ borderRadius: "50%", border: "1px solid #203a63", objectFit: "cover" }}
+                                                        style={{ borderRadius: "50%", border: `1px solid ${commentPalette.threadBorder}`, objectFit: "cover" }}
                                                         onError={(e) => (e.currentTarget.src = "/default-avatar.png")}
                                                     />
                                                     <div style={{ flex: 1, minWidth: 0 }}>
@@ -2071,8 +2101,8 @@ function OrderCard({
                                                                 gap: 10,
                                                             }}
                                                         >
-                                                            <b style={{ color: "#e3f2fd", fontSize: 13 }}>{c.author_name || t("comments.member", "Участник")}</b>
-                                                            <span style={{ color: cardColors.label, fontSize: 11 }}>
+                                                            <b style={{ color: commentPalette.commentText, fontSize: 13 }}>{c.author_name || t("comments.member", "Участник")}</b>
+                                                            <span style={{ color: commentPalette.meta, fontSize: 11 }}>
                                                                 {(() => {
                                                                     const d = new Date(c.created_at);
                                                                     return isNaN(d.getTime())
@@ -2081,7 +2111,7 @@ function OrderCard({
                                                                 })()}
                                                             </span>
                                                         </div>
-                                                        <div style={{ color: "#cfe8ff", whiteSpace: "pre-wrap", fontSize: 14 }}>{c.content}</div>
+                                                        <div style={{ color: commentPalette.commentText, whiteSpace: "pre-wrap", fontSize: 14 }}>{c.content}</div>
                                                     </div>
                                                 </div>
                                             ))
@@ -2095,9 +2125,9 @@ function OrderCard({
                                         style={{
                                             width: "100%",
                                             borderRadius: 8,
-                                            border: "1px solid #24446e",
-                                            background: "#132445",
-                                            color: "#eaf5ff",
+                                            border: `1px solid ${commentPalette.textareaBorder}`,
+                                            background: commentPalette.textareaBg,
+                                            color: commentPalette.textareaColor,
                                             padding: 8,
                                         }}
                                     />
@@ -2106,7 +2136,7 @@ function OrderCard({
                                             display: "flex",
                                             alignItems: "center",
                                             gap: 6,
-                                            color: "#9ec3ff",
+                                            color: commentPalette.meta,
                                             fontSize: 12,
                                             marginTop: 6,
                                             marginBottom: 4,
@@ -2121,11 +2151,11 @@ function OrderCard({
                                                 height: 16,
                                                 minWidth: 16,
                                                 borderRadius: "50%",
-                                                background: "#193158",
-                                                color: "#9ec3ff",
+                                                background: isLight ? "#e6f0ff" : "#193158",
+                                                color: isLight ? "#0f172a" : "#9ec3ff",
                                                 fontWeight: 900,
                                                 fontSize: 11,
-                                                border: "1px solid #2b4a77",
+                                                border: `1px solid ${commentPalette.threadBorder}`,
                                             }}
                                         >
                                             i

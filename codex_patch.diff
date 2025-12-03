@@ -1,313 +1,277 @@
-diff --git a/frontend/src/app/components/MessengerContext.js b/frontend/src/app/components/MessengerContext.js
-index 7e9e33263c938a84f35510548f4e1af672434002..7f0c41a4a1d9162d62fde37c2f37e1705c6f4a57 100644
---- a/frontend/src/app/components/MessengerContext.js
-+++ b/frontend/src/app/components/MessengerContext.js
-@@ -1065,80 +1065,116 @@ export function MessengerProvider({ children }) {
-             return prev.map((m, i) =>
-               i === lastIdx ? { ...m, is_read: true } : m
-             );
-           });
-           setAllMessages((prev) => {
-             const arr = prev[data.chat_id] || [];
-             let lastIdx = -1;
-             for (let i = arr.length - 1; i >= 0; --i) {
-               if (arr[i].sender_id === getCurrentUser()?.id) {
-                 lastIdx = i;
-                 break;
-               }
-             }
-             if (lastIdx === -1) return prev;
-             return {
-               ...prev,
-               [data.chat_id]: arr.map((m, i) =>
-                 i === lastIdx ? { ...m, is_read: true } : m
-               ),
-             };
-           });
-           return;
-         }
+diff --git a/frontend/src/app/components/OrderList.js b/frontend/src/app/components/OrderList.js
+index 687520bb03dbb4e3c2625cc905ecab200d6a6f25..64edecd1a7f3e8217e47f7ed825c696b8dbca49e 100644
+--- a/frontend/src/app/components/OrderList.js
++++ b/frontend/src/app/components/OrderList.js
+@@ -1081,50 +1081,78 @@ function OrderCard({
+         [order.created_at],
+     );
+     const titleString = useMemo(() => safeFormatDate(order.created_at, "ru-RU"), [order.created_at]);
  
-         // реакции
--        if (
--          data?.event === "reaction_update" &&
--          data.message_id &&
--          Array.isArray(data.reactions)
--        ) {
-+        if (
-+          data?.event === "reaction_update" &&
-+          data.message_id &&
-+          Array.isArray(data.reactions)
-+        ) {
-           setMessages((prev) =>
-             prev.map((msg) =>
-               msg.id === data.message_id
-                 ? { ...msg, reactions: data.reactions }
-                 : msg
-             )
-           );
-           setAllMessages((prev) => {
-             const arr = prev[data.chat_id] || [];
-             return {
-               ...prev,
-               [data.chat_id]: arr.map((msg) =>
-                 msg.id === data.message_id
-                   ? { ...msg, reactions: data.reactions }
-                   : msg
-               ),
-             };
-           });
--          return;
--        }
--
--        // Эфемерные action-события
--        try {
--          const action = data?.action;
--          const cid = data?.chat_id || data?.data?.chat_id;
-+          return;
-+        }
-+
-+        if (data?.event === "message.updated" && data?.message) {
-+          const incoming = data.message;
-+          const target = data.chat_id || incoming.chat_id;
-+
-+          setMessages((prev) => {
-+            if (chatIdRef.current !== target) return prev;
-+            return prev.map((msg) =>
-+              msg.id === incoming.id ||
-+                (msg.client_id && incoming.client_id &&
-+                  msg.client_id === incoming.client_id)
-+                ? { ...msg, ...incoming, edited: true }
-+                : msg
-+            );
-+          });
-+
-+          setAllMessages((prev) => {
-+            if (!target) return prev;
-+            const arr = prev[target] || [];
-+            const idx = arr.findIndex(
-+              (m) =>
-+                m.id === incoming.id ||
-+                (m.client_id && incoming.client_id &&
-+                  m.client_id === incoming.client_id)
-+            );
-+            const next = arr.slice();
-+            if (idx === -1) next.push({ ...incoming, edited: true });
-+            else next[idx] = { ...next[idx], ...incoming, edited: true };
-+            return { ...prev, [target]: next };
-+          });
-+
-+          try {
-+            ensureChatInSidebar(target, { lastMessage: incoming });
-+          } catch {}
-+          return;
-+        }
-+
-+        // Эфемерные action-события
-+        try {
-+          const action = data?.action;
-+          const cid = data?.chat_id || data?.data?.chat_id;
+     const cardColors = {
+         bg: "var(--order-card-bg, rgba(23, 38, 60, 0.98))",
+         text: "var(--order-card-text, #e3f2fd)",
+         shadow: "var(--order-card-shadow, 0 2px 24px #001844cc)",
+         shadowExpanded: "var(--order-card-shadow-expanded, 0 4px 32px #43c8ff55, 0 2px 24px #001844cc)",
+         border: "var(--order-card-border, #1e88e5)",
+         borderActive: "var(--order-card-border-active, #43c8ff)",
+         sectionBg: "var(--order-card-section-bg, rgba(28, 37, 52, 0.92))",
+         sectionBorder: "var(--order-card-section-border, #193158)",
+         heading: "var(--order-card-heading, #43c8ff)",
+         label: "var(--order-card-label, #8ecae6)",
+         chipBg: "var(--order-card-chip-bg, #193158bb)",
+         chipFg: "var(--order-card-chip-fg, #cfe9ff)",
+         chipShadow: "var(--order-card-chip-shadow, 0 2px 8px #23416711)",
+         routeBg: "var(--order-card-route-bg, linear-gradient(90deg, #183969 38%, #253759 100%))",
+         routeFg: "var(--order-card-route-fg, #ffffff)",
+         iconBg: "var(--order-card-icon-bg, #162239)",
+         iconFg: "var(--order-card-icon-fg, #43c8ff)",
+         iconShadow: "var(--order-card-icon-shadow, 0 1px 8px #43c8ff17)",
+     };
  
-           if (action === "message.new" && data?.data) {
-             const inc = data.data;
-             const target = cid || inc.chat_id;
++    const commentPalette = isLight
++        ? {
++              popoverBg: "#ffffff",
++              popoverBorder: "#d4e4ff",
++              popoverShadow: "0 12px 32px rgba(15, 23, 42, 0.12)",
++              threadBg: "#f4f7fd",
++              threadBorder: "#d9e5f5",
++              commentText: "#0f172a",
++              meta: "#475569",
++              textareaBg: "#ffffff",
++              textareaBorder: "#cbd5e1",
++              textareaColor: "#0f172a",
++              badgeRing: "#e2e8f0",
++          }
++        : {
++              popoverBg: "#0f1f3a",
++              popoverBorder: "#203a63",
++              popoverShadow: "0 10px 30px #00000055",
++              threadBg: "#11213b",
++              threadBorder: "#24446e",
++              commentText: "#cfe8ff",
++              meta: "#9ec3ff",
++              textareaBg: "#132445",
++              textareaBorder: "#24446e",
++              textareaColor: "#eaf5ff",
++              badgeRing: "#0e1b2c",
++          };
++
+     // На светлой теме фон панели остаётся тёмным, поэтому фиксируем светлые цвета
+     // имени/контактного лица, чтобы текст не "пропадал" на фоне.
+     const infoPrimaryColor = "#ffffff";
+     const infoSecondaryColor = "#e5edff";
  
-             if (chatIdRef.current === target) {
-               setMessages((prev) => {
-                 if (prev.some((m) => m.id === inc.id)) return prev;
-                 const i = prev.findIndex(
-                   (m) =>
-                     m.client_id &&
-                     inc.client_id &&
-                     m.client_id === inc.client_id
-                 );
-                 const next = prev.slice();
-                 if (i !== -1) next[i] = inc;
-                 else next.push(inc);
-                 return next.slice().sort(_cmpMsgAsc);
-               });
-               setAllMessages((prev) => {
-                 const arr = prev[target] || [];
-                 if (arr.some((m) => m.id === inc.id)) return prev;
-                 const j = arr.findIndex(
-                   (m) =>
-                     m.client_id &&
-@@ -1596,56 +1632,101 @@ export function MessengerProvider({ children }) {
-         });
-         // сразу дописываем превью последнего сообщения и корректного peer в карточку
-         try {
-           ensureChatInSidebar(chatId, { peer: peerUser, lastMessage: data });
-         } catch {}
  
-         fetchChatList();
-         window.dispatchEvent(new CustomEvent("inbox_update"));
-       } else {
-         // пометим как неотправленное
-         setMessages((prev) =>
-           prev.map((m) =>
-             m.client_id === client_id ? { ...m, _failed: true } : m
-           )
-         );
-         setAllMessages((prev) => {
-           const arr = prev[chatId] || [];
-           return {
-             ...prev,
-             [chatId]: arr.map((m) =>
-               m.client_id === client_id ? { ...m, _failed: true } : m
-             ),
-           };
-         });
-       }
--    },
--    [chatId, authFetchWithRefresh, fetchChatList, ensureChatInSidebar, peerUser]
--  );
--  // --- ПУБЛИЧНЫЙ API: отправка карточки звонка (в конкретный чат) ---
--  const sendCallMessage = useCallback(
--    async (data = {}, targetChatId = null) => {
-+    },
-+    [chatId, authFetchWithRefresh, fetchChatList, ensureChatInSidebar, peerUser]
-+  );
-+
-+  const editMessage = useCallback(
-+    async (messageId, content) => {
-+      if (!chatId || !messageId) return null;
-+      const payload = { content };
-+      const res = await authFetchWithRefresh(
-+        api(`/chat/${chatId}/messages/${messageId}`),
-+        {
-+          method: "PUT",
-+          headers: { "Content-Type": "application/json" },
-+          body: JSON.stringify(payload),
-+        }
-+      );
-+
-+      if (!res.ok) throw new Error("edit_failed");
-+
-+      const data = await res.json();
-+      const patched = {
-+        ...data,
-+        edited: true,
-+        edited_at: data.edited_at || new Date().toISOString(),
-+      };
-+
-+      setMessages((prev) => {
-+        if (chatIdRef.current !== chatId) return prev;
-+        return prev.map((m) => (m.id === patched.id ? { ...m, ...patched } : m));
-+      });
-+
-+      setAllMessages((prev) => {
-+        const arr = prev[chatId] || [];
-+        const idx = arr.findIndex((m) => m.id === patched.id);
-+        const next = arr.slice();
-+        if (idx === -1) next.push(patched);
-+        else next[idx] = { ...next[idx], ...patched };
-+        return { ...prev, [chatId]: next };
-+      });
-+
-+      try {
-+        ensureChatInSidebar(chatId, { peer: peerUser, lastMessage: patched });
-+      } catch {}
-+
-+      return patched;
-+    },
-+    [authFetchWithRefresh, chatId, ensureChatInSidebar, peerUser]
-+  );
-+  // --- ПУБЛИЧНЫЙ API: отправка карточки звонка (в конкретный чат) ---
-+  const sendCallMessage = useCallback(
-+    async (data = {}, targetChatId = null) => {
-       const id = targetChatId || chatIdRef.current || chatId;
-       if (!id) return;
+     const iconBtnStyle = {
+         display: "flex",
+         alignItems: "center",
+         justifyContent: "center",
+         width: 32,
+         height: 32,
+         borderRadius: "45%",
+         background: cardColors.iconBg,
+         color: cardColors.iconFg,
+         border: "none",
+         fontSize: 15,
+         cursor: "pointer",
+         boxShadow: cardColors.iconShadow,
+         transition: "background .16s, color .16s, box-shadow .16s",
+     };
  
-       // нормализуем полезную нагрузку карточки
-       const safe = {
-         status: data.status || data.state || "ended", // ended|missed|rejected|canceled
-         direction: data.direction || "outgoing", // incoming|outgoing
-         duration:
-           (typeof data.duration === "number" ? data.duration : data.seconds) ||
-           null,
-       };
-       const payload = JSON.stringify(safe);
+     function toLocationArray(val) {
+         if (Array.isArray(val)) return val.filter(Boolean);
+         if (typeof val === "string" && val.trim()) {
+@@ -1980,174 +2008,175 @@ function OrderCard({
+                                     const open = commentOpenId === order.id;
+                                     setCommentOpenId(open ? null : order.id);
+                                     if (!open) loadInternalComments(order.id);
+                                 }}
+                                 style={{ ...iconBtnStyle, position: "relative" }}
+                                 aria-label={t("comments.internalTooltip", "Внутренний комментарий")}
+                                 ref={commentBtnRef}
+                             >
+                                 <FaRegCommentDots />
+                                 {(commentsMap[order.id]?.length || 0) > 0 && (
+                                     <span
+                                         style={{
+                                             position: "absolute",
+                                             top: -4,
+                                             right: -4,
+                                             minWidth: 18,
+                                             height: 18,
+                                             borderRadius: 9,
+                                             background: "#43c8ff",
+                                             color: "#0f1f2b",
+                                             fontSize: 11,
+                                             fontWeight: 800,
+                                             display: "flex",
+                                             alignItems: "center",
+                                             justifyContent: "center",
+-                                            boxShadow: "0 0 0 2px #0e1b2c",
++                                            boxShadow: `0 0 0 2px ${commentPalette.badgeRing}`,
+                                         }}
+                                     >
+                                         {commentsMap[order.id].length}
+                                     </span>
+                                 )}
+                             </button>
+                             {commentOpenId === order.id && (
+                                 <div
+                                     ref={commentPopoverRef}
+                                     style={{
+                                         position: "absolute",
+                                         right: 0,
+                                         top: "110%",
+                                         width: 520,
+                                         maxWidth: "min(92vw, 520px)",
+-                                        background: "#0f1f3a",
+-                                        border: "1px solid #203a63",
++                                        background: commentPalette.popoverBg,
++                                        border: `1px solid ${commentPalette.popoverBorder}`,
+                                         borderRadius: 12,
+                                         padding: 12,
+-                                        boxShadow: "0 10px 30px #00000055",
++                                        boxShadow: commentPalette.popoverShadow,
+                                         zIndex: 20,
++                                        color: commentPalette.commentText,
+                                     }}
+                                     onMouseDown={(e) => e.stopPropagation()}
+                                 >
  
-       // --- оптимистичное добавление в нужный чат ---
-       const client_id = `c${Date.now()}-${Math.random()
-         .toString(36)
-         .slice(2, 8)}`;
-       const me = getCurrentUser && getCurrentUser();
-       const _client_ts = Date.now();
-       const _client_seq = (optimisticSeqRef.current =
-         optimisticSeqRef.current + 1);
-       const optimistic = {
-         id: `tmp:${client_id}`,
-         client_id,
-         sender_id: me?.id,
-@@ -1845,60 +1926,61 @@ export function MessengerProvider({ children }) {
-         try {
-           wsRef.current.close();
-         } catch {}
-         wsRef.current = null;
-       }
-       setMessages([]);
-       setPeerUser(null);
-       setPendingAttachment(null);
-     }
-   }, []);
- 
-   // --- selectors for ephemeral state ---
-   const getSupportTyping = useCallback((id) => {
-     return !!supportTypingRef.current.get(id);
-   }, []);
-   const getSupportQueue = useCallback((id) => {
-     return supportQueueRef.current.get(id) || null;
-   }, []);
- 
-   return (
-     <MessengerContext.Provider
-       value={{
-         isOpen,
-         openMessenger,
-         closeMessenger,
--        hideMessengerUi,
--        markChatRead,
--        messages,
--        setMessages,
--        sendMessage,
--        sendCallMessage,
--        chatId,
--        setChatId,
--        peerUser,
--        setPeerUser,
-+        hideMessengerUi,
-+        markChatRead,
-+        messages,
-+        setMessages,
-+        sendMessage,
-+        editMessage,
-+        sendCallMessage,
-+        chatId,
-+        setChatId,
-+        peerUser,
-+        setPeerUser,
-         unread,
-         fetchUnreadCount,
-         chatList,
-         fetchChatList, // reload first page
-         fetchMoreChats, // load next page (append)
-         chatListEOF,
-         chatListLoading,
-         currentUser,
-         connectWS,
-         pendingAttachment,
-         setPendingAttachment,
-         allMessages,
-         setAllMessages,
-         notificationsSocket,
-         fetchMessages: fetchMessagesById,
-         fetchOlderMessages: fetchOlderMessagesById,
-         mutedGroups,
-         muteGroup,
-         unmuteGroup,
-         pinnedChats,
-         pinChat,
-         unpinChat,
-         // helpers
-         isSupportChat,
-         getChatById,
+                                     {/* Лента комментариев */}
+                                     <div
+                                         style={{
+                                             maxHeight: 220,
+                                             overflowY: "auto",
+-                                            background: "#11213b",
+-                                            border: "1px solid #24446e",
++                                            background: commentPalette.threadBg,
++                                            border: `1px solid ${commentPalette.threadBorder}`,
+                                             borderRadius: 8,
+                                             padding: 8,
+                                             marginBottom: 8,
+                                         }}
+                                     >
+                                         {(commentsMap[order.id]?.length || 0) === 0 ? (
+                                             <div style={{ color: cardColors.label, fontSize: 14 }}>{t("comments.none", "Пока нет комментариев")}</div>
+                                         ) : (
+                                             commentsMap[order.id].map((c) => (
+                                                 <div
+                                                     key={c.id}
+                                                     style={{
+                                                         display: "flex",
+                                                         gap: 10,
+                                                         padding: "6px 4px",
+-                                                        borderBottom: "1px solid #1c2f4f",
++                                                        borderBottom: `1px solid ${commentPalette.threadBorder}`,
+                                                     }}
+                                                 >
+                                                     <img
+                                                         src={c.author_avatar ? abs(c.author_avatar) : "/default-avatar.png"}
+                                                         alt="av"
+                                                         width={28}
+                                                         height={28}
+-                                                        style={{ borderRadius: "50%", border: "1px solid #203a63", objectFit: "cover" }}
++                                                        style={{ borderRadius: "50%", border: `1px solid ${commentPalette.threadBorder}`, objectFit: "cover" }}
+                                                         onError={(e) => (e.currentTarget.src = "/default-avatar.png")}
+                                                     />
+                                                     <div style={{ flex: 1, minWidth: 0 }}>
+                                                         <div
+                                                             style={{
+                                                                 display: "flex",
+                                                                 justifyContent: "space-between",
+                                                                 alignItems: "center",
+                                                                 marginBottom: 3,
+                                                                 gap: 10,
+                                                             }}
+                                                         >
+-                                                            <b style={{ color: "#e3f2fd", fontSize: 13 }}>{c.author_name || t("comments.member", "Участник")}</b>
+-                                                            <span style={{ color: cardColors.label, fontSize: 11 }}>
++                                                            <b style={{ color: commentPalette.commentText, fontSize: 13 }}>{c.author_name || t("comments.member", "Участник")}</b>
++                                                            <span style={{ color: commentPalette.meta, fontSize: 11 }}>
+                                                                 {(() => {
+                                                                     const d = new Date(c.created_at);
+                                                                     return isNaN(d.getTime())
+                                                                         ? ""
+                                                                         : d.toLocaleString("ru-RU", { day: "2-digit", month: "2-digit", year: "2-digit", hour: "2-digit", minute: "2-digit" });
+                                                                 })()}
+                                                             </span>
+                                                         </div>
+-                                                        <div style={{ color: "#cfe8ff", whiteSpace: "pre-wrap", fontSize: 14 }}>{c.content}</div>
++                                                        <div style={{ color: commentPalette.commentText, whiteSpace: "pre-wrap", fontSize: 14 }}>{c.content}</div>
+                                                     </div>
+                                                 </div>
+                                             ))
+                                         )}
+                                     </div>
+                                     <textarea
+                                         value={commentText}
+                                         onChange={(e) => setCommentText(e.target.value)}
+                                         rows={3}
+                                         placeholder={t("comments.placeholder.short", "Короткий комментарий…")}
+                                         style={{
+                                             width: "100%",
+                                             borderRadius: 8,
+-                                            border: "1px solid #24446e",
+-                                            background: "#132445",
+-                                            color: "#eaf5ff",
++                                            border: `1px solid ${commentPalette.textareaBorder}`,
++                                            background: commentPalette.textareaBg,
++                                            color: commentPalette.textareaColor,
+                                             padding: 8,
+                                         }}
+                                     />
+                                     <div
+                                         style={{
+                                             display: "flex",
+                                             alignItems: "center",
+                                             gap: 6,
+-                                            color: "#9ec3ff",
++                                            color: commentPalette.meta,
+                                             fontSize: 12,
+                                             marginTop: 6,
+                                             marginBottom: 4,
+                                         }}
+                                     >
+                                         <span
+                                             style={{
+                                                 display: "inline-flex",
+                                                 alignItems: "center",
+                                                 justifyContent: "center",
+                                                 width: 16,
+                                                 height: 16,
+                                                 minWidth: 16,
+                                                 borderRadius: "50%",
+-                                                background: "#193158",
+-                                                color: "#9ec3ff",
++                                                background: isLight ? "#e6f0ff" : "#193158",
++                                                color: isLight ? "#0f172a" : "#9ec3ff",
+                                                 fontWeight: 900,
+                                                 fontSize: 11,
+-                                                border: "1px solid #2b4a77",
++                                                border: `1px solid ${commentPalette.threadBorder}`,
+                                             }}
+                                         >
+                                             i
+                                         </span>
+                                         <span>{t("comments.internalVisibilityNote", "Эту заметку увидят только автор заявки и участники аккаунта экспедитора.")}</span>
+                                     </div>
+                                     <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 8 }}>
+                                         <button
+                                             onClick={() => saveInternalComment(order.id)}
+                                             disabled={!commentText.trim()}
+                                             style={{
+                                                 padding: "6px 12px",
+                                                 borderRadius: 8,
+                                                 border: "none",
+                                                 background: "#1e7ef7",
+                                                 color: "#fff",
+                                                 fontWeight: 700,
+                                                 cursor: "pointer",
+                                             }}
+                                         >
+                                             {t("common.save", "Сохранить")}
+                                         </button>
+                                         <span style={{ fontSize: 12, opacity: 0.75 }}>
+                                             {t("comments.savedCount", "Сохранено: {count}", { count: (commentsMap[order.id]?.length || 0) })}
+                                         </span>
