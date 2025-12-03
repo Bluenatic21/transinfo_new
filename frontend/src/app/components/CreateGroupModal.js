@@ -91,7 +91,7 @@ export default function CreateGroupModal({ onClose }) {
         rowSelected: isLight ? "var(--surface-soft)" : "#232c42",
         rowBorder: isLight ? "var(--border-subtle)" : "transparent",
         avatarBorder: isLight ? "var(--border-subtle)" : "#4b89da",
-        avatarBg: isLight ? "var(--control-bg)" : "#202c44",
+        avatarBg: isLight ? "var(--avatar-contrast-bg)" : "#202c44",
         subtitle: isLight ? "var(--text-secondary)" : "#7c8ca7",
         footerBg: isLight ? "var(--bg-card-soft)" : "#23385a",
         footerBorder: isLight ? "var(--border-subtle)" : "#264068",

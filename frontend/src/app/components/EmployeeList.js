@@ -41,7 +41,7 @@ export default function EmployeeList({
         cardBorder: isLight ? "1px solid var(--border-subtle)" : "1px solid #233a5a",
         cardShadowHover: isLight ? "0 10px 28px rgba(15, 23, 42, 0.08)" : "0 6px 18px rgba(0,0,0,.2)",
         avatarBorder: isLight ? "1.6px solid #d7deea" : "1.6px solid #223350",
-        avatarBg: isLight ? "#f1f5f9" : "#182337",
+        avatarBg: isLight ? "var(--avatar-contrast-bg)" : "#182337",
         nameColor: isLight ? "var(--text-primary)" : "#e3f2fd",
         roleBg: isLight ? "var(--control-bg)" : "#182b4a",
         roleBorder: isLight ? "1px solid var(--border-subtle)" : "1px solid #2a3e65",

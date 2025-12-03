@@ -117,7 +117,8 @@ export default function MobileBottomSheet({
                 ref={sheetRef}
                 className="fixed inset-x-0 bottom-0 rounded-t-2xl shadow-2xl flex flex-col"
                 style={{
-                    background: "#1c2330",
+                    background: "var(--mobile-sheet-bg, var(--bg-card))",
+                    color: "var(--mobile-sheet-fg, var(--text-primary))",
                     height: `min(${initialVH}vh, 100dvh)`,
                     transform: dragging ? `translateY(${dragY}px)` : "translateY(0)",
                     transition: dragging ? "none" : "transform 220ms ease",
@@ -129,10 +130,14 @@ export default function MobileBottomSheet({
             >
                 {/* Header: handle + close */}
                 <div className="relative py-3">
-                    <div className="mx-auto h-1.5 w-10 rounded-full bg-white/25" />
+                    <div
+                        className="mx-auto h-1.5 w-10 rounded-full"
+                        style={{ background: "var(--mobile-sheet-handle, rgba(255,255,255,0.25))" }}
+                    />
                     <button
                         onClick={onClose}
-                        className="absolute right-2 top-1.5 px-3 py-2 text-xl leading-none text-white/70 hover:text-white/95"
+                        className="absolute right-2 top-1.5 px-3 py-2 text-xl leading-none transition-opacity opacity-80 hover:opacity-100"
+                        style={{ color: "var(--mobile-sheet-close, var(--text-secondary))" }}
                         aria-label={t("bottomSheet.close", "Закрыть чат")}
                     >
                         ×

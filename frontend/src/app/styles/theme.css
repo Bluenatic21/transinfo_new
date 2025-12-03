@@ -15,6 +15,9 @@
     --cta-text: #0f172a;
     --cta-shadow: 0 12px 28px -12px rgba(56, 189, 248, 0.6);
 
+    /* Avatar contrast background */
+    --avatar-contrast-bg: #0e1625;
+
     /* Call overlay */
     --call-overlay-bg: #17263a;
     --call-overlay-text: #e6eef8;
@@ -69,6 +72,8 @@
     --cta-gradient-hover: linear-gradient(90deg, #38bdf8 0%, #67e8f9 100%);
     --cta-text: var(--text-primary);
     --cta-shadow: 0 12px 28px -12px rgba(56, 189, 248, 0.6);
+
+    --avatar-contrast-bg: #0e1625;
 
     /* legacy tokens for Tailwind и старых стилей */
     --bg: 5 11 18;
@@ -132,6 +137,8 @@
     --cta-text: #f8fafc;
     --cta-shadow: 0 10px 24px -10px rgba(37, 99, 235, 0.35);
 
+    --avatar-contrast-bg: #000000;
+
     /* legacy tokens for Tailwind и старых стилей */
     --bg: 244 246 251;
     --fg: 15 23 42;
@@ -166,7 +173,7 @@
     --call-overlay-bg: var(--bg-card);
     --call-overlay-text: var(--text-primary);
     --call-overlay-border: var(--border-subtle);
-    --call-overlay-avatar-bg: var(--bg-card-soft);
+    --call-overlay-avatar-bg: var(--avatar-contrast-bg);
     --call-overlay-shadow: var(--shadow-soft);
     --call-overlay-mini-shadow: var(--shadow-soft);
     --call-overlay-btn-neutral-bg: var(--control-bg);

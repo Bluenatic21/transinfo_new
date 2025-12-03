@@ -3229,7 +3229,7 @@ body {
   height: 86px;
   border-radius: 50%;
   overflow: hidden;
-  background: #e3f1fd;
+  background: var(--avatar-contrast-bg, #0e1625);
   display: flex;
   align-items: center;
   justify-content: center;

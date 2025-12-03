@@ -1405,6 +1405,37 @@ function TransportCard({ transport, expanded, onToggle }) {
   const isMobile = useIsMobile();
   const [ownerProfile, setOwnerProfile] = useState(null);
 
+  const cardColors = {
+    bg: "var(--transport-card-bg, rgba(23, 38, 60, 0.97))",
+    text: "var(--transport-card-text, #e3f2fd)",
+    shadow: "var(--transport-card-shadow, 0 2px 24px #001844cc)",
+    shadowExpanded:
+      "var(--transport-card-shadow-expanded, 0 4px 32px #43c8ff55, 0 2px 24px #001844cc)",
+    border: "var(--transport-card-border, #1e88e5)",
+    borderActive: "var(--transport-card-border-active, #43c8ff)",
+    sectionBg: "var(--transport-card-section-bg, rgba(28, 37, 52, 0.95))",
+    sectionBorder: "var(--transport-card-section-border, #193158)",
+    heading: "var(--transport-card-heading, #43c8ff)",
+    label: "var(--transport-card-label, #8ecae6)",
+    chipBg: "var(--transport-card-chip-bg, #1a273f)",
+    chipFg: "var(--transport-card-chip-fg, #cfe9ff)",
+    chipShadow: "var(--transport-card-chip-shadow, 0 2px 8px #23416711)",
+    routeBg:
+      "var(--transport-card-route-bg, linear-gradient(90deg, #183969 38%, #253759 100%))",
+    routeFg: "var(--transport-card-route-fg, #ffffff)",
+    iconBg: "var(--transport-card-icon-bg, #162239)",
+    iconFg: "var(--transport-card-icon-fg, #43c8ff)",
+    iconShadow: "var(--transport-card-icon-shadow, 0 1px 8px #43c8ff17)",
+    metaBg: "var(--transport-card-meta-bg, #193158cc)",
+    metaFg: "var(--transport-card-meta-fg, #cfe9ff)",
+    metaShadow: "var(--transport-card-meta-shadow, 0 2px 8px #23416711)",
+    buttonBg: "var(--transport-card-button-bg, #192b42)",
+    buttonFg: "var(--transport-card-button-fg, #43c8ff)",
+    buttonShadow: "var(--transport-card-button-shadow, 0 1px 6px #43c8ff10)",
+    tooltipBg: "var(--transport-card-tooltip-bg, #222e43)",
+    tooltipFg: "var(--transport-card-tooltip-fg, #53ee5c)",
+  };
+
   // --- Internal comments (только для аккаунта менеджера)
   const isManagerAccount = ["manager", "employee"].includes(
     (me?.role || "").toLowerCase()
@@ -1511,37 +1542,6 @@ function TransportCard({ transport, expanded, onToggle }) {
       }, 1100);
     }
   }, [clickedItemId, transport.id]);
-
-  const cardColors = {
-    bg: "var(--transport-card-bg, rgba(23, 38, 60, 0.97))",
-    text: "var(--transport-card-text, #e3f2fd)",
-    shadow: "var(--transport-card-shadow, 0 2px 24px #001844cc)",
-    shadowExpanded:
-      "var(--transport-card-shadow-expanded, 0 4px 32px #43c8ff55, 0 2px 24px #001844cc)",
-    border: "var(--transport-card-border, #1e88e5)",
-    borderActive: "var(--transport-card-border-active, #43c8ff)",
-    sectionBg: "var(--transport-card-section-bg, rgba(28, 37, 52, 0.95))",
-    sectionBorder: "var(--transport-card-section-border, #193158)",
-    heading: "var(--transport-card-heading, #43c8ff)",
-    label: "var(--transport-card-label, #8ecae6)",
-    chipBg: "var(--transport-card-chip-bg, #1a273f)",
-    chipFg: "var(--transport-card-chip-fg, #cfe9ff)",
-    chipShadow: "var(--transport-card-chip-shadow, 0 2px 8px #23416711)",
-    routeBg:
-      "var(--transport-card-route-bg, linear-gradient(90deg, #183969 38%, #253759 100%))",
-    routeFg: "var(--transport-card-route-fg, #ffffff)",
-    iconBg: "var(--transport-card-icon-bg, #162239)",
-    iconFg: "var(--transport-card-icon-fg, #43c8ff)",
-    iconShadow: "var(--transport-card-icon-shadow, 0 1px 8px #43c8ff17)",
-    metaBg: "var(--transport-card-meta-bg, #193158cc)",
-    metaFg: "var(--transport-card-meta-fg, #cfe9ff)",
-    metaShadow: "var(--transport-card-meta-shadow, 0 2px 8px #23416711)",
-    buttonBg: "var(--transport-card-button-bg, #192b42)",
-    buttonFg: "var(--transport-card-button-fg, #43c8ff)",
-    buttonShadow: "var(--transport-card-button-shadow, 0 1px 6px #43c8ff10)",
-    tooltipBg: "var(--transport-card-tooltip-bg, #222e43)",
-    tooltipFg: "var(--transport-card-tooltip-fg, #53ee5c)",
-  };
 
   const commentPalette = isLight
     ? {

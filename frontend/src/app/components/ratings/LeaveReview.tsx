@@ -107,7 +107,11 @@ export default function LeaveReview({ userId, targetUserId, onReviewSent, classN
                     value={comment}
                     onChange={(e) => setComment(e.target.value)}
                     placeholder={t("review.commentPlaceholder", "Ваш комментарий…")}
-                    className="w-full min-h-[110px] rounded-xl bg-slate-900/50 border border-white/10 px-3 py-2 outline-none focus:border-emerald-500/60"
+                    className={`w-full min-h-[110px] rounded-xl border px-3 py-2 outline-none focus:border-emerald-500/60 ${
+                        isLightTheme
+                            ? "bg-white/80 border-[#d6e4ff] text-slate-800 placeholder:text-slate-500 shadow-sm"
+                            : "bg-slate-900/50 border-white/10 text-white placeholder:text-slate-300/80"
+                    }`}
                 />
             </div>
 

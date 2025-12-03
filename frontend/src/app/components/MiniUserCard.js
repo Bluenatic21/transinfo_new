@@ -37,7 +37,7 @@ export default function MiniUserCard({ user, attachment = null }) {
         textPrimary: isLight ? "var(--text-primary)" : "#e3f2fd",
         textSecondary: isLight ? "var(--text-secondary)" : "#b6eaff",
         role: isLight ? "#1d4ed8" : "#7af4fd",
-        avatarBg: isLight ? "var(--bg-card-soft)" : "#182337",
+        avatarBg: isLight ? "var(--avatar-contrast-bg)" : "#182337",
         avatarBorder: isLight ? "1.4px solid var(--border-subtle)" : "1.6px solid #223350",
         messengerBg: isLight ? "var(--control-bg)" : "#192b4b",
         messengerText: isLight ? "#1d4ed8" : "#b2dbfb",
