@@ -1,239 +1,233 @@
-diff --git a/frontend/src/app/transport/[id]/page.js b/frontend/src/app/transport/[id]/page.js
-index a8a85d8621a1b4202d48007e5114e1ce7394a4ac..068aaf9991443ef94015679c3ec9e47736e5e08c 100644
---- a/frontend/src/app/transport/[id]/page.js
-+++ b/frontend/src/app/transport/[id]/page.js
-@@ -267,73 +267,82 @@ function normalizeAttachments(raw = []) {
-         .filter(Boolean);
- }
+diff --git a/frontend/src/app/orders/[id]/page.js b/frontend/src/app/orders/[id]/page.js
+index 418ad8edcdd76683b13c85e37a611d515f641495..79cebf6138c526f79b312c6932411a9b697d518c 100644
+--- a/frontend/src/app/orders/[id]/page.js
++++ b/frontend/src/app/orders/[id]/page.js
+@@ -575,69 +575,81 @@ export default function OrderDetailsPage() {
+         authFetchWithRefresh(api(`/orders/${order.id}/view`), { method: "POST" })
+             .then(r => r.ok ? r.json() : null)
+             .then(data => {
+                 if (data && typeof data.views === "number") setViewsCount(data.views);
+             })
+             .catch(() => { });
+     }, [order?.id]);
  
- // Централизуем формирование абсолютных URL бекенда
- const withApi = (u) => abs(u);
+     useEffect(() => {
+         if (!shouldHighlight || loading) return;
+         const node = highlightRef.current;
+         if (!node) return;
  
- function FileIcon({ ext, colors }) {
-     const upper = (ext || "").toUpperCase();
-     return (
-         <span style={{
-             width: 28, height: 28, minWidth: 28, minHeight: 28,
-             borderRadius: 7, background: colors.pillBg,
-             display: "inline-flex", alignItems: "center", justifyContent: "center",
-             fontSize: 12, color: colors.accent, border: `1px solid ${colors.border}`
-         }}>
-             {upper || "FILE"}
-         </span>
-     );
- }
+         node.classList.add("page-highlight");
+         node.setAttribute("tabindex", "-1");
+         node.focus({ preventScroll: true });
+         node.scrollIntoView({ behavior: "smooth", block: "start" });
  
+         const timer = setTimeout(() => node.classList.remove("page-highlight"), 2000);
+         return () => {
+             clearTimeout(timer);
+             node.classList.remove("page-highlight");
+         };
+     }, [loading, shouldHighlight]);
  
- export default function TransportDetailPage() {
-     const { t } = useLang();
-     const { resolvedTheme } = useTheme?.() || { resolvedTheme: "dark" };
-     const colors = resolvedTheme === "light" ? LIGHT_COLORS : DARK_COLORS;
--    const infoPlaceholderStyle = {
--        color: colors.infoText,
--        fontWeight: 500,
--        fontSize: 16,
--        display: "flex",
-+    const infoPlaceholderStyle = {
-+        color: colors.infoText,
-+        fontWeight: 500,
-+        fontSize: 16,
-+        display: "flex",
+-    const cardStyle = useMemo(
+-        () => ({
+-            background: COLORS.cardBg,
+-            border: `1px solid ${COLORS.border}`,
+-            borderRadius: 16,
++    const cardStyle = useMemo(
++        () => ({
++            background: COLORS.cardBg,
++            border: `1px solid ${COLORS.border}`,
++            borderRadius: 16,
+             padding: isMobile ? 14 : 18,
+             display: "flex",
+             flexDirection: "column",
+             gap: isMobile ? 10 : 12,
+             boxShadow: COLORS.shadow,
+         }),
+-        [COLORS.border, COLORS.cardBg, COLORS.shadow, isMobile]
+-    );
+-
+-    // На мобильных «голый» текст загрузки выглядел как пустой экран
+-    // из‑за наследования цвета. Делаем явный, контрастный лоадер,
+-    // как в странице транспорта.
+-    if (loading) {
+-        return (
++        [COLORS.border, COLORS.cardBg, COLORS.shadow, isMobile]
++    );
++
++    const loadingPillStyle = useMemo(
++        () => ({
++            background: resolvedTheme === "light" ? COLORS.accentSoft : "#11284a",
++            color: resolvedTheme === "light" ? COLORS.heading : "#43c8ff",
++            borderRadius: 8,
++            padding: `2px ${isMobile ? "10px" : "11px"}`,
++            fontSize: isMobile ? 13 : 14,
++            fontWeight: 500,
++        }),
++        [COLORS.accentSoft, COLORS.heading, isMobile, resolvedTheme]
++    );
++
++    // На мобильных «голый» текст загрузки выглядел как пустой экран
++    // из‑за наследования цвета. Делаем явный, контрастный лоадер,
++    // как в странице транспорта.
++    if (loading) {
++        return (
+             <div
+                 aria-busy="true"
+                 style={{
+                     padding: 32,
+                     color: "#c9eaff",
+                     minHeight: "calc(100dvh - 110px)",
+                     display: "grid",
+                     placeItems: "center",
+                 }}
+             >
+                 <div className="boot-spinner">
+                     <span className="boot-dot" />
+                     <span className="boot-dot" />
+                     <span className="boot-dot" />
+                 </div>
+                 <p className="boot-text">{t("common.loading", "Загрузка…")}</p>
+             </div>
+         );
+     }
+     if (!order || order.detail === "Order not found") {
+         return <div style={{ padding: 16, color: "#f88" }}>{t("order.notFound", "Заявка не найдена")}</div>;
+     }
+ 
+     // --- Карта: вычисляем координаты ТОЛЬКО после загрузки order ---
+     const fromCoords =
+@@ -654,55 +666,55 @@ export default function OrderDetailsPage() {
+             : [];
+ 
+     // --- Детали ---
+     const mainCargo =
+         Array.isArray(order.cargo_items) && order.cargo_items.length > 0 ? order.cargo_items[0] : {};
+     const from =
+         Array.isArray(order.from_locations) && order.from_locations.length > 0
+             ? order.from_locations.join(", ")
+             : "";
+     const to =
+         Array.isArray(order.to_locations) && order.to_locations.length > 0
+             ? order.to_locations.join(", ")
+             : "";
+     const loadDate = order.load_date || "";
+     const unloadDate = order.unload_date || "";
+     const truckType = order.truck_type || "";
+     const transportType = order.transport_type || "";
+     const loadingTypes = Array.isArray(order.loading_types) ? order.loading_types : [];
+     const gpsMonitoring = order.gps_monitoring ? t("common.yes", "Да") : "";
+     const adr = order.adr ? t("common.yes", "Да") : "";
+     const adrClass = order.adr_class || "";
+     const tempMode = order.temp_mode ? t("common.yes", "Да") : "";
+     const tempFrom = order.temp_from || "";
+     const tempTo = order.temp_to || "";
+     const hasCustoms = order.has_customs ? t("common.yes", "Да") : t("common.no", "Нет");
+-    const customsInfo = order.customs_info || "";
+-    const paymentScenario = order.payment_scenario || "";
+-    const paymentDays = order.payment_days || "";
+-    const prepayAmount = order.prepay_amount || "";
+-    const postpayDays = order.postpay_days || "";
++    const customsInfo = order.customs_info || "";
++    const paymentScenario = order.payment_scenario || "";
++    const paymentDays = order.payment_days || "";
++    const prepayAmount = order.prepay_amount || "";
++    const postpayDays = order.postpay_days || "";
+     const paymentComment = order.payment_comment || "";
+     const rateType = order.rate_type || "";
+     const rateWithVat = order.rate_with_vat || "";
+     const rateNoVat = order.rate_no_vat || "";
+     const rateCash = order.rate_cash || "";
+     const currency = order.rate_currency || order.currency || "₾";
+     const rateToCard = order.rate_to_card ? t("common.yes", "Да") : "";
+     const prominentPrice = (() => {
+         const amount = rateWithVat || rateNoVat || rateCash || order?.price || "";
+         const curr = currency || "";
+         if (!amount) return "";
+         return `${amount} ${curr}`.trim();
+     })();
+     const comment = order.comment || "";
+     const description = order.description || "";
+     const phone = order.phone || "";
+     const email = order.email || "";
+     const username = order.username || "";
+     const createdAt = order.created_at
+         ? new Date(order.created_at).toLocaleString("ru-RU", {
+             day: "2-digit",
+             month: "2-digit",
+             year: "2-digit",
+             hour: "2-digit",
+             minute: "2-digit"
+@@ -710,67 +722,55 @@ export default function OrderDetailsPage() {
+         : "";
+     const attachments = Array.isArray(order.attachments) ? order.attachments : [];
+     const norm = normalizeAttachments(attachments);
+     const imageItems = norm.filter((x) => x.kind === "image");
+     const fileItems = norm.filter((x) => x.kind === "file");
+     const docItems = norm.filter((x) => x.kind === "file");
+ 
+     const truckQuantity =
+         order.truck_quantity !== undefined && order.truck_quantity !== null ? order.truck_quantity : "";
+     const cargos =
+         Array.isArray(order.cargo_items) && order.cargo_items.length > 0 ? order.cargo_items : [];
+     const routes = Array.isArray(order.routes) && order.routes.length > 0 ? order.routes.join(", ") : "";
+ 
+     // Стили для секций
+     const sectionTitleStyle = {
+         fontWeight: 750,
+         fontSize: isMobile ? 16.5 : 19,
+         color: resolvedTheme === "light" ? COLORS.heading : "#cfe3ff",
+         marginBottom: isMobile ? 10 : 12,
+         display: "flex",
          alignItems: "center",
-         gap: 8,
-         marginTop: 13,
-         opacity: resolvedTheme === "light" ? 0.9 : 0.67,
+         gap: 10,
+         letterSpacing: 0.1,
      };
-     const infoIconStyle = {
-         width: 23,
-         height: 23,
-         borderRadius: "50%",
-         background: colors.infoBg,
-         display: "inline-flex",
-         alignItems: "center",
-         justifyContent: "center",
-     };
-     const infoIconFill = {
--        circle: colors.border,
--        text: colors.infoText,
+ 
+-    const sectionTextStyle = {
+-        lineHeight: 1.45,
+-        fontSize: isMobile ? 14.5 : 16,
 -    };
-+        circle: colors.border,
-+        text: colors.infoText,
+-
+-    const loadingPillStyle = useMemo(
+-        () => ({
+-            background: resolvedTheme === "light" ? COLORS.accentSoft : "#11284a",
+-            color: resolvedTheme === "light" ? COLORS.heading : "#43c8ff",
+-            borderRadius: 8,
+-            padding: `2px ${isMobile ? "10px" : "11px"}`,
+-            fontSize: isMobile ? 13 : 14,
+-            fontWeight: 500,
+-        }),
+-        [COLORS.accentSoft, COLORS.heading, isMobile, resolvedTheme]
+-    );
+-
++    const sectionTextStyle = {
++        lineHeight: 1.45,
++        fontSize: isMobile ? 14.5 : 16,
 +    };
-+    const loadingPillStyle = {
-+        background: resolvedTheme === "light" ? colors.accentSoft : "#11284a",
-+        color: resolvedTheme === "light" ? colors.heading : "#43c8ff",
-+        borderRadius: 8,
-+        padding: "2px 11px",
-+        marginLeft: 6,
-+        fontSize: 14,
-+        fontWeight: 500,
-+    };
-     // Витрины: label = перевод, value = канон (RU)
-     const BODY_TYPES = useMemo(() => getTruckBodyTypes(t), [t]);
-     const TRANSPORT_KIND_OPTS = useMemo(() => getTransportKindOptions(t), [t]);
-     const LOADING_TYPES_I18N = useMemo(() => getLoadingTypes(t), [t]);
++
  
-     const findKindLabelByValue = useCallback((val) => {
-         if (val === undefined || val === null) return "";
-         const v = String(val).trim().toLowerCase();
-         const flat = [];
-         for (const opt of TRANSPORT_KIND_OPTS || []) {
-             if (opt?.children) flat.push(...opt.children);
-             else flat.push(opt);
-         }
-         const found = flat.find(o => String(o?.value || "").trim().toLowerCase() === v);
-         return found?.label || val;
-     }, [TRANSPORT_KIND_OPTS]);
- 
-     // label типа кузова по канон. value (без учёта регистра/пробелов)
-     const findBodyLabelByValue = useCallback((val) => {
-         if (val === undefined || val === null) return "";
-         const v = String(val).trim().toLowerCase();
-         const flat = [];
-         for (const opt of BODY_TYPES || []) {
-             if (opt?.children) flat.push(...opt.children);
-             else flat.push(opt);
-@@ -727,64 +736,56 @@ export default function TransportDetailPage() {
-                             volume ||
-                             bodySize ||
-                             trailer
-                         ) ? (
-                             <>
-                                 {truck_type && <div><b>{t("truck.bodyType", "Тип кузова")}:</b> {findBodyLabelByValue(truck_type)}</div>}
-                                 {transport_kind && <div><b>{t("transport.kind.label", "Тип транспорта")}:</b> {findKindLabelByValue(transport_kind)}</div>}
-                                 {weight && <div><b>{t("transport.capacity", "Грузоподъемность")}:</b> {weight} {t("units.t", "т")}</div>}
-                                 {volume && <div><b>{t("transport.bodyVolume", "Объем кузова")}:</b> {volume} {t("units.m3", "м³")}</div>}
-                                 {bodySize && <div><b>{t("transport.bodyDims", "Кузов (Д×Ш×В)")}:</b> {bodySize} {t("units.m", "м")}</div>}
-                                 {trailer && <div><b>{t("transport.trailerDims", "Габариты прицепа")}:</b> {trailer}</div>}
-                             </>
-                         ) : (
-                             <div style={infoPlaceholderStyle}>
-                                 <span style={infoIconStyle}>
-                                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="8" fill={infoIconFill.circle} /><text x="8" y="12" textAnchor="middle" fill={infoIconFill.text} fontSize="13" fontWeight="bold">i</text></svg>
-                                 </span>
-                                 {t("info.missing", "Информация не указана")}
-                             </div>
-                         )}
-                     </Section>
- 
-                     {/* ОСОБЕННОСТИ */}
-                     <Section colors={colors} title={<>{icons.features}{t("features.title", "Особенности")}</>}>
-                         <div>
--                            <b>{t("loading.types", "Типы загрузки")}:</b>{" "}
--                            {Array.isArray(load_types) && load_types.length
--                                ? localizeLoadingTypes(load_types).map((label, i) =>
--                                    <span key={i} style={{
--                                        background: "#11284a",
--                                        color: "#43c8ff",
--                                        borderRadius: 8,
--                                        padding: "2px 11px",
--                                        marginLeft: 6,
--                                        fontSize: 14,
--                                        fontWeight: 500
--                                    }}>{label}</span>
--                                ) : "—"}
--                        </div>
-+                            <b>{t("loading.types", "Типы загрузки")}:</b>{" "}
-+                            {Array.isArray(load_types) && load_types.length
-+                                ? localizeLoadingTypes(load_types).map((label, i) =>
-+                                    <span key={i} style={loadingPillStyle}>{label}</span>
-+                                ) : "—"}
-+                        </div>
-                         {specialStr && <div><b>{t("features.other", "Особенности")}:</b> {specialStr}</div>}
-                         {crew && specialStr && specialStr.includes("Экипаж") && (
-                             <div><b>{t("transport.special.crew", "Экипаж")}:</b> {crew} {t("crew.driversSuffix", "водитель(я)")}
-                             </div>
-                         )}
-                         <div><b>{t("gps.title", "GPS")}:</b> {gpsStr}</div>
-                         {/* --- ADR КАК В СПИСКЕ! --- */}
-                         {adr && (
-                             <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                                 <b>ADR:</b>
-                                 <span style={{ position: "relative", display: "inline-block" }}>
-                                     <span
-                                         style={{
-                                             marginLeft: 6,
-                                             background: colors.accentSoft,
-                                             color: colors.heading,
-                                             fontWeight: 700,
-                                             borderRadius: 6,
-                                             padding: "2px 13px",
-                                             fontSize: 16,
-                                             cursor: "pointer",
-                                             boxShadow: colors.shadow,
-                                             border: adrDropdownOpen ? `2px solid ${colors.accent}` : `2px solid ${colors.border}`,
-                                             transition: "border .15s",
-                                             display: "inline-block",
-@@ -1198,65 +1199,57 @@ export default function TransportDetailPage() {
-                             volume && <div key="volume"><b>Объем кузова:</b> {volume} м³</div>,
-                             bodySize && <div key="body_size"><b>Кузов (Д×Ш×В):</b> {bodySize} м</div>,
-                             trailer && <div key="trailer"><b>Габариты прицепа:</b> {trailer}</div>,
-                         ].filter(Boolean).length > 0 ? (
-                             [
-                                 truck_type && <div key="truck_type"><b>{t("truck.bodyType", "Тип кузова")}:</b> {findBodyLabelByValue(truck_type)}</div>,
-                                 transport_kind && <div key="transport_kind"><b>{t("transport.kind", "Тип транспорта")}:</b> {findKindLabelByValue(transport_kind)}</div>,
-                                 weight && <div key="weight"><b>{t("transport.capacity", "Грузоподъемность")}:</b> {weight} т</div>,
-                                 volume && <div key="volume"><b>Объем кузова:</b> {volume} м³</div>,
-                                 bodySize && <div key="body_size"><b>Кузов (Д×Ш×В):</b> {bodySize} м</div>,
-                                 trailer && <div key="trailer"><b>Габариты прицепа:</b> {trailer}</div>,
-                             ].filter(Boolean)
-                         ) : (
-                             <div style={infoPlaceholderStyle}>
-                                 <span style={infoIconStyle}>
-                                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="8" fill={infoIconFill.circle} /><text x="8" y="12" textAnchor="middle" fill={infoIconFill.text} fontSize="13" fontWeight="bold">i</text></svg>
-                                 </span>
-                                 {t("info.missing", "Информация не указана")}
-                             </div>
-                         )}
-                     </Section>
- 
-                     {/* Особенности - теперь именно тут выводится ADR! */}
-                     <Section colors={colors} title={<>{icons.features}{t("features.title", "Особенности")}</>}>
-                         {Array.isArray(load_types) && load_types.length > 0 && (
--                            <div>
--                                <b>{t("loading.types", "Типы загрузки")}:</b>{" "}
--                                {localizeLoadingTypes(load_types).map((label, i) =>
--                                    <span key={i} style={{
--                                        background: resolvedTheme === "light" ? colors.accentSoft : "#11284a",
--                                        color: colors.accent,
--                                        borderRadius: 8,
--                                        padding: "2px 11px",
--                                        marginLeft: 6,
--                                        fontSize: 14,
--                                        fontWeight: 500
--                                    }}>{label}</span>
--                                )}
--                            </div>
--                        )}
-+                            <div>
-+                                <b>{t("loading.types", "Типы загрузки")}:</b>{" "}
-+                                {localizeLoadingTypes(load_types).map((label, i) =>
-+                                    <span key={i} style={loadingPillStyle}>{label}</span>
-+                                )}
-+                            </div>
-+                        )}
-                         {specialStr && <div><b>{t("features.other", "Особенности")}:</b> {specialStr}</div>}
-                         {crew && specialStr && specialStr.includes("Экипаж") && (
-                             <div><b>{t("transport.special.crew", "Экипаж")}:</b> {crew} {t("crew.driversSuffix", "водитель(я)")}
-                             </div>
-                         )}
-                         <div><b>{t("gps.title", "GPS")}:</b> {gpsStr}</div>
-                         {/* --- ADR КАК В СПИСКЕ! --- */}
-                         {adr && (
-                             <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                                 <b>ADR:</b>
-                                 <span style={{ position: "relative", display: "inline-block" }}>
-                                     <span
-                                         style={{
-                                             marginLeft: 6,
-                                             background: resolvedTheme === "light" ? colors.accentSoft : "#232f45",
-                                             color: resolvedTheme === "light" ? colors.heading : colors.highlight,
-                                             fontWeight: 700,
-                                             borderRadius: 6,
-                                             padding: "2px 13px",
-                                             fontSize: 16,
-                                             cursor: "pointer",
-                                             boxShadow: colors.shadow,
-                                             border: adrDropdownOpen ? `2px solid ${colors.accent}` : `2px solid ${colors.border}`,
-                                             transition: "border .15s",
-                                             display: "inline-block",
+     // ── Готовим секции как переменные, чтобы легко переставить местами ─────────────────
+     const transportSection =
+         (truckType || transportType || truckQuantity || loadingTypes.length > 0 || gpsMonitoring || order.adr || tempMode)
+             ? (
+                 <div
+                     key="transport"
+                     style={{
+                         ...cardStyle,
+                         ...sectionTextStyle,
+                         minHeight: 180,
+                         height: "100%",
+                     }}
+                 >
+                     <div style={sectionTitleStyle}>{icons.truck}{t("transport.title", "Транспорт")}</div>
+                     {truckType && (<div><b>{t("truck.bodyType", "Тип кузова")}:</b> {findBodyLabelByValue(truckType)}</div>)}
+                     {transportType && (<div><b>{t("transport.transportType", "Тип перевозки")}:</b> {localizeTransportType(transportType)}</div>)}
+                     {truckQuantity && (<div><b>{t("transport.truckCount", "Количество машин")}:</b> {truckQuantity}</div>)}
+                     {loadingTypes.length > 0 && (
+                         <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                             <b style={{ marginRight: 6 }}>{t("loading.types", "Типы загрузки")}:</b>
+                             {localizeLoadingTypes(loadingTypes).map((label, i) => (
+                                 <span
+                                     key={i}
+                                     style={loadingPillStyle}

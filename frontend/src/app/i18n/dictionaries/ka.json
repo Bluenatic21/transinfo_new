@@ -646,7 +646,7 @@
   "transport.type.domestic": "შიდა",
   "rate.type": "ტარიფის ტიპი",
   "rate.toCard": "ბარათზე",
-  "payment.scenario": "გადახდის სცენარი",
+  "payment.scenario": "გადახდის პირობა",
   "payment.atUnload": "დაცლის დროს",
   "payment.afterDays.prefix": "მოხდეს",
   "payment.afterDays.suffix": "დღეში დაცლის შემდეგ",

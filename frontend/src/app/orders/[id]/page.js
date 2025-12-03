@@ -611,6 +611,18 @@ export default function OrderDetailsPage() {
         [COLORS.border, COLORS.cardBg, COLORS.shadow, isMobile]
     );
 
+    const loadingPillStyle = useMemo(
+        () => ({
+            background: resolvedTheme === "light" ? COLORS.accentSoft : "#11284a",
+            color: resolvedTheme === "light" ? COLORS.heading : "#43c8ff",
+            borderRadius: 8,
+            padding: `2px ${isMobile ? "10px" : "11px"}`,
+            fontSize: isMobile ? 13 : 14,
+            fontWeight: 500,
+        }),
+        [COLORS.accentSoft, COLORS.heading, isMobile, resolvedTheme]
+    );
+
     // На мобильных «голый» текст загрузки выглядел как пустой экран
     // из‑за наследования цвета. Делаем явный, контрастный лоадер,
     // как в странице транспорта.
@@ -736,18 +748,6 @@ export default function OrderDetailsPage() {
         lineHeight: 1.45,
         fontSize: isMobile ? 14.5 : 16,
     };
-
-    const loadingPillStyle = useMemo(
-        () => ({
-            background: resolvedTheme === "light" ? COLORS.accentSoft : "#11284a",
-            color: resolvedTheme === "light" ? COLORS.heading : "#43c8ff",
-            borderRadius: 8,
-            padding: `2px ${isMobile ? "10px" : "11px"}`,
-            fontSize: isMobile ? 13 : 14,
-            fontWeight: 500,
-        }),
-        [COLORS.accentSoft, COLORS.heading, isMobile, resolvedTheme]
-    );
 
 
     // ── Готовим секции как переменные, чтобы легко переставить местами ─────────────────
