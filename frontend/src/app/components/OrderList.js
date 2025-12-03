@@ -1005,6 +1005,8 @@ function OrderCard({
     saveInternalComment,
 }) {
     const { t } = useLang?.() || { t: (k, f) => f || k };
+    const { resolvedTheme } = useTheme?.() || { resolvedTheme: "dark" };
+    const isLight = resolvedTheme === "light";
 
     const { user } = useUser() || {};
     // Больше не ограничиваем авторизованных (даже без оплаты)

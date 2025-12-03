@@ -114,7 +114,7 @@ export default function OrderShareButtons({ order, variant = "compact", buttonSt
                         el.focus();
                         el.select();
                         document.execCommand("copy");
-                         if (el.parentNode === document.body) {
+                        if (el.parentNode === document.body) {
                             document.body.removeChild(el);
                         }
                     }
@@ -323,7 +323,7 @@ export default function OrderShareButtons({ order, variant = "compact", buttonSt
                 <div style={menuBaseStyle} role="menu">
                     {buttons.map((btn) => {
                         const commonProps = {
-                            key: btn.key,
+
                             title: btn.title,
                             "aria-label": btn.title,
                         };
@@ -357,6 +357,7 @@ export default function OrderShareButtons({ order, variant = "compact", buttonSt
                         if (btn.href) {
                             return (
                                 <a
+                                    key={btn.key}
                                     {...commonProps}
                                     href={btn.href}
                                     target="_blank"
@@ -372,6 +373,7 @@ export default function OrderShareButtons({ order, variant = "compact", buttonSt
 
                         return (
                             <button
+                                key={btn.key}
                                 type="button"
                                 {...commonProps}
                                 onClick={btn.onClick}

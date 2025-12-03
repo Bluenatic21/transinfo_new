@@ -1409,6 +1409,15 @@ function TransportCard({ transport, expanded, onToggle }) {
   const isManagerAccount = ["manager", "employee"].includes(
     (me?.role || "").toLowerCase()
   );
+  const avatarPalette = isLight
+    ? {
+        border: "2px solid #193158",
+        background: "#1c2842",
+      }
+    : {
+        border: `2px solid ${cardColors.sectionBorder}`,
+        background: cardColors.sectionBg,
+      };
   // --- гостевой режим ---
   const isGuest = !me;
   const requireAuth = useCallback(() => {
@@ -2546,8 +2555,7 @@ function TransportCard({ transport, expanded, onToggle }) {
               user={ownerProfile}
               size={40}
               style={{
-                border: `2px solid ${cardColors.sectionBorder}`,
-                background: cardColors.sectionBg,
+                ...avatarPalette,
                 marginRight: 12,
               }}
             />

@@ -48,29 +48,25 @@ export default function UserAvatar({ user, size = 36, isGroup = false, style = {
 
     // Обычный пользователь — fallback если нет аватара
     if (!avatarUrl) {
-        // Возьми первую букву имени или организации
-        const letter = (user?.organization || user?.contact_person || user?.full_name || user?.name || user?.email || "U")[0].toUpperCase();
         return (
-            <span
+            <img
+                src="/avatar.png"
+                alt="avatar"
                 className={className}
+                width={size}
+                height={size}
                 style={{
                     width: size,
                     height: size,
                     borderRadius: "50%",
-                    background: "#193158",
-                    color: "#e3f2fd",
-                    fontWeight: 700,
-                    fontSize: size * 0.57,
-                    display: "inline-flex",
-                    alignItems: "center",
-                    justifyContent: "center",
+                    objectFit: "cover",
+                    background: "#1c2842",
                     border: "1.5px solid #dde8f7",
                     ...style,
                 }}
+                onError={e => { e.currentTarget.onerror = null; e.currentTarget.src = "/avatar.png"; }}
                 title={user?.organization || user?.contact_person || user?.full_name || user?.name || user?.email || t("common.user", "Пользователь")}
-            >
-                {letter}
-            </span>
+            />
         );
     }
 

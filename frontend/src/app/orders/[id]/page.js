@@ -110,27 +110,27 @@ const OrderRouteMap = dynamic(() => import("../../components/OrderRouteMap"), {
 });
 
 // SVG ICONS
-const icons = {
+const buildIcons = (accentColor) => ({
     route: (
-        <svg width="22" height="22" style={{ marginRight: 10, color: "#43c8ff" }} fill="none" viewBox="0 0 24 24">
+        <svg width="22" height="22" style={{ marginRight: 10, color: accentColor }} fill="none" viewBox="0 0 24 24">
             <path d="M7 7C7 4.23858 9.23858 2 12 2C14.7614 2 17 4.23858 17 7C17 11.5 12 21 12 21C12 21 7 11.5 7 7Z" stroke="currentColor" strokeWidth="2" />
             <circle cx="12" cy="7" r="2" fill="currentColor" />
         </svg>
     ),
     pay: (
-        <svg width="22" height="22" style={{ marginRight: 10, color: "#43c8ff" }} fill="none" viewBox="0 0 24 24">
+        <svg width="22" height="22" style={{ marginRight: 10, color: accentColor }} fill="none" viewBox="0 0 24 24">
             <rect x="3" y="6" width="18" height="12" rx="2" stroke="currentColor" strokeWidth="2" />
             <path d="M3 10H21" stroke="currentColor" strokeWidth="2" />
         </svg>
     ),
     cargo: (
-        <svg width="22" height="22" style={{ marginRight: 10, color: "#43c8ff" }} fill="none" viewBox="0 0 24 24">
+        <svg width="22" height="22" style={{ marginRight: 10, color: accentColor }} fill="none" viewBox="0 0 24 24">
             <rect x="4" y="8" width="16" height="10" rx="2" stroke="currentColor" strokeWidth="2" />
             <path d="M16 8V6a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" stroke="currentColor" strokeWidth="2" />
         </svg>
     ),
     truck: (
-        <svg width="22" height="22" style={{ marginRight: 10, color: "#43c8ff" }} fill="none" viewBox="0 0 24 24">
+        <svg width="22" height="22" style={{ marginRight: 10, color: accentColor }} fill="none" viewBox="0 0 24 24">
             <rect x="1" y="7" width="15" height="10" rx="2" stroke="currentColor" strokeWidth="2" />
             <rect x="16" y="11" width="5" height="6" rx="1" stroke="currentColor" strokeWidth="2" />
             <circle cx="5.5" cy="19.5" r="1.5" fill="currentColor" />
@@ -138,30 +138,30 @@ const icons = {
         </svg>
     ),
     customs: (
-        <svg width="22" height="22" style={{ marginRight: 10, color: "#43c8ff" }} fill="none" viewBox="0 0 24 24">
+        <svg width="22" height="22" style={{ marginRight: 10, color: accentColor }} fill="none" viewBox="0 0 24 24">
             <path d="M12 2L2 7v7c0 5 10 9 10 9s10-4 10-9V7l-10-5z" stroke="currentColor" strokeWidth="2" />
             <path d="M9 14l6-6" stroke="currentColor" strokeWidth="2" />
             <path d="M15 14H9v-6" stroke="currentColor" strokeWidth="2" />
         </svg>
     ),
     contact: (
-        <svg width="22" height="22" style={{ marginRight: 10, color: "#43c8ff" }} fill="none" viewBox="0 0 24 24">
+        <svg width="22" height="22" style={{ marginRight: 10, color: accentColor }} fill="none" viewBox="0 0 24 24">
             <circle cx="12" cy="8" r="4" stroke="currentColor" strokeWidth="2" />
             <path d="M4 20v-1a6 6 0 0 1 12 0v1" stroke="currentColor" strokeWidth="2" />
         </svg>
     ),
     files: (
-        <svg width="22" height="22" style={{ marginRight: 10, color: "#43c8ff" }} fill="none" viewBox="0 0 24 24">
+        <svg width="22" height="22" style={{ marginRight: 10, color: accentColor }} fill="none" viewBox="0 0 24 24">
             <rect x="4" y="4" width="16" height="16" rx="2" stroke="currentColor" strokeWidth="2" />
             <path d="M8 2v4a2 2 0 0 0 2 2h4" stroke="currentColor" strokeWidth="2" />
         </svg>
     ),
     comment: (
-        <svg width="22" height="22" style={{ marginRight: 10, color: "#43c8ff" }} fill="none" viewBox="0 0 24 24">
+        <svg width="22" height="22" style={{ marginRight: 10, color: accentColor }} fill="none" viewBox="0 0 24 24">
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10z" stroke="currentColor" strokeWidth="2" />
         </svg>
     ),
-};
+});
 
 const getColors = (theme = "dark") => ({
     pageBg: "var(--bg-body)",
@@ -321,19 +321,38 @@ export default function OrderDetailsPage() {
 
     const { resolvedTheme } = useTheme?.() || { resolvedTheme: "dark" };
     const COLORS = useMemo(() => getColors(resolvedTheme), [resolvedTheme]);
+    const accentStrong = useMemo(
+        () =>
+            resolvedTheme === "light"
+                ? "color-mix(in srgb, var(--text-primary) 78%, var(--brand-blue) 22%)"
+                : "#43c8ff",
+        [resolvedTheme]
+    );
+    const accentMuted = useMemo(
+        () =>
+            resolvedTheme === "light"
+                ? "color-mix(in srgb, var(--text-secondary) 78%, var(--brand-blue) 22%)"
+                : "#8ecae6",
+        [resolvedTheme]
+    );
+    const accentSoftBg = useMemo(
+        () => (resolvedTheme === "light" ? "color-mix(in srgb, var(--brand-blue) 18%, #ffffff)" : COLORS.accentSoft),
+        [COLORS.accentSoft, resolvedTheme]
+    );
+    const icons = useMemo(() => buildIcons(accentStrong), [accentStrong]);
     const routeColors = useMemo(
         () => ({
             barBackground:
                 resolvedTheme === "light"
-                    ? COLORS.accentSoft
+                    ? accentSoftBg
                     : "linear-gradient(90deg, #183969 38%, #253759 100%)",
             barText: resolvedTheme === "light" ? COLORS.heading : "#fff",
-            city: resolvedTheme === "light" ? COLORS.accent : "#8ecae6",
-            arrow: resolvedTheme === "light" ? COLORS.highlight : "#43c8ff",
+            city: resolvedTheme === "light" ? accentStrong : "#8ecae6",
+            arrow: resolvedTheme === "light" ? COLORS.highlight : accentStrong,
             text: resolvedTheme === "light" ? COLORS.text : "#fff",
             shadow: resolvedTheme === "light" ? "var(--shadow-soft)" : "0 2px 8px #43c8ff17",
         }),
-        [COLORS.accent, COLORS.accentSoft, COLORS.heading, COLORS.highlight, COLORS.text, resolvedTheme]
+        [COLORS.heading, COLORS.highlight, COLORS.text, accentSoftBg, accentStrong, resolvedTheme]
     );
 
     const bidColors = useMemo(
@@ -355,7 +374,7 @@ export default function OrderDetailsPage() {
                       inputBg: "var(--input)",
                       inputBorder: `1.2px solid ${COLORS.border}`,
                       inputText: COLORS.text,
-                      primaryBtnBg: "#43c8ff",
+                      primaryBtnBg: accentStrong,
                       primaryBtnText: "#0b1a2f",
                   }
                 : {
@@ -374,10 +393,10 @@ export default function OrderDetailsPage() {
                       inputBg: "#1a253a",
                       inputBorder: "1.2px solid #2e415f",
                       inputText: "#fff",
-                      primaryBtnBg: "#43c8ff",
+                      primaryBtnBg: accentStrong,
                       primaryBtnText: "#0b1a2f",
                   },
-        [COLORS.border, COLORS.heading, COLORS.muted, COLORS.text, resolvedTheme]
+        [COLORS.border, COLORS.heading, COLORS.muted, COLORS.text, accentStrong, resolvedTheme]
     );
 
     const [showBidPanel, setShowBidPanel] = useState(false);
@@ -422,8 +441,8 @@ export default function OrderDetailsPage() {
                     whiteSpace: "nowrap",
                 }
                 : {
-                    background: COLORS.accent,
-                    color: "#ffffff",
+                    background: accentSoftBg,
+                    color: accentStrong,
                     border: `1px solid ${COLORS.border}`,
                     borderRadius: 10,
                     padding: "11px 18px",
@@ -432,7 +451,7 @@ export default function OrderDetailsPage() {
                     boxShadow: COLORS.shadow,
                     cursor: "pointer",
                 },
-        [COLORS.accent, COLORS.border, COLORS.shadow, actionPillStyle, isMobile]
+        [COLORS.border, COLORS.shadow, accentSoftBg, accentStrong, actionPillStyle, isMobile]
     );
 
     // Для edge-swipe назад
@@ -613,14 +632,14 @@ export default function OrderDetailsPage() {
 
     const loadingPillStyle = useMemo(
         () => ({
-            background: resolvedTheme === "light" ? COLORS.accentSoft : "#11284a",
-            color: resolvedTheme === "light" ? COLORS.heading : "#43c8ff",
+            background: resolvedTheme === "light" ? accentSoftBg : "#11284a",
+            color: resolvedTheme === "light" ? accentStrong : accentStrong,
             borderRadius: 8,
             padding: `2px ${isMobile ? "10px" : "11px"}`,
             fontSize: isMobile ? 13 : 14,
             fontWeight: 500,
         }),
-        [COLORS.accentSoft, COLORS.heading, isMobile, resolvedTheme]
+        [accentSoftBg, accentStrong, isMobile, resolvedTheme]
     );
 
     // На мобильных «голый» текст загрузки выглядел как пустой экран
@@ -1108,7 +1127,15 @@ export default function OrderDetailsPage() {
                             boxShadow: COLORS.shadow
                         }}
                     >
-                        <FaEye style={{ filter: "drop-shadow(0 0 3px #43c8ff55)" }} />
+                        <FaEye
+                            style={{
+                                color: accentStrong,
+                                filter:
+                                    resolvedTheme === "light"
+                                        ? "none"
+                                        : "drop-shadow(0 0 3px #43c8ff55)",
+                            }}
+                        />
                         <span style={{ fontVariantNumeric: "tabular-nums" }}>{viewsCount}</span>
                     </span>
                     {/* Верхняя панель действий */}
@@ -1147,12 +1174,16 @@ export default function OrderDetailsPage() {
                                         onClick={() => setShowBidPanel((v) => !v)}
                                         style={{
                                             ...actionPillStyle,
-                                            border: showBidPanel ? "1px solid #43c8ff" : actionPillStyle.border,
-                                            boxShadow: showBidPanel ? "0 0 0 1px rgba(67, 200, 255, 0.25)" : "none",
+                                            border: showBidPanel
+                                                ? `1px solid ${accentStrong}`
+                                                : actionPillStyle.border,
+                                            boxShadow: showBidPanel
+                                                ? "0 0 0 1px color-mix(in srgb, var(--brand-blue) 32%, transparent)"
+                                                : "none",
                                         }}
                                         title={t("bids.make", "Сделать ставку")}
                                     >
-                                        <FaGavel style={{ fontSize: isMobile ? 17 : 19, color: "#43c8ff" }} />
+                                        <FaGavel style={{ fontSize: isMobile ? 17 : 19, color: accentStrong }} />
                                         {t("bids.title", "Ставки")}
                                     </button>
 
@@ -1425,12 +1456,16 @@ export default function OrderDetailsPage() {
                                     fontSize: isMobile ? 22 : 28,
                                     letterSpacing: 0.01,
                                     marginBottom: 6,
-                                    color: "#43c8ff",
+                                    color: accentStrong,
                                 }}
                             >
                                 {t("order.idPrefix", "Заявка №")}{order.id}
                             </div>
-                            {createdAt && <div style={{ color: "#8ecae6", fontSize: isMobile ? 13 : 15 }}>{t("common.created", "Создана")}: {createdAt}</div>}
+                            {createdAt && (
+                                <div style={{ color: accentMuted, fontSize: isMobile ? 13 : 15 }}>
+                                    {t("common.created", "Создана")}: {createdAt}
+                                </div>
+                            )}
 
                         </div>
 

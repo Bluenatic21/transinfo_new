@@ -6,6 +6,7 @@ import axios from "axios";
 import L from "leaflet";
 import { useLang } from "../i18n/LangProvider";
 import { WORLD_BOUNDS } from "../constants/mapBounds";
+import { useTheme } from "../providers/ThemeProvider";
 
 // ---- НАСТРОЙКИ ----
 const ORS_API_KEY = "5b3ce3597851110001cf6248e0d64cb4a6fd46e0a42286775eb9d392";
@@ -224,19 +225,23 @@ export default function OrderRouteMap({ from, to, waypoints = [] }) {
         iconAnchor: [18, 36],
     });
 
+    const { resolvedTheme } = useTheme?.() || { resolvedTheme: "dark" };
+    const isLight = resolvedTheme === "light";
+    const accentColor = isLight ? "var(--brand-blue, #2563eb)" : "#2971c7";
+
     return (
         <div className="order-map-container" style={{
             width: "100%",
             position: "relative",
             borderRadius: 16,
             margin: "32px 0 0 0",
-            background: "#182337",
-            boxShadow: "0 3px 24px #00184435",
+            background: isLight ? "var(--bg-card)" : "#182337",
+            boxShadow: isLight ? "var(--shadow-soft)" : "0 3px 24px #00184435",
         }}>
             <div style={{
                 padding: "12px 32px 10px 32px",
-                background: "#15203a",
-                color: "#fff",
+                background: isLight ? "var(--bg-card-soft)" : "#15203a",
+                color: isLight ? "var(--text-primary)" : "#fff",
                 borderTopLeftRadius: 16,
                 borderTopRightRadius: 16,
                 fontWeight: 700,
@@ -249,11 +254,11 @@ export default function OrderRouteMap({ from, to, waypoints = [] }) {
                 {!loading && summary && (
                     <>
                         <span>{t("route.label", "Маршрут")}:</span>
-                        <span style={{ color: "#2971c7", fontWeight: 800 }}>
+                        <span style={{ color: accentColor, fontWeight: 800 }}>
                             {(summary.distance / 1000).toFixed(1)} {t("units.km", "км")}
                         </span>
                         <span>•</span>
-                        <span>{t("route.time", "Время")}: <span style={{ color: "#2971c7" }}>{prettyDuration(summary.duration)}</span></span>
+                        <span>{t("route.time", "Время")}: <span style={{ color: accentColor }}>{prettyDuration(summary.duration)}</span></span>
                     </>
                 )}
             </div>
@@ -261,7 +266,7 @@ export default function OrderRouteMap({ from, to, waypoints = [] }) {
                 width: "100%",
                 height: "100%",
                 minHeight: 220,
-                background: "#181f36",
+                background: isLight ? "var(--bg-card)" : "#181f36",
                 borderRadius: "0 0 16px 16px",
                 overflow: "hidden",
                 position: "relative",

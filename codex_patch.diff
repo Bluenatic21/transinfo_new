@@ -1,277 +1,142 @@
-diff --git a/frontend/src/app/components/OrderList.js b/frontend/src/app/components/OrderList.js
-index 687520bb03dbb4e3c2625cc905ecab200d6a6f25..64edecd1a7f3e8217e47f7ed825c696b8dbca49e 100644
---- a/frontend/src/app/components/OrderList.js
-+++ b/frontend/src/app/components/OrderList.js
-@@ -1081,50 +1081,78 @@ function OrderCard({
-         [order.created_at],
+diff --git a/frontend/src/app/components/TransportList.js b/frontend/src/app/components/TransportList.js
+index bc7950208d1ecd5c4de9a964cf845f689fec27cb..83c4f29c9d658f4dd1c87c5564bc8621bb09c8f3 100644
+--- a/frontend/src/app/components/TransportList.js
++++ b/frontend/src/app/components/TransportList.js
+@@ -1384,55 +1384,64 @@ function TransportCard({ transport, expanded, onToggle }) {
+       // Шаблон: "<n> раз(а) в <день|неделю|месяц|год>"
+       const m = s.match(/(\d+)\s*раз[а]?\s*в\s*(день|неделю|месяц|год)/i);
+       if (m) {
+         const n = m[1];
+         const unit = m[2];
+         const unitI18n =
+           unit === "день"
+             ? t("units.perDay", "в день")
+             : unit === "неделю"
+             ? t("units.perWeek", "в неделю")
+             : unit === "месяц"
+             ? t("units.perMonth", "в месяц")
+             : t("units.perYear", "в год");
+         return `${unitI18n} ${n} ${t("regularity.times", "раз(а)")}`;
+       }
+       return reg;
+     },
+     [t]
+   );
+   const [adrDropdownOpen, setAdrDropdownOpen] = useState(false);
+   const router = useRouter();
+   const isMobile = useIsMobile();
+   const [ownerProfile, setOwnerProfile] = useState(null);
+ 
+   // --- Internal comments (только для аккаунта менеджера)
+-  const isManagerAccount = ["manager", "employee"].includes(
+-    (me?.role || "").toLowerCase()
+-  );
+-  // --- гостевой режим ---
+-  const isGuest = !me;
++  const isManagerAccount = ["manager", "employee"].includes(
++    (me?.role || "").toLowerCase()
++  );
++  const avatarPalette = isLight
++    ? {
++        border: "2px solid #193158",
++        background: "#1c2842",
++      }
++    : {
++        border: `2px solid ${cardColors.sectionBorder}`,
++        background: cardColors.sectionBg,
++      };
++  // --- гостевой режим ---
++  const isGuest = !me;
+   const requireAuth = useCallback(() => {
+     alert(
+       t(
+         "auth.loginOrRegister",
+         "Чтобы увидеть детали и контакты — войдите или зарегистрируйтесь."
+       )
      );
-     const titleString = useMemo(() => safeFormatDate(order.created_at, "ru-RU"), [order.created_at]);
+   }, [t]);
+   const [intCommentOpen, setIntCommentOpen] = useState(false);
+   const [intCommentText, setIntCommentText] = useState("");
+   const [intComments, setIntComments] = useState([]);
+   const intCommentBtnRef = useRef(null);
+   const intCommentPopoverRef = useRef(null);
  
-     const cardColors = {
-         bg: "var(--order-card-bg, rgba(23, 38, 60, 0.98))",
-         text: "var(--order-card-text, #e3f2fd)",
-         shadow: "var(--order-card-shadow, 0 2px 24px #001844cc)",
-         shadowExpanded: "var(--order-card-shadow-expanded, 0 4px 32px #43c8ff55, 0 2px 24px #001844cc)",
-         border: "var(--order-card-border, #1e88e5)",
-         borderActive: "var(--order-card-border-active, #43c8ff)",
-         sectionBg: "var(--order-card-section-bg, rgba(28, 37, 52, 0.92))",
-         sectionBorder: "var(--order-card-section-border, #193158)",
-         heading: "var(--order-card-heading, #43c8ff)",
-         label: "var(--order-card-label, #8ecae6)",
-         chipBg: "var(--order-card-chip-bg, #193158bb)",
-         chipFg: "var(--order-card-chip-fg, #cfe9ff)",
-         chipShadow: "var(--order-card-chip-shadow, 0 2px 8px #23416711)",
-         routeBg: "var(--order-card-route-bg, linear-gradient(90deg, #183969 38%, #253759 100%))",
-         routeFg: "var(--order-card-route-fg, #ffffff)",
-         iconBg: "var(--order-card-icon-bg, #162239)",
-         iconFg: "var(--order-card-icon-fg, #43c8ff)",
-         iconShadow: "var(--order-card-icon-shadow, 0 1px 8px #43c8ff17)",
-     };
- 
-+    const commentPalette = isLight
-+        ? {
-+              popoverBg: "#ffffff",
-+              popoverBorder: "#d4e4ff",
-+              popoverShadow: "0 12px 32px rgba(15, 23, 42, 0.12)",
-+              threadBg: "#f4f7fd",
-+              threadBorder: "#d9e5f5",
-+              commentText: "#0f172a",
-+              meta: "#475569",
-+              textareaBg: "#ffffff",
-+              textareaBorder: "#cbd5e1",
-+              textareaColor: "#0f172a",
-+              badgeRing: "#e2e8f0",
-+          }
-+        : {
-+              popoverBg: "#0f1f3a",
-+              popoverBorder: "#203a63",
-+              popoverShadow: "0 10px 30px #00000055",
-+              threadBg: "#11213b",
-+              threadBorder: "#24446e",
-+              commentText: "#cfe8ff",
-+              meta: "#9ec3ff",
-+              textareaBg: "#132445",
-+              textareaBorder: "#24446e",
-+              textareaColor: "#eaf5ff",
-+              badgeRing: "#0e1b2c",
-+          };
-+
-     // На светлой теме фон панели остаётся тёмным, поэтому фиксируем светлые цвета
-     // имени/контактного лица, чтобы текст не "пропадал" на фоне.
-     const infoPrimaryColor = "#ffffff";
-     const infoSecondaryColor = "#e5edff";
- 
- 
-     const iconBtnStyle = {
-         display: "flex",
-         alignItems: "center",
-         justifyContent: "center",
-         width: 32,
-         height: 32,
-         borderRadius: "45%",
-         background: cardColors.iconBg,
-         color: cardColors.iconFg,
-         border: "none",
-         fontSize: 15,
-         cursor: "pointer",
-         boxShadow: cardColors.iconShadow,
-         transition: "background .16s, color .16s, box-shadow .16s",
-     };
- 
-     function toLocationArray(val) {
-         if (Array.isArray(val)) return val.filter(Boolean);
-         if (typeof val === "string" && val.trim()) {
-@@ -1980,174 +2008,175 @@ function OrderCard({
-                                     const open = commentOpenId === order.id;
-                                     setCommentOpenId(open ? null : order.id);
-                                     if (!open) loadInternalComments(order.id);
-                                 }}
-                                 style={{ ...iconBtnStyle, position: "relative" }}
-                                 aria-label={t("comments.internalTooltip", "Внутренний комментарий")}
-                                 ref={commentBtnRef}
-                             >
-                                 <FaRegCommentDots />
-                                 {(commentsMap[order.id]?.length || 0) > 0 && (
-                                     <span
-                                         style={{
-                                             position: "absolute",
-                                             top: -4,
-                                             right: -4,
-                                             minWidth: 18,
-                                             height: 18,
-                                             borderRadius: 9,
-                                             background: "#43c8ff",
-                                             color: "#0f1f2b",
-                                             fontSize: 11,
-                                             fontWeight: 800,
-                                             display: "flex",
-                                             alignItems: "center",
-                                             justifyContent: "center",
--                                            boxShadow: "0 0 0 2px #0e1b2c",
-+                                            boxShadow: `0 0 0 2px ${commentPalette.badgeRing}`,
-                                         }}
-                                     >
-                                         {commentsMap[order.id].length}
-                                     </span>
-                                 )}
-                             </button>
-                             {commentOpenId === order.id && (
-                                 <div
-                                     ref={commentPopoverRef}
-                                     style={{
-                                         position: "absolute",
-                                         right: 0,
-                                         top: "110%",
-                                         width: 520,
-                                         maxWidth: "min(92vw, 520px)",
--                                        background: "#0f1f3a",
--                                        border: "1px solid #203a63",
-+                                        background: commentPalette.popoverBg,
-+                                        border: `1px solid ${commentPalette.popoverBorder}`,
-                                         borderRadius: 12,
-                                         padding: 12,
--                                        boxShadow: "0 10px 30px #00000055",
-+                                        boxShadow: commentPalette.popoverShadow,
-                                         zIndex: 20,
-+                                        color: commentPalette.commentText,
-                                     }}
-                                     onMouseDown={(e) => e.stopPropagation()}
-                                 >
- 
-                                     {/* Лента комментариев */}
-                                     <div
-                                         style={{
-                                             maxHeight: 220,
-                                             overflowY: "auto",
--                                            background: "#11213b",
--                                            border: "1px solid #24446e",
-+                                            background: commentPalette.threadBg,
-+                                            border: `1px solid ${commentPalette.threadBorder}`,
-                                             borderRadius: 8,
-                                             padding: 8,
-                                             marginBottom: 8,
-                                         }}
-                                     >
-                                         {(commentsMap[order.id]?.length || 0) === 0 ? (
-                                             <div style={{ color: cardColors.label, fontSize: 14 }}>{t("comments.none", "Пока нет комментариев")}</div>
-                                         ) : (
-                                             commentsMap[order.id].map((c) => (
-                                                 <div
-                                                     key={c.id}
-                                                     style={{
-                                                         display: "flex",
-                                                         gap: 10,
-                                                         padding: "6px 4px",
--                                                        borderBottom: "1px solid #1c2f4f",
-+                                                        borderBottom: `1px solid ${commentPalette.threadBorder}`,
-                                                     }}
-                                                 >
-                                                     <img
-                                                         src={c.author_avatar ? abs(c.author_avatar) : "/default-avatar.png"}
-                                                         alt="av"
-                                                         width={28}
-                                                         height={28}
--                                                        style={{ borderRadius: "50%", border: "1px solid #203a63", objectFit: "cover" }}
-+                                                        style={{ borderRadius: "50%", border: `1px solid ${commentPalette.threadBorder}`, objectFit: "cover" }}
-                                                         onError={(e) => (e.currentTarget.src = "/default-avatar.png")}
-                                                     />
-                                                     <div style={{ flex: 1, minWidth: 0 }}>
-                                                         <div
-                                                             style={{
-                                                                 display: "flex",
-                                                                 justifyContent: "space-between",
-                                                                 alignItems: "center",
-                                                                 marginBottom: 3,
-                                                                 gap: 10,
-                                                             }}
-                                                         >
--                                                            <b style={{ color: "#e3f2fd", fontSize: 13 }}>{c.author_name || t("comments.member", "Участник")}</b>
--                                                            <span style={{ color: cardColors.label, fontSize: 11 }}>
-+                                                            <b style={{ color: commentPalette.commentText, fontSize: 13 }}>{c.author_name || t("comments.member", "Участник")}</b>
-+                                                            <span style={{ color: commentPalette.meta, fontSize: 11 }}>
-                                                                 {(() => {
-                                                                     const d = new Date(c.created_at);
-                                                                     return isNaN(d.getTime())
-                                                                         ? ""
-                                                                         : d.toLocaleString("ru-RU", { day: "2-digit", month: "2-digit", year: "2-digit", hour: "2-digit", minute: "2-digit" });
-                                                                 })()}
-                                                             </span>
-                                                         </div>
--                                                        <div style={{ color: "#cfe8ff", whiteSpace: "pre-wrap", fontSize: 14 }}>{c.content}</div>
-+                                                        <div style={{ color: commentPalette.commentText, whiteSpace: "pre-wrap", fontSize: 14 }}>{c.content}</div>
-                                                     </div>
-                                                 </div>
-                                             ))
-                                         )}
-                                     </div>
-                                     <textarea
-                                         value={commentText}
-                                         onChange={(e) => setCommentText(e.target.value)}
-                                         rows={3}
-                                         placeholder={t("comments.placeholder.short", "Короткий комментарий…")}
-                                         style={{
-                                             width: "100%",
-                                             borderRadius: 8,
--                                            border: "1px solid #24446e",
--                                            background: "#132445",
--                                            color: "#eaf5ff",
-+                                            border: `1px solid ${commentPalette.textareaBorder}`,
-+                                            background: commentPalette.textareaBg,
-+                                            color: commentPalette.textareaColor,
-                                             padding: 8,
-                                         }}
-                                     />
-                                     <div
-                                         style={{
-                                             display: "flex",
-                                             alignItems: "center",
-                                             gap: 6,
--                                            color: "#9ec3ff",
-+                                            color: commentPalette.meta,
-                                             fontSize: 12,
-                                             marginTop: 6,
-                                             marginBottom: 4,
-                                         }}
-                                     >
-                                         <span
-                                             style={{
-                                                 display: "inline-flex",
-                                                 alignItems: "center",
-                                                 justifyContent: "center",
-                                                 width: 16,
-                                                 height: 16,
-                                                 minWidth: 16,
-                                                 borderRadius: "50%",
--                                                background: "#193158",
--                                                color: "#9ec3ff",
-+                                                background: isLight ? "#e6f0ff" : "#193158",
-+                                                color: isLight ? "#0f172a" : "#9ec3ff",
-                                                 fontWeight: 900,
-                                                 fontSize: 11,
--                                                border: "1px solid #2b4a77",
-+                                                border: `1px solid ${commentPalette.threadBorder}`,
-                                             }}
-                                         >
-                                             i
-                                         </span>
-                                         <span>{t("comments.internalVisibilityNote", "Эту заметку увидят только автор заявки и участники аккаунта экспедитора.")}</span>
-                                     </div>
-                                     <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 8 }}>
-                                         <button
-                                             onClick={() => saveInternalComment(order.id)}
-                                             disabled={!commentText.trim()}
-                                             style={{
-                                                 padding: "6px 12px",
-                                                 borderRadius: 8,
-                                                 border: "none",
-                                                 background: "#1e7ef7",
-                                                 color: "#fff",
-                                                 fontWeight: 700,
-                                                 cursor: "pointer",
-                                             }}
-                                         >
-                                             {t("common.save", "Сохранить")}
-                                         </button>
-                                         <span style={{ fontSize: 12, opacity: 0.75 }}>
-                                             {t("comments.savedCount", "Сохранено: {count}", { count: (commentsMap[order.id]?.length || 0) })}
-                                         </span>
+   async function loadInternalCommentsLocal() {
+     if (!isManagerAccount) return;
+     const token = localStorage.getItem("token");
+     const r = await fetch(
+       api(`/internal_comments?transport_id=${transport.id}`),
+       {
+         headers: token ? { Authorization: "Bearer " + token } : {},
+       }
+     );
+     const data = await r.json();
+     setIntComments(Array.isArray(data) ? data : []);
+@@ -2520,59 +2529,58 @@ function TransportCard({ transport, expanded, onToggle }) {
+             padding: "6px 15px",
+             /* небольшой отступ, чтобы панель визуально “дышала” от секций */
+             marginTop: 4,
+             minHeight: 44,
+             display: "flex",
+             alignItems: "center",
+             gap: 14,
+             justifyContent: "space-between",
+             fontSize: 15,
+             flexWrap: "wrap",
+           }}
+         >
+           {/* ЛЕВЫЙ блок (автор/орг) */}
+           <div
+             style={{
+               display: "flex",
+               alignItems: "center",
+               gap: 10,
+               minWidth: 0,
+               cursor: "pointer",
+               flex: "1 1 260px",
+             }}
+             onClick={() => router.push(`/profile/${ownerProfile.id}`)}
+             title={t("profile.open", "Перейти в профиль")}
+           >
+-            <UserAvatar
+-              user={ownerProfile}
+-              size={40}
+-              style={{
+-                border: `2px solid ${cardColors.sectionBorder}`,
+-                background: cardColors.sectionBg,
+-                marginRight: 12,
+-              }}
+-            />
++            <UserAvatar
++              user={ownerProfile}
++              size={40}
++              style={{
++                ...avatarPalette,
++                marginRight: 12,
++              }}
++            />
+             <span
+               style={{
+                 fontWeight: 700,
+                 color: infoPrimaryColor,
+                 fontSize: 15,
+                 whiteSpace: "nowrap",
+                 maxWidth: 130,
+                 overflow: "hidden",
+                 textOverflow: "ellipsis",
+               }}
+             >
+               {ownerProfile.organization}
+             </span>
+             {ownerProfile.contact_person && (
+               <span
+                 style={{
+                   color: infoSecondaryColor,
+                   fontSize: 14,
+                   maxWidth: 110,
+                   whiteSpace: "nowrap",
+                   overflow: "hidden",
+                   textOverflow: "ellipsis",
+                 }}
+               >
+                 {ownerProfile.contact_person}
