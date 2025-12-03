@@ -253,6 +253,32 @@
     --compact-card-edit-text: #d6e9ff;
     --compact-card-delete-bg: #db2344;
     --compact-card-delete-text: #ffd6e0;
+
+    /* Bids panel (desktop + mobile) */
+    --bids-panel-bg: #22304b;
+    --bids-panel-border: #193158;
+    --bids-panel-shadow: 0 10px 40px #001844cc;
+    --bids-panel-title: #43c8ff;
+    --bids-panel-text: #e3f2fd;
+    --bids-panel-muted: #9cc4e7;
+    --bids-panel-username: #43c8ff;
+    --bids-panel-comment: #b3d5fa;
+    --bids-panel-amount: #ffd600;
+    --bids-panel-amount-accepted: #53ee5c;
+    --bids-panel-close-bg: #182740;
+    --bids-panel-close-text: #43c8ff;
+
+    --bids-card-bg: #182740;
+    --bids-card-bg-accepted: #183f26;
+    --bids-card-border: #203554;
+    --bids-card-border-accepted: #53ee5c;
+    --bids-status-accepted: #53ee5c;
+    --bids-status-rejected: #fe6686;
+
+    --bids-action-accept-bg: #33de7b;
+    --bids-action-accept-text: #192b42;
+    --bids-action-reject-bg: #fe6686;
+    --bids-action-reject-text: #ffffff;
 }
 
 /* === Footer tokens === */
@@ -315,6 +341,31 @@
     --compact-card-edit-text: #e7eefc;
     --compact-card-delete-bg: #c81e40;
     --compact-card-delete-text: #fff1f5;
+
+    --bids-panel-bg: #ffffff;
+    --bids-panel-border: #d7deea;
+    --bids-panel-shadow: 0 14px 36px rgba(15, 23, 42, 0.16);
+    --bids-panel-title: #0f235a;
+    --bids-panel-text: #0f172a;
+    --bids-panel-muted: #475569;
+    --bids-panel-username: #0ea5e9;
+    --bids-panel-comment: #334155;
+    --bids-panel-amount: #d97706;
+    --bids-panel-amount-accepted: #15803d;
+    --bids-panel-close-bg: #eef2f7;
+    --bids-panel-close-text: #0f235a;
+
+    --bids-card-bg: #f8fafc;
+    --bids-card-bg-accepted: #ecfdf3;
+    --bids-card-border: #e2e8f0;
+    --bids-card-border-accepted: #22c55e;
+    --bids-status-accepted: #15803d;
+    --bids-status-rejected: #dc2626;
+
+    --bids-action-accept-bg: #22c55e;
+    --bids-action-accept-text: #0f172a;
+    --bids-action-reject-bg: #f43f5e;
+    --bids-action-reject-text: #ffffff;
 }
 
 /* === Sidebar tokens === */

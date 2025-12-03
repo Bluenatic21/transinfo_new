@@ -1235,9 +1235,10 @@ const CargoCompactCard = forwardRef(function CargoCompactCard(
                                                 left: panelPos.left ?? "50%",
                                                 transform: panelPos.top != null && panelPos.left != null ? undefined : "translate(-50%, -50%)",
                                                 zIndex: 100001, // поверх оверлея
-                                                background: "#22304b",
+                                                background: "var(--bids-panel-bg)",
                                                 borderRadius: 15,
-                                                boxShadow: "0 10px 40px #001844cc, 0 0 0 2px #193158",
+                                                boxShadow: "var(--bids-panel-shadow)",
+                                                border: "1px solid var(--bids-panel-border)",
                                                 minWidth: 300,
                                                 maxWidth: 460,
                                                 padding: 16,
@@ -1245,13 +1246,13 @@ const CargoCompactCard = forwardRef(function CargoCompactCard(
                                             }}
                                             onClick={(e) => e.stopPropagation()}
                                         >
-                                            <div style={{ fontWeight: 700, color: "#43c8ff", fontSize: 17, marginBottom: 10 }}>
+                                            <div style={{ fontWeight: 700, color: "var(--bids-panel-title)", fontSize: 17, marginBottom: 10 }}>
                                                 {t("bids.title", "Полученные предложения")}
                                             </div>
 
-                                            {bidsLoading && <div style={{ color: "#9cc4e7", fontSize: 15 }}>{t("bids.loading", "Загрузка...")}</div>}
+                                            {bidsLoading && <div style={{ color: "var(--bids-panel-muted)", fontSize: 15 }}>{t("bids.loading", "Загрузка...")}</div>}
                                             {!bidsLoading && bids.length === 0 && (
-                                                <div style={{ color: "#9cc4e7", fontSize: 15 }}>{t("bids.empty", "Нет предложений")}</div>
+                                                <div style={{ color: "var(--bids-panel-muted)", fontSize: 15 }}>{t("bids.empty", "Нет предложений")}</div>
                                             )}
 
                                             <div style={{ maxHeight: 220, overflowY: "auto" }}>
@@ -1259,8 +1260,8 @@ const CargoCompactCard = forwardRef(function CargoCompactCard(
                                                     <div
                                                         key={bid.id}
                                                         style={{
-                                                            background: bid.status === "accepted" ? "#183f26" : "#182740",
-                                                            border: bid.status === "accepted" ? "2px solid #53ee5c" : "none",
+                                                            background: bid.status === "accepted" ? "var(--bids-card-bg-accepted)" : "var(--bids-card-bg)",
+                                                            border: bid.status === "accepted" ? "2px solid var(--bids-card-border-accepted)" : "1px solid var(--bids-card-border)",
                                                             borderRadius: 11,
                                                             padding: "7px 10px",
                                                             marginBottom: 7,
@@ -1272,14 +1273,14 @@ const CargoCompactCard = forwardRef(function CargoCompactCard(
                                                     >
                                                         <b
                                                             style={{
-                                                                color: bid.status === "accepted" ? "#53ee5c" : "#ffd600",
+                                                                color: bid.status === "accepted" ? "var(--bids-panel-amount-accepted)" : "var(--bids-panel-amount)",
                                                                 fontSize: 16,
                                                             }}
                                                         >
                                                             {formatPrice(bid.amount, bid.currency)}
                                                         </b>
-                                                        <span style={{ color: "#b3d5fa", flex: 1 }}>{bid.comment}</span>
-                                                        <span style={{ color: "#43c8ff", fontSize: 15 }}>{bid.user_name}</span>
+                                                        <span style={{ color: "var(--bids-panel-comment)", flex: 1 }}>{bid.comment}</span>
+                                                        <span style={{ color: "var(--bids-panel-username)", fontSize: 15 }}>{bid.user_name}</span>
 
                                                         {/* чат */}
                                                         <button
@@ -1287,7 +1288,7 @@ const CargoCompactCard = forwardRef(function CargoCompactCard(
                                                             onClick={(e) => { e.stopPropagation(); openChatForBid(bid); }}
                                                             style={{
                                                                 background: "none",
-                                                                color: "#43c8ff",
+                                                                color: "var(--bids-panel-username)",
                                                                 border: "none",
                                                                 borderRadius: "50%",
                                                                 padding: "5px 7px",
@@ -1302,8 +1303,8 @@ const CargoCompactCard = forwardRef(function CargoCompactCard(
                                                             <FaComments
                                                                 style={{
                                                                     fontSize: 19,
-                                                                    color: "#43c8ff",
-                                                                    filter: "drop-shadow(0 1px 4px #43c8ff55)",
+                                                                    color: "var(--bids-panel-username)",
+                                                                    filter: "drop-shadow(0 1px 4px color-mix(in oklab, var(--bids-panel-username) 60%, transparent))",
                                                                 }}
                                                             />
                                                         </button>
@@ -1324,60 +1325,60 @@ const CargoCompactCard = forwardRef(function CargoCompactCard(
                                                                                 return;
                                                                             }
                                                                             alert(t("error.acceptBid", "Ошибка при принятии предложения!"));
-                                                                        } catch (e) {
-                                                                            alert(t("error.js", "JS ошибка") + ": " + e.message);
-                                                                        }
-                                                                    }}
-                                                                    style={{
-                                                                        background: "#33de7b",
-                                                                        color: "#192b42",
-                                                                        border: "none",
-                                                                        borderRadius: 8,
-                                                                        padding: "5px 9px",
-                                                                        fontWeight: 700,
-                                                                        marginRight: 4,
-                                                                        cursor: "pointer",
-                                                                    }}
-                                                                    title={t("bids.accept", "Принять предложение")}
-                                                                >
-                                                                    ✔
-                                                                </button>
-                                                                <button
-                                                                    onClick={async () => {
-                                                                        await authFetchWithRefresh(
-                                                                            api(`/orders/${cargo.id}/bids/${bid.id}/reject`),
-                                                                            { method: "POST" }
-                                                                        );
-                                                                        loadBids();
-                                                                    }}
-                                                                    style={{
-                                                                        background: "#fe6686",
-                                                                        color: "#fff",
-                                                                        border: "none",
-                                                                        borderRadius: 8,
-                                                                        padding: "5px 9px",
-                                                                        fontWeight: 700,
-                                                                        cursor: "pointer",
-                                                                    }}
-                                                                    title={t("bids.reject", "Отклонить")}
-                                                                >
-                                                                    ✖
-                                                                </button>
-                                                            </>
-                                                        )}
-                                                        {bid.status === "accepted" && (
-                                                            <span style={{ color: "#53ee5c", fontWeight: 700, marginLeft: 7, fontSize: 15 }}>
-                                                                {t("bids.accepted", "Принято")}
-                                                            </span>
-                                                        )}
-                                                        {bid.status === "rejected" && (
-                                                            <span style={{ color: "#fe6686", fontWeight: 700, marginLeft: 7, fontSize: 15 }}>
-                                                                {t("bids.rejected", "Отклонено")}
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                ))}
-                                            </div>
+                                                                } catch (e) {
+                                                                    alert(t("error.js", "JS ошибка") + ": " + e.message);
+                                                                }
+                                                            }}
+                                                            style={{
+                                                                background: "var(--bids-action-accept-bg)",
+                                                                color: "var(--bids-action-accept-text)",
+                                                                border: "none",
+                                                                borderRadius: 8,
+                                                                padding: "5px 9px",
+                                                                fontWeight: 700,
+                                                                marginRight: 4,
+                                                                cursor: "pointer",
+                                                            }}
+                                                            title={t("bids.accept", "Принять предложение")}
+                                                        >
+                                                            ✔
+                                                        </button>
+                                                        <button
+                                                            onClick={async () => {
+                                                                await authFetchWithRefresh(
+                                                                    api(`/orders/${cargo.id}/bids/${bid.id}/reject`),
+                                                                    { method: "POST" }
+                                                                );
+                                                                loadBids();
+                                                            }}
+                                                            style={{
+                                                                background: "var(--bids-action-reject-bg)",
+                                                                color: "var(--bids-action-reject-text)",
+                                                                border: "none",
+                                                                borderRadius: 8,
+                                                                padding: "5px 9px",
+                                                                fontWeight: 700,
+                                                                cursor: "pointer",
+                                                            }}
+                                                            title={t("bids.reject", "Отклонить")}
+                                                        >
+                                                            ✖
+                                                        </button>
+                                                    </>
+                                                )}
+                                                    {bid.status === "accepted" && (
+                                                        <span style={{ color: "var(--bids-status-accepted)", fontWeight: 700, marginLeft: 7, fontSize: 15 }}>
+                                                            {t("bids.accepted", "Принято")}
+                                                        </span>
+                                                    )}
+                                                    {bid.status === "rejected" && (
+                                                        <span style={{ color: "var(--bids-status-rejected)", fontWeight: 700, marginLeft: 7, fontSize: 15 }}>
+                                                            {t("bids.rejected", "Отклонено")}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            ))}
+                                        </div>
 
                                             <button
                                                 onClick={(e) => {
@@ -1385,9 +1386,9 @@ const CargoCompactCard = forwardRef(function CargoCompactCard(
                                                     setShowBids(false);
                                                 }}
                                                 style={{
-                                                    background: "#182740",
-                                                    color: "#43c8ff",
-                                                    border: "none",
+                                                    background: "var(--bids-panel-close-bg)",
+                                                    color: "var(--bids-panel-close-text)",
+                                                    border: `1px solid var(--bids-panel-border)`,
                                                     borderRadius: 8,
                                                     fontWeight: 700,
                                                     padding: "8px 20px",
@@ -1433,38 +1434,39 @@ const CargoCompactCard = forwardRef(function CargoCompactCard(
                                                     position: "absolute",
                                                     left: 0,
                                                     right: 0,
-                                                    bottom: 0,
-                                                    background: "#22304b",
-                                                    borderTopLeftRadius: 16,
-                                                    borderTopRightRadius: 16,
-                                                    boxShadow: "0 -10px 30px #001844cc, 0 0 0 2px #193158",
-                                                    maxHeight: "76vh",
-                                                    minHeight: "44vh",
-                                                    display: "flex",
-                                                    flexDirection: "column",
-                                                    padding: 14,
+                                                bottom: 0,
+                                                background: "var(--bids-panel-bg)",
+                                                borderTopLeftRadius: 16,
+                                                borderTopRightRadius: 16,
+                                                boxShadow: "var(--bids-panel-shadow)",
+                                                border: "1px solid var(--bids-panel-border)",
+                                                maxHeight: "76vh",
+                                                minHeight: "44vh",
+                                                display: "flex",
+                                                flexDirection: "column",
+                                                padding: 14,
                                                     zIndex: 100002
                                                 }}
                                             >
                                                 {/* хэндл */}
                                                 <div style={{ width: 44, height: 4, background: "var(--compact-card-pill-border)", borderRadius: 999, margin: "4px auto 12px" }} />
                                                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-                                                    <div style={{ fontWeight: 800, color: "#43c8ff", fontSize: 16 }}>
+                                                    <div style={{ fontWeight: 800, color: "var(--bids-panel-title)", fontSize: 16 }}>
                                                         {t("bids.title", "Полученные предложения")}
                                                     </div>
                                                     <button
                                                         onClick={() => { armClickGuard(400); setShowBids(false); }}
-                                                        style={{ background: "transparent", border: "none", color: "#9cc4e7", fontWeight: 800, fontSize: 16, cursor: "pointer" }}
+                                                        style={{ background: "transparent", border: "none", color: "var(--bids-panel-muted)", fontWeight: 800, fontSize: 16, cursor: "pointer" }}
                                                         aria-label={t("bids.close", "Закрыть")}
                                                     >
                                                         ✕
                                                     </button>
                                                 </div>
                                                 {bidsLoading && (
-                                                    <div style={{ color: "#9cc4e7", fontSize: 15, padding: "8px 2px" }}>{t("bids.loading", "Загрузка...")}</div>
+                                                    <div style={{ color: "var(--bids-panel-muted)", fontSize: 15, padding: "8px 2px" }}>{t("bids.loading", "Загрузка...")}</div>
                                                 )}
                                                 {!bidsLoading && bids.length === 0 && (
-                                                    <div style={{ color: "#9cc4e7", fontSize: 15, padding: "8px 2px" }}>{t("bids.empty", "Нет предложений")}</div>
+                                                    <div style={{ color: "var(--bids-panel-muted)", fontSize: 15, padding: "8px 2px" }}>{t("bids.empty", "Нет предложений")}</div>
                                                 )}
 
                                                 <div style={{ overflowY: "auto", padding: "2px 2px 8px", gap: 8, display: "flex", flexDirection: "column" }}>
@@ -1475,8 +1477,8 @@ const CargoCompactCard = forwardRef(function CargoCompactCard(
                                                             role="button"
                                                             tabIndex={0}
                                                             style={{
-                                                                background: bid.status === "accepted" ? "#183f26" : "#182740",
-                                                                border: bid.status === "accepted" ? "2px solid #53ee5c" : "1px solid #203554",
+                                                                background: bid.status === "accepted" ? "var(--bids-card-bg-accepted)" : "var(--bids-card-bg)",
+                                                                border: bid.status === "accepted" ? "2px solid var(--bids-card-border-accepted)" : "1px solid var(--bids-card-border)",
                                                                 borderRadius: 12,
                                                                 padding: "12px 12px",
                                                                 display: "flex",
@@ -1487,13 +1489,13 @@ const CargoCompactCard = forwardRef(function CargoCompactCard(
                                                                 minHeight: 56
                                                             }}
                                                         >
-                                                            <b style={{ color: bid.status === "accepted" ? "#53ee5c" : "#ffd600", fontSize: 16 }}>
+                                                            <b style={{ color: bid.status === "accepted" ? "var(--bids-panel-amount-accepted)" : "var(--bids-panel-amount)", fontSize: 16 }}>
                                                                 {formatPrice(bid.amount, bid.currency)}
                                                             </b>
-                                                            <span style={{ color: "#b3d5fa", flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                                                            <span style={{ color: "var(--bids-panel-comment)", flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                                                                 {bid.comment}
                                                             </span>
-                                                            <span style={{ color: "#43c8ff", fontSize: 14 }}>
+                                                            <span style={{ color: "var(--bids-panel-username)", fontSize: 14 }}>
                                                                 {bid.user_name}
                                                             </span>
                                                             {/* чат */}
@@ -1502,7 +1504,7 @@ const CargoCompactCard = forwardRef(function CargoCompactCard(
                                                                 onClick={(e) => { e.stopPropagation(); openChatForBid(bid); }}
                                                                 style={{
                                                                     background: "none",
-                                                                    color: "#43c8ff",
+                                                                    color: "var(--bids-panel-username)",
                                                                     border: "none",
                                                                     borderRadius: "9999px",
                                                                     width: 44,
@@ -1515,7 +1517,7 @@ const CargoCompactCard = forwardRef(function CargoCompactCard(
                                                                     touchAction: "manipulation"
                                                                 }}
                                                             >
-                                                                <FaComments style={{ fontSize: 22, color: "#43c8ff", filter: "drop-shadow(0 1px 4px #43c8ff55)" }} />
+                                                                <FaComments style={{ fontSize: 22, color: "var(--bids-panel-username)", filter: "drop-shadow(0 1px 4px color-mix(in oklab, var(--bids-panel-username) 60%, transparent))" }} />
                                                             </button>
                                                             {/* accept / reject */}
                                                             {bid.status !== "accepted" && bid.status !== "rejected" && (
@@ -1535,15 +1537,15 @@ const CargoCompactCard = forwardRef(function CargoCompactCard(
                                                                                     return;
                                                                                 }
                                                                                 alert(t("error.acceptBid", "Ошибка при принятии предложения!"));
-                                                                            } catch (e) {
-                                                                                alert("JS ошибка: " + e.message);
-                                                                            }
-                                                                        }}
-                                                                        style={{ background: "#33de7b", color: "#192b42", border: "none", borderRadius: 12, padding: "8px 12px", fontWeight: 800, marginLeft: 4, cursor: "pointer", minWidth: 44 }}
-                                                                        title={t("bids.accept", "Принять предложение")}
-                                                                    >
-                                                                        ✔
-                                                                    </button>
+                                                                        } catch (e) {
+                                                                            alert("JS ошибка: " + e.message);
+                                                                        }
+                                                                    }}
+                                                                    style={{ background: "var(--bids-action-accept-bg)", color: "var(--bids-action-accept-text)", border: "none", borderRadius: 12, padding: "8px 12px", fontWeight: 800, marginLeft: 4, cursor: "pointer", minWidth: 44 }}
+                                                                    title={t("bids.accept", "Принять предложение")}
+                                                                >
+                                                                    ✔
+                                                                </button>
                                                                     <button
                                                                         onClick={async (e) => {
                                                                             e.stopPropagation();
@@ -1554,7 +1556,7 @@ const CargoCompactCard = forwardRef(function CargoCompactCard(
                                                                             loadBids();
                                                                             armClickGuard(400); // если решишь закрывать лист — armClickGuard тоже пригодится
                                                                         }}
-                                                                        style={{ background: "#fe6686", color: "#fff", border: "none", borderRadius: 12, padding: "8px 12px", fontWeight: 800, marginLeft: 4, cursor: "pointer", minWidth: 44 }}
+                                                                        style={{ background: "var(--bids-action-reject-bg)", color: "var(--bids-action-reject-text)", border: "none", borderRadius: 12, padding: "8px 12px", fontWeight: 800, marginLeft: 4, cursor: "pointer", minWidth: 44 }}
                                                                         title={t("bids.reject", "Отклонить")}
                                                                     >
                                                                         ✖
@@ -1562,10 +1564,10 @@ const CargoCompactCard = forwardRef(function CargoCompactCard(
                                                                 </>
                                                             )}
                                                             {bid.status === "accepted" && (
-                                                                <span style={{ color: "#53ee5c", fontWeight: 800, marginLeft: 6, fontSize: 14 }}>{t("bids.accepted", "Принято")}</span>
+                                                                <span style={{ color: "var(--bids-status-accepted)", fontWeight: 800, marginLeft: 6, fontSize: 14 }}>{t("bids.accepted", "Принято")}</span>
                                                             )}
                                                             {bid.status === "rejected" && (
-                                                                <span style={{ color: "#fe6686", fontWeight: 800, marginLeft: 6, fontSize: 14 }}>{t("bids.rejected", "Отклонено")}</span>
+                                                                <span style={{ color: "var(--bids-status-rejected)", fontWeight: 800, marginLeft: 6, fontSize: 14 }}>{t("bids.rejected", "Отклонено")}</span>
                                                             )}
                                                         </div>
                                                     ))}
@@ -1574,9 +1576,9 @@ const CargoCompactCard = forwardRef(function CargoCompactCard(
                                                 <button
                                                     onClick={() => { armClickGuard(400); setShowBids(false); }}
                                                     style={{
-                                                        background: "#182740",
-                                                        color: "#43c8ff",
-                                                        border: "none",
+                                                        background: "var(--bids-panel-close-bg)",
+                                                        color: "var(--bids-panel-close-text)",
+                                                        border: `1px solid var(--bids-panel-border)`,
                                                         borderRadius: 10,
                                                         fontWeight: 800,
                                                         padding: "10px 20px",
