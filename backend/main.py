@@ -103,7 +103,8 @@ import support_models  # регистрирует модели support_* в SQLA
 from support_rest import router as support_router
 # Роуты отзывов
 from routers.reviews import router as reviews_router
-from pathlib import Path as FilePath
+from pathlib import Path, Path as FilePath
+import os
 from fastapi.responses import FileResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import Response as StarletteResponse
@@ -472,7 +473,7 @@ def serve_chat_file(filename: str, request: Request):
 
 # ==== RANGE для /static/media | /static/sounds | /static/voice ====
 media_range_router = APIRouter()
-MEDIA_ROOT = Path(__file__).parent / "static"
+MEDIA_ROOT = STATIC_DIR
 _AUDIO_MIME = {
     ".mp3": "audio/mpeg", ".wav": "audio/wav", ".ogg": "audio/ogg",
     ".webm": "audio/webm", ".m4a": "audio/mp4", ".aac": "audio/aac"
@@ -1063,8 +1064,15 @@ app.include_router(chat_files_router)
 app.include_router(media_range_router)
 
 # Раздаём статику из папки рядом с main.py (работает независимо от текущей рабочей директории)
-STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
-app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+BASE_DIR = Path(__file__).parent
+# Можно переопределить через переменную окружения STATIC_DIR,
+# иначе по умолчанию backend/static
+STATIC_DIR = Path(
+    os.getenv("STATIC_DIR", BASE_DIR / "static")
+).resolve()
+STATIC_DIR.mkdir(parents=True, exist_ok=True)
+
+app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
 # --- Password reset (forgot/reset via email) ---
 app.include_router(password_reset_router)
@@ -2902,7 +2910,7 @@ app.include_router(ws_router)
 
 # Подключи к FastAPI:
 
-UPLOAD_ROOT = FilePath("static/uploads")
+UPLOAD_ROOT = STATIC_DIR / "uploads"
 UPLOAD_ROOT.mkdir(parents=True, exist_ok=True)
 
 
@@ -3731,14 +3739,12 @@ def upload_avatar(
 
     # Генерируем уникальное имя файла
     avatar_filename = f"avatars/{uuid4().hex}{ext}"
-   # Сохраняем аватар точно в той папке, которая раздаётся FastAPI через STATIC_DIR
-    save_path = os.path.join(STATIC_DIR, avatar_filename)
-    os.makedirs(os.path.dirname(save_path), exist_ok=True)
+    # Сохраняем именно в STATIC_DIR/avatars
+    save_path = STATIC_DIR / avatar_filename
+    save_path.parent.mkdir(parents=True, exist_ok=True)
 
-    # Записываем файл правильно!
     contents = file.file.read()
-    with open(save_path, "wb") as f:
-        f.write(contents)
+    save_path.write_bytes(contents)
     if len(contents) < 100:  # На всякий случай, проверь размер
         raise HTTPException(400, "Файл слишком маленький или не картинка!")
 

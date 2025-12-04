@@ -1,102 +1,124 @@
-diff --git a/backend/main.py b/backend/main.py
-index 15a220af12a62f2e6927a9bb529bde975e548f44..7375261bd574fbfd30bb8e685adf857849620c0f 100644
---- a/backend/main.py
-+++ b/backend/main.py
-@@ -3692,95 +3692,83 @@ def get_user_ratings(
- 
- @app.get("/users/{user_id}", response_model=UserProfile)
- def get_user_profile(user_id: int, db: Session = Depends(get_db)):
-     user = db.query(UserModel).filter(UserModel.id == user_id).first()
-     if not user:
-         raise HTTPException(status_code=404, detail="User not found")
-     return user
- 
- 
- @app.get("/users", response_model=List[UserOut])
- def get_all_users(db: Session = Depends(get_db), current_user: UserModel = Depends(get_current_user)):
-     # Возвращаем всех пользователей, кроме текущего — доступно всем залогиненным
-     users = db.query(UserModel).filter(UserModel.id != current_user.id).all()
-     return users
- 
- 
- def email_from_token(token):
-     payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-     return payload.get("sub")
- 
- 
- @app.post("/profile/avatar")
- def upload_avatar(
-     file: UploadFile = File(...),
-     db: Session = Depends(get_db),
--    authorization: str = Header(None),
-+    current_user: UserModel = Depends(get_current_user),
- ):
--    if not authorization or not authorization.startswith("Bearer "):
--        raise HTTPException(401, "Not authenticated")
--    token = authorization[7:]
--    current_user = db.query(UserModel).filter(
--        UserModel.email == email_from_token(token)).first()
--    if not current_user:
--        raise HTTPException(401, "User not found")
- 
-     # Только png или jpg!
-     ext = os.path.splitext(file.filename)[-1].lower()
-     if ext not in [".png", ".jpg", ".jpeg", ".doc", ".docx"]:
-         raise HTTPException(400, "Только .png, .jpg, .doc, .docx файлы!")
- 
-     # Генерируем уникальное имя файла
-     avatar_filename = f"avatars/{uuid4().hex}{ext}"
-    # Сохраняем аватар точно в той папке, которая раздаётся FastAPI через STATIC_DIR
-     save_path = os.path.join(STATIC_DIR, avatar_filename)
-     os.makedirs(os.path.dirname(save_path), exist_ok=True)
- 
-     # Записываем файл правильно!
-     contents = file.file.read()
-     with open(save_path, "wb") as f:
-         f.write(contents)
-     if len(contents) < 100:  # На всякий случай, проверь размер
-         raise HTTPException(400, "Файл слишком маленький или не картинка!")
- 
-     current_user.avatar = f"/static/{avatar_filename}"
-     db.commit()
-     db.refresh(current_user)
-     return {"avatar": current_user.avatar}
- 
- 
- @app.patch("/profile", response_model=UserProfile)
- def update_profile(
-     user_update: UserUpdate,
-     db: Session = Depends(get_db),
--    authorization: str = Header(None),  # <-- вот так!
-+    current_user: UserModel = Depends(get_current_user),
- ):
--    if not authorization or not authorization.startswith("Bearer "):
--        raise HTTPException(401, "Not authenticated")
--    token = authorization[7:]
--    current_user = db.query(UserModel).filter(
--        UserModel.email == email_from_token(token)).first()
-     for attr, value in user_update.dict(exclude_unset=True).items():
-         setattr(current_user, attr, value)
-     db.commit()
-     db.refresh(current_user)
-     return current_user
- 
- 
- @app.post("/profile/documents")
- def upload_documents(
-     file: UploadFile = File(...),
-     db: Session = Depends(get_db),
-     current_user: UserModel = Depends(get_current_user)
- ):
-     ext = os.path.splitext(file.filename)[-1]
-     doc_filename = f"docs/{uuid4().hex}{ext}"
-     save_path = os.path.join("static", doc_filename)
-     os.makedirs(os.path.dirname(save_path), exist_ok=True)
-     with open(save_path, "wb") as f:
-         f.write(file.file.read())
- 
-     # Сохраняем ссылку на документ в профиле пользователя
-     docs = current_user.docs_files or []
-     docs.append(f"/static/{doc_filename}")
-     current_user.docs_files = docs
-     current_user.verification_status = "pending"
+diff --git a/mobile/transinfo_mobile/lib/features/orders/presentation/orders_screen.dart b/mobile/transinfo_mobile/lib/features/orders/presentation/orders_screen.dart
+new file mode 100644
+index 0000000000000000000000000000000000000000..5987b4a12e10987cbcb13f99f947b50696b45a5f
+--- /dev/null
++++ b/mobile/transinfo_mobile/lib/features/orders/presentation/orders_screen.dart
+@@ -0,0 +1,118 @@
++import 'package:flutter/material.dart';
++import 'package:flutter_riverpod/flutter_riverpod.dart';
++
++import '../domain/order.dart';
++import 'orders_providers.dart';
++
++class OrdersScreen extends ConsumerWidget {
++  const OrdersScreen({super.key});
++
++  @override
++  Widget build(BuildContext context, WidgetRef ref) {
++    final asyncOrders = ref.watch(ordersProvider);
++
++    return Scaffold(
++      appBar: AppBar(
++        title: const Text('Грузы'),
++      ),
++      body: asyncOrders.when(
++        data: (orders) => RefreshIndicator(
++          onRefresh: () async {
++            await ref.refresh(ordersProvider.future);
++          },
++          child: orders.isEmpty
++              ? ListView(
++                  children: const [
++                    Padding(
++                      padding: EdgeInsets.all(16),
++                      child: Text('Список грузов пуст.'),
++                    ),
++                  ],
++                )
++              : ListView.builder(
++                  padding: const EdgeInsets.all(8),
++                  itemCount: orders.length,
++                  itemBuilder: (context, index) {
++                    final order = orders[index];
++                    return _OrderCard(order: order);
++                  },
++                ),
++        ),
++        loading: () => const Center(child: CircularProgressIndicator()),
++        error: (error, stack) {
++          return Center(
++            child: Padding(
++              padding: const EdgeInsets.all(16),
++              child: Column(
++                mainAxisSize: MainAxisSize.min,
++                children: [
++                  Text('Не удалось загрузить грузы: $error'),
++                  const SizedBox(height: 12),
++                  ElevatedButton(
++                    onPressed: () => ref.refresh(ordersProvider),
++                    child: const Text('Повторить'),
++                  ),
++                ],
++              ),
++            ),
++          );
++        },
++      ),
++    );
++  }
++}
++
++class _OrderCard extends StatelessWidget {
++  const _OrderCard({required this.order});
++
++  final Order order;
++
++  @override
++  Widget build(BuildContext context) {
++    final direction = _buildDirection(order.fromLocations, order.toLocations);
++    final price = order.price.isNotEmpty ? order.price : '—';
++    final createdAt = '${order.createdAt.toLocal()}'.split('.').first;
++
++    return Card(
++      margin: const EdgeInsets.symmetric(vertical: 6),
++      child: Padding(
++        padding: const EdgeInsets.all(12),
++        child: Column(
++          crossAxisAlignment: CrossAxisAlignment.start,
++          children: [
++            Text(
++              order.title.isNotEmpty ? order.title : 'Заказ #${order.id}',
++              style: Theme.of(context).textTheme.titleMedium,
++            ),
++            const SizedBox(height: 4),
++            Text(direction, style: Theme.of(context).textTheme.bodyMedium),
++            const SizedBox(height: 4),
++            Row(
++              children: [
++                Expanded(
++                  child: Text('Тип: ${order.truckType.isNotEmpty ? order.truckType : 'не указан'}'),
++                ),
++                Text('Цена: $price'),
++              ],
++            ),
++            const SizedBox(height: 4),
++            Row(
++              children: [
++                Expanded(child: Text('Загрузка: ${order.loadDate.isNotEmpty ? order.loadDate : '—'}')),
++                Text('Просмотры: ${order.views}'),
++              ],
++            ),
++            const SizedBox(height: 4),
++            Text('Создан: $createdAt', style: Theme.of(context).textTheme.bodySmall),
++          ],
++        ),
++      ),
++    );
++  }
++
++  String _buildDirection(List<String> fromLocations, List<String> toLocations) {
++    final from = fromLocations.isNotEmpty ? fromLocations.join(', ') : '—';
++    final to = toLocations.isNotEmpty ? toLocations.join(', ') : '—';
++    return '$from → $to';
++  }
++}

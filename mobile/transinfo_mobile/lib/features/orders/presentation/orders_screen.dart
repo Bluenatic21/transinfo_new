@@ -1,0 +1,118 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../domain/order.dart';
+import 'orders_providers.dart';
+
+class OrdersScreen extends ConsumerWidget {
+  const OrdersScreen({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final asyncOrders = ref.watch(ordersProvider);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Грузы'),
+      ),
+      body: asyncOrders.when(
+        data: (orders) => RefreshIndicator(
+          onRefresh: () async {
+            await ref.refresh(ordersProvider.future);
+          },
+          child: orders.isEmpty
+              ? ListView(
+                  children: const [
+                    Padding(
+                      padding: EdgeInsets.all(16),
+                      child: Text('Список грузов пуст.'),
+                    ),
+                  ],
+                )
+              : ListView.builder(
+                  padding: const EdgeInsets.all(8),
+                  itemCount: orders.length,
+                  itemBuilder: (context, index) {
+                    final order = orders[index];
+                    return _OrderCard(order: order);
+                  },
+                ),
+        ),
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (error, stack) {
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('Не удалось загрузить грузы: $error'),
+                  const SizedBox(height: 12),
+                  ElevatedButton(
+                    onPressed: () => ref.refresh(ordersProvider),
+                    child: const Text('Повторить'),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _OrderCard extends StatelessWidget {
+  const _OrderCard({required this.order});
+
+  final Order order;
+
+  @override
+  Widget build(BuildContext context) {
+    final direction = _buildDirection(order.fromLocations, order.toLocations);
+    final price = order.price.isNotEmpty ? order.price : '—';
+    final createdAt = '${order.createdAt.toLocal()}'.split('.').first;
+
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 6),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              order.title.isNotEmpty ? order.title : 'Заказ #${order.id}',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 4),
+            Text(direction, style: Theme.of(context).textTheme.bodyMedium),
+            const SizedBox(height: 4),
+            Row(
+              children: [
+                Expanded(
+                  child: Text('Тип: ${order.truckType.isNotEmpty ? order.truckType : 'не указан'}'),
+                ),
+                Text('Цена: $price'),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Row(
+              children: [
+                Expanded(child: Text('Загрузка: ${order.loadDate.isNotEmpty ? order.loadDate : '—'}')),
+                Text('Просмотры: ${order.views}'),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Text('Создан: $createdAt', style: Theme.of(context).textTheme.bodySmall),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _buildDirection(List<String> fromLocations, List<String> toLocations) {
+    final from = fromLocations.isNotEmpty ? fromLocations.join(', ') : '—';
+    final to = toLocations.isNotEmpty ? toLocations.join(', ') : '—';
+    return '$from → $to';
+  }
+}
