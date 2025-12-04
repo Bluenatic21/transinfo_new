@@ -1,260 +1,89 @@
-diff --git a/backend/notifications.py b/backend/notifications.py
-index c2723fb8c60d261a541f4d5872ed883afbd94054..54ee048e84241bbc2ff79a3d8ab817594af1cf4b 100644
---- a/backend/notifications.py
-+++ b/backend/notifications.py
-@@ -1,45 +1,53 @@
- from math import radians, cos, sin, asin, sqrt
- from datetime import datetime, timedelta
- import asyncio
- from collections import defaultdict
- import heapq
- import html
- from typing import Iterator, TypeVar
- from jose import jwt, JWTError
- from auth import get_token_from_header_or_cookie, SECRET_KEY, ALGORITHM
- from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect, Query
- from sqlalchemy.orm import Session, noload
- from sqlalchemy import and_, or_
- import os
- import json
+diff --git a/frontend/src/app/components/PaywallModal.jsx b/frontend/src/app/components/PaywallModal.jsx
+index 8c1081a0a212c8b36355c1ac1f101490d376ba1f..52088bdf530958f76487b1f7da89ed2a2e43c435 100644
+--- a/frontend/src/app/components/PaywallModal.jsx
++++ b/frontend/src/app/components/PaywallModal.jsx
+@@ -1,50 +1,50 @@
+ "use client";
+ import React from "react";
+ import { useRouter } from "next/navigation";
+ import { useLang } from "../i18n/LangProvider";
  
- from database import get_db
- from auth import get_current_user
- from email_utils import send_email
- from i18n_email import SUPPORTED as EMAIL_LANGS, DEFAULT as DEFAULT_EMAIL_LANG
--from models import Transport, Order, NotificationType, Notification, User
-+from models import (
-+    Transport,
-+    Order,
-+    NotificationType,
-+    Notification,
-+    User,
-+    SiteVisit,
-+    UserSession,
-+)
- # используем ту же модель/алиас, что и в проекте
- from models import UserBlock as UB
- 
- router = APIRouter()
- 
- # Shared implementation with auth + keepalive
- 
- 
- async def _notifications_ws_impl(websocket: WebSocket):
-     """
-     Authenticates the websocket, validates that query ?user_id matches the token,
-     registers the connection, and keeps it alive (responds to ping).
-     """
-     from auth import get_token_from_header_or_cookie, get_current_user
-     from database import SessionLocal
-     # Extract token and query args
-     # Принять соединение ДО проверки (чтобы не получить HTTP 403 на рукопожатии)
-     subproto = None
-     req_proto = websocket.headers.get("sec-websocket-protocol")
-     if req_proto:
-         parts = [p.strip().lower() for p in req_proto.split(",")]
-         if "bearer" in parts:
-             subproto = "bearer"
-     try:
-         await websocket.accept(subprotocol=subproto)
-@@ -180,121 +188,184 @@ EMAIL_BODY_TEXTS = {
-         "footer": "შეტყობინებას ასევე იპოვით Transinfo-ს აპში ან საიტზე.",
-     },
-     "en": {
-         "intro": "You have a new notification:",
-         "cta": "Open the site",
-         "footer": "You can also view this notification in the Transinfo app or on the website.",
-     },
-     "tr": {
-         "intro": "Yeni bir bildiriminiz var:",
-         "cta": "Siteyi aç",
-         "footer": "Bu bildirimi Transinfo uygulamasında veya web sitesinde de görebilirsiniz.",
-     },
-     "az": {
-         "intro": "Yeni bildirişiniz var:",
-         "cta": "Saytı aç",
-         "footer": "Bu bildirişi Transinfo tətbiqində və ya saytda da görə bilərsiniz.",
-     },
-     "hy": {
-         "intro": "Դուք ունեք նոր ծանուցում.",
-         "cta": "Բացել կայքը",
-         "footer": "Ծանուցումը հասանելի է նաև Transinfo հավելվածում կամ կայքում։",
-     },
+ export default function PaywallModal({ open, onClose, anonymous }) {
+     const router = useRouter();
+     const { t } = useLang?.() || { t: (k, f) => f || k };
+     if (!open) return null;
+-    return (
+-        <div className="fixed inset-0 z-[9999] flex items-center justify-center">
+-            <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+-            <div className="relative w-full max-w-md rounded-2xl bg-white p-5 shadow-xl dark:bg-neutral-900">
+-                <div className="text-xl font-semibold mb-2">
+-                    {t("paywall.title", "Доступ к заявкам ограничен")}
+-                </div>
+-                <div className="text-sm opacity-80 mb-4">
+-                    {anonymous
+-                        ? t("paywall.text_anonymous", "Войдите или зарегистрируйтесь, чтобы видеть больше и активировать подписку.")
+-                        : t("paywall.text_authenticated", "Чтобы работать с заявками и видеть все данные, активируйте подписку.")}
+-                </div>
+-                <div className="flex gap-2 justify-end">
+-                    {anonymous ? (
+-                        <>
+-                            <button
+-                                className="px-3 py-2 rounded-lg border border-neutral-300 dark:border-neutral-700"
+-                                onClick={() => { onClose?.(); router.push("/auth"); }}
+-                            >
+-                                {t("paywall.cta.login", "Войти")}
+-                            </button>
+-                            <button
+-                                className="px-3 py-2 rounded-lg bg-blue-600 text-white"
+-                                onClick={() => { onClose?.(); router.push("/register"); }}
+-                            >
+-                                {t("paywall.cta.register", "Зарегистрироваться")}
+-                            </button>
+-                        </>
+-                    ) : (
+-                        <button
+-                            className="px-3 py-2 rounded-lg bg-blue-600 text-white"
+-                            onClick={() => { onClose?.(); router.push("/settings/billing"); }}
+-                        >
+-                            {t("paywall.cta.subscribe", "Активировать подписку")}
++    return (
++        <div className="fixed inset-0 z-[9999] flex items-center justify-center">
++            <div className="absolute inset-0 bg-black/40 dark:bg-black/50" onClick={onClose} />
++            <div className="relative w-full max-w-md rounded-2xl border borderc bg-card p-5 text-fg shadow-2xl transition-colors">
++                <div className="mb-2 text-xl font-semibold">
++                    {t("paywall.title", "Доступ к заявкам ограничен")}
++                </div>
++                <div className="mb-4 text-sm text-muted">
++                    {anonymous
++                        ? t("paywall.text_anonymous", "Войдите или зарегистрируйтесь, чтобы видеть больше и активировать подписку.")
++                        : t("paywall.text_authenticated", "Чтобы работать с заявками и видеть все данные, активируйте подписку.")}
++                </div>
++                <div className="flex justify-end gap-2">
++                    {anonymous ? (
++                        <>
++                            <button
++                                className="rounded-lg border borderc bg-[var(--control-bg)] px-3 py-2 text-sm font-semibold transition-colors hover:bg-[var(--control-bg-hover)]"
++                                onClick={() => { onClose?.(); router.push("/auth"); }}
++                            >
++                                {t("paywall.cta.login", "Войти")}
++                            </button>
++                            <button
++                                className="rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-500"
++                                onClick={() => { onClose?.(); router.push("/register"); }}
++                            >
++                                {t("paywall.cta.register", "Зарегистрироваться")}
++                            </button>
++                        </>
++                    ) : (
++                        <button
++                            className="rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-500"
++                            onClick={() => { onClose?.(); router.push("/settings/billing"); }}
++                        >
++                            {t("paywall.cta.subscribe", "Активировать подписку")}
+                         </button>
+                     )}
+                 </div>
+             </div>
+         </div>
+     );
  }
- 
- 
--def _normalize_lang(lang: str | None) -> str:
-+def _normalize_lang(lang: str | None) -> str:
-     if not lang:
-         return DEFAULT_EMAIL_LANG
-     lang = lang.lower().strip()
-     if "-" in lang:
-         lang = lang.split("-", 1)[0]
-     if lang == "am":
-         lang = "hy"
--    return lang if lang in EMAIL_LANGS else DEFAULT_EMAIL_LANG
--
--
--def _detect_user_lang(user: User) -> str:
-+    return lang if lang in EMAIL_LANGS else DEFAULT_EMAIL_LANG
-+
-+
-+def _lang_from_path(path: str | None) -> str | None:
-+    if not path:
-+        return None
-+    try:
-+        # "/en/orders/123" -> "en"
-+        raw = path
-+        if not raw.startswith("/"):
-+            raw = "/" + raw
-+        parts = raw.split("/")
-+        if len(parts) < 2:
-+            return None
-+        candidate = parts[1].strip().lower()
-+        if not candidate:
-+            return None
-+        # Accept only known language prefixes to avoid false positives like "orders"
-+        if candidate in EMAIL_LANGS:
-+            return _normalize_lang(candidate)
-+        if "-" in candidate:
-+            prefix = candidate.split("-", 1)[0]
-+            if prefix in EMAIL_LANGS:
-+                return _normalize_lang(prefix)
-+    except Exception:
-+        return None
-+    return None
-+
-+
-+def _detect_lang_from_usage(db: Session, user: User) -> str | None:
-+    try:
-+        # 1) Самый частый язык из последних посещений за 90 дней (до 200 записей)
-+        since = datetime.utcnow() - timedelta(days=90)
-+        visits = (
-+            db.query(SiteVisit.path)
-+            .filter(SiteVisit.user_id == user.id, SiteVisit.visited_at >= since)
-+            .order_by(SiteVisit.visited_at.desc())
-+            .limit(200)
-+            .all()
-+        )
-+        counts = {}
-+        for (path,) in visits:
-+            lang = _lang_from_path(path)
-+            if not lang:
-+                continue
-+            counts[lang] = counts.get(lang, 0) + 1
-+        if counts:
-+            return sorted(counts.items(), key=lambda kv: kv[1], reverse=True)[0][0]
-+
-+        # 2) Фоллбек: последний путь из сессии
-+        sess = db.query(UserSession.last_path).filter(UserSession.user_id == user.id).first()
-+        if sess and isinstance(sess[0], str):
-+            lang = _lang_from_path(sess[0])
-+            if lang:
-+                return lang
-+    except Exception:
-+        # Не мешаем доставке уведомления, просто переходим к профилю/дефолту
-+        pass
-+    return None
-+
-+
-+def _detect_user_lang(db: Session, user: User) -> str:
-     data = getattr(user, "profile_data", None) or {}
-     if isinstance(data, dict):
-         for key in ("lang", "language", "ui_lang", "locale", "preferred_lang"):
-             val = data.get(key)
-             if isinstance(val, str) and val.strip():
--                return _normalize_lang(val)
--
--    return _normalize_lang(None)
-+                return _normalize_lang(val)
-+
-+    # Самый частый язык использования сайта
-+    usage_lang = _detect_lang_from_usage(db, user)
-+    if usage_lang:
-+        return usage_lang
-+
-+    return _normalize_lang(None)
- 
- 
- def _build_email(lang: str, message: str, created_at: datetime | None) -> tuple[str, str]:
-     lang = _normalize_lang(lang)
-     subject = EMAIL_SUBJECTS.get(lang, EMAIL_SUBJECTS[DEFAULT_EMAIL_LANG])
-     texts = EMAIL_BODY_TEXTS.get(lang, EMAIL_BODY_TEXTS[DEFAULT_EMAIL_LANG])
-     # message может быть в формате "key|{json}|fallback" (как на фронте в renderNotif).
-     # Для писем берём человекочитаемый fallback‑текст.
-     display_message = message or ""
-     try:
-         if "|" in display_message:
-             parts = display_message.split("|")
-             # Ожидаемый формат: key | {json} | fallback
-             if len(parts) >= 3:
-                 display_message = parts[-1] or parts[0]
-             else:
-                 # На всякий случай: key | fallback
-                 display_message = parts[-1] or parts[0]
-     except Exception:
-         # В крайнем случае оставляем исходную строку
-         display_message = message or ""
- 
-     msg_safe = html.escape(display_message)
-     created_str = (
-         created_at.isoformat(sep=" ", timespec="seconds")
-         if created_at
-         else ""
-     )
- 
-     html_body = f"""
-     <div style="font-family:Arial,Helvetica,sans-serif;font-size:15px;color:#1a2436">
-       <p>{texts['intro']}</p>
-       <p style="font-size:16px;margin:12px 0"><b>{msg_safe}</b></p>
-       {f"<p style='color:#59708f;font-size:13px;margin:8px 0'>" + created_str + "</p>" if created_str else ""}
-       <p style="margin:18px 0">
-         <a href="{SITE_URL}" style="background:#0ea5e9;color:#fff;text-decoration:none;padding:10px 16px;border-radius:8px;display:inline-block">{texts['cta']}</a>
-       </p>
-       <p style="color:#59708f">{texts['footer']}</p>
-     </div>
-     """
-     return subject, html_body
- 
- 
--def _send_email_notification(db: Session, user_id: int, message: str, created_at: datetime | None) -> None:
--    try:
--        user = db.query(User).filter(User.id == user_id).first()
--        if not user or not user.email:
--            return
--        lang = _detect_user_lang(user)
--        subject, html_body = _build_email(lang, message, created_at)
--        send_email(user.email, subject, html_body)
-+def _send_email_notification(db: Session, user_id: int, message: str, created_at: datetime | None) -> None:
-+    try:
-+        user = db.query(User).filter(User.id == user_id).first()
-+        if not user or not user.email:
-+            return
-+        lang = _detect_user_lang(db, user)
-+        subject, html_body = _build_email(lang, message, created_at)
-+        send_email(user.email, subject, html_body)
-     except Exception as e:
-         print(f"[WARN] Email notification failed: {e}")
- 
- 
- def _parse_km(val, default=0.0):
-     try:
-         v = float(val) if val is not None else default
-         if v < 0:
-             return default
-         return v
-     except Exception:
-         return default
- 
- 
- def _order_pickup_coords(order):
-     """Возвращает список (lat,lng) для точки(точек) погрузки заказа."""
-     coords = []
-     arr = getattr(order, "from_locations_coords", None) or []
-     for c in arr:
-         lat = c.get("lat") or c.get("latitude")
-         lng = c.get("lng") or c.get("lon") or c.get("longitude")
-         if lat is None or lng is None:
-             continue
-         try:
-             coords.append((float(lat), float(lng)))

@@ -9,27 +9,27 @@ export default function PaywallModal({ open, onClose, anonymous }) {
     if (!open) return null;
     return (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center">
-            <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-            <div className="relative w-full max-w-md rounded-2xl bg-white p-5 shadow-xl dark:bg-neutral-900">
-                <div className="text-xl font-semibold mb-2">
+            <div className="absolute inset-0 bg-black/40 dark:bg-black/50" onClick={onClose} />
+            <div className="relative w-full max-w-md rounded-2xl border borderc bg-card p-5 text-fg shadow-2xl transition-colors">
+                <div className="mb-2 text-xl font-semibold">
                     {t("paywall.title", "Доступ к заявкам ограничен")}
                 </div>
-                <div className="text-sm opacity-80 mb-4">
+                <div className="mb-4 text-sm text-muted">
                     {anonymous
                         ? t("paywall.text_anonymous", "Войдите или зарегистрируйтесь, чтобы видеть больше и активировать подписку.")
                         : t("paywall.text_authenticated", "Чтобы работать с заявками и видеть все данные, активируйте подписку.")}
                 </div>
-                <div className="flex gap-2 justify-end">
+                <div className="flex justify-end gap-2">
                     {anonymous ? (
                         <>
                             <button
-                                className="px-3 py-2 rounded-lg border border-neutral-300 dark:border-neutral-700"
+                                className="rounded-lg border borderc bg-[var(--control-bg)] px-3 py-2 text-sm font-semibold transition-colors hover:bg-[var(--control-bg-hover)]"
                                 onClick={() => { onClose?.(); router.push("/auth"); }}
                             >
                                 {t("paywall.cta.login", "Войти")}
                             </button>
                             <button
-                                className="px-3 py-2 rounded-lg bg-blue-600 text-white"
+                                className="rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-500"
                                 onClick={() => { onClose?.(); router.push("/register"); }}
                             >
                                 {t("paywall.cta.register", "Зарегистрироваться")}
@@ -37,7 +37,7 @@ export default function PaywallModal({ open, onClose, anonymous }) {
                         </>
                     ) : (
                         <button
-                            className="px-3 py-2 rounded-lg bg-blue-600 text-white"
+                            className="rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-500"
                             onClick={() => { onClose?.(); router.push("/settings/billing"); }}
                         >
                             {t("paywall.cta.subscribe", "Активировать подписку")}
