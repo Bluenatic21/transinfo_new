@@ -1,42 +1,37 @@
 diff --git a/backend/notifications.py b/backend/notifications.py
-index 1233cfdb026124eac47ed2ede67ba3e11098c6ce..8c6f6928baf1f16c52abd96d044fe122df0af857 100644
+index c2723fb8c60d261a541f4d5872ed883afbd94054..54ee048e84241bbc2ff79a3d8ab817594af1cf4b 100644
 --- a/backend/notifications.py
 +++ b/backend/notifications.py
-@@ -1,42 +1,45 @@
--from math import radians, cos, sin, asin, sqrt
--from datetime import datetime, timedelta
--import asyncio
--from collections import defaultdict
--import heapq
--from typing import Iterator, TypeVar
--from jose import jwt, JWTError
--from auth import get_token_from_header_or_cookie, SECRET_KEY, ALGORITHM
--from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect, Query
--from sqlalchemy.orm import Session, noload
--from sqlalchemy import and_, or_
--import os
--import json
-+from math import radians, cos, sin, asin, sqrt
-+from datetime import datetime, timedelta
-+import asyncio
-+from collections import defaultdict
-+import heapq
-+import html
-+from typing import Iterator, TypeVar
-+from jose import jwt, JWTError
-+from auth import get_token_from_header_or_cookie, SECRET_KEY, ALGORITHM
-+from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect, Query
-+from sqlalchemy.orm import Session, noload
-+from sqlalchemy import and_, or_
-+import os
-+import json
+@@ -1,45 +1,53 @@
+ from math import radians, cos, sin, asin, sqrt
+ from datetime import datetime, timedelta
+ import asyncio
+ from collections import defaultdict
+ import heapq
+ import html
+ from typing import Iterator, TypeVar
+ from jose import jwt, JWTError
+ from auth import get_token_from_header_or_cookie, SECRET_KEY, ALGORITHM
+ from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect, Query
+ from sqlalchemy.orm import Session, noload
+ from sqlalchemy import and_, or_
+ import os
+ import json
  
  from database import get_db
  from auth import get_current_user
--from models import Transport, Order, NotificationType, Notification
-+from email_utils import send_email
-+from i18n_email import SUPPORTED as EMAIL_LANGS, DEFAULT as DEFAULT_EMAIL_LANG
-+from models import Transport, Order, NotificationType, Notification, User
+ from email_utils import send_email
+ from i18n_email import SUPPORTED as EMAIL_LANGS, DEFAULT as DEFAULT_EMAIL_LANG
+-from models import Transport, Order, NotificationType, Notification, User
++from models import (
++    Transport,
++    Order,
++    NotificationType,
++    Notification,
++    User,
++    SiteVisit,
++    UserSession,
++)
  # используем ту же модель/алиас, что и в проекте
  from models import UserBlock as UB
  
@@ -62,152 +57,184 @@ index 1233cfdb026124eac47ed2ede67ba3e11098c6ce..8c6f6928baf1f16c52abd96d044fe122
              subproto = "bearer"
      try:
          await websocket.accept(subprotocol=subproto)
-@@ -118,63 +121,166 @@ def _stream_query(query, *, chunk_size: int = 256) -> Iterator[T]:
- @router.websocket("/ws/notifications")
- async def notifications_ws(websocket: WebSocket):
-     return await _notifications_ws_impl(websocket)
+@@ -180,121 +188,184 @@ EMAIL_BODY_TEXTS = {
+         "footer": "შეტყობინებას ასევე იპოვით Transinfo-ს აპში ან საიტზე.",
+     },
+     "en": {
+         "intro": "You have a new notification:",
+         "cta": "Open the site",
+         "footer": "You can also view this notification in the Transinfo app or on the website.",
+     },
+     "tr": {
+         "intro": "Yeni bir bildiriminiz var:",
+         "cta": "Siteyi aç",
+         "footer": "Bu bildirimi Transinfo uygulamasında veya web sitesinde de görebilirsiniz.",
+     },
+     "az": {
+         "intro": "Yeni bildirişiniz var:",
+         "cta": "Saytı aç",
+         "footer": "Bu bildirişi Transinfo tətbiqində və ya saytda da görə bilərsiniz.",
+     },
+     "hy": {
+         "intro": "Դուք ունեք նոր ծանուցում.",
+         "cta": "Բացել կայքը",
+         "footer": "Ծանուցումը հասանելի է նաև Transinfo հավելվածում կամ կայքում։",
+     },
+ }
  
  
- @router.websocket("/notifications")
- async def _legacy_notifications_ws_original(websocket: WebSocket, user_id: int = Query(...), token: str = Query(None)):
-     # backward-compatible path
-     return await _notifications_ws_impl(websocket)
- 
- # ------------------------------ УТИЛИТЫ ------------------------------
- 
- 
- def haversine(lat1, lon1, lat2, lon2):
-     """Расстояние между двумя координатами, км"""
-     R = 6371.0
-     lat1, lon1, lat2, lon2 = map(float, [lat1, lon1, lat2, lon2])
-     dlat = radians(lat2 - lat1)
-     dlon = radians(lon2 - lon1)
-     a = sin(dlat / 2) ** 2 + cos(radians(lat1)) * \
-         cos(radians(lat2)) * sin(dlon / 2) ** 2
-     c = 2 * asin(sqrt(a))
-     return R * c
- 
- 
--ORDER_DEFAULT_RADIUS_KM = float(os.getenv("ORDER_DEFAULT_RADIUS_KM", "80"))
-+ORDER_DEFAULT_RADIUS_KM = float(os.getenv("ORDER_DEFAULT_RADIUS_KM", "80"))
- 
- # Максимальное количество автосовпадений для одного заказа/транспорта
- # (чтобы не слать десятки/сотни уведомлений и не грузить CPU/ОЗУ)
- AUTO_MATCH_MAX_NOTIFICATIONS_PER_ENTITY = int(
-     os.getenv("AUTO_MATCH_MAX_NOTIFICATIONS_PER_ENTITY", "50")
- )
- 
- # На сколько дней назад смотреть при автопоиске совпадений (по created_at).
- # Если поставить 0 или отрицательное значение, ограничение по давности отключится.
--AUTO_MATCH_LOOKBACK_DAYS = int(
--    os.getenv("AUTO_MATCH_LOOKBACK_DAYS", "90")
--)
-+AUTO_MATCH_LOOKBACK_DAYS = int(
-+    os.getenv("AUTO_MATCH_LOOKBACK_DAYS", "90")
-+)
-+
-+SITE_URL = os.getenv("SITE_URL", "https://transinfo.ge").rstrip("/")
-+
-+EMAIL_SUBJECTS = {
-+    "ru": "Новое уведомление в Transinfo",
-+    "ka": "Transinfo-ში ახალი შეტყობინება",
-+    "en": "New notification on Transinfo",
-+    "tr": "Transinfo'da yeni bildirim",
-+    "az": "Transinfo-da yeni bildiriş",
-+    "hy": "Նոր ծանուցում Transinfo-ում",
-+}
-+
-+EMAIL_BODY_TEXTS = {
-+    "ru": {
-+        "intro": "У вас новое уведомление:",
-+        "cta": "Открыть сайт",
-+        "footer": "Вы также можете увидеть это уведомление в приложении или на сайте Transinfo.",
-+    },
-+    "ka": {
-+        "intro": "თქვენ გაქვთ ახალი შეტყობინება:",
-+        "cta": "გახსენი საიტი",
-+        "footer": "შეტყობინებას ასევე იპოვით Transinfo-ს აპში ან საიტზე.",
-+    },
-+    "en": {
-+        "intro": "You have a new notification:",
-+        "cta": "Open the site",
-+        "footer": "You can also view this notification in the Transinfo app or on the website.",
-+    },
-+    "tr": {
-+        "intro": "Yeni bir bildiriminiz var:",
-+        "cta": "Siteyi aç",
-+        "footer": "Bu bildirimi Transinfo uygulamasında veya web sitesinde de görebilirsiniz.",
-+    },
-+    "az": {
-+        "intro": "Yeni bildirişiniz var:",
-+        "cta": "Saytı aç",
-+        "footer": "Bu bildirişi Transinfo tətbiqində və ya saytda da görə bilərsiniz.",
-+    },
-+    "hy": {
-+        "intro": "Դուք ունեք նոր ծանուցում.",
-+        "cta": "Բացել կայքը",
-+        "footer": "Ծանուցումը հասանելի է նաև Transinfo հավելվածում կամ կայքում։",
-+    },
-+}
-+
-+
+-def _normalize_lang(lang: str | None) -> str:
 +def _normalize_lang(lang: str | None) -> str:
-+    if not lang:
-+        return DEFAULT_EMAIL_LANG
-+    lang = lang.lower().strip()
-+    if "-" in lang:
-+        lang = lang.split("-", 1)[0]
-+    if lang == "am":
-+        lang = "hy"
+     if not lang:
+         return DEFAULT_EMAIL_LANG
+     lang = lang.lower().strip()
+     if "-" in lang:
+         lang = lang.split("-", 1)[0]
+     if lang == "am":
+         lang = "hy"
+-    return lang if lang in EMAIL_LANGS else DEFAULT_EMAIL_LANG
+-
+-
+-def _detect_user_lang(user: User) -> str:
 +    return lang if lang in EMAIL_LANGS else DEFAULT_EMAIL_LANG
 +
 +
-+def _detect_user_lang(user: User) -> str:
-+    data = getattr(user, "profile_data", None) or {}
-+    if isinstance(data, dict):
-+        for key in ("lang", "language", "ui_lang", "locale", "preferred_lang"):
-+            val = data.get(key)
-+            if isinstance(val, str) and val.strip():
++def _lang_from_path(path: str | None) -> str | None:
++    if not path:
++        return None
++    try:
++        # "/en/orders/123" -> "en"
++        raw = path
++        if not raw.startswith("/"):
++            raw = "/" + raw
++        parts = raw.split("/")
++        if len(parts) < 2:
++            return None
++        candidate = parts[1].strip().lower()
++        if not candidate:
++            return None
++        # Accept only known language prefixes to avoid false positives like "orders"
++        if candidate in EMAIL_LANGS:
++            return _normalize_lang(candidate)
++        if "-" in candidate:
++            prefix = candidate.split("-", 1)[0]
++            if prefix in EMAIL_LANGS:
++                return _normalize_lang(prefix)
++    except Exception:
++        return None
++    return None
++
++
++def _detect_lang_from_usage(db: Session, user: User) -> str | None:
++    try:
++        # 1) Самый частый язык из последних посещений за 90 дней (до 200 записей)
++        since = datetime.utcnow() - timedelta(days=90)
++        visits = (
++            db.query(SiteVisit.path)
++            .filter(SiteVisit.user_id == user.id, SiteVisit.visited_at >= since)
++            .order_by(SiteVisit.visited_at.desc())
++            .limit(200)
++            .all()
++        )
++        counts = {}
++        for (path,) in visits:
++            lang = _lang_from_path(path)
++            if not lang:
++                continue
++            counts[lang] = counts.get(lang, 0) + 1
++        if counts:
++            return sorted(counts.items(), key=lambda kv: kv[1], reverse=True)[0][0]
++
++        # 2) Фоллбек: последний путь из сессии
++        sess = db.query(UserSession.last_path).filter(UserSession.user_id == user.id).first()
++        if sess and isinstance(sess[0], str):
++            lang = _lang_from_path(sess[0])
++            if lang:
++                return lang
++    except Exception:
++        # Не мешаем доставке уведомления, просто переходим к профилю/дефолту
++        pass
++    return None
++
++
++def _detect_user_lang(db: Session, user: User) -> str:
+     data = getattr(user, "profile_data", None) or {}
+     if isinstance(data, dict):
+         for key in ("lang", "language", "ui_lang", "locale", "preferred_lang"):
+             val = data.get(key)
+             if isinstance(val, str) and val.strip():
+-                return _normalize_lang(val)
+-
+-    return _normalize_lang(None)
 +                return _normalize_lang(val)
 +
++    # Самый частый язык использования сайта
++    usage_lang = _detect_lang_from_usage(db, user)
++    if usage_lang:
++        return usage_lang
++
 +    return _normalize_lang(None)
-+
-+
-+def _build_email(lang: str, message: str, created_at: datetime | None) -> tuple[str, str]:
-+    lang = _normalize_lang(lang)
-+    subject = EMAIL_SUBJECTS.get(lang, EMAIL_SUBJECTS[DEFAULT_EMAIL_LANG])
-+    texts = EMAIL_BODY_TEXTS.get(lang, EMAIL_BODY_TEXTS[DEFAULT_EMAIL_LANG])
-+    msg_safe = html.escape(message)
-+    created_str = (
-+        created_at.isoformat(sep=" ", timespec="seconds")
-+        if created_at
-+        else ""
-+    )
-+
-+    html_body = f"""
-+    <div style="font-family:Arial,Helvetica,sans-serif;font-size:15px;color:#1a2436">
-+      <p>{texts['intro']}</p>
-+      <p style="font-size:16px;margin:12px 0"><b>{msg_safe}</b></p>
-+      {f"<p style='color:#59708f;font-size:13px;margin:8px 0'>" + created_str + "</p>" if created_str else ""}
-+      <p style="margin:18px 0">
-+        <a href="{SITE_URL}" style="background:#0ea5e9;color:#fff;text-decoration:none;padding:10px 16px;border-radius:8px;display:inline-block">{texts['cta']}</a>
-+      </p>
-+      <p style="color:#59708f">{texts['footer']}</p>
-+    </div>
-+    """
-+    return subject, html_body
-+
-+
+ 
+ 
+ def _build_email(lang: str, message: str, created_at: datetime | None) -> tuple[str, str]:
+     lang = _normalize_lang(lang)
+     subject = EMAIL_SUBJECTS.get(lang, EMAIL_SUBJECTS[DEFAULT_EMAIL_LANG])
+     texts = EMAIL_BODY_TEXTS.get(lang, EMAIL_BODY_TEXTS[DEFAULT_EMAIL_LANG])
+     # message может быть в формате "key|{json}|fallback" (как на фронте в renderNotif).
+     # Для писем берём человекочитаемый fallback‑текст.
+     display_message = message or ""
+     try:
+         if "|" in display_message:
+             parts = display_message.split("|")
+             # Ожидаемый формат: key | {json} | fallback
+             if len(parts) >= 3:
+                 display_message = parts[-1] or parts[0]
+             else:
+                 # На всякий случай: key | fallback
+                 display_message = parts[-1] or parts[0]
+     except Exception:
+         # В крайнем случае оставляем исходную строку
+         display_message = message or ""
+ 
+     msg_safe = html.escape(display_message)
+     created_str = (
+         created_at.isoformat(sep=" ", timespec="seconds")
+         if created_at
+         else ""
+     )
+ 
+     html_body = f"""
+     <div style="font-family:Arial,Helvetica,sans-serif;font-size:15px;color:#1a2436">
+       <p>{texts['intro']}</p>
+       <p style="font-size:16px;margin:12px 0"><b>{msg_safe}</b></p>
+       {f"<p style='color:#59708f;font-size:13px;margin:8px 0'>" + created_str + "</p>" if created_str else ""}
+       <p style="margin:18px 0">
+         <a href="{SITE_URL}" style="background:#0ea5e9;color:#fff;text-decoration:none;padding:10px 16px;border-radius:8px;display:inline-block">{texts['cta']}</a>
+       </p>
+       <p style="color:#59708f">{texts['footer']}</p>
+     </div>
+     """
+     return subject, html_body
+ 
+ 
+-def _send_email_notification(db: Session, user_id: int, message: str, created_at: datetime | None) -> None:
+-    try:
+-        user = db.query(User).filter(User.id == user_id).first()
+-        if not user or not user.email:
+-            return
+-        lang = _detect_user_lang(user)
+-        subject, html_body = _build_email(lang, message, created_at)
+-        send_email(user.email, subject, html_body)
 +def _send_email_notification(db: Session, user_id: int, message: str, created_at: datetime | None) -> None:
 +    try:
 +        user = db.query(User).filter(User.id == user_id).first()
 +        if not user or not user.email:
 +            return
-+        lang = _detect_user_lang(user)
++        lang = _detect_user_lang(db, user)
 +        subject, html_body = _build_email(lang, message, created_at)
 +        send_email(user.email, subject, html_body)
-+    except Exception as e:
-+        print(f"[WARN] Email notification failed: {e}")
+     except Exception as e:
+         print(f"[WARN] Email notification failed: {e}")
  
  
  def _parse_km(val, default=0.0):
@@ -231,89 +258,3 @@ index 1233cfdb026124eac47ed2ede67ba3e11098c6ce..8c6f6928baf1f16c52abd96d044fe122
              continue
          try:
              coords.append((float(lat), float(lng)))
-         except Exception:
-             continue
-@@ -411,64 +517,69 @@ def create_notification(
-             NotificationType.TRANSPORT_OVERDUE_7,
-             NotificationType.TRANSPORT_AUTO_DISABLED,
-         }
-         if nt_obj in dedup_types:
-             since = datetime.utcnow() - timedelta(hours=24)
-             exists = db.query(Notification).filter(
-                 Notification.user_id == user_id,
-                 Notification.type == nt_obj,
-                 Notification.related_id == str(related_id),
-                 Notification.created_at > since
-             ).first()
-             if exists:
-                 return
-     except Exception as e:
-         # Не валим уведомление, просто логируем.
-         print("[WARN] Transport overdue dedup check failed:", e)
- 
-     notif = Notification(
-         user_id=user_id,
-         type=notif_type,
-         message=message,
-         related_id=str(related_id) if related_id is not None else None,
-         payload=payload,
-         created_at=datetime.utcnow(),
-         read=False,
--    )
--    db.add(notif)
--    if auto_commit:
--        db.commit()
--        db.refresh(notif)
--    else:
--        # Flush to assign primary key/values without ending the surrounding
--        # transaction – the caller is responsible for committing later.
--        db.flush()
--
--    event = {
--        "event": "new_notification",
--        "id": notif.id,
--        "type": notif.type.value,
-+    )
-+    db.add(notif)
-+    if auto_commit:
-+        db.commit()
-+        db.refresh(notif)
-+    else:
-+        # Flush to assign primary key/values without ending the surrounding
-+        # transaction – the caller is responsible for committing later.
-+        db.flush()
-+
-+    try:
-+        _send_email_notification(db, user_id, notif.message, notif.created_at)
-+    except Exception as e:
-+        print("[WARN] Email notification dispatch failed:", e)
-+
-+    event = {
-+        "event": "new_notification",
-+        "id": notif.id,
-+        "type": notif.type.value,
-         "message": notif.message,
-         "related_id": notif.related_id,
-         "payload": notif.payload,
-         "created_at": notif.created_at.isoformat() if notif.created_at else None,
-         "read": notif.read,
-     }
-     try:
-         loop = asyncio.get_running_loop()
-         loop.create_task(push_notification(user_id, event))
-     except RuntimeError:
-         try:
-             asyncio.run(push_notification(user_id, event))
-         except Exception as e:
-             print("[ERROR] push_notification WS (asyncio.run):", e)
-     except Exception as e:
-         print("[ERROR] push_notification WS:", e)
- 
- # --------------------------- REST: UNREAD / READ ---------------------------
- 
- 
- @router.get("/matches/unread_count")
- def get_unread_matches(
-     transport_id: str = None,
-     order_id: int = None,
-     db: Session = Depends(get_db),

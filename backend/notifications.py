@@ -17,7 +17,15 @@ from database import get_db
 from auth import get_current_user
 from email_utils import send_email
 from i18n_email import SUPPORTED as EMAIL_LANGS, DEFAULT as DEFAULT_EMAIL_LANG
-from models import Transport, Order, NotificationType, Notification, User
+from models import (
+    Transport,
+    Order,
+    NotificationType,
+    Notification,
+    User,
+    SiteVisit,
+    UserSession,
+)
 # используем ту же модель/алиас, что и в проекте
 from models import UserBlock as UB
 
@@ -213,13 +221,76 @@ def _normalize_lang(lang: str | None) -> str:
     return lang if lang in EMAIL_LANGS else DEFAULT_EMAIL_LANG
 
 
-def _detect_user_lang(user: User) -> str:
+def _lang_from_path(path: str | None) -> str | None:
+    if not path:
+        return None
+    try:
+        # "/en/orders/123" -> "en"
+        raw = path
+        if not raw.startswith("/"):
+            raw = "/" + raw
+        parts = raw.split("/")
+        if len(parts) < 2:
+            return None
+        candidate = parts[1].strip().lower()
+        if not candidate:
+            return None
+        # Accept only known language prefixes to avoid false positives like "orders"
+        if candidate in EMAIL_LANGS:
+            return _normalize_lang(candidate)
+        if "-" in candidate:
+            prefix = candidate.split("-", 1)[0]
+            if prefix in EMAIL_LANGS:
+                return _normalize_lang(prefix)
+    except Exception:
+        return None
+    return None
+
+
+def _detect_lang_from_usage(db: Session, user: User) -> str | None:
+    try:
+        # 1) Самый частый язык из последних посещений за 90 дней (до 200 записей)
+        since = datetime.utcnow() - timedelta(days=90)
+        visits = (
+            db.query(SiteVisit.path)
+            .filter(SiteVisit.user_id == user.id, SiteVisit.visited_at >= since)
+            .order_by(SiteVisit.visited_at.desc())
+            .limit(200)
+            .all()
+        )
+        counts = {}
+        for (path,) in visits:
+            lang = _lang_from_path(path)
+            if not lang:
+                continue
+            counts[lang] = counts.get(lang, 0) + 1
+        if counts:
+            return sorted(counts.items(), key=lambda kv: kv[1], reverse=True)[0][0]
+
+        # 2) Фоллбек: последний путь из сессии
+        sess = db.query(UserSession.last_path).filter(UserSession.user_id == user.id).first()
+        if sess and isinstance(sess[0], str):
+            lang = _lang_from_path(sess[0])
+            if lang:
+                return lang
+    except Exception:
+        # Не мешаем доставке уведомления, просто переходим к профилю/дефолту
+        pass
+    return None
+
+
+def _detect_user_lang(db: Session, user: User) -> str:
     data = getattr(user, "profile_data", None) or {}
     if isinstance(data, dict):
         for key in ("lang", "language", "ui_lang", "locale", "preferred_lang"):
             val = data.get(key)
             if isinstance(val, str) and val.strip():
                 return _normalize_lang(val)
+
+    # Самый частый язык использования сайта
+    usage_lang = _detect_lang_from_usage(db, user)
+    if usage_lang:
+        return usage_lang
 
     return _normalize_lang(None)
 
@@ -270,7 +341,7 @@ def _send_email_notification(db: Session, user_id: int, message: str, created_at
         user = db.query(User).filter(User.id == user_id).first()
         if not user or not user.email:
             return
-        lang = _detect_user_lang(user)
+        lang = _detect_user_lang(db, user)
         subject, html_body = _build_email(lang, message, created_at)
         send_email(user.email, subject, html_body)
     except Exception as e:
