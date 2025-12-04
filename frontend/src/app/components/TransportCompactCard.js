@@ -690,30 +690,6 @@ export default function TransportCompactCard({
 
             {/* Центр - основное описание */}
             <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 4 }}>
-                {showOwnerBadge && (derivedIsMine || derivedOwnerLabel) && (
-                    <div
-                        style={{
-                            display: "inline-flex",
-                            alignSelf: "flex-start",   // ⬅️ не растягивать на всю ширину колонки
-                            maxWidth: "max-content",   // ⬅️ ширина по содержимому (поддержка Safari/Firefox)
-                            alignItems: "center",
-                            gap: 6,
-                            margin: "0 0 6px",
-                            padding: "3px 8px",
-                            borderRadius: 10,
-                            background: isMine ? "var(--compact-card-owner-mine-bg)" : "var(--compact-card-owner-other-bg)",
-                            border: isMine ? "1px solid var(--compact-card-owner-mine-border)" : "1px solid var(--compact-card-owner-other-border)",
-                            color: isMine ? "var(--compact-card-owner-mine-strong)" : "var(--compact-card-owner-other-text)",
-                            fontWeight: 800,
-                            fontSize: 12,
-                            letterSpacing: ".01em"
-                        }}
-                    >
-                        {derivedIsMine
-                            ? t("transport.mine", "Ваш транспорт")
-                            : <>{t("transport.ownerPrefix", "Транспорт")}: <span style={{ color: "var(--compact-card-owner-other-strong)" }}>{derivedOwnerLabel}</span></>}
-                    </div>
-                )}
                 {/* Заголовок (тип кузова) — ОСТАЁТСЯ видимым */}
                 <div style={{
                     fontWeight: 800,
@@ -722,7 +698,7 @@ export default function TransportCompactCard({
                     marginBottom: 3,
                     display: "flex",
                     alignItems: "center",
-                    gap: 8,
+                    gap: 10,
                     textTransform: "uppercase",
                     letterSpacing: ".01em"
                 }}>
@@ -753,6 +729,30 @@ export default function TransportCompactCard({
                             {findBodyLabelByValue(transport.truck_type) || "—"}
                         </span>
                     </span>
+
+                    {showOwnerBadge && (derivedIsMine || derivedOwnerLabel) && (
+                        <span
+                            style={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: 6,
+                                padding: "3px 8px",
+                                borderRadius: 10,
+                                background: isMine ? "var(--compact-card-owner-mine-bg)" : "var(--compact-card-owner-other-bg)",
+                                border: isMine ? "1px solid var(--compact-card-owner-mine-border)" : "1px solid var(--compact-card-owner-other-border)",
+                                color: isMine ? "var(--compact-card-owner-mine-strong)" : "var(--compact-card-owner-other-text)",
+                                fontWeight: 800,
+                                fontSize: 12,
+                                letterSpacing: ".01em",
+                                whiteSpace: "nowrap",
+                                flexShrink: 0
+                            }}
+                        >
+                            {derivedIsMine
+                                ? t("transport.mine", "Ваш транспорт")
+                                : <>{t("transport.ownerPrefix", "Транспорт")}: <span style={{ color: "var(--compact-card-owner-other-strong)" }}>{derivedOwnerLabel}</span></>}
+                        </span>
+                    )}
                     {!hideLive && hasLive && canSeeLive && (
                         <span
                             title={t("gps.liveMonitoring", "Идёт GPS-мониторинг")}

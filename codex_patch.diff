@@ -1,65 +1,62 @@
-diff --git a/mobile/transinfo_mobile/lib/features/orders/presentation/orders_screen.dart b/mobile/transinfo_mobile/lib/features/orders/presentation/orders_screen.dart
+diff --git a/mobile/transinfo_mobile/lib/features/transport/presentation/transports_screen.dart b/mobile/transinfo_mobile/lib/features/transport/presentation/transports_screen.dart
 new file mode 100644
-index 0000000000000000000000000000000000000000..5987b4a12e10987cbcb13f99f947b50696b45a5f
+index 0000000000000000000000000000000000000000..cece5d83cdf6f7d55b23f6f090da8c4a1c710845
 --- /dev/null
-+++ b/mobile/transinfo_mobile/lib/features/orders/presentation/orders_screen.dart
-@@ -0,0 +1,118 @@
++++ b/mobile/transinfo_mobile/lib/features/transport/presentation/transports_screen.dart
+@@ -0,0 +1,135 @@
 +import 'package:flutter/material.dart';
 +import 'package:flutter_riverpod/flutter_riverpod.dart';
 +
-+import '../domain/order.dart';
-+import 'orders_providers.dart';
++import '../domain/transport_item.dart';
++import 'transport_providers.dart';
 +
-+class OrdersScreen extends ConsumerWidget {
-+  const OrdersScreen({super.key});
++class TransportsScreen extends ConsumerWidget {
++  const TransportsScreen({super.key});
 +
 +  @override
 +  Widget build(BuildContext context, WidgetRef ref) {
-+    final asyncOrders = ref.watch(ordersProvider);
++    final asyncTransports = ref.watch(transportsProvider);
 +
 +    return Scaffold(
 +      appBar: AppBar(
-+        title: const Text('Грузы'),
++        title: const Text('Транспорт'),
 +      ),
-+      body: asyncOrders.when(
-+        data: (orders) => RefreshIndicator(
-+          onRefresh: () async {
-+            await ref.refresh(ordersProvider.future);
-+          },
-+          child: orders.isEmpty
-+              ? ListView(
-+                  children: const [
-+                    Padding(
-+                      padding: EdgeInsets.all(16),
-+                      child: Text('Список грузов пуст.'),
-+                    ),
-+                  ],
-+                )
-+              : ListView.builder(
-+                  padding: const EdgeInsets.all(8),
-+                  itemCount: orders.length,
-+                  itemBuilder: (context, index) {
-+                    final order = orders[index];
-+                    return _OrderCard(order: order);
-+                  },
-+                ),
-+        ),
++      body: asyncTransports.when(
++        data: (result) {
++          final items = result.items;
++          if (items.isEmpty) {
++            return const Center(child: Text('Транспортные заявки отсутствуют'));
++          }
++          return RefreshIndicator(
++            onRefresh: () async {
++              ref.invalidate(transportsProvider);
++              await ref.read(transportsProvider.future);
++            },
++            child: ListView.separated(
++              physics: const AlwaysScrollableScrollPhysics(),
++              padding: const EdgeInsets.all(12),
++              itemCount: items.length,
++              separatorBuilder: (_, __) => const SizedBox(height: 8),
++              itemBuilder: (context, index) {
++                final item = items[index];
++                return _TransportCard(item: item);
++              },
++            ),
++          );
++        },
 +        loading: () => const Center(child: CircularProgressIndicator()),
 +        error: (error, stack) {
 +          return Center(
-+            child: Padding(
-+              padding: const EdgeInsets.all(16),
-+              child: Column(
-+                mainAxisSize: MainAxisSize.min,
-+                children: [
-+                  Text('Не удалось загрузить грузы: $error'),
-+                  const SizedBox(height: 12),
-+                  ElevatedButton(
-+                    onPressed: () => ref.refresh(ordersProvider),
-+                    child: const Text('Повторить'),
-+                  ),
-+                ],
-+              ),
++            child: Column(
++              mainAxisSize: MainAxisSize.min,
++              children: [
++                Text('Ошибка загрузки транспорта: $error'),
++                const SizedBox(height: 12),
++                ElevatedButton(
++                  onPressed: () => ref.refresh(transportsProvider.future),
++                  child: const Text('Повторить'),
++                ),
++              ],
 +            ),
 +          );
 +        },
@@ -68,57 +65,77 @@ index 0000000000000000000000000000000000000000..5987b4a12e10987cbcb13f99f947b506
 +  }
 +}
 +
-+class _OrderCard extends StatelessWidget {
-+  const _OrderCard({required this.order});
++class _TransportCard extends StatelessWidget {
++  const _TransportCard({required this.item});
 +
-+  final Order order;
++  final TransportItem item;
++
++  String _formatDates() {
++    final from = item.readyDateFrom;
++    final to = item.readyDateTo;
++    if (from != null && to != null && from.isNotEmpty && to.isNotEmpty) {
++      if (from == to) return from;
++      return '$from — $to';
++    }
++    if (from != null && from.isNotEmpty) return from;
++    if (to != null && to.isNotEmpty) return to;
++    return item.mode ?? '';
++  }
 +
 +  @override
 +  Widget build(BuildContext context) {
-+    final direction = _buildDirection(order.fromLocations, order.toLocations);
-+    final price = order.price.isNotEmpty ? order.price : '—';
-+    final createdAt = '${order.createdAt.toLocal()}'.split('.').first;
++    final destination = item.mainDestination ?? (item.toLocations.isNotEmpty ? item.toLocations.join(', ') : '-');
++    final direction = '${item.fromLocation ?? '-'} → $destination';
++
++    final details = <String>[
++      if (item.truckType != null && item.truckType!.isNotEmpty) item.truckType!,
++      if (item.transportKind != null && item.transportKind!.isNotEmpty) item.transportKind!,
++      if (item.weight != null) 'Вес: ${item.weight} т',
++      if (item.volume != null) 'Объём: ${item.volume} м³',
++      if (_formatDates().isNotEmpty) 'Даты: ${_formatDates()}',
++      if (item.rateWithVat != null && item.rateWithVat!.isNotEmpty)
++        'Ставка: ${item.rateWithVat}${item.currency != null ? ' ${item.currency}' : ''}',
++    ].where((e) => e.isNotEmpty).toList();
 +
 +    return Card(
-+      margin: const EdgeInsets.symmetric(vertical: 6),
 +      child: Padding(
 +        padding: const EdgeInsets.all(12),
 +        child: Column(
 +          crossAxisAlignment: CrossAxisAlignment.start,
 +          children: [
 +            Text(
-+              order.title.isNotEmpty ? order.title : 'Заказ #${order.id}',
++              direction,
 +              style: Theme.of(context).textTheme.titleMedium,
 +            ),
-+            const SizedBox(height: 4),
-+            Text(direction, style: Theme.of(context).textTheme.bodyMedium),
-+            const SizedBox(height: 4),
-+            Row(
-+              children: [
-+                Expanded(
-+                  child: Text('Тип: ${order.truckType.isNotEmpty ? order.truckType : 'не указан'}'),
-+                ),
-+                Text('Цена: $price'),
-+              ],
-+            ),
-+            const SizedBox(height: 4),
-+            Row(
-+              children: [
-+                Expanded(child: Text('Загрузка: ${order.loadDate.isNotEmpty ? order.loadDate : '—'}')),
-+                Text('Просмотры: ${order.views}'),
-+              ],
-+            ),
-+            const SizedBox(height: 4),
-+            Text('Создан: $createdAt', style: Theme.of(context).textTheme.bodySmall),
++            const SizedBox(height: 8),
++            if (details.isNotEmpty)
++              Column(
++                crossAxisAlignment: CrossAxisAlignment.start,
++                children: details
++                    .map(
++                      (d) => Padding(
++                        padding: const EdgeInsets.only(bottom: 4),
++                        child: Text(d),
++                      ),
++                    )
++                    .toList(),
++              ),
++            if (item.comment != null && item.comment!.isNotEmpty) ...[
++              const SizedBox(height: 8),
++              Text(
++                item.comment!,
++                style: Theme.of(context).textTheme.bodyMedium,
++              ),
++            ],
++            if (item.contactName != null && item.contactName!.isNotEmpty) ...[
++              const SizedBox(height: 8),
++              Text('Контакт: ${item.contactName!}'),
++            ],
++            if (item.phone != null && item.phone!.isNotEmpty)
++              Text('Телефон: ${item.phone!}'),
 +          ],
 +        ),
 +      ),
 +    );
-+  }
-+
-+  String _buildDirection(List<String> fromLocations, List<String> toLocations) {
-+    final from = fromLocations.isNotEmpty ? fromLocations.join(', ') : '—';
-+    final to = toLocations.isNotEmpty ? toLocations.join(', ') : '—';
-+    return '$from → $to';
 +  }
 +}

@@ -789,6 +789,7 @@ const CargoCompactCard = forwardRef(function CargoCompactCard(
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "space-between",
+                        gap: 10,
                     }}
                 >
                     <span style={{ display: "inline-flex", alignItems: "center", gap: 8, minWidth: 0 }}>
@@ -801,30 +802,38 @@ const CargoCompactCard = forwardRef(function CargoCompactCard(
                             {cargo.title}
                         </span>
                     </span>
-                </div>
 
-                {showOwnerBadge && (derivedIsMine || derivedOwnerLabel) && (
-                    <div
-                        style={{
-                            display: "inline-flex",
-                            alignItems: "center",
-                            gap: 6,
-                            margin: isMobile ? "6px 0 10px" : "2px 0 8px",
-                            padding: "3px 8px",
-                            borderRadius: 10,
-                            background: isMine ? "var(--compact-card-owner-mine-bg)" : "var(--compact-card-owner-other-bg)",
-                            border: isMine ? "1px solid var(--compact-card-owner-mine-border)" : "1px solid var(--compact-card-owner-other-border)",
-                            color: isMine ? "var(--compact-card-owner-mine-strong)" : "var(--compact-card-owner-other-text)",
-                            fontWeight: 800,
-                            fontSize: 12,
-                            letterSpacing: ".01em",
-                        }}
-                    >
-                        {derivedIsMine ? t("card.yourOrder", "Ваша заявка") : (
-                            <>{t("card.orderOf", "Заявка:")} <span style={{ color: "var(--compact-card-owner-other-strong)" }}>{derivedOwnerLabel}</span></>
-                        )}
-                    </div>
-                )}
+                    {showOwnerBadge && (derivedIsMine || derivedOwnerLabel) && (
+                        <span
+                            style={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: 6,
+                                padding: "3px 8px",
+                                borderRadius: 10,
+                                background: isMine ? "var(--compact-card-owner-mine-bg)" : "var(--compact-card-owner-other-bg)",
+                                border: isMine
+                                    ? "1px solid var(--compact-card-owner-mine-border)"
+                                    : "1px solid var(--compact-card-owner-other-border)",
+                                color: isMine
+                                    ? "var(--compact-card-owner-mine-strong)"
+                                    : "var(--compact-card-owner-other-text)",
+                                fontWeight: 800,
+                                fontSize: 12,
+                                letterSpacing: ".01em",
+                                whiteSpace: "nowrap",
+                                flexShrink: 0,
+                            }}
+                        >
+                            {derivedIsMine ? t("card.yourOrder", "Ваша заявка") : (
+                                <>
+                                    {t("card.orderOf", "Заявка:")} {" "}
+                                    <span style={{ color: "var(--compact-card-owner-other-strong)" }}>{derivedOwnerLabel}</span>
+                                </>
+                            )}
+                        </span>
+                    )}
+                </div>
 
                 {(routeStacked || isMobile) && hasBoth ? (
                     // Вертикальный вариант: «куда» на второй строке — экономим ширину

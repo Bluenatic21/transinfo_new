@@ -350,6 +350,12 @@ ENV_FILE_USED = None
 BASE_DIR = os.path.dirname(__file__)
 ROOT_DIR = os.path.abspath(os.path.join(BASE_DIR, ".."))
 
+
+# Глобальная папка статики backend/static (можно переопределить STATIC_DIR в env)
+STATIC_DIR = Path(
+    os.getenv("STATIC_DIR", os.path.join(BASE_DIR, "static"))).resolve()
+STATIC_DIR.mkdir(parents=True, exist_ok=True)
+
 # Порядок поиска: backend/.env.local → backend/.env → repo/.env.local → repo/.env
 for candidate in (
     os.path.join(BASE_DIR, ".env.local"),
@@ -1059,19 +1065,7 @@ def _cors_ok(rest_of_path: str):
     return Response(status_code=204)
 
 
-# Подключаем роутеры с Range ДО монтирования общей статики
-app.include_router(chat_files_router)
-app.include_router(media_range_router)
-
-# Раздаём статику из папки рядом с main.py (работает независимо от текущей рабочей директории)
-BASE_DIR = Path(__file__).parent
-# Можно переопределить через переменную окружения STATIC_DIR,
-# иначе по умолчанию backend/static
-STATIC_DIR = Path(
-    os.getenv("STATIC_DIR", BASE_DIR / "static")
-).resolve()
-STATIC_DIR.mkdir(parents=True, exist_ok=True)
-
+# Раздаём статику из STATIC_DIR, который мы задали выше
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
 # --- Password reset (forgot/reset via email) ---
