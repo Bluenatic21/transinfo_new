@@ -1,59 +1,110 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../domain/order.dart';
-import 'orders_providers.dart';
-
-class OrdersScreen extends ConsumerWidget {
+class OrdersScreen extends StatelessWidget {
   const OrdersScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final asyncOrders = ref.watch(ordersProvider);
+  Widget build(BuildContext context) {
+    const backgroundColor = Color(0xFF020C1A);
+    const cardColor = Color(0xFF06213A);
+
+    // Пока мок-данные, позже подключим API
+    const items = _mockOrders;
 
     return Scaffold(
+      backgroundColor: backgroundColor,
       appBar: AppBar(
+        backgroundColor: const Color(0xFF041322),
         title: const Text('Грузы'),
       ),
-      body: asyncOrders.when(
-        data: (orders) => RefreshIndicator(
-          onRefresh: () async {
-            await ref.refresh(ordersProvider.future);
-          },
-          child: orders.isEmpty
-              ? ListView(
-                  children: const [
-                    Padding(
-                      padding: EdgeInsets.all(16),
-                      child: Text('Список грузов пуст.'),
+      body: ListView.separated(
+        padding: const EdgeInsets.all(16),
+        itemCount: items.length,
+        separatorBuilder: (_, __) => const SizedBox(height: 12),
+        itemBuilder: (context, index) {
+          final o = items[index];
+
+          return Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: cardColor,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Маршрут
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Icon(
+                      Icons.inventory_2_outlined,
+                      color: Colors.white,
+                      size: 22,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '${o.fromCity} → ${o.toCity}',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            '${o.fromCountry} • ${o.toCountry}',
+                            style: const TextStyle(
+                              color: Colors.white70,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
-                )
-              : ListView.builder(
-                  padding: const EdgeInsets.all(8),
-                  itemCount: orders.length,
-                  itemBuilder: (context, index) {
-                    final order = orders[index];
-                    return _OrderCard(order: order);
-                  },
                 ),
-        ),
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stack) {
-          return Center(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text('Не удалось загрузить грузы: $error'),
-                  const SizedBox(height: 12),
-                  ElevatedButton(
-                    onPressed: () => ref.refresh(ordersProvider),
-                    child: const Text('Повторить'),
+                const SizedBox(height: 10),
+
+                // Параметры груза
+                Wrap(
+                  spacing: 12,
+                  runSpacing: 6,
+                  children: [
+                    _InfoChip(
+                      icon: Icons.scale_outlined,
+                      label: '${o.weightTons} т',
+                    ),
+                    _InfoChip(
+                      icon: Icons.all_inbox_outlined,
+                      label: o.cargoType,
+                    ),
+                    _InfoChip(
+                      icon: Icons.calendar_month_outlined,
+                      label: o.date,
+                    ),
+                    if (o.price != null)
+                      _InfoChip(icon: Icons.payments_outlined, label: o.price!),
+                    if (o.tempMode != null)
+                      _InfoChip(
+                        icon: Icons.ac_unit_outlined,
+                        label: o.tempMode!,
+                      ),
+                  ],
+                ),
+
+                const SizedBox(height: 8),
+
+                if (o.comment != null && o.comment!.isNotEmpty)
+                  Text(
+                    o.comment!,
+                    style: const TextStyle(color: Colors.white70, fontSize: 12),
                   ),
-                ],
-              ),
+              ],
             ),
           );
         },
@@ -62,57 +113,92 @@ class OrdersScreen extends ConsumerWidget {
   }
 }
 
-class _OrderCard extends StatelessWidget {
-  const _OrderCard({required this.order});
+class _InfoChip extends StatelessWidget {
+  const _InfoChip({required this.icon, required this.label});
 
-  final Order order;
+  final IconData icon;
+  final String label;
 
   @override
   Widget build(BuildContext context) {
-    final direction = _buildDirection(order.fromLocations, order.toLocations);
-    final price = order.price.isNotEmpty ? order.price : '—';
-    final createdAt = '${order.createdAt.toLocal()}'.split('.').first;
-
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 6),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              order.title.isNotEmpty ? order.title : 'Заказ #${order.id}',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 4),
-            Text(direction, style: Theme.of(context).textTheme.bodyMedium),
-            const SizedBox(height: 4),
-            Row(
-              children: [
-                Expanded(
-                  child: Text('Тип: ${order.truckType.isNotEmpty ? order.truckType : 'не указан'}'),
-                ),
-                Text('Цена: $price'),
-              ],
-            ),
-            const SizedBox(height: 4),
-            Row(
-              children: [
-                Expanded(child: Text('Загрузка: ${order.loadDate.isNotEmpty ? order.loadDate : '—'}')),
-                Text('Просмотры: ${order.views}'),
-              ],
-            ),
-            const SizedBox(height: 4),
-            Text('Создан: $createdAt', style: Theme.of(context).textTheme.bodySmall),
-          ],
-        ),
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: const Color(0xFF041322),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: Colors.white70),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: const TextStyle(color: Colors.white70, fontSize: 12),
+          ),
+        ],
       ),
     );
   }
-
-  String _buildDirection(List<String> fromLocations, List<String> toLocations) {
-    final from = fromLocations.isNotEmpty ? fromLocations.join(', ') : '—';
-    final to = toLocations.isNotEmpty ? toLocations.join(', ') : '—';
-    return '$from → $to';
-  }
 }
+
+class _OrderMock {
+  const _OrderMock({
+    required this.fromCity,
+    required this.toCity,
+    required this.fromCountry,
+    required this.toCountry,
+    required this.weightTons,
+    required this.date,
+    required this.cargoType,
+    this.price,
+    this.tempMode,
+    this.comment,
+  });
+
+  final String fromCity;
+  final String toCity;
+  final String fromCountry;
+  final String toCountry;
+  final double weightTons;
+  final String date;
+  final String cargoType;
+  final String? price;
+  final String? tempMode;
+  final String? comment;
+}
+
+// Примерные заявки – позже заменим на реальные данные
+const List<_OrderMock> _mockOrders = [
+  _OrderMock(
+    fromCity: 'Тбилиси',
+    toCity: 'Стамбул (европейская часть)',
+    fromCountry: 'Грузия',
+    toCountry: 'Турция',
+    weightTons: 3,
+    date: '10.12',
+    cargoType: 'Техника',
+    price: '1100 \$',
+    comment: 'Нужен только этот груз в машине, стандартный тент.',
+  ),
+  _OrderMock(
+    fromCity: 'Минск',
+    toCity: 'Тбилиси',
+    fromCountry: 'Беларусь',
+    toCountry: 'Грузия',
+    weightTons: 21,
+    date: '12.12',
+    cargoType: 'Сухой груз в мешках',
+    price: 'по договорённости',
+  ),
+  _OrderMock(
+    fromCity: 'Ростов-на-Дону',
+    toCity: 'Тбилиси',
+    fromCountry: 'Россия',
+    toCountry: 'Грузия',
+    weightTons: 22,
+    date: '08.12',
+    cargoType: 'Косметическая химия',
+    comment: 'Готов к загрузке 8 числа, нужна задняя загрузка.',
+  ),
+];

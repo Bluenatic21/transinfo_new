@@ -105,6 +105,13 @@
   --chat-input-bg: #232b3c;
   --chat-input-border: #364869;
   --chat-input-text: #e8f1ff;
+  /* Chat menus and action panels */
+  --chat-menu-panel-bg: #0f172a;
+  --chat-menu-panel-border: #22304b;
+  --chat-menu-bg: #111c2e;
+  --chat-menu-active-bg: #15233d;
+  --chat-menu-fg: #e5edff;
+  --chat-menu-border: #273248;
   --contact-secondary-name: #cfe9ff;
 }
 
@@ -167,6 +174,13 @@
   --chat-input-bg: #ffffff;
   --chat-input-border: #cbd5e1;
   --chat-input-text: #0f172a;
+  /* Chat menus and action panels */
+  --chat-menu-panel-bg: #ffffff;
+  --chat-menu-panel-border: #d7dce6;
+  --chat-menu-bg: #f8fafc;
+  --chat-menu-active-bg: #e5e7eb;
+  --chat-menu-fg: #0f172a;
+  --chat-menu-border: #cbd5e1;
   --contact-secondary-name: var(--text-secondary);
 
   /* Call overlay */

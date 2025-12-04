@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../auth/presentation/auth_controller.dart';
 import '../../profile/presentation/profile_screen.dart';
 import '../../transport/presentation/transports_screen.dart';
+import '../../orders/presentation/orders_screen.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -129,6 +130,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   setState(() => _selectedIndex = 1);
                 },
               ),
+              _BottomNavItem(
+                index: 2,
+                currentIndex: _selectedIndex,
+                label: 'Грузы',
+                icon: Icons.inventory_2_outlined,
+                onTap: () {
+                  setState(() => _selectedIndex = 2);
+                  Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const OrdersScreen(),
+                    ),
+                  );
+                },
+              ),
               const SizedBox(width: 32), // место под FAB
               _BottomNavItem(
                 index: 3,
@@ -209,8 +224,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               title: 'Грузы',
               subtitle: 'Свежие предложения от грузовладельцев',
               color: cardDarkColor,
-              onTap: () {},
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(builder: (_) => const OrdersScreen()),
+                );
+              },
             ),
+
             const SizedBox(height: 12),
             _MainActionCard(
               icon: Icons.add_road,
