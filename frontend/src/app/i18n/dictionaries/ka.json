@@ -588,7 +588,7 @@
   "transport.deleteError": "ტრანსპორტის წაშლის შეცდომა",
   "orders.statusChangeError": "სტატუსის შეცვლის შეცდომა",
   "common.networkErrorDelete": "ქსელის შეცდომა წაშლისას",
-  "common.deleting": "შლას...",
+  "common.deleting": "წაშლა...",
   "common.noInfo": "ინფორმაცია არ არის მითითებული",
   "common.photos": "ფოტოები",
   "common.documents": "დოკუმენტები",

@@ -1107,6 +1107,53 @@ function OrderCard({
 
     const rateNoVatColor = isLight ? cardColors.label : "#ff4d4f";
 
+    const bidPalette = useMemo(
+        () =>
+            isLight
+                ? {
+                    panelBg: "var(--surface, #ffffff)",
+                    panelBorder: "1px solid var(--border-subtle, #d7e4f5)",
+                    panelShadow: "0 14px 40px rgba(15, 23, 42, 0.14)",
+                    title: "var(--order-card-heading, #111b27)",
+                    listBg: "var(--surface-soft, #f4f7fd)",
+                    listText: "var(--text-primary, #0f172a)",
+                    listSecondary: "var(--text-secondary, #475569)",
+                    yourBidBg: "color-mix(in srgb, var(--brand-blue, #81caff) 18%, #ffffff)",
+                    yourBidText: "var(--order-card-heading, #111b27)",
+                    metaText: "#4b5563",
+                    inputBg: "#ffffff",
+                    inputBorder: "1px solid #cbd5e1",
+                    inputText: "#0f172a",
+                    selectBg: "#ffffff",
+                    selectText: "#0f172a",
+                    primaryBtnBg: "var(--brand-blue, #43c8ff)",
+                    primaryBtnText: "#0b1a2f",
+                    secondaryBtnBg: "var(--control-bg, #eef1f6)",
+                    secondaryBtnText: "var(--text-secondary, #475569)",
+                }
+                : {
+                    panelBg: "#222e44",
+                    panelBorder: "none",
+                    panelShadow: "0 6px 32px #43c8ff33",
+                    title: "#43c8ff",
+                    listBg: "#182234",
+                    listText: "#b3d5fa",
+                    listSecondary: cardColors.label,
+                    yourBidBg: "#213768",
+                    yourBidText: "#ffd600",
+                    metaText: "#6ebcff",
+                    inputBg: "#1a253a",
+                    inputBorder: "1px solid #193158",
+                    inputText: "#fff",
+                    selectBg: "#1a253a",
+                    selectText: "#fff",
+                    primaryBtnBg: "#43c8ff",
+                    primaryBtnText: "#162239",
+                    secondaryBtnBg: "#192b42",
+                    secondaryBtnText: "#b3d5fa",
+                },
+        [cardColors.label, isLight],
+    );
 
     const commentPalette = isLight
         ? {
@@ -2328,9 +2375,10 @@ function OrderCard({
                             right: 17,
                             bottom: 54,
                             zIndex: 13,
-                            background: "#222e44",
+                            background: bidPalette.panelBg,
                             borderRadius: 14,
-                            boxShadow: "0 6px 32px #43c8ff33",
+                            border: bidPalette.panelBorder,
+                            boxShadow: bidPalette.panelShadow,
                             padding: "18px 22px 13px 22px",
                             minWidth: 265,
                             maxWidth: 410,
@@ -2338,7 +2386,7 @@ function OrderCard({
                         }}
                         onMouseDown={(e) => e.stopPropagation()}
                     >
-                        <div style={{ fontWeight: 700, color: "#43c8ff", marginBottom: 7, fontSize: 15 }}>
+                        <div style={{ fontWeight: 700, color: bidPalette.title, marginBottom: 7, fontSize: 15 }}>
                             {
                                 (() => {
                                     let bidsToShow = allBids ? [...allBids] : [];
@@ -2350,13 +2398,13 @@ function OrderCard({
                                 })()
                             }
                         </div>
-                        <div style={{ maxHeight: 150, overflowY: "auto", marginBottom: 9, borderRadius: 8, background: "#182234", padding: 6 }}>
+                        <div style={{ maxHeight: 150, overflowY: "auto", marginBottom: 9, borderRadius: 8, background: bidPalette.listBg, padding: 6 }}>
                             {
                                 (() => {
                                     let bidsToShow = allBids ? [...allBids] : [];
                                     bidsToShow.sort((a, b) => b.amount - a.amount);
                                     if (bidsToShow.length === 0) {
-                                        return <div style={{ color: cardColors.label, fontSize: 14 }}>{t("bids.noneYet", "Пока нет ставок")}</div>;
+                                        return <div style={{ color: bidPalette.listSecondary, fontSize: 14 }}>{t("bids.noneYet", "Пока нет ставок")}</div>;
                                     }
                                     return bidsToShow.map((bid) => (
                                         <div
@@ -2366,8 +2414,8 @@ function OrderCard({
                                                 alignItems: "center",
                                                 justifyContent: "space-between",
                                                 fontSize: 14,
-                                                background: yourBid?.id === bid.id ? "#213768" : "none",
-                                                color: yourBid?.id === bid.id ? "#ffd600" : "#b3d5fa",
+                                                background: yourBid?.id === bid.id ? bidPalette.yourBidBg : "none",
+                                                color: yourBid?.id === bid.id ? bidPalette.yourBidText : bidPalette.listText,
                                                 borderRadius: 6,
                                                 padding: "4px 9px",
                                                 marginBottom: 3,
@@ -2377,10 +2425,10 @@ function OrderCard({
                                             <span>
                                                 {formatPrice(bid.amount, bid.currency)}
                                                 {yourBid?.id === bid.id && (
-                                                    <span style={{ marginLeft: 8, fontSize: 12, color: "#ffd600" }}>{t("bids.yoursShort", "(Ваша)")}</span>
+                                                    <span style={{ marginLeft: 8, fontSize: 12, color: bidPalette.yourBidText }}>{t("bids.yoursShort", "(Ваша)")}</span>
                                                 )}
                                             </span>
-                                            <span style={{ fontSize: 12, color: "#6ebcff" }}>
+                                            <span style={{ fontSize: 12, color: bidPalette.metaText }}>
                                                 {bid.created_at?.slice(0, 16).replace("T", " ")}
                                             </span>
                                         </div>
@@ -2395,7 +2443,7 @@ function OrderCard({
                                     handleSendBid(amount, comment);
                                 }}
                             >
-                                <div style={{ fontWeight: 700, color: "#43c8ff", marginBottom: 7, fontSize: 15 }}>{t("bids.make", "Сделать ставку")}</div>
+                                <div style={{ fontWeight: 700, color: bidPalette.title, marginBottom: 7, fontSize: 15 }}>{t("bids.make", "Сделать ставку")}</div>
                                 <input
                                     type="number"
                                     placeholder={t("form.amount", "Сумма")}
@@ -2403,7 +2451,7 @@ function OrderCard({
                                     min="1"
                                     value={amount}
                                     onChange={(e) => setAmount(e.target.value)}
-                                    style={{ width: "99%", padding: 8, borderRadius: 8, border: "1px solid #193158", marginBottom: 7, fontSize: 14 }}
+                                    style={{ width: "99%", padding: 8, borderRadius: 8, border: bidPalette.inputBorder, background: bidPalette.inputBg, color: bidPalette.inputText, marginBottom: 7, fontSize: 14 }}
                                 />
                                 <select
                                     value={bidCurrency}
@@ -2412,11 +2460,11 @@ function OrderCard({
                                         width: "99%",
                                         padding: 8,
                                         borderRadius: 8,
-                                        border: "1px solid #193158",
+                                        border: bidPalette.inputBorder,
                                         marginBottom: 7,
                                         fontSize: 14,
-                                        background: "#1a253a",
-                                        color: "#fff",
+                                        background: bidPalette.selectBg,
+                                        color: bidPalette.selectText,
                                     }}
                                 >
                                     {CURRENCIES.map((cur) => (
@@ -2433,11 +2481,13 @@ function OrderCard({
                                         width: "99%",
                                         padding: 8,
                                         borderRadius: 8,
-                                        border: "1px solid #193158",
+                                        border: bidPalette.inputBorder,
                                         minHeight: 35,
                                         marginBottom: 6,
                                         fontSize: 14,
                                         resize: "vertical",
+                                        background: bidPalette.inputBg,
+                                        color: bidPalette.inputText,
                                     }}
                                 />
                                 <div style={{ display: "flex", gap: 8 }}>
@@ -2445,8 +2495,8 @@ function OrderCard({
                                         type="submit"
                                         disabled={sending || !amount}
                                         style={{
-                                            background: "#43c8ff",
-                                            color: "#162239",
+                                            background: bidPalette.primaryBtnBg,
+                                            color: bidPalette.primaryBtnText,
                                             border: "none",
                                             borderRadius: 8,
                                             fontWeight: 700,
@@ -2461,8 +2511,8 @@ function OrderCard({
                                         type="button"
                                         onClick={() => setShowBidPanel(false)}
                                         style={{
-                                            background: "#192b42",
-                                            color: "#b3d5fa",
+                                            background: bidPalette.secondaryBtnBg,
+                                            color: bidPalette.secondaryBtnText,
                                             border: "none",
                                             borderRadius: 8,
                                             fontWeight: 700,
