@@ -43,24 +43,39 @@ export default function OrderMatchesMobile({ orderId, order, onBack }) {
     const rows = useMemo(() => Array.isArray(list) ? list : [], [list]);
 
     const headerBtn = {
-        border: "1px solid rgba(255,255,255,.15)",
-        background: "transparent",
-        color: "#cfe7ff",
+        border: "1px solid var(--border-subtle)",
+        background: "var(--control-bg)",
+        color: "var(--text-primary)",
         padding: "8px 12px",
         borderRadius: 12,
         fontWeight: 800,
         fontSize: 13,
+        boxShadow: "var(--shadow-soft)",
     };
 
     return (
-        <div style={{ background: "#182337", minHeight: "100vh", paddingBottom: 64 }}>
+        <div
+            style={{
+                background: "var(--bg-body)",
+                color: "var(--text-primary)",
+                minHeight: "100vh",
+                paddingBottom: 64,
+            }}
+        >
             <div style={{
-                position: "sticky", top: 0, zIndex: 10, background: "#212c46",
-                padding: "18px 12px 12px 12px", display: "flex", alignItems: "center", justifyContent: "space-between",
-                borderBottom: "1px solid rgba(255,255,255,.06)"
+                position: "sticky",
+                top: 0,
+                zIndex: 10,
+                background: "var(--bg-header)",
+                padding: "18px 12px 12px 12px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                borderBottom: "1px solid var(--border-subtle)",
+                boxShadow: "var(--shadow-soft)",
             }}>
                 <button onClick={onBack} style={headerBtn}>{t("common.back", "Назад")}</button>
-                <div style={{ fontWeight: 900, fontSize: 18, color: "#9fd8ff" }}>
+                <div style={{ fontWeight: 900, fontSize: 18, color: "var(--brand-blue)" }}>
                     {t("matches.transportTitle", "Соответствия: транспорт")}
                 </div>
                 <button onClick={() => setMapOpen(true)} style={headerBtn}>{t("common.map", "Карта")}</button>
@@ -71,7 +86,7 @@ export default function OrderMatchesMobile({ orderId, order, onBack }) {
                     <TransportCardMobile key={t.id || t.uid} transport={t} />
                 ))}
                 {!loading && rows.length === 0 && (
-                    <div style={{ color: "#b3d5fa" }}>{t("matches.noTransports", "Нет совпавшего транспорта.")}</div>
+                    <div style={{ color: "var(--text-secondary)" }}>{t("matches.noTransports", "Нет совпавшего транспорта.")}</div>
                 )}
             </div>
 

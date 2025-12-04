@@ -22,6 +22,7 @@ function SectionHeader({ title, count }) {
                 top: 48,
                 zIndex: 5,
                 borderBottom: "1px solid var(--border-subtle)",
+                boxShadow: "var(--shadow-soft)",
             }}
         >
             <div
@@ -139,12 +140,13 @@ export default function MobileMatches() {
 
     const toolbarBtn = {
         border: "1px solid var(--border-subtle)",
-        background: "transparent",
+        background: "var(--control-bg)",
         color: "var(--text-primary)",
         padding: "8px 12px",
         borderRadius: 12,
         fontWeight: 800,
         fontSize: 13,
+        boxShadow: "var(--shadow-soft)",
     };
 
     // роутинг на экраны соответствий
@@ -203,7 +205,10 @@ export default function MobileMatches() {
                         onClick={() => setTab("orders")}
                         style={{
                             ...toolbarBtn,
-                            background: tab === "orders" ? "#0f2037" : "transparent",
+                            background:
+                                tab === "orders"
+                                    ? "var(--control-bg-hover)"
+                                    : "var(--control-bg)",
                         }}
                     >
                         {t("matches.tab.orders", "Грузы")}
@@ -212,7 +217,10 @@ export default function MobileMatches() {
                         onClick={() => setTab("transport")}
                         style={{
                             ...toolbarBtn,
-                            background: tab === "transport" ? "#0f2037" : "transparent",
+                            background:
+                                tab === "transport"
+                                    ? "var(--control-bg-hover)"
+                                    : "var(--control-bg)",
                         }}
                     >
                         {t("matches.tab.transports", "Транспорт")}
@@ -243,13 +251,14 @@ export default function MobileMatches() {
                                         top: 10,
                                         right: 10,
                                         zIndex: 2,
-                                        background: "#0f2037",
-                                        border: "1px solid rgba(67,200,255,.35)",
+                                        background: "var(--control-bg)",
+                                        border: "1px solid var(--border-subtle)",
                                         borderRadius: 12,
                                         padding: "3px 8px",
                                         fontSize: 12,
                                         fontWeight: 900,
-                                        color: "#d6f2ff",
+                                        color: "var(--text-primary)",
+                                        boxShadow: "var(--shadow-soft)",
                                     }}
                                 >
                                     {order.matchesCount ?? 0}
@@ -278,7 +287,7 @@ export default function MobileMatches() {
                         ))}
 
                         {!loading && (orders?.length || 0) === 0 && (
-                            <div style={{ color: "#b3d5fa", padding: "12px 14px" }}>
+                            <div style={{ color: "var(--text-secondary)", padding: "12px 14px" }}>
                                 {t("matches.noOrdersMine", "У вас пока нет заявок.")}
                             </div>
                         )}
@@ -307,13 +316,14 @@ export default function MobileMatches() {
                                         top: 10,
                                         right: 10,
                                         zIndex: 2,
-                                        background: "#0f2037",
-                                        border: "1px solid rgba(67,200,255,.35)",
+                                        background: "var(--control-bg)",
+                                        border: "1px solid var(--border-subtle)",
                                         borderRadius: 12,
                                         padding: "3px 8px",
                                         fontSize: 12,
                                         fontWeight: 900,
-                                        color: "#d6f2ff",
+                                        color: "var(--text-primary)",
+                                        boxShadow: "var(--shadow-soft)",
                                     }}
                                 >
                                     {tr.matchesCount ?? 0}
@@ -346,7 +356,7 @@ export default function MobileMatches() {
                         ))}
 
                         {!loading && (transports?.length || 0) === 0 && (
-                            <div style={{ color: "#b3d5fa", padding: "12px 14px" }}>
+                            <div style={{ color: "var(--text-secondary)", padding: "12px 14px" }}>
                                 {t("matches.noTransportsMine", "У вас пока нет транспорта.")}
                             </div>
                         )}

@@ -1,92 +1,121 @@
-diff --git a/frontend/src/app/profile/page.js b/frontend/src/app/profile/page.js
-index 1f14988d9893df8a6f93d32baa508d5d8ec3d45e..5277c3911c5676af0eb6fe41c8b2f8acf2e3ab26 100644
---- a/frontend/src/app/profile/page.js
-+++ b/frontend/src/app/profile/page.js
-@@ -626,69 +626,68 @@ export default function ProfilePage() {
-             const data = await res.json();
-             setMatchedOrderId(order.id);
-             setSelectedOrderMatches(data || []);
-             setShowMatchesModal(true);
-         } else {
-             alert(t("matches.loadError", "Не удалось загрузить Соответствия"));
+diff --git a/frontend/src/app/matches/TransportMatchesMobile.jsx b/frontend/src/app/matches/TransportMatchesMobile.jsx
+index 68c64f663dd643592b1b3de003df2eae1cd13c63..674fcfcb812bcdaf0709be9ecc11b80eba07d5da 100644
+--- a/frontend/src/app/matches/TransportMatchesMobile.jsx
++++ b/frontend/src/app/matches/TransportMatchesMobile.jsx
+@@ -20,69 +20,84 @@ export default function TransportMatchesMobile({ transportId, transport, onBack
+         let aborted = false;
+         async function load() {
+             try {
+                 const token = localStorage.getItem("token");
+                 if (!token) return;
+                 const r = await fetch(api(`/transports/${transportId}/matching_orders`), {
+                     headers: { Authorization: "Bearer " + token }
+                 });
+                 const data = r.ok ? await r.json() : [];
+                 if (!aborted) setList(Array.isArray(data) ? data : []);
+                 try {
+                     await fetch(api(`/transport/${transportId}/view_matches`), {
+                         method: "POST", headers: { Authorization: "Bearer " + token }
+                     });
+                 } catch { }
+             } finally {
+                 if (!aborted) setLoading(false);
+             }
          }
-     }
-     // Показать Соответствия по транспорту (транспорты)
-     async function handleShowOrderMatches(transport) {
-         const token = localStorage.getItem("token");
-         const res = await fetch(api(`/transports/${transport.id}/matching_orders`), {
-             headers: { Authorization: "Bearer " + token }
-         });
-         if (res.ok) {
-             const data = await res.json();
-             setMatchedTransportId(transport.id);
-             setSelectedTransportMatches(data || []);
-             setShowMatchedOrdersModal(true);
-         } else {
-             alert(t("matches.loadError", "Не удалось загрузить соответствия"));
-         }
-     }
+         load();
+         return () => { aborted = true; };
+     }, [transportId]);
  
-     // Удалить заявку
--    function handleConfirmDelete() {
--        if (!deleteId) return;
--        setDeleting(true);
--        const token = localStorage.getItem("token");
--        fetch(api(`/orders/${deleteId}`), {
--            method: "DELETE",
--            headers: { Authorization: "Bearer " + token }
--        })
--            .then(res => {
--                if (res.ok) {
--                    setMyOrders(orders => orders.filter(o => o.id !== deleteId));
--                    setDeleteId(null);
--                } else {
--                    alert(t("orders.deleteError", "Ошибка при удалении заявки!"));
--                }
--            })
--            .catch(() => alert(t("common.networkErrorDelete", "Ошибка сети при удалении!")))
--            .finally(() => setDeleting(false));
--    }
-+    function handleConfirmDelete() {
-+        if (!deleteId) return;
-+        const idToDelete = deleteId;
-+
-+        // Оптимистично убираем заявку из списков, чтобы пользователь сразу видел результат.
-+        setDeleteId(null);
-+        setDeleting(true);
-+        setMyOrders(orders => orders.filter(o => o.id !== idToDelete));
-+        setAccountOrders(list => (Array.isArray(list) ? list.filter(o => o.id !== idToDelete) : list));
-+
-+        const token = localStorage.getItem("token");
-+        fetch(api(`/orders/${idToDelete}`), {
-+            method: "DELETE",
-+            headers: { Authorization: "Bearer " + token }
-+        })
-+            .catch(() => console.error("Order delete failed"))
-+            .finally(() => setDeleting(false));
-+    }
-     function handleCancelDelete() {
-         setDeleteId(null);
-         setDeleting(false);
-     }
+     const rows = useMemo(() => Array.isArray(list) ? list : [], [list]);
  
-     // Удалить транспорт
-     function handleConfirmDeleteTransport() {
-         if (!deleteTransportId) return;
-         setDeletingTransport(true);
-         const token = localStorage.getItem("token");
-         fetch(api(`/transports/${deleteTransportId}`), {
-             method: "DELETE",
-             headers: { Authorization: "Bearer " + token }
-         })
-             .then(res => {
-                 if (res.ok) {
-                     setMyTransports(list => list.filter(o => o.id !== deleteTransportId));
-                     setDeleteTransportId(null);
-                 } else {
-                     alert(t("transport.deleteError", "Ошибка при удалении транспорта!"));
-                 }
-             })
-             .catch(() => alert(t("common.networkErrorDelete", "Ошибка сети при удалении!")))
-             .finally(() => setDeletingTransport(false));
-     }
+-    const headerBtn = {
+-        border: "1px solid rgba(255,255,255,.15)",
+-        background: "transparent",
+-        color: "#cfe7ff",
+-        padding: "8px 12px",
+-        borderRadius: 12,
+-        fontWeight: 800,
+-        fontSize: 13,
+-    };
+-
+-    return (
+-        <div style={{ background: "#182337", minHeight: "100vh", paddingBottom: 64 }}>
+-            <div style={{
+-                position: "sticky", top: 0, zIndex: 10, background: "#212c46",
+-                padding: "18px 12px 12px 12px", display: "flex", alignItems: "center", justifyContent: "space-between",
+-                borderBottom: "1px solid rgba(255,255,255,.06)"
+-            }}>
+-                <button onClick={onBack} style={headerBtn}>{t("common.back", "Назад")}</button>
+-                <div style={{ fontWeight: 900, fontSize: 18, color: "#9fd8ff" }}>
+-                    {t("matches.ordersTitle", "Соответствия: грузы")}
+-                </div>
+-                <button onClick={() => setMapOpen(true)} style={headerBtn}>{t("common.map", "Карта")}</button>
+-            </div>
+-
+-            <div style={{ display: "flex", flexDirection: "column", gap: 12, padding: "10px 12px 18px 12px" }}>
+-                {rows.map((o) => (
+-                    <OrderCardMobile key={o.id} order={o} />
+-                ))}
+-                {!loading && rows.length === 0 && (
+-                    <div style={{ color: "#b3d5fa" }}>{t("matches.noOrders", "Нет совпавших грузов.")}</div>
+-                )}
+-            </div>
++    const headerBtn = {
++        border: "1px solid var(--border-subtle)",
++        background: "var(--control-bg)",
++        color: "var(--text-primary)",
++        padding: "8px 12px",
++        borderRadius: 12,
++        fontWeight: 800,
++        fontSize: 13,
++        boxShadow: "var(--shadow-soft)",
++    };
++
++    return (
++        <div
++            style={{
++                background: "var(--bg-body)",
++                color: "var(--text-primary)",
++                minHeight: "100vh",
++                paddingBottom: 64,
++            }}
++        >
++            <div style={{
++                position: "sticky",
++                top: 0,
++                zIndex: 10,
++                background: "var(--bg-header)",
++                padding: "18px 12px 12px 12px",
++                display: "flex",
++                alignItems: "center",
++                justifyContent: "space-between",
++                borderBottom: "1px solid var(--border-subtle)",
++                boxShadow: "var(--shadow-soft)",
++            }}>
++                <button onClick={onBack} style={headerBtn}>{t("common.back", "Назад")}</button>
++                <div style={{ fontWeight: 900, fontSize: 18, color: "var(--brand-blue)" }}>
++                    {t("matches.ordersTitle", "Соответствия: грузы")}
++                </div>
++                <button onClick={() => setMapOpen(true)} style={headerBtn}>{t("common.map", "Карта")}</button>
++            </div>
++
++            <div style={{ display: "flex", flexDirection: "column", gap: 12, padding: "10px 12px 18px 12px" }}>
++                {rows.map((o) => (
++                    <OrderCardMobile key={o.id} order={o} />
++                ))}
++                {!loading && rows.length === 0 && (
++                    <div style={{ color: "var(--text-secondary)" }}>{t("matches.noOrders", "Нет совпавших грузов.")}</div>
++                )}
++            </div>
+ 
+             <MobileMapSheet
+                 open={mapOpen}
+                 onClose={() => setMapOpen(false)}
+                 orders={rows}
+                 filters={{}}
+                 setFiltersFromMap={() => { }}
+                 onFilteredIdsChange={() => { }}
+             />
+         </div>
+     );
+ }
