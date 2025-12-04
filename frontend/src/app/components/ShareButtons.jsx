@@ -19,6 +19,24 @@ export default function ShareButtons({ share, variant = "compact", buttonStyle, 
 
     const canNativeShare = typeof navigator !== "undefined" && typeof navigator.share === "function";
 
+    const performNativeShare = async () => {
+        if (!canNativeShare) return false;
+        try {
+            await navigator.share({
+                title: sharePayload.title,
+                text: sharePayload.text || sharePayload.description,
+                url: sharePayload.url,
+            });
+            return true;
+        } catch (err) {
+            if (err?.name === "AbortError") {
+                return true;
+            }
+            console.warn("native share failed", err);
+            return false;
+        }
+    };
+
     const baseCompactStyle = {
         width: 34,
         height: 34,
@@ -79,7 +97,7 @@ export default function ShareButtons({ share, variant = "compact", buttonStyle, 
                         el.focus();
                         el.select();
                         document.execCommand("copy");
-                         // Remove only if it's still attached to avoid "not a child" DOMException
+                        // Remove only if it's still attached to avoid "not a child" DOMException
                         if (el.parentNode === document.body) {
                             document.body.removeChild(el);
                         }
@@ -125,39 +143,16 @@ export default function ShareButtons({ share, variant = "compact", buttonStyle, 
             label: t("share.native", "Поделиться"),
             icon: <FaShareAlt />,
             color: "#43c8ff",
-            onClick: async () => {
-                try {
-                    await navigator.share({
-                        title: sharePayload.title,
-                        text: sharePayload.text || sharePayload.description,
-                        url: sharePayload.url,
-                    });
-                } catch (err) {
-                    if (err?.name !== "AbortError") {
-                        console.warn("native share failed", err);
-                    }
-                }
-            },
+            onClick: performNativeShare,
             title: t("share.native", "Поделиться"),
         });
     }
 
     const handleTriggerClick = async () => {
-        if (canNativeShare) {
-            try {
-                await navigator.share({
-                    title: sharePayload.title,
-                    text: sharePayload.text || sharePayload.description,
-                    url: sharePayload.url,
-                });
-                return;
-            } catch (err) {
-                if (err?.name !== "AbortError") {
-                    console.warn("native share failed", err);
-                }
-            }
+        const shared = await performNativeShare();
+        if (!shared) {
+            setMenuOpen((v) => !v);
         }
-        setMenuOpen((v) => !v);
     };
 
     const wrapperStyle = {
