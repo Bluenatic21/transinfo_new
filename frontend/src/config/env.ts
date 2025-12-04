@@ -69,10 +69,10 @@ export function api(path = ''): string {
 // alias под старые импорты
 export const withApi = api;
 
-/** Абсолютный URL к сайту (assets и пр.) */
+// нужно сделать так:
 export function abs(path = ''): string {
   const p = path.startsWith('/') ? path : `/${path}`;
-  return `${BASE}${p}`;
+  return `${EFFECTIVE_BASE}${p}`;  // а не BASE
 }
 
 /** WebSocket URL */

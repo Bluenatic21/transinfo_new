@@ -1,197 +1,92 @@
-diff --git a/frontend/src/app/components/ShareButtons.jsx b/frontend/src/app/components/ShareButtons.jsx
-index ed1b91539a443ff1ec458433538105fc141c6245..9afb1020296b24dfd42d07152972337cf6ebb601 100644
---- a/frontend/src/app/components/ShareButtons.jsx
-+++ b/frontend/src/app/components/ShareButtons.jsx
-@@ -1,44 +1,46 @@
- "use client";
- 
- import { useEffect, useMemo, useRef, useState } from "react";
- import { FaFacebookF, FaLink, FaShareAlt, FaTelegramPlane, FaWhatsapp } from "react-icons/fa";
- import { useLang } from "@/app/i18n/LangProvider";
- 
- const FALLBACK_T = { t: (key, fallback) => fallback || key };
- 
- export default function ShareButtons({ share, variant = "compact", buttonStyle, style, t: tProp }) {
-     const langCtx = useLang?.();
-     const t = tProp || langCtx?.t || FALLBACK_T.t;
-     const [copied, setCopied] = useState(false);
-     const [menuOpen, setMenuOpen] = useState(false);
-     const wrapperRef = useRef(null);
- 
-     const sharePayload = useMemo(() => (share ? { ...share } : null), [share]);
- 
-     if (!sharePayload) return null;
- 
-+    const canNativeShare = typeof navigator !== "undefined" && typeof navigator.share === "function";
-+
-     const baseCompactStyle = {
-         width: 34,
-         height: 34,
-         borderRadius: 10,
-         border: "1px solid #243a60",
-         background: "#16243d",
-         color: "#9ec3ff",
-         display: "inline-flex",
-         alignItems: "center",
-         justifyContent: "center",
-         cursor: "pointer",
-         transition: "opacity 0.15s ease",
-         fontSize: 15,
-     };
- 
-     const basePillStyle = {
-         display: "inline-flex",
-         alignItems: "center",
-         gap: 8,
-         padding: "6px 12px",
-         borderRadius: 999,
-         border: "1px solid #213759",
-         background: "#132642",
-         color: "#e0f1ff",
-         fontWeight: 600,
-@@ -95,73 +97,91 @@ export default function ShareButtons({ share, variant = "compact", buttonStyle,
-             key: "whatsapp",
-             label: "WhatsApp",
-             icon: <FaWhatsapp />,
-             href: `https://wa.me/?text=${encodedMessage}`,
-             title: "WhatsApp",
-             color: "#43d854",
-         },
-         {
-             key: "telegram",
-             label: "Telegram",
-             icon: <FaTelegramPlane />,
-             href: `https://t.me/share/url?url=${encodedUrl}&text=${encodedMessage}`,
-             title: "Telegram",
-             color: "#2ba4e0",
-         },
-         {
-             key: "facebook",
-             label: "Facebook",
-             icon: <FaFacebookF />,
-             href: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`,
-             title: "Facebook",
-             color: "#2d68ff",
-         },
-     ];
- 
--    if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
-+    if (canNativeShare) {
-         buttons.unshift({
-             key: "native",
-             label: t("share.native", "Поделиться"),
-             icon: <FaShareAlt />,
-             color: "#43c8ff",
-             onClick: async () => {
-                 try {
-                     await navigator.share({
-                         title: sharePayload.title,
-                         text: sharePayload.text || sharePayload.description,
-                         url: sharePayload.url,
-                     });
-                 } catch (err) {
-                     if (err?.name !== "AbortError") {
-                         console.warn("native share failed", err);
-                     }
-                 }
-             },
-             title: t("share.native", "Поделиться"),
+diff --git a/frontend/src/app/profile/page.js b/frontend/src/app/profile/page.js
+index 1f14988d9893df8a6f93d32baa508d5d8ec3d45e..5277c3911c5676af0eb6fe41c8b2f8acf2e3ab26 100644
+--- a/frontend/src/app/profile/page.js
++++ b/frontend/src/app/profile/page.js
+@@ -626,69 +626,68 @@ export default function ProfilePage() {
+             const data = await res.json();
+             setMatchedOrderId(order.id);
+             setSelectedOrderMatches(data || []);
+             setShowMatchesModal(true);
+         } else {
+             alert(t("matches.loadError", "Не удалось загрузить Соответствия"));
+         }
+     }
+     // Показать Соответствия по транспорту (транспорты)
+     async function handleShowOrderMatches(transport) {
+         const token = localStorage.getItem("token");
+         const res = await fetch(api(`/transports/${transport.id}/matching_orders`), {
+             headers: { Authorization: "Bearer " + token }
          });
+         if (res.ok) {
+             const data = await res.json();
+             setMatchedTransportId(transport.id);
+             setSelectedTransportMatches(data || []);
+             setShowMatchedOrdersModal(true);
+         } else {
+             alert(t("matches.loadError", "Не удалось загрузить соответствия"));
+         }
      }
  
-+    const handleTriggerClick = async () => {
-+        if (canNativeShare) {
-+            try {
-+                await navigator.share({
-+                    title: sharePayload.title,
-+                    text: sharePayload.text || sharePayload.description,
-+                    url: sharePayload.url,
-+                });
-+                return;
-+            } catch (err) {
-+                if (err?.name !== "AbortError") {
-+                    console.warn("native share failed", err);
-+                }
-+            }
-+        }
-+        setMenuOpen((v) => !v);
-+    };
+     // Удалить заявку
+-    function handleConfirmDelete() {
+-        if (!deleteId) return;
+-        setDeleting(true);
+-        const token = localStorage.getItem("token");
+-        fetch(api(`/orders/${deleteId}`), {
+-            method: "DELETE",
+-            headers: { Authorization: "Bearer " + token }
+-        })
+-            .then(res => {
+-                if (res.ok) {
+-                    setMyOrders(orders => orders.filter(o => o.id !== deleteId));
+-                    setDeleteId(null);
+-                } else {
+-                    alert(t("orders.deleteError", "Ошибка при удалении заявки!"));
+-                }
+-            })
+-            .catch(() => alert(t("common.networkErrorDelete", "Ошибка сети при удалении!")))
+-            .finally(() => setDeleting(false));
+-    }
++    function handleConfirmDelete() {
++        if (!deleteId) return;
++        const idToDelete = deleteId;
 +
-     const wrapperStyle = {
-         display: "inline-flex",
-         position: "relative",
-         alignItems: "center",
-         gap: variant === "pills" ? 10 : 0,
-         ...style,
-     };
++        // Оптимистично убираем заявку из списков, чтобы пользователь сразу видел результат.
++        setDeleteId(null);
++        setDeleting(true);
++        setMyOrders(orders => orders.filter(o => o.id !== idToDelete));
++        setAccountOrders(list => (Array.isArray(list) ? list.filter(o => o.id !== idToDelete) : list));
++
++        const token = localStorage.getItem("token");
++        fetch(api(`/orders/${idToDelete}`), {
++            method: "DELETE",
++            headers: { Authorization: "Bearer " + token }
++        })
++            .catch(() => console.error("Order delete failed"))
++            .finally(() => setDeleting(false));
++    }
+     function handleCancelDelete() {
+         setDeleteId(null);
+         setDeleting(false);
+     }
  
-     const menuBaseStyle = {
-         position: "absolute",
-         top: "calc(100% + 8px)",
-         right: variant === "compact" ? 0 : "auto",
-         left: variant === "pills" ? 0 : "auto",
-         background: "#0f1c30",
-         border: "1px solid rgba(67, 200, 255, 0.35)",
-         borderRadius: 14,
-         boxShadow: "0 12px 24px rgba(0, 0, 0, 0.45)",
-         padding: variant === "compact" ? 8 : 12,
-         zIndex: 20,
-         display: "flex",
-         flexDirection: variant === "compact" ? "row" : "column",
-         gap: variant === "compact" ? 8 : 10,
-         flexWrap: variant === "compact" ? "wrap" : "nowrap",
-         minWidth: variant === "pills" ? 220 : undefined,
-     };
-@@ -203,51 +223,51 @@ export default function ShareButtons({ share, variant = "compact", buttonStyle,
-             if (!wrapperRef.current.contains(event.target)) {
-                 setMenuOpen(false);
-             }
-         };
-         const handleKey = (event) => {
-             if (event.key === "Escape") {
-                 setMenuOpen(false);
-             }
-         };
-         document.addEventListener("mousedown", handleClick);
-         document.addEventListener("keydown", handleKey);
-         return () => {
-             document.removeEventListener("mousedown", handleClick);
-             document.removeEventListener("keydown", handleKey);
-         };
-     }, [menuOpen]);
- 
-     useEffect(() => {
-         setMenuOpen(false);
-     }, [sharePayload?.url]);
- 
-     return (
-         <div ref={wrapperRef} style={wrapperStyle}>
-             <button
-                 type="button"
--                onClick={() => setMenuOpen((v) => !v)}
-+                onClick={handleTriggerClick}
-                 style={triggerStyle}
-                 title={t("share.openMenu", "Поделиться")}
-                 aria-expanded={menuOpen}
-                 aria-haspopup="true"
-             >
-                 <FaShareAlt />
-                 {variant === "pills" && <span>{t("share.openMenu", "Поделиться")}</span>}
-             </button>
-             {menuOpen && (
-                 <div style={menuBaseStyle} role="menu">
-                     {buttons.map((btn) => {
-                         const commonProps = {
-                             title: btn.title,
-                             "aria-label": btn.title,
-                         };
-                         const isCompact = variant === "compact";
-                         const content = isCompact ? (
-                             btn.icon
-                         ) : (
-                             <>
-                                 <span
-                                     style={{
-                                         width: 30,
-                                         height: 30,
-                                         borderRadius: 8,
+     // Удалить транспорт
+     function handleConfirmDeleteTransport() {
+         if (!deleteTransportId) return;
+         setDeletingTransport(true);
+         const token = localStorage.getItem("token");
+         fetch(api(`/transports/${deleteTransportId}`), {
+             method: "DELETE",
+             headers: { Authorization: "Bearer " + token }
+         })
+             .then(res => {
+                 if (res.ok) {
+                     setMyTransports(list => list.filter(o => o.id !== deleteTransportId));
+                     setDeleteTransportId(null);
+                 } else {
+                     alert(t("transport.deleteError", "Ошибка при удалении транспорта!"));
+                 }
+             })
+             .catch(() => alert(t("common.networkErrorDelete", "Ошибка сети при удалении!")))
+             .finally(() => setDeletingTransport(false));
+     }

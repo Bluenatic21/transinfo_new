@@ -650,21 +650,20 @@ export default function ProfilePage() {
     // Удалить заявку
     function handleConfirmDelete() {
         if (!deleteId) return;
+        const idToDelete = deleteId;
+
+        // Оптимистично убираем заявку из списков, чтобы пользователь сразу видел результат.
+        setDeleteId(null);
         setDeleting(true);
+        setMyOrders(orders => orders.filter(o => o.id !== idToDelete));
+        setAccountOrders(list => (Array.isArray(list) ? list.filter(o => o.id !== idToDelete) : list));
+
         const token = localStorage.getItem("token");
-        fetch(api(`/orders/${deleteId}`), {
+        fetch(api(`/orders/${idToDelete}`), {
             method: "DELETE",
             headers: { Authorization: "Bearer " + token }
         })
-            .then(res => {
-                if (res.ok) {
-                    setMyOrders(orders => orders.filter(o => o.id !== deleteId));
-                    setDeleteId(null);
-                } else {
-                    alert(t("orders.deleteError", "Ошибка при удалении заявки!"));
-                }
-            })
-            .catch(() => alert(t("common.networkErrorDelete", "Ошибка сети при удалении!")))
+            .catch(() => console.error("Order delete failed"))
             .finally(() => setDeleting(false));
     }
     function handleCancelDelete() {
