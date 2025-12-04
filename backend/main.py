@@ -3707,24 +3707,12 @@ def get_all_users(db: Session = Depends(get_db), current_user: UserModel = Depen
     return users
 
 
-def email_from_token(token):
-    payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-    return payload.get("sub")
-
-
 @app.post("/profile/avatar")
 def upload_avatar(
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
-    authorization: str = Header(None),
+    current_user: UserModel = Depends(get_current_user),
 ):
-    if not authorization or not authorization.startswith("Bearer "):
-        raise HTTPException(401, "Not authenticated")
-    token = authorization[7:]
-    current_user = db.query(UserModel).filter(
-        UserModel.email == email_from_token(token)).first()
-    if not current_user:
-        raise HTTPException(401, "User not found")
 
     # Только png или jpg!
     ext = os.path.splitext(file.filename)[-1].lower()
@@ -3752,13 +3740,8 @@ def upload_avatar(
 def update_profile(
     user_update: UserUpdate,
     db: Session = Depends(get_db),
-    authorization: str = Header(None),  # <-- вот так!
+    current_user: UserModel = Depends(get_current_user),
 ):
-    if not authorization or not authorization.startswith("Bearer "):
-        raise HTTPException(401, "Not authenticated")
-    token = authorization[7:]
-    current_user = db.query(UserModel).filter(
-        UserModel.email == email_from_token(token)).first()
     for attr, value in user_update.dict(exclude_unset=True).items():
         setattr(current_user, attr, value)
     db.commit()

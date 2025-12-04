@@ -1,141 +1,109 @@
-diff --git a/mobile/transinfo_mobile/lib/features/transport/presentation/transports_screen.dart b/mobile/transinfo_mobile/lib/features/transport/presentation/transports_screen.dart
-new file mode 100644
-index 0000000000000000000000000000000000000000..cece5d83cdf6f7d55b23f6f090da8c4a1c710845
---- /dev/null
-+++ b/mobile/transinfo_mobile/lib/features/transport/presentation/transports_screen.dart
-@@ -0,0 +1,135 @@
-+import 'package:flutter/material.dart';
-+import 'package:flutter_riverpod/flutter_riverpod.dart';
-+
-+import '../domain/transport_item.dart';
-+import 'transport_providers.dart';
-+
-+class TransportsScreen extends ConsumerWidget {
-+  const TransportsScreen({super.key});
-+
-+  @override
-+  Widget build(BuildContext context, WidgetRef ref) {
-+    final asyncTransports = ref.watch(transportsProvider);
-+
-+    return Scaffold(
-+      appBar: AppBar(
-+        title: const Text('Транспорт'),
-+      ),
-+      body: asyncTransports.when(
-+        data: (result) {
-+          final items = result.items;
-+          if (items.isEmpty) {
-+            return const Center(child: Text('Транспортные заявки отсутствуют'));
-+          }
-+          return RefreshIndicator(
-+            onRefresh: () async {
-+              ref.invalidate(transportsProvider);
-+              await ref.read(transportsProvider.future);
-+            },
-+            child: ListView.separated(
-+              physics: const AlwaysScrollableScrollPhysics(),
-+              padding: const EdgeInsets.all(12),
-+              itemCount: items.length,
-+              separatorBuilder: (_, __) => const SizedBox(height: 8),
-+              itemBuilder: (context, index) {
-+                final item = items[index];
-+                return _TransportCard(item: item);
-+              },
-+            ),
-+          );
-+        },
-+        loading: () => const Center(child: CircularProgressIndicator()),
-+        error: (error, stack) {
-+          return Center(
-+            child: Column(
-+              mainAxisSize: MainAxisSize.min,
-+              children: [
-+                Text('Ошибка загрузки транспорта: $error'),
-+                const SizedBox(height: 12),
-+                ElevatedButton(
-+                  onPressed: () => ref.refresh(transportsProvider.future),
-+                  child: const Text('Повторить'),
-+                ),
-+              ],
-+            ),
-+          );
-+        },
-+      ),
-+    );
-+  }
-+}
-+
-+class _TransportCard extends StatelessWidget {
-+  const _TransportCard({required this.item});
-+
-+  final TransportItem item;
-+
-+  String _formatDates() {
-+    final from = item.readyDateFrom;
-+    final to = item.readyDateTo;
-+    if (from != null && to != null && from.isNotEmpty && to.isNotEmpty) {
-+      if (from == to) return from;
-+      return '$from — $to';
-+    }
-+    if (from != null && from.isNotEmpty) return from;
-+    if (to != null && to.isNotEmpty) return to;
-+    return item.mode ?? '';
-+  }
-+
-+  @override
-+  Widget build(BuildContext context) {
-+    final destination = item.mainDestination ?? (item.toLocations.isNotEmpty ? item.toLocations.join(', ') : '-');
-+    final direction = '${item.fromLocation ?? '-'} → $destination';
-+
-+    final details = <String>[
-+      if (item.truckType != null && item.truckType!.isNotEmpty) item.truckType!,
-+      if (item.transportKind != null && item.transportKind!.isNotEmpty) item.transportKind!,
-+      if (item.weight != null) 'Вес: ${item.weight} т',
-+      if (item.volume != null) 'Объём: ${item.volume} м³',
-+      if (_formatDates().isNotEmpty) 'Даты: ${_formatDates()}',
-+      if (item.rateWithVat != null && item.rateWithVat!.isNotEmpty)
-+        'Ставка: ${item.rateWithVat}${item.currency != null ? ' ${item.currency}' : ''}',
-+    ].where((e) => e.isNotEmpty).toList();
-+
-+    return Card(
-+      child: Padding(
-+        padding: const EdgeInsets.all(12),
-+        child: Column(
-+          crossAxisAlignment: CrossAxisAlignment.start,
-+          children: [
-+            Text(
-+              direction,
-+              style: Theme.of(context).textTheme.titleMedium,
-+            ),
-+            const SizedBox(height: 8),
-+            if (details.isNotEmpty)
-+              Column(
-+                crossAxisAlignment: CrossAxisAlignment.start,
-+                children: details
-+                    .map(
-+                      (d) => Padding(
-+                        padding: const EdgeInsets.only(bottom: 4),
-+                        child: Text(d),
-+                      ),
-+                    )
-+                    .toList(),
-+              ),
-+            if (item.comment != null && item.comment!.isNotEmpty) ...[
-+              const SizedBox(height: 8),
-+              Text(
-+                item.comment!,
-+                style: Theme.of(context).textTheme.bodyMedium,
-+              ),
-+            ],
-+            if (item.contactName != null && item.contactName!.isNotEmpty) ...[
-+              const SizedBox(height: 8),
-+              Text('Контакт: ${item.contactName!}'),
-+            ],
-+            if (item.phone != null && item.phone!.isNotEmpty)
-+              Text('Телефон: ${item.phone!}'),
-+          ],
-+        ),
-+      ),
-+    );
-+  }
-+}
+diff --git a/backend/main.py b/backend/main.py
+index 487ccb44cf4eac9e3849a09eeca8379cb9f66d4e..f4acfd9b12b39fad6ee6d31e74f4cc91b08e116e 100644
+--- a/backend/main.py
++++ b/backend/main.py
+@@ -3685,102 +3685,84 @@ def create_rating(
+ 
+ 
+ @app.get("/profile/ratings/{user_id}", response_model=List[RatingSchema])
+ def get_user_ratings(
+     user_id: int,
+     db: Session = Depends(get_db)
+ ):
+     return db.query(RatingModel).filter(RatingModel.user_id == user_id).order_by(RatingModel.created_at.desc()).all()
+ 
+ 
+ @app.get("/users/{user_id}", response_model=UserProfile)
+ def get_user_profile(user_id: int, db: Session = Depends(get_db)):
+     user = db.query(UserModel).filter(UserModel.id == user_id).first()
+     if not user:
+         raise HTTPException(status_code=404, detail="User not found")
+     return user
+ 
+ 
+ @app.get("/users", response_model=List[UserOut])
+ def get_all_users(db: Session = Depends(get_db), current_user: UserModel = Depends(get_current_user)):
+     # Возвращаем всех пользователей, кроме текущего — доступно всем залогиненным
+     users = db.query(UserModel).filter(UserModel.id != current_user.id).all()
+     return users
+ 
+ 
+-def email_from_token(token):
+-    payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+-    return payload.get("sub")
+-
+-
+ @app.post("/profile/avatar")
+ def upload_avatar(
+     file: UploadFile = File(...),
+     db: Session = Depends(get_db),
+-    authorization: str = Header(None),
++    current_user: UserModel = Depends(get_current_user),
+ ):
+-    if not authorization or not authorization.startswith("Bearer "):
+-        raise HTTPException(401, "Not authenticated")
+-    token = authorization[7:]
+-    current_user = db.query(UserModel).filter(
+-        UserModel.email == email_from_token(token)).first()
+-    if not current_user:
+-        raise HTTPException(401, "User not found")
+-
+     # Только png или jpg!
+     ext = os.path.splitext(file.filename)[-1].lower()
+     if ext not in [".png", ".jpg", ".jpeg", ".doc", ".docx"]:
+         raise HTTPException(400, "Только .png, .jpg, .doc, .docx файлы!")
+ 
+     # Генерируем уникальное имя файла
+     avatar_filename = f"avatars/{uuid4().hex}{ext}"
+     # Сохраняем именно в STATIC_DIR/avatars
+     save_path = STATIC_DIR / avatar_filename
+     save_path.parent.mkdir(parents=True, exist_ok=True)
+ 
+     contents = file.file.read()
+     save_path.write_bytes(contents)
+     if len(contents) < 100:  # На всякий случай, проверь размер
+         raise HTTPException(400, "Файл слишком маленький или не картинка!")
+ 
+     current_user.avatar = f"/static/{avatar_filename}"
+     db.commit()
+     db.refresh(current_user)
+     return {"avatar": current_user.avatar}
+ 
+ 
+ @app.patch("/profile", response_model=UserProfile)
+ def update_profile(
+     user_update: UserUpdate,
+     db: Session = Depends(get_db),
+-    authorization: str = Header(None),  # <-- вот так!
++    current_user: UserModel = Depends(get_current_user),
+ ):
+-    if not authorization or not authorization.startswith("Bearer "):
+-        raise HTTPException(401, "Not authenticated")
+-    token = authorization[7:]
+-    current_user = db.query(UserModel).filter(
+-        UserModel.email == email_from_token(token)).first()
+     for attr, value in user_update.dict(exclude_unset=True).items():
+         setattr(current_user, attr, value)
+     db.commit()
+     db.refresh(current_user)
+     return current_user
+ 
+ 
+ @app.post("/profile/documents")
+ def upload_documents(
+     file: UploadFile = File(...),
+     db: Session = Depends(get_db),
+     current_user: UserModel = Depends(get_current_user)
+ ):
+     ext = os.path.splitext(file.filename)[-1]
+     doc_filename = f"docs/{uuid4().hex}{ext}"
+     save_path = os.path.join("static", doc_filename)
+     os.makedirs(os.path.dirname(save_path), exist_ok=True)
+     with open(save_path, "wb") as f:
+         f.write(file.file.read())
+ 
+     # Сохраняем ссылку на документ в профиле пользователя
+     docs = current_user.docs_files or []
+     docs.append(f"/static/{doc_filename}")
+     current_user.docs_files = docs
+     current_user.verification_status = "pending"
