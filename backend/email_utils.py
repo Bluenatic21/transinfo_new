@@ -46,33 +46,35 @@ def _ensure_env_loaded() -> None:
     Если нет — простым парсером кладём пары KEY=VALUE в os.environ (не перезаписывая).
     """
     base = Path(__file__).resolve().parent
-    for name in (".env.local", ".env"):
-        p = base / name
-        if not p.exists():
-            continue
-        # попробуем через python-dotenv
-        try:
-            from dotenv import load_dotenv  # type: ignore
-            load_dotenv(p, override=False)
-            return
-        except Exception:
-            pass
-        # fallback: ручной парсер
-        try:
-            for raw in p.read_text(encoding="utf-8").splitlines():
-                line = raw.strip()
-                if not line or line.startswith("#"):
-                    continue
-                if "=" not in line:
-                    continue
-                k, v = line.split("=", 1)
-                k = k.strip()
-                v = v.strip().strip('"').strip("'")
-                os.environ.setdefault(k, v)
-            return
-        except Exception:
-            # ничего не делаем — пусть дальше будут дефолты
-            return
+    roots = {base, base.parent}
+    filenames = (".env.local", ".env", ".env.production")
+
+    for root in roots:
+        for name in filenames:
+            p = root / name
+            if not p.exists():
+                continue
+            # попробуем через python-dotenv
+            try:
+                from dotenv import load_dotenv  # type: ignore
+                load_dotenv(p, override=False)
+                # не выходим: хотим считать все файлы с setdefault
+            except Exception:
+                # fallback: ручной парсер
+                try:
+                    for raw in p.read_text(encoding="utf-8").splitlines():
+                        line = raw.strip()
+                        if not line or line.startswith("#"):
+                            continue
+                        if "=" not in line:
+                            continue
+                        k, v = line.split("=", 1)
+                        k = k.strip()
+                        v = v.strip().strip('"').strip("'")
+                        os.environ.setdefault(k, v)
+                except Exception:
+                    # ничего не делаем — пусть дальше будут дефолты
+                    pass
 
 
 def _to_plain(html: str) -> str:
