@@ -17,6 +17,8 @@ export default function ShareButtons({ share, variant = "compact", buttonStyle, 
 
     if (!sharePayload) return null;
 
+    const canNativeShare = typeof navigator !== "undefined" && typeof navigator.share === "function";
+
     const baseCompactStyle = {
         width: 34,
         height: 34,
@@ -117,7 +119,7 @@ export default function ShareButtons({ share, variant = "compact", buttonStyle, 
         },
     ];
 
-    if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
+    if (canNativeShare) {
         buttons.unshift({
             key: "native",
             label: t("share.native", "Поделиться"),
@@ -139,6 +141,24 @@ export default function ShareButtons({ share, variant = "compact", buttonStyle, 
             title: t("share.native", "Поделиться"),
         });
     }
+
+    const handleTriggerClick = async () => {
+        if (canNativeShare) {
+            try {
+                await navigator.share({
+                    title: sharePayload.title,
+                    text: sharePayload.text || sharePayload.description,
+                    url: sharePayload.url,
+                });
+                return;
+            } catch (err) {
+                if (err?.name !== "AbortError") {
+                    console.warn("native share failed", err);
+                }
+            }
+        }
+        setMenuOpen((v) => !v);
+    };
 
     const wrapperStyle = {
         display: "inline-flex",
@@ -225,7 +245,7 @@ export default function ShareButtons({ share, variant = "compact", buttonStyle, 
         <div ref={wrapperRef} style={wrapperStyle}>
             <button
                 type="button"
-                onClick={() => setMenuOpen((v) => !v)}
+                onClick={handleTriggerClick}
                 style={triggerStyle}
                 title={t("share.openMenu", "Поделиться")}
                 aria-expanded={menuOpen}
