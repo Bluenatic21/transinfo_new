@@ -609,6 +609,15 @@ export default function Home() {
             margin-bottom: 10px;
           }
 
+          @media (max-width: 768px) {
+            .home-orders-block {
+              border-radius: 22px 22px 18px 18px;
+              overflow: hidden;
+              background: color-mix(in srgb, var(--bg-card, #22314a) 88%, transparent);
+              border: 1px solid color-mix(in srgb, var(--border-subtle, rgba(23, 65, 142, 0.16)) 92%, transparent);
+            }
+          }
+
           @media (max-width: 1100px) {
             .home-map-orders {
               grid-template-columns: 1fr;

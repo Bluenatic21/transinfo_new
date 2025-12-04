@@ -1,231 +1,87 @@
-diff --git a/frontend/src/app/components/OrderForm.js b/frontend/src/app/components/OrderForm.js
-index ff3dfe2106901c105f1bf5676b66c8b3c64c5123..a80f9f87ea66dba4d5b5ac45af88fe40feaf4898 100644
---- a/frontend/src/app/components/OrderForm.js
-+++ b/frontend/src/app/components/OrderForm.js
-@@ -2,54 +2,95 @@
- import React, {
-     useEffect,
-     useMemo,
-     useState,
-     useRef,
-     useCallback,
- } from "react";
- import { createPortal } from "react-dom";
- import CustomSelect from "./CustomSelect";
- import LocationAutocomplete from "./LocationAutocomplete";
- import { useUser } from "../UserContext";
- import {
-     LOADING_TYPES,
-     TRUCK_BODY_TYPES,
-     getTruckBodyTypes,
-     getLoadingTypes,
- } from "./truckOptions";
- import DateInput from "./DateInput";
- import { useRouter } from "next/navigation";
- import useIsMobile from "../../hooks/useIsMobile";
- import { CURRENCIES } from "../utils/currency";
- import { useLang } from "../i18n/LangProvider";
- import { api, abs } from "@/config/env";
+diff --git a/frontend/src/app/page.js b/frontend/src/app/page.js
+index e44038d73c45e021dd03c07b6c3ec065c84e08b4..8fd4b8e120f07559bf44f2d98dac565a38912085 100644
+--- a/frontend/src/app/page.js
++++ b/frontend/src/app/page.js
+@@ -571,65 +571,74 @@ export default function Home() {
+             padding: clamp(12px, 1.6vw, 18px);
+             box-shadow: none;
+           }
  
- // Язык интерфейса
--const UI_LANG =
--    typeof navigator !== "undefined"
--        ? (navigator.language || "ru").split("-")[0]
--        : "ru";
-+const UI_LANG =
-+    typeof navigator !== "undefined"
-+        ? (navigator.language || "ru").split("-")[0]
-+        : "ru";
+           .home-map-block {
+             display: flex;
+             flex-direction: column;
+             gap: 10px;
+             grid-row: 1;
+             grid-column: 1;
+             backdrop-filter: blur(3px);
+           }
+ 
+           .home-orders-block {
+             grid-column: 2;
+             grid-row: 1 / span 2;
+             backdrop-filter: blur(3px);
+           }
+ 
+           @media (max-width: 768px) {
+             :root[data-theme="light"] .home-orders-block .section-title {
+               color: #fff;
+             }
+           }
+ 
+-          .home-info-block {
+-            grid-row: 2;
+-            grid-column: 1;
+-            align-self: start;
+-            background: color-mix(in srgb, var(--bg-card, #22314a) 90%, transparent);
++          .home-info-block {
++            grid-row: 2;
++            grid-column: 1;
++            align-self: start;
++            background: color-mix(in srgb, var(--bg-card, #22314a) 90%, transparent);
+             border-radius: 18px;
+             border: 1px solid color-mix(in srgb, var(--border-subtle, rgba(23, 65, 142, 0.12)) 80%, transparent);
+             box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
+             padding: clamp(12px, 1.6vw, 18px);
+             margin-top: -2px;
+           }
+ 
+-          .home-orders-block .section-title {
+-            margin-bottom: 10px;
+-          }
++          .home-orders-block .section-title {
++            margin-bottom: 10px;
++          }
 +
-+const transportButtonStyle = (isActive) => ({
-+    background: isActive
-+        ? "linear-gradient(135deg, color-mix(in srgb, var(--accent) 92%, transparent) 0%, color-mix(in srgb, var(--accent) 74%, #fff) 100%)"
-+        : "var(--of-surface-strong)",
-+    color: isActive ? "#0f172a" : "var(--of-text-muted)",
-+    border: isActive ? "1.5px solid var(--accent)" : "1.5px solid var(--of-border)",
-+    boxShadow: isActive
-+        ? "0 8px 20px -12px color-mix(in srgb, var(--accent) 55%, transparent), 0 0 0 2px color-mix(in srgb, var(--accent) 36%, transparent)"
-+        : "0 2px 10px rgba(0, 0, 0, 0.08)",
-+    fontWeight: 750,
-+    padding: "10px 18px",
-+    fontSize: 16,
-+    borderRadius: 12,
-+    cursor: "pointer",
-+    display: "inline-flex",
-+    alignItems: "center",
-+    gap: 10,
-+    transition:
-+        "background .18s ease, color .18s ease, border-color .18s ease, box-shadow .18s ease, transform .12s ease",
-+    transform: isActive ? "translateY(-1px)" : "translateY(0)",
-+});
-+
-+const transportBadgeStyle = (isActive) => ({
-+    width: 18,
-+    height: 18,
-+    borderRadius: "50%",
-+    display: "inline-flex",
-+    alignItems: "center",
-+    justifyContent: "center",
-+    fontWeight: 800,
-+    fontSize: 12,
-+    color: isActive ? "#0f172a" : "var(--of-text-muted)",
-+    background: isActive
-+        ? "color-mix(in srgb, #ffffff 70%, var(--accent) 30%)"
-+        : "color-mix(in srgb, var(--of-surface-strong) 80%, transparent)",
-+    border: isActive
-+        ? "1px solid color-mix(in srgb, var(--accent) 60%, transparent)"
-+        : "1px solid var(--of-border)",
-+    boxShadow: isActive ? "0 0 0 3px color-mix(in srgb, var(--accent) 26%, transparent)" : "none",
-+});
++          @media (max-width: 768px) {
++            .home-orders-block {
++              border-radius: 22px 22px 18px 18px;
++              overflow: hidden;
++              background: color-mix(in srgb, var(--bg-card, #22314a) 88%, transparent);
++              border: 1px solid color-mix(in srgb, var(--border-subtle, rgba(23, 65, 142, 0.16)) 92%, transparent);
++            }
++          }
  
- // Отправка выбранного города в /places/upsert
- async function upsertPlaceFromSuggest(sug, displayName) {
-     try {
-         if (!sug) return;
-         const nd = sug.namedetails || {};
-         const translations = {};
-         for (const l of ["ru", "en", "ka", "uk", "tr", "de"]) {
-             const v = nd[`name:${l}`];
-             if (v) translations[l] = v;
-         }
-         const city = (displayName || "").split(",")[0];
-         if (city && !translations[UI_LANG]) translations[UI_LANG] = city;
-         const resp = await fetch(api("/places/upsert"), {
-             method: "POST",
-             headers: { "Content-Type": "application/json" },
-             body: JSON.stringify({
-                 source: "nominatim",
-                 external_id: String(sug.osm_id || sug.place_id),
-                 osm_type: sug.osm_type,
-                 lat: Number(sug.lat),
-                 lon: Number(sug.lon),
-                 country_iso2: String(sug.address?.country_code || "").toUpperCase(),
-                 translations,
-             }),
-@@ -1747,99 +1788,77 @@ export default function OrderForm({ order = null, onSaved }) {
-                             }}
-                         />
-                     </div>
-                 </div>
-             </div>
+           @media (max-width: 1100px) {
+             .home-map-orders {
+               grid-template-columns: 1fr;
+               grid-template-rows: auto;
+             }
  
-             {/* --- Грузы --- */}
-             <div
-                 className="order-card"
-                 style={{
-                     ...section,
-                     padding: 20,
-                     marginTop: 10,
-                 }}
-             >
-                 <div
-                     style={{
-                         fontWeight: 700,
-                         fontSize: 17,
-                         color: "var(--accent)",
-                         marginBottom: 6,
-                     }}
-                 >
-                     {t("cargo.singular", "Груз")}
-                 </div>
--                <div
--                    className="stack-mobile chip-row"
--                    style={{ display: "flex", gap: 10, marginBottom: 14 }}
--                >
--                    <button
--                        type="button"
--                        style={{
--                            background:
--                                form.transport_type === "LTL"
--                                    ? "var(--accent)"
--                                    : "var(--background)",
--                            color:
--                                form.transport_type === "LTL" ? "#fff" : "var(--of-text-muted)",
--                            border: "1.5px solid var(--accent)",
--                            borderRadius: 8,
--                            fontWeight: 700,
--                            padding: "9px 22px",
--                            fontSize: 16,
--                            cursor: "pointer",
--                            transition: "none",
--                            boxShadow: "none",
--                        }}
--                        onClick={() => setForm((f) => ({ ...f, transport_type: "LTL" }))}
--                    >
--                        {t("cargo.type.ltl", "Сборный груз (LTL)")}
--                    </button>
--                    <button
--                        type="button"
--                        style={{
--                            background:
--                                form.transport_type === "FTL"
--                                    ? "var(--accent)"
--                                    : "var(--background)",
--                            color:
--                                form.transport_type === "FTL" ? "#fff" : "var(--of-text-muted)",
--                            border: "1.5px solid var(--accent)",
--                            borderRadius: 8,
--                            fontWeight: 700,
--                            padding: "9px 22px",
--                            fontSize: 16,
--                            cursor: "pointer",
--                            transition: "background .12s, color .12s, border-color .12s",
--                            boxShadow: "none",
--                        }}
--                        onClick={() => setForm((f) => ({ ...f, transport_type: "FTL" }))}
--                    >
--                        {t("cargo.type.ftl", "Целая машина (FTL)")}
--                    </button>
--                </div>
-+                <div
-+                    className="stack-mobile chip-row"
-+                    style={{ display: "flex", gap: 10, marginBottom: 14 }}
-+                >
-+                    <button
-+                        type="button"
-+                        style={transportButtonStyle(form.transport_type === "LTL")}
-+                        aria-pressed={form.transport_type === "LTL"}
-+                        onClick={() => setForm((f) => ({ ...f, transport_type: "LTL" }))}
-+                    >
-+                        <span style={transportBadgeStyle(form.transport_type === "LTL")}>
-+                            {form.transport_type === "LTL" ? "✓" : ""}
-+                        </span>
-+                        {t("cargo.type.ltl", "Сборный груз (LTL)")}
-+                    </button>
-+                    <button
-+                        type="button"
-+                        style={transportButtonStyle(form.transport_type === "FTL")}
-+                        aria-pressed={form.transport_type === "FTL"}
-+                        onClick={() => setForm((f) => ({ ...f, transport_type: "FTL" }))}
-+                    >
-+                        <span style={transportBadgeStyle(form.transport_type === "FTL")}>
-+                            {form.transport_type === "FTL" ? "✓" : ""}
-+                        </span>
-+                        {t("cargo.type.ftl", "Целая машина (FTL)")}
-+                    </button>
-+                </div>
-                 {form.cargo_items.map((cargo, idx) => (
-                     <div
-                         key={idx}
-                         className="order-card"
-                         style={{
-                             ...section,
-                             padding: 20,
-                             marginTop: 10,
-                         }}
-                     >
-                         {/* --- Основные поля --- */}
-                         <div
-                             className="stack-mobile"
-                             style={{
-                                 display: "flex",
-                                 gap: 10,
-                                 alignItems: "center",
-                                 marginBottom: 8,
-                             }}
-                         >
-                             <input
-                                 ref={(el) => (cargoRefs.current[idx] = el)}
-                                 name="name"
-                                 value={cargo.name}
-                                 onChange={(e) => handleCargoChange(idx, e)}
+             .home-nav-grid {
+               width: 100%;
+               max-width: none;
+               grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+               margin: 0;
+             }
+ 
+             .home-info-block {
+               margin-top: 0;
+             }
+           }
+ 
+           .home-nav-board {
+             position: relative;
+             padding: clamp(8px, 1.6vw, 20px) clamp(4px, 1vw, 14px) 0;
+           }
+           .home-nav-grid {
+             display: grid;
