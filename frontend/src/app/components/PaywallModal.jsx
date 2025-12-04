@@ -9,8 +9,8 @@ export default function PaywallModal({ open, onClose, anonymous }) {
     if (!open) return null;
     return (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center">
-            <div className="absolute inset-0 bg-black/40 dark:bg-black/50" onClick={onClose} />
-            <div className="relative w-full max-w-md rounded-2xl border borderc bg-card p-5 text-fg shadow-2xl transition-colors">
+            <div className="paywall-modal__backdrop absolute inset-0" onClick={onClose} />
+            <div className="paywall-modal relative w-full max-w-md rounded-2xl border p-5 text-fg shadow-2xl transition-colors">
                 <div className="mb-2 text-xl font-semibold">
                     {t("paywall.title", "Доступ к заявкам ограничен")}
                 </div>

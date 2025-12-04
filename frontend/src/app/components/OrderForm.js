@@ -29,6 +29,47 @@ const UI_LANG =
         ? (navigator.language || "ru").split("-")[0]
         : "ru";
 
+const transportButtonStyle = (isActive) => ({
+    background: isActive
+        ? "linear-gradient(135deg, color-mix(in srgb, var(--accent) 92%, transparent) 0%, color-mix(in srgb, var(--accent) 74%, #fff) 100%)"
+        : "var(--of-surface-strong)",
+    color: isActive ? "#0f172a" : "var(--of-text-muted)",
+    border: isActive ? "1.5px solid var(--accent)" : "1.5px solid var(--of-border)",
+    boxShadow: isActive
+        ? "0 8px 20px -12px color-mix(in srgb, var(--accent) 55%, transparent), 0 0 0 2px color-mix(in srgb, var(--accent) 36%, transparent)"
+        : "0 2px 10px rgba(0, 0, 0, 0.08)",
+    fontWeight: 750,
+    padding: "10px 18px",
+    fontSize: 16,
+    borderRadius: 12,
+    cursor: "pointer",
+    display: "inline-flex",
+    alignItems: "center",
+    gap: 10,
+    transition:
+        "background .18s ease, color .18s ease, border-color .18s ease, box-shadow .18s ease, transform .12s ease",
+    transform: isActive ? "translateY(-1px)" : "translateY(0)",
+});
+
+const transportBadgeStyle = (isActive) => ({
+    width: 18,
+    height: 18,
+    borderRadius: "50%",
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontWeight: 800,
+    fontSize: 12,
+    color: isActive ? "#0f172a" : "var(--of-text-muted)",
+    background: isActive
+        ? "color-mix(in srgb, #ffffff 70%, var(--accent) 30%)"
+        : "color-mix(in srgb, var(--of-surface-strong) 80%, transparent)",
+    border: isActive
+        ? "1px solid color-mix(in srgb, var(--accent) 60%, transparent)"
+        : "1px solid var(--of-border)",
+    boxShadow: isActive ? "0 0 0 3px color-mix(in srgb, var(--accent) 26%, transparent)" : "none",
+});
+
 // Отправка выбранного города в /places/upsert
 async function upsertPlaceFromSuggest(sug, displayName) {
     try {
@@ -1775,46 +1816,24 @@ export default function OrderForm({ order = null, onSaved }) {
                 >
                     <button
                         type="button"
-                        style={{
-                            background:
-                                form.transport_type === "LTL"
-                                    ? "var(--accent)"
-                                    : "var(--background)",
-                            color:
-                                form.transport_type === "LTL" ? "#fff" : "var(--of-text-muted)",
-                            border: "1.5px solid var(--accent)",
-                            borderRadius: 8,
-                            fontWeight: 700,
-                            padding: "9px 22px",
-                            fontSize: 16,
-                            cursor: "pointer",
-                            transition: "none",
-                            boxShadow: "none",
-                        }}
+                        style={transportButtonStyle(form.transport_type === "LTL")}
+                        aria-pressed={form.transport_type === "LTL"}
                         onClick={() => setForm((f) => ({ ...f, transport_type: "LTL" }))}
                     >
+                        <span style={transportBadgeStyle(form.transport_type === "LTL")}>
+                            {form.transport_type === "LTL" ? "✓" : ""}
+                        </span>
                         {t("cargo.type.ltl", "Сборный груз (LTL)")}
                     </button>
                     <button
                         type="button"
-                        style={{
-                            background:
-                                form.transport_type === "FTL"
-                                    ? "var(--accent)"
-                                    : "var(--background)",
-                            color:
-                                form.transport_type === "FTL" ? "#fff" : "var(--of-text-muted)",
-                            border: "1.5px solid var(--accent)",
-                            borderRadius: 8,
-                            fontWeight: 700,
-                            padding: "9px 22px",
-                            fontSize: 16,
-                            cursor: "pointer",
-                            transition: "background .12s, color .12s, border-color .12s",
-                            boxShadow: "none",
-                        }}
+                        style={transportButtonStyle(form.transport_type === "FTL")}
+                        aria-pressed={form.transport_type === "FTL"}
                         onClick={() => setForm((f) => ({ ...f, transport_type: "FTL" }))}
                     >
+                        <span style={transportBadgeStyle(form.transport_type === "FTL")}>
+                            {form.transport_type === "FTL" ? "✓" : ""}
+                        </span>
                         {t("cargo.type.ftl", "Целая машина (FTL)")}
                     </button>
                 </div>

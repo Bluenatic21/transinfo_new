@@ -1,89 +1,231 @@
-diff --git a/frontend/src/app/components/PaywallModal.jsx b/frontend/src/app/components/PaywallModal.jsx
-index 8c1081a0a212c8b36355c1ac1f101490d376ba1f..52088bdf530958f76487b1f7da89ed2a2e43c435 100644
---- a/frontend/src/app/components/PaywallModal.jsx
-+++ b/frontend/src/app/components/PaywallModal.jsx
-@@ -1,50 +1,50 @@
- "use client";
- import React from "react";
+diff --git a/frontend/src/app/components/OrderForm.js b/frontend/src/app/components/OrderForm.js
+index ff3dfe2106901c105f1bf5676b66c8b3c64c5123..a80f9f87ea66dba4d5b5ac45af88fe40feaf4898 100644
+--- a/frontend/src/app/components/OrderForm.js
++++ b/frontend/src/app/components/OrderForm.js
+@@ -2,54 +2,95 @@
+ import React, {
+     useEffect,
+     useMemo,
+     useState,
+     useRef,
+     useCallback,
+ } from "react";
+ import { createPortal } from "react-dom";
+ import CustomSelect from "./CustomSelect";
+ import LocationAutocomplete from "./LocationAutocomplete";
+ import { useUser } from "../UserContext";
+ import {
+     LOADING_TYPES,
+     TRUCK_BODY_TYPES,
+     getTruckBodyTypes,
+     getLoadingTypes,
+ } from "./truckOptions";
+ import DateInput from "./DateInput";
  import { useRouter } from "next/navigation";
+ import useIsMobile from "../../hooks/useIsMobile";
+ import { CURRENCIES } from "../utils/currency";
  import { useLang } from "../i18n/LangProvider";
+ import { api, abs } from "@/config/env";
  
- export default function PaywallModal({ open, onClose, anonymous }) {
-     const router = useRouter();
-     const { t } = useLang?.() || { t: (k, f) => f || k };
-     if (!open) return null;
--    return (
--        <div className="fixed inset-0 z-[9999] flex items-center justify-center">
--            <div className="absolute inset-0 bg-black/50" onClick={onClose} />
--            <div className="relative w-full max-w-md rounded-2xl bg-white p-5 shadow-xl dark:bg-neutral-900">
--                <div className="text-xl font-semibold mb-2">
--                    {t("paywall.title", "Доступ к заявкам ограничен")}
--                </div>
--                <div className="text-sm opacity-80 mb-4">
--                    {anonymous
--                        ? t("paywall.text_anonymous", "Войдите или зарегистрируйтесь, чтобы видеть больше и активировать подписку.")
--                        : t("paywall.text_authenticated", "Чтобы работать с заявками и видеть все данные, активируйте подписку.")}
--                </div>
--                <div className="flex gap-2 justify-end">
--                    {anonymous ? (
--                        <>
--                            <button
--                                className="px-3 py-2 rounded-lg border border-neutral-300 dark:border-neutral-700"
--                                onClick={() => { onClose?.(); router.push("/auth"); }}
--                            >
--                                {t("paywall.cta.login", "Войти")}
--                            </button>
--                            <button
--                                className="px-3 py-2 rounded-lg bg-blue-600 text-white"
--                                onClick={() => { onClose?.(); router.push("/register"); }}
--                            >
--                                {t("paywall.cta.register", "Зарегистрироваться")}
--                            </button>
--                        </>
--                    ) : (
--                        <button
--                            className="px-3 py-2 rounded-lg bg-blue-600 text-white"
--                            onClick={() => { onClose?.(); router.push("/settings/billing"); }}
--                        >
--                            {t("paywall.cta.subscribe", "Активировать подписку")}
-+    return (
-+        <div className="fixed inset-0 z-[9999] flex items-center justify-center">
-+            <div className="absolute inset-0 bg-black/40 dark:bg-black/50" onClick={onClose} />
-+            <div className="relative w-full max-w-md rounded-2xl border borderc bg-card p-5 text-fg shadow-2xl transition-colors">
-+                <div className="mb-2 text-xl font-semibold">
-+                    {t("paywall.title", "Доступ к заявкам ограничен")}
-+                </div>
-+                <div className="mb-4 text-sm text-muted">
-+                    {anonymous
-+                        ? t("paywall.text_anonymous", "Войдите или зарегистрируйтесь, чтобы видеть больше и активировать подписку.")
-+                        : t("paywall.text_authenticated", "Чтобы работать с заявками и видеть все данные, активируйте подписку.")}
-+                </div>
-+                <div className="flex justify-end gap-2">
-+                    {anonymous ? (
-+                        <>
-+                            <button
-+                                className="rounded-lg border borderc bg-[var(--control-bg)] px-3 py-2 text-sm font-semibold transition-colors hover:bg-[var(--control-bg-hover)]"
-+                                onClick={() => { onClose?.(); router.push("/auth"); }}
-+                            >
-+                                {t("paywall.cta.login", "Войти")}
-+                            </button>
-+                            <button
-+                                className="rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-500"
-+                                onClick={() => { onClose?.(); router.push("/register"); }}
-+                            >
-+                                {t("paywall.cta.register", "Зарегистрироваться")}
-+                            </button>
-+                        </>
-+                    ) : (
-+                        <button
-+                            className="rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-500"
-+                            onClick={() => { onClose?.(); router.push("/settings/billing"); }}
-+                        >
-+                            {t("paywall.cta.subscribe", "Активировать подписку")}
-                         </button>
-                     )}
+ // Язык интерфейса
+-const UI_LANG =
+-    typeof navigator !== "undefined"
+-        ? (navigator.language || "ru").split("-")[0]
+-        : "ru";
++const UI_LANG =
++    typeof navigator !== "undefined"
++        ? (navigator.language || "ru").split("-")[0]
++        : "ru";
++
++const transportButtonStyle = (isActive) => ({
++    background: isActive
++        ? "linear-gradient(135deg, color-mix(in srgb, var(--accent) 92%, transparent) 0%, color-mix(in srgb, var(--accent) 74%, #fff) 100%)"
++        : "var(--of-surface-strong)",
++    color: isActive ? "#0f172a" : "var(--of-text-muted)",
++    border: isActive ? "1.5px solid var(--accent)" : "1.5px solid var(--of-border)",
++    boxShadow: isActive
++        ? "0 8px 20px -12px color-mix(in srgb, var(--accent) 55%, transparent), 0 0 0 2px color-mix(in srgb, var(--accent) 36%, transparent)"
++        : "0 2px 10px rgba(0, 0, 0, 0.08)",
++    fontWeight: 750,
++    padding: "10px 18px",
++    fontSize: 16,
++    borderRadius: 12,
++    cursor: "pointer",
++    display: "inline-flex",
++    alignItems: "center",
++    gap: 10,
++    transition:
++        "background .18s ease, color .18s ease, border-color .18s ease, box-shadow .18s ease, transform .12s ease",
++    transform: isActive ? "translateY(-1px)" : "translateY(0)",
++});
++
++const transportBadgeStyle = (isActive) => ({
++    width: 18,
++    height: 18,
++    borderRadius: "50%",
++    display: "inline-flex",
++    alignItems: "center",
++    justifyContent: "center",
++    fontWeight: 800,
++    fontSize: 12,
++    color: isActive ? "#0f172a" : "var(--of-text-muted)",
++    background: isActive
++        ? "color-mix(in srgb, #ffffff 70%, var(--accent) 30%)"
++        : "color-mix(in srgb, var(--of-surface-strong) 80%, transparent)",
++    border: isActive
++        ? "1px solid color-mix(in srgb, var(--accent) 60%, transparent)"
++        : "1px solid var(--of-border)",
++    boxShadow: isActive ? "0 0 0 3px color-mix(in srgb, var(--accent) 26%, transparent)" : "none",
++});
+ 
+ // Отправка выбранного города в /places/upsert
+ async function upsertPlaceFromSuggest(sug, displayName) {
+     try {
+         if (!sug) return;
+         const nd = sug.namedetails || {};
+         const translations = {};
+         for (const l of ["ru", "en", "ka", "uk", "tr", "de"]) {
+             const v = nd[`name:${l}`];
+             if (v) translations[l] = v;
+         }
+         const city = (displayName || "").split(",")[0];
+         if (city && !translations[UI_LANG]) translations[UI_LANG] = city;
+         const resp = await fetch(api("/places/upsert"), {
+             method: "POST",
+             headers: { "Content-Type": "application/json" },
+             body: JSON.stringify({
+                 source: "nominatim",
+                 external_id: String(sug.osm_id || sug.place_id),
+                 osm_type: sug.osm_type,
+                 lat: Number(sug.lat),
+                 lon: Number(sug.lon),
+                 country_iso2: String(sug.address?.country_code || "").toUpperCase(),
+                 translations,
+             }),
+@@ -1747,99 +1788,77 @@ export default function OrderForm({ order = null, onSaved }) {
+                             }}
+                         />
+                     </div>
                  </div>
              </div>
-         </div>
-     );
- }
+ 
+             {/* --- Грузы --- */}
+             <div
+                 className="order-card"
+                 style={{
+                     ...section,
+                     padding: 20,
+                     marginTop: 10,
+                 }}
+             >
+                 <div
+                     style={{
+                         fontWeight: 700,
+                         fontSize: 17,
+                         color: "var(--accent)",
+                         marginBottom: 6,
+                     }}
+                 >
+                     {t("cargo.singular", "Груз")}
+                 </div>
+-                <div
+-                    className="stack-mobile chip-row"
+-                    style={{ display: "flex", gap: 10, marginBottom: 14 }}
+-                >
+-                    <button
+-                        type="button"
+-                        style={{
+-                            background:
+-                                form.transport_type === "LTL"
+-                                    ? "var(--accent)"
+-                                    : "var(--background)",
+-                            color:
+-                                form.transport_type === "LTL" ? "#fff" : "var(--of-text-muted)",
+-                            border: "1.5px solid var(--accent)",
+-                            borderRadius: 8,
+-                            fontWeight: 700,
+-                            padding: "9px 22px",
+-                            fontSize: 16,
+-                            cursor: "pointer",
+-                            transition: "none",
+-                            boxShadow: "none",
+-                        }}
+-                        onClick={() => setForm((f) => ({ ...f, transport_type: "LTL" }))}
+-                    >
+-                        {t("cargo.type.ltl", "Сборный груз (LTL)")}
+-                    </button>
+-                    <button
+-                        type="button"
+-                        style={{
+-                            background:
+-                                form.transport_type === "FTL"
+-                                    ? "var(--accent)"
+-                                    : "var(--background)",
+-                            color:
+-                                form.transport_type === "FTL" ? "#fff" : "var(--of-text-muted)",
+-                            border: "1.5px solid var(--accent)",
+-                            borderRadius: 8,
+-                            fontWeight: 700,
+-                            padding: "9px 22px",
+-                            fontSize: 16,
+-                            cursor: "pointer",
+-                            transition: "background .12s, color .12s, border-color .12s",
+-                            boxShadow: "none",
+-                        }}
+-                        onClick={() => setForm((f) => ({ ...f, transport_type: "FTL" }))}
+-                    >
+-                        {t("cargo.type.ftl", "Целая машина (FTL)")}
+-                    </button>
+-                </div>
++                <div
++                    className="stack-mobile chip-row"
++                    style={{ display: "flex", gap: 10, marginBottom: 14 }}
++                >
++                    <button
++                        type="button"
++                        style={transportButtonStyle(form.transport_type === "LTL")}
++                        aria-pressed={form.transport_type === "LTL"}
++                        onClick={() => setForm((f) => ({ ...f, transport_type: "LTL" }))}
++                    >
++                        <span style={transportBadgeStyle(form.transport_type === "LTL")}>
++                            {form.transport_type === "LTL" ? "✓" : ""}
++                        </span>
++                        {t("cargo.type.ltl", "Сборный груз (LTL)")}
++                    </button>
++                    <button
++                        type="button"
++                        style={transportButtonStyle(form.transport_type === "FTL")}
++                        aria-pressed={form.transport_type === "FTL"}
++                        onClick={() => setForm((f) => ({ ...f, transport_type: "FTL" }))}
++                    >
++                        <span style={transportBadgeStyle(form.transport_type === "FTL")}>
++                            {form.transport_type === "FTL" ? "✓" : ""}
++                        </span>
++                        {t("cargo.type.ftl", "Целая машина (FTL)")}
++                    </button>
++                </div>
+                 {form.cargo_items.map((cargo, idx) => (
+                     <div
+                         key={idx}
+                         className="order-card"
+                         style={{
+                             ...section,
+                             padding: 20,
+                             marginTop: 10,
+                         }}
+                     >
+                         {/* --- Основные поля --- */}
+                         <div
+                             className="stack-mobile"
+                             style={{
+                                 display: "flex",
+                                 gap: 10,
+                                 alignItems: "center",
+                                 marginBottom: 8,
+                             }}
+                         >
+                             <input
+                                 ref={(el) => (cargoRefs.current[idx] = el)}
+                                 name="name"
+                                 value={cargo.name}
+                                 onChange={(e) => handleCargoChange(idx, e)}
