@@ -1,65 +1,102 @@
-diff --git a/frontend/src/app/page.js b/frontend/src/app/page.js
-index f553afdbd933472acbdcb32b27aeb9ed1e38029f..96478ef0b033449a90cd94c6b53d2e86bd94db09 100644
---- a/frontend/src/app/page.js
-+++ b/frontend/src/app/page.js
-@@ -565,55 +565,55 @@ export default function Home() {
-           .home-map-block,
-           .home-orders-block,
-           .home-info-block {
-             background: transparent;
-             border-radius: 18px;
-             border: none;
-             padding: clamp(12px, 1.6vw, 18px);
-             box-shadow: none;
-           }
+diff --git a/backend/main.py b/backend/main.py
+index 15a220af12a62f2e6927a9bb529bde975e548f44..7375261bd574fbfd30bb8e685adf857849620c0f 100644
+--- a/backend/main.py
++++ b/backend/main.py
+@@ -3692,95 +3692,83 @@ def get_user_ratings(
  
-           .home-map-block {
-             display: flex;
-             flex-direction: column;
-             gap: 10px;
-             grid-row: 1;
-             grid-column: 1;
-             backdrop-filter: blur(3px);
-           }
+ @app.get("/users/{user_id}", response_model=UserProfile)
+ def get_user_profile(user_id: int, db: Session = Depends(get_db)):
+     user = db.query(UserModel).filter(UserModel.id == user_id).first()
+     if not user:
+         raise HTTPException(status_code=404, detail="User not found")
+     return user
  
-           .home-orders-block {
-             grid-column: 2;
-             grid-row: 1 / span 2;
-             backdrop-filter: blur(3px);
-           }
  
--          @media (max-width: 768px) {
--            :root[data-theme="light"] .home-orders-block .section-title {
--              color: #fff;
--            }
--          }
-+          @media (max-width: 768px) {
-+            :root[data-theme="light"] .home-orders-block .section-title {
-+              color: var(--text-primary, #0f172a);
-+            }
-+          }
+ @app.get("/users", response_model=List[UserOut])
+ def get_all_users(db: Session = Depends(get_db), current_user: UserModel = Depends(get_current_user)):
+     # Возвращаем всех пользователей, кроме текущего — доступно всем залогиненным
+     users = db.query(UserModel).filter(UserModel.id != current_user.id).all()
+     return users
  
-           .home-info-block {
-             grid-row: 2;
-             grid-column: 1;
-             align-self: start;
-             background: color-mix(in srgb, var(--bg-card, #22314a) 90%, transparent);
-             border-radius: 18px;
-             border: 1px solid color-mix(in srgb, var(--border-subtle, rgba(23, 65, 142, 0.12)) 80%, transparent);
-             box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
-             padding: clamp(12px, 1.6vw, 18px);
-             margin-top: -2px;
-           }
  
-           .home-orders-block .section-title {
-             margin-bottom: 10px;
-           }
+ def email_from_token(token):
+     payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+     return payload.get("sub")
  
-           @media (max-width: 768px) {
-             .home-orders-block {
-               border-radius: 22px 22px 18px 18px;
-               overflow: hidden;
-               background: color-mix(in srgb, var(--bg-card, #22314a) 88%, transparent);
-               border: 1px solid color-mix(in srgb, var(--border-subtle, rgba(23, 65, 142, 0.16)) 92%, transparent);
-             }
-           }
+ 
+ @app.post("/profile/avatar")
+ def upload_avatar(
+     file: UploadFile = File(...),
+     db: Session = Depends(get_db),
+-    authorization: str = Header(None),
++    current_user: UserModel = Depends(get_current_user),
+ ):
+-    if not authorization or not authorization.startswith("Bearer "):
+-        raise HTTPException(401, "Not authenticated")
+-    token = authorization[7:]
+-    current_user = db.query(UserModel).filter(
+-        UserModel.email == email_from_token(token)).first()
+-    if not current_user:
+-        raise HTTPException(401, "User not found")
+ 
+     # Только png или jpg!
+     ext = os.path.splitext(file.filename)[-1].lower()
+     if ext not in [".png", ".jpg", ".jpeg", ".doc", ".docx"]:
+         raise HTTPException(400, "Только .png, .jpg, .doc, .docx файлы!")
+ 
+     # Генерируем уникальное имя файла
+     avatar_filename = f"avatars/{uuid4().hex}{ext}"
+    # Сохраняем аватар точно в той папке, которая раздаётся FastAPI через STATIC_DIR
+     save_path = os.path.join(STATIC_DIR, avatar_filename)
+     os.makedirs(os.path.dirname(save_path), exist_ok=True)
+ 
+     # Записываем файл правильно!
+     contents = file.file.read()
+     with open(save_path, "wb") as f:
+         f.write(contents)
+     if len(contents) < 100:  # На всякий случай, проверь размер
+         raise HTTPException(400, "Файл слишком маленький или не картинка!")
+ 
+     current_user.avatar = f"/static/{avatar_filename}"
+     db.commit()
+     db.refresh(current_user)
+     return {"avatar": current_user.avatar}
+ 
+ 
+ @app.patch("/profile", response_model=UserProfile)
+ def update_profile(
+     user_update: UserUpdate,
+     db: Session = Depends(get_db),
+-    authorization: str = Header(None),  # <-- вот так!
++    current_user: UserModel = Depends(get_current_user),
+ ):
+-    if not authorization or not authorization.startswith("Bearer "):
+-        raise HTTPException(401, "Not authenticated")
+-    token = authorization[7:]
+-    current_user = db.query(UserModel).filter(
+-        UserModel.email == email_from_token(token)).first()
+     for attr, value in user_update.dict(exclude_unset=True).items():
+         setattr(current_user, attr, value)
+     db.commit()
+     db.refresh(current_user)
+     return current_user
+ 
+ 
+ @app.post("/profile/documents")
+ def upload_documents(
+     file: UploadFile = File(...),
+     db: Session = Depends(get_db),
+     current_user: UserModel = Depends(get_current_user)
+ ):
+     ext = os.path.splitext(file.filename)[-1]
+     doc_filename = f"docs/{uuid4().hex}{ext}"
+     save_path = os.path.join("static", doc_filename)
+     os.makedirs(os.path.dirname(save_path), exist_ok=True)
+     with open(save_path, "wb") as f:
+         f.write(file.file.read())
+ 
+     # Сохраняем ссылку на документ в профиле пользователя
+     docs = current_user.docs_files or []
+     docs.append(f"/static/{doc_filename}")
+     current_user.docs_files = docs
+     current_user.verification_status = "pending"

@@ -3,6 +3,7 @@
 import React, { useEffect } from "react";
 import ReactDOM from "react-dom";
 import { useLang } from "../i18n/LangProvider";
+import { useTheme } from "../providers/ThemeProvider";
 
 /**
  * Универсальная модалка подтверждения.
@@ -12,6 +13,7 @@ import { useLang } from "../i18n/LangProvider";
  */
 export default function ConfirmModal({ open, text, onConfirm, onCancel }) {
     const { t } = useLang();
+    const { resolvedTheme } = useTheme();
     // SSR guard
     if (typeof document === "undefined") return null;
     const portalTarget = document.body;
@@ -27,13 +29,42 @@ export default function ConfirmModal({ open, text, onConfirm, onCancel }) {
 
     if (!open) return null;
 
+    const isLight = resolvedTheme === "light";
+    const themeStyles = isLight
+        ? {
+            overlay: "rgba(7,12,24,0.35)",
+            dialogBg: "var(--bg-card)",
+            dialogColor: "var(--text-primary)",
+            dialogShadow: "var(--shadow-soft)",
+            dialogBorder: "1px solid var(--border-subtle)",
+            cancelBg: "var(--control-bg)",
+            cancelColor: "var(--text-primary)",
+            cancelBorder: "1px solid var(--border-subtle)",
+            confirmBg: "var(--cta-gradient)",
+            confirmColor: "var(--cta-text)",
+            confirmShadow: "var(--cta-shadow)",
+        }
+        : {
+            overlay: "rgba(22,30,54,0.53)",
+            dialogBg: "#1d2c49",
+            dialogColor: "#e3f2fd",
+            dialogShadow: "0 6px 32px #13204880",
+            dialogBorder: "none",
+            cancelBg: "#323b51",
+            cancelColor: "#e3f2fd",
+            cancelBorder: "none",
+            confirmBg: "#43c8ff",
+            confirmColor: "#182337",
+            confirmShadow: "none",
+        };
+
     const overlay = (
         <div
             style={{
                 position: "fixed",
                 inset: 0,
                 zIndex: 200000, // выше любых наших оверлеев/карт/меню
-                background: "rgba(22,30,54,0.53)",
+                background: themeStyles.overlay,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -47,13 +78,14 @@ export default function ConfirmModal({ open, text, onConfirm, onCancel }) {
                 role="dialog"
                 aria-modal="true"
                 style={{
-                    background: "#1d2c49",
+                    background: themeStyles.dialogBg,
                     padding: 24,
                     borderRadius: 20,
                     width: "min(420px, 92vw)",
-                    color: "#e3f2fd",
-                    boxShadow: "0 6px 32px #13204880",
+                    color: themeStyles.dialogColor,
+                    boxShadow: themeStyles.dialogShadow,
                     textAlign: "center",
+                    border: themeStyles.dialogBorder,
                 }}
                 onClick={(e) => e.stopPropagation()}
             >
@@ -72,9 +104,9 @@ export default function ConfirmModal({ open, text, onConfirm, onCancel }) {
                     <button
                         onClick={onCancel}
                         style={{
-                            background: "#323b51",
-                            color: "#e3f2fd",
-                            border: "none",
+                            background: themeStyles.cancelBg,
+                            color: themeStyles.cancelColor,
+                            border: themeStyles.cancelBorder,
                             borderRadius: 10,
                             padding: "10px 20px",
                             fontWeight: 600,
@@ -87,14 +119,15 @@ export default function ConfirmModal({ open, text, onConfirm, onCancel }) {
                     <button
                         onClick={onConfirm}
                         style={{
-                            background: "#43c8ff",
-                            color: "#182337",
+                            background: themeStyles.confirmBg,
+                            color: themeStyles.confirmColor,
                             border: "none",
                             borderRadius: 10,
                             padding: "10px 20px",
                             fontWeight: 700,
                             fontSize: 15,
                             cursor: "pointer",
+                            boxShadow: themeStyles.confirmShadow,
                         }}
                     >
                         {t("common.delete", "Удалить")}
