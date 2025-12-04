@@ -1,8 +1,14 @@
 diff --git a/frontend/src/app/page.js b/frontend/src/app/page.js
-index e44038d73c45e021dd03c07b6c3ec065c84e08b4..8fd4b8e120f07559bf44f2d98dac565a38912085 100644
+index f553afdbd933472acbdcb32b27aeb9ed1e38029f..96478ef0b033449a90cd94c6b53d2e86bd94db09 100644
 --- a/frontend/src/app/page.js
 +++ b/frontend/src/app/page.js
-@@ -571,65 +571,74 @@ export default function Home() {
+@@ -565,55 +565,55 @@ export default function Home() {
+           .home-map-block,
+           .home-orders-block,
+           .home-info-block {
+             background: transparent;
+             border-radius: 18px;
+             border: none;
              padding: clamp(12px, 1.6vw, 18px);
              box-shadow: none;
            }
@@ -22,22 +28,22 @@ index e44038d73c45e021dd03c07b6c3ec065c84e08b4..8fd4b8e120f07559bf44f2d98dac565a
              backdrop-filter: blur(3px);
            }
  
-           @media (max-width: 768px) {
-             :root[data-theme="light"] .home-orders-block .section-title {
-               color: #fff;
-             }
-           }
+-          @media (max-width: 768px) {
+-            :root[data-theme="light"] .home-orders-block .section-title {
+-              color: #fff;
+-            }
+-          }
++          @media (max-width: 768px) {
++            :root[data-theme="light"] .home-orders-block .section-title {
++              color: var(--text-primary, #0f172a);
++            }
++          }
  
--          .home-info-block {
--            grid-row: 2;
--            grid-column: 1;
--            align-self: start;
--            background: color-mix(in srgb, var(--bg-card, #22314a) 90%, transparent);
-+          .home-info-block {
-+            grid-row: 2;
-+            grid-column: 1;
-+            align-self: start;
-+            background: color-mix(in srgb, var(--bg-card, #22314a) 90%, transparent);
+           .home-info-block {
+             grid-row: 2;
+             grid-column: 1;
+             align-self: start;
+             background: color-mix(in srgb, var(--bg-card, #22314a) 90%, transparent);
              border-radius: 18px;
              border: 1px solid color-mix(in srgb, var(--border-subtle, rgba(23, 65, 142, 0.12)) 80%, transparent);
              box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
@@ -45,43 +51,15 @@ index e44038d73c45e021dd03c07b6c3ec065c84e08b4..8fd4b8e120f07559bf44f2d98dac565a
              margin-top: -2px;
            }
  
--          .home-orders-block .section-title {
--            margin-bottom: 10px;
--          }
-+          .home-orders-block .section-title {
-+            margin-bottom: 10px;
-+          }
-+
-+          @media (max-width: 768px) {
-+            .home-orders-block {
-+              border-radius: 22px 22px 18px 18px;
-+              overflow: hidden;
-+              background: color-mix(in srgb, var(--bg-card, #22314a) 88%, transparent);
-+              border: 1px solid color-mix(in srgb, var(--border-subtle, rgba(23, 65, 142, 0.16)) 92%, transparent);
-+            }
-+          }
- 
-           @media (max-width: 1100px) {
-             .home-map-orders {
-               grid-template-columns: 1fr;
-               grid-template-rows: auto;
-             }
- 
-             .home-nav-grid {
-               width: 100%;
-               max-width: none;
-               grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-               margin: 0;
-             }
- 
-             .home-info-block {
-               margin-top: 0;
-             }
+           .home-orders-block .section-title {
+             margin-bottom: 10px;
            }
  
-           .home-nav-board {
-             position: relative;
-             padding: clamp(8px, 1.6vw, 20px) clamp(4px, 1vw, 14px) 0;
+           @media (max-width: 768px) {
+             .home-orders-block {
+               border-radius: 22px 22px 18px 18px;
+               overflow: hidden;
+               background: color-mix(in srgb, var(--bg-card, #22314a) 88%, transparent);
+               border: 1px solid color-mix(in srgb, var(--border-subtle, rgba(23, 65, 142, 0.16)) 92%, transparent);
+             }
            }
-           .home-nav-grid {
-             display: grid;

@@ -589,7 +589,7 @@ export default function Home() {
 
           @media (max-width: 768px) {
             :root[data-theme="light"] .home-orders-block .section-title {
-              color: #fff;
+              color: var(--text-primary, #0f172a);
             }
           }
 

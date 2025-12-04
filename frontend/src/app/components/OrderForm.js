@@ -33,7 +33,7 @@ const transportButtonStyle = (isActive) => ({
     background: isActive
         ? "linear-gradient(135deg, color-mix(in srgb, var(--accent) 92%, transparent) 0%, color-mix(in srgb, var(--accent) 74%, #fff) 100%)"
         : "var(--of-surface-strong)",
-    color: isActive ? "#0f172a" : "var(--of-text-muted)",
+    color: isActive ? "var(--of-text-strong)" : "var(--of-text-muted)",
     border: isActive ? "1.5px solid var(--accent)" : "1.5px solid var(--of-border)",
     boxShadow: isActive
         ? "0 8px 20px -12px color-mix(in srgb, var(--accent) 55%, transparent), 0 0 0 2px color-mix(in srgb, var(--accent) 36%, transparent)"
@@ -60,7 +60,7 @@ const transportBadgeStyle = (isActive) => ({
     justifyContent: "center",
     fontWeight: 800,
     fontSize: 12,
-    color: isActive ? "#0f172a" : "var(--of-text-muted)",
+    color: isActive ? "var(--of-text-strong)" : "var(--of-text-muted)",
     background: isActive
         ? "color-mix(in srgb, #ffffff 70%, var(--accent) 30%)"
         : "color-mix(in srgb, var(--of-surface-strong) 80%, transparent)",
