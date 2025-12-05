@@ -84,10 +84,21 @@ export function api(path = ''): string {
 // alias под старые импорты
 export const withApi = api;
 
-// нужно сделать так:
+// Абсолютный URL для ресурсов
 export function abs(path = ''): string {
   const p = path.startsWith('/') ? path : `/${path}`;
-  return `${getEffectiveBase()}${p}`;  // а не BASE
+
+  // Файлы, которые отдаёт FastAPI (аватары, документы, support‑лого и т.п.),
+  // лежат в backend/static и наружу доступны как /api/static/...
+  // Поэтому для /static/... всегда используем хост API, а не фронта.
+  if (p.startsWith('/static/')) {
+    const apiBase = getApiBase(); // например, https://transinfo.ge/api или http://127.0.0.1:8000
+    return `${apiBase}${p}`;      // -> https://transinfo.ge/api/static/avatars/xxxx.png
+  }
+
+  // Всё остальное (картинки из Next /public, любые ссылки на фронт)
+  // оставляем как раньше: тот же домен, что и у фронта.
+  return `${getEffectiveBase()}${p}`;
 }
 
 /** WebSocket URL */
