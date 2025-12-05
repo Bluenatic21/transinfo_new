@@ -3979,7 +3979,32 @@ def get_transports(
             .distinct()
             .subquery()
         )
-        query = query.filter(TransportModel.id.in_(sub))
+
+        matched_transport_ids = [row[0]
+                                 for row in db.query(sub).all() if row[0]]
+
+        # 2) Если по каким-то причинам таблица Match ещё не заполнена,
+        #    считаем совпадения «на лету», чтобы пользователь всё равно увидел
+        #    полный список своих соответствий.
+        if not matched_transport_ids:
+            try:
+                my_orders = db.query(OrderModel).filter(
+                    OrderModel.owner_id == current_user.id,
+                    OrderModel.is_active == True
+                ).all()
+                for order in my_orders:
+                    for tr in find_matching_transports(order, db, exclude_user_id=current_user.id):
+                        if tr and tr.id:
+                            matched_transport_ids.append(tr.id)
+            except Exception:
+                pass
+
+        # если совпадений нет — отдаём пустой список, а не полный каталог
+        if not matched_transport_ids:
+            query = query.filter(False)
+        else:
+            query = query.filter(TransportModel.id.in_(
+                set(matched_transport_ids)))
 
     if DEBUG_SQL:
         print('--- SQL QUERY [transports] ---')
@@ -4301,11 +4326,11 @@ def get_orders(
             (OrderModel.comment.ilike(ilike_q))
         )
 
-    # --- ФИЛЬТР «только Соответствия» (лёгкая версия) ---
+    # --- ФИЛЬТР «только Соответствия» (лёгкая версия + безопасный фолбэк) ---
     if matches_only and current_user is not None:
         # Берём id заявок из таблицы Match, которую заполняет auto_match_worker.
         from models import Match
-
+# 1) Основной сценарий — используем предрасчитанные совпадения из Match
         sub = (
             db.query(Match.order_id)
             .join(TransportModel, Match.transport_id == TransportModel.id)
@@ -4316,7 +4341,26 @@ def get_orders(
             .distinct()
             .subquery()
         )
-        query = query.filter(OrderModel.id.in_(sub))
+        matched_order_ids = [row[0] for row in db.query(sub).all() if row[0]]
+
+        # Если таблица Match не заполнена — считаем совпадения «на лету»
+        if not matched_order_ids:
+            try:
+                my_transports = db.query(TransportModel).filter(
+                    TransportModel.owner_id == current_user.id,
+                    TransportModel.is_active == True
+                ).all()
+                for tr in my_transports:
+                    for order in find_matching_orders_for_transport(tr, db, exclude_user_id=current_user.id):
+                        if order and order.id:
+                            matched_order_ids.append(order.id)
+            except Exception:
+                pass
+
+        if not matched_order_ids:
+            query = query.filter(False)
+        else:
+            query = query.filter(OrderModel.id.in_(set(matched_order_ids)))
 
     if DEBUG_SQL:
         print('--- SQL QUERY [orders] ---')
