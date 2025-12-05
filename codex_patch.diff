@@ -1,70 +1,185 @@
-diff --git a/frontend/src/config/env.ts b/frontend/src/config/env.ts
-index d9c64d9ba17bc15b86931d73974acfd80daf8312..4e4e2ee3c6fcf49ff828a8dd0e16ecce38c2b39f 100644
---- a/frontend/src/config/env.ts
-+++ b/frontend/src/config/env.ts
-@@ -17,55 +17,65 @@ export const BASE =
-   APP_ENV === 'production' ? 'https://www.transinfo.ge' : HOST_BY_ENV[APP_ENV];
+diff --git a/backend/main.py b/backend/main.py
+index 7c90cdf126d7def6ae3a51e4fdfb69d9c1b0b266..4792219836f191e8dfc56a01746fda0aae041cfd 100644
+--- a/backend/main.py
++++ b/backend/main.py
+@@ -3943,65 +3943,89 @@ def get_transports(
+         query = query.filter(TransportModel.gps_monitor == True)
+     if adr is True:
+         query = query.filter(TransportModel.adr == True)
+     if body_length not in [None, ""]:
+         query = query.filter(TransportModel.body_length == str(body_length))
+     if weight not in [None, ""]:
+         try:
+             query = query.filter(TransportModel.weight >= float(weight))
+         except (ValueError, TypeError):
+             pass
+     if volume not in [None, ""]:
+         try:
+             query = query.filter(TransportModel.volume >= float(volume))
+         except (ValueError, TypeError):
+             pass
+     if q not in [None, ""]:
+         ilike_q = f"%{q}%"
+         query = query.filter(
+             (TransportModel.truck_type.ilike(ilike_q)) |
+             (TransportModel.transport_kind.ilike(ilike_q)) |
+             (TransportModel.contact_name.ilike(ilike_q)) |
+             (TransportModel.comment.ilike(ilike_q)) |
+             (TransportModel.email.ilike(ilike_q))
+         )
  
- // Текущий origin в браузере — помогает избежать рассинхрона env и фактического домена
- // (например, prod сборка открыта с www., а API/WS прописаны на transinfo.ge → CORS/mixed content)
- const RUNTIME_BASE =
-   (typeof window !== 'undefined' && window?.location?.origin
-     ? window.location.origin
-     : '').replace(/\/$/, '');
+-    # --- ФИЛЬТР «только Соответствия» (лёгкая версия) ---
++    # --- ФИЛЬТР «только Соответствия» (лёгкая версия + безопасный фолбэк) ---
+     if matches_only and current_user is not None:
+         from models import Match
  
- const getRuntimeBase = (): string => RUNTIME_BASE;
- 
- 
- // База API
- // По умолчанию (как раньше) ходим на `${BASE}/api`.
- // Локально можно переопределить через переменные окружения,
- // чтобы сразу стучаться в FastAPI (например http://127.0.0.1:8004).
- const ENV_API_BASE =
-   process.env.NEXT_PUBLIC_API ||
-   process.env.NEXT_PUBLIC_API_URL ||
-   process.env.NEXT_PUBLIC_API_BASE_URL ||
-   process.env.NEXT_PUBLIC_DEV_API_URL ||
-   '';
- 
- // Если в проде env указывает на другой домен, чем открытый сайт, — игнорируем его,
- // чтобы избежать CORS/префлайт блокировок.
-+// Если в проде env указывает на другой домен, чем открытый сайт, — игнорируем его,
-+// чтобы избежать CORS/префлайт блокировок. При этом разрешаем поддомены внутри
-+// одного базового домена (api.transinfo.ge vs transinfo.ge).
- const shouldForceRuntimeBase = (runtimeBase: string) => {
-   if (!ENV_API_BASE || APP_ENV !== 'production' || !runtimeBase) return false;
++        # 1) Основной сценарий — используем предрасчитанные совпадения из Match
+         sub = (
+             db.query(Match.transport_id)
+             .join(OrderModel, Match.order_id == OrderModel.id)
+             .filter(
+                 OrderModel.owner_id == current_user.id,
+                 Match.transport_id != None,
+             )
+             .distinct()
+             .subquery()
+         )
+-        query = query.filter(TransportModel.id.in_(sub))
 +
-+  const getBaseDomain = (host: string) => host.split('.').slice(-2).join('.');
++        matched_transport_ids = [row[0] for row in db.query(sub).all() if row[0]]
 +
-   try {
-     const envHost = new URL(ENV_API_BASE).host;
-     const runtimeHost = new URL(runtimeBase).host;
++        # 2) Если по каким-то причинам таблица Match ещё не заполнена,
++        #    считаем совпадения «на лету», чтобы пользователь всё равно увидел
++        #    полный список своих соответствий.
++        if not matched_transport_ids:
++            try:
++                my_orders = db.query(OrderModel).filter(
++                    OrderModel.owner_id == current_user.id,
++                    OrderModel.is_active == True
++                ).all()
++                for order in my_orders:
++                    for tr in find_matching_transports(order, db, exclude_user_id=current_user.id):
++                        if tr and tr.id:
++                            matched_transport_ids.append(tr.id)
++            except Exception:
++                pass
 +
-+    // Разрешаем api.<domain> и www.<domain> — главное, чтобы базовый домен совпадал
-+    if (getBaseDomain(envHost) === getBaseDomain(runtimeHost)) return false;
++        # если совпадений нет — отдаём пустой список, а не полный каталог
++        if not matched_transport_ids:
++            query = query.filter(False)
++        else:
++            query = query.filter(TransportModel.id.in_(set(matched_transport_ids)))
+ 
+     if DEBUG_SQL:
+         print('--- SQL QUERY [transports] ---')
+         print(str(query.statement.compile(
+             dialect=postgresql.dialect(),
+             compile_kwargs={'literal_binds': True}
+         )))
+         print('---')
+ 
+     # --- Радиусные фильтры "откуда / куда" на уровне SQL (bbox) ---
+     def _bbox(center_lat, center_lng, radius_km):
+         try:
+             r = float(radius_km or 0)
+         except (TypeError, ValueError):
+             return None
+         if center_lat is None or center_lng is None or r <= 0:
+             return None
+ 
+         # 1 градус широты ≈ 111 км
+         lat_delta = r / 111.0
+         lat_min = center_lat - lat_delta
+         lat_max = center_lat + lat_delta
+ 
+         # Долгота зависит от широты
+         lng_delta = r / (111.0 * max(cos(radians(center_lat)), 0.1))
+@@ -4279,66 +4303,86 @@ def get_orders(
+ 
+     if load_date_from not in [None, ""] and load_date_to not in [None, ""]:
+         query = query.filter(
+             load_date_col >= _to_date_iso(load_date_from),
+             load_date_col <= _to_date_iso(load_date_to),
+         )
+     elif load_date_from not in [None, ""]:
+         query = query.filter(load_date_col >= _to_date_iso(load_date_from))
+     elif load_date_to not in [None, ""]:
+         query = query.filter(load_date_col <= _to_date_iso(load_date_to))
+     if price_from not in [None, ""]:
+         query = query.filter(OrderModel.price >= price_from)
+     if price_to not in [None, ""]:
+         query = query.filter(OrderModel.price <= price_to)
+     if with_attachments:
+         query = query.filter(OrderModel.attachments != None).filter(
+             OrderModel.attachments != [])
+     if q not in [None, ""]:
+         ilike_q = f"%{q}%"
+         query = query.filter(
+             (OrderModel.description.ilike(ilike_q)) |
+             (OrderModel.truck_type.ilike(ilike_q)) |
+             (OrderModel.comment.ilike(ilike_q))
+         )
+ 
+-    # --- ФИЛЬТР «только Соответствия» (лёгкая версия) ---
++    # --- ФИЛЬТР «только Соответствия» (лёгкая версия + безопасный фолбэк) ---
+     if matches_only and current_user is not None:
+         # Берём id заявок из таблицы Match, которую заполняет auto_match_worker.
+         from models import Match
+ 
+         sub = (
+             db.query(Match.order_id)
+             .join(TransportModel, Match.transport_id == TransportModel.id)
+             .filter(
+                 TransportModel.owner_id == current_user.id,
+                 Match.order_id != None,
+             )
+             .distinct()
+             .subquery()
+         )
+-        query = query.filter(OrderModel.id.in_(sub))
 +
-     return envHost !== runtimeHost;
-   } catch {
-     return false;
-   }
- };
++        matched_order_ids = [row[0] for row in db.query(sub).all() if row[0]]
++
++        # Если таблица Match не заполнена — считаем совпадения «на лету»
++        if not matched_order_ids:
++            try:
++                my_transports = db.query(TransportModel).filter(
++                    TransportModel.owner_id == current_user.id,
++                    TransportModel.is_active == True
++                ).all()
++                for tr in my_transports:
++                    for order in find_matching_orders_for_transport(tr, db, exclude_user_id=current_user.id):
++                        if order and order.id:
++                            matched_order_ids.append(order.id)
++            except Exception:
++                pass
++
++        if not matched_order_ids:
++            query = query.filter(False)
++        else:
++            query = query.filter(OrderModel.id.in_(set(matched_order_ids)))
  
- const getEffectiveBase = (runtimeBase?: string) => {
-   const rb = (runtimeBase ?? getRuntimeBase()) || '';
-   return (APP_ENV === 'production' && rb ? rb : BASE).replace(/\/$/, '');
- };
+     if DEBUG_SQL:
+         print('--- SQL QUERY [orders] ---')
+         print(str(query.statement.compile(
+             dialect=postgresql.dialect(),
+             compile_kwargs={'literal_binds': True}
+         )))
+         print('---')
  
- const resolveApiBase = () => {
-   const runtimeBase = getRuntimeBase();
-   const envApiBase = ENV_API_BASE.trim();
+     # --- Радиусные фильтры по координатам на уровне SQL (bbox по JSON coords) ---
+     def _bbox(center_lat, center_lng, radius_km):
+         try:
+             r = float(radius_km or 0)
+         except (TypeError, ValueError):
+             return None
+         if center_lat is None or center_lng is None or r <= 0:
+             return None
  
-   if (envApiBase && !shouldForceRuntimeBase(runtimeBase)) {
-     return envApiBase.replace(/\/$/, '');
-   }
-   return `${getEffectiveBase(runtimeBase)}/api`;
- };
+         # 1 градус широты ≈ 111 км
+         lat_delta = r / 111.0
+         lat_min = center_lat - lat_delta
+         lat_max = center_lat + lat_delta
  
- export const API_BASE = resolveApiBase();
- 
- // Совместимость с существующим кодом
- export const API = API_BASE;
+         # Долгота зависит от широты
+         lng_delta = r / (111.0 * max(cos(radians(center_lat)), 0.1))
