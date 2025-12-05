@@ -1,0 +1,8 @@
+[Unit]
+Description=Transinfo DB backup
+
+[Service]
+Type=oneshot
+User=postgres
+Group=postgres
+ExecStart=/usr/local/bin/transinfo-db-backup.sh

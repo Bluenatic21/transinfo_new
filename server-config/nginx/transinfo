@@ -1,0 +1,42 @@
+# FRONT over HTTP (временно)
+server {
+    listen 80;
+    server_name transinfo.ge www.transinfo.ge;
+
+    client_max_body_size 50m;
+
+    # health/deploy marker (без файлов — всегда отдаёт время)
+    location = /__deployed.txt {
+        default_type text/plain;
+        add_header Cache-Control "no-store" always;
+        return 200 "deployed: $time_iso8601\n";
+    }
+
+    location / {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-Proto http;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection $connection_upgrade;
+    }
+}
+
+# API over HTTP (временно)
+server {
+    listen 80;
+    server_name api.transinfo.ge;
+
+    client_max_body_size 200m;
+
+    location / {
+        proxy_pass http://127.0.0.1:8000;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-Proto http;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection $connection_upgrade;
+    }
+}

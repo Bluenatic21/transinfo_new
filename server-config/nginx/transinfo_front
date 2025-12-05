@@ -1,0 +1,55 @@
+access_log /var/log/nginx/transinfo_front.access.log;
+error_log  /var/log/nginx/transinfo_front.error.log;
+
+# HTTPS фронт
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+
+    server_name transinfo.ge www.transinfo.ge;
+
+    ssl_certificate     /etc/letsencrypt/live/transinfo.ge/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/transinfo.ge/privkey.pem;
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+
+    client_max_body_size 50m;
+
+    # === НОВОЕ: статика бэкенда (аватары и др.) ===
+    # /api/static/...  ->  /opt/transinfo/backend/static/...
+    location ^~ /api/static/ {
+        alias /opt/transinfo/backend/static/;
+        access_log off;
+        expires 30d;
+        add_header Cache-Control "public, max-age=2592000, immutable";
+    }
+
+    # статические Next.js ассеты
+    location ~* ^/_next/static/ {
+        add_header Cache-Control "$static_cache";
+        proxy_pass http://127.0.0.1:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-Proto https;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+
+    # основное приложение (React/Next)
+    location / {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-Proto https;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection $connection_upgrade;
+    }
+}
+
+# HTTP → HTTPS редирект
+server {
+    listen 80;
+    listen [::]:80;
+    server_name transinfo.ge www.transinfo.ge;
+    return 301 https://$host$request_uri;
+}

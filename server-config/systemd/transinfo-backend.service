@@ -1,0 +1,48 @@
+[Unit]
+Description=Transinfo FastAPI backend
+After=network.target postgresql.service
+
+[Service]
+User=root
+WorkingDirectory=/opt/transinfo/backend
+
+# База
+Environment=DATABASE_URL=postgresql://postgres:Remus141411@localhost:5432/transinfo_utf
+
+# Отключаем внутренний HTTP-кэш (чтобы не раздувал память)
+Environment=HTTP_CACHE_MAX_ITEMS=0
+Environment=HTTP_CACHE_RESTART_AT=0
+Environment=HTTP_CACHE_RESTART_COOLDOWN=300
+
+# --- CityNet SMS (OTP) ---
+Environment=CITYNET_SMS_BASE_URL=http://212.72.155.180:2375/api/sendmsg.php
+Environment=CITYNET_SMS_USERNAME=1s5ta93M1gwWtFS
+Environment=CITYNET_SMS_PASSWORD=iWN2i2r5_mN54K_HYb55
+Environment=CITYNET_SMS_DRY_RUN=0
+Environment=CITYNET_SMS_SENDER=
+Environment=CITYNET_SMS_TIMEOUT_SEC=20
+Environment=CITYNET_SMS_RETRIES=2
+
+# --- Параметры TTL / ограничений кода подтверждения ---
+Environment=PHONE_VERIFY_EXPIRES_MIN=10
+Environment=PHONE_VERIFY_COOLDOWN_SEC=60
+Environment=PHONE_VERIFY_DEV_BYPASS=0
+
+# Запуск бекенда (ровно как ты делал вручную)
+ExecStart=/opt/transinfo/backend/.venv/bin/python -m uvicorn main:app --host 0.0.0.0 --port 8000 --log-level info
+
+# Авто‑рестарт при падении
+Restart=always
+RestartSec=5
+
+# --- Лимиты для сервера с 6 ГБ RAM ---
+# До ~3 ГБ бекенд вообще никому не мешает
+MemoryHigh=3G
+# Если превысил 4 ГБ — systemd убьёт процесс и поднимет заново
+MemoryMax=4G
+
+# Профилактический рестарт раз в сутки (чтобы даже медленные утечки обнулялись)
+RuntimeMaxSec=86400
+
+[Install]
+WantedBy=multi-user.target

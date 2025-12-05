@@ -1,0 +1,16 @@
+[Unit]
+Description=Transinfo WS notifications watcher
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=deploy
+Group=deploy
+WorkingDirectory=/home/deploy
+EnvironmentFile=/etc/transinfo/ws.env
+ExecStart=/usr/bin/pwsh -NoLogo -NoProfile -File /home/deploy/ws-notify-watch.ps1
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

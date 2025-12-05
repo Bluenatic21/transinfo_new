@@ -1,0 +1,15 @@
+server {
+    listen 80;
+    server_name staging.transinfo.ge;
+
+    # сюда certbot положит файлы проверки
+    location /.well-known/acme-challenge/ {
+        root /var/www/letsencrypt;
+    }
+
+    # на прочие запросы пока отдаём простой ответ
+    location / {
+        add_header Content-Type text/plain;
+        return 200 "staging HTTP ok\n";
+    }
+}

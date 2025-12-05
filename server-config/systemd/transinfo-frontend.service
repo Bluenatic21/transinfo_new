@@ -1,0 +1,16 @@
+[Unit]
+Description=Transinfo Next.js Frontend
+After=network.target
+
+[Service]
+User=www-data
+WorkingDirectory=/opt/transinfo/frontend
+Environment=NODE_ENV=production
+ExecStart=/usr/bin/node /opt/transinfo/frontend/node_modules/next/dist/bin/next start -p 3000 --hostname 127.0.0.1
+Restart=always
+RestartSec=3
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,61 @@
+# HTTP -> HTTPS
+server {
+    listen 80;
+    server_name staging.transinfo.ge;
+
+    location /.well-known/acme-challenge/ { root /var/www/letsencrypt; }
+    return 301 https://$host$request_uri;
+}
+
+# HTTPS: фронт (Next.js на 127.0.0.1:3000) и API (FastAPI на 127.0.0.1:8001)
+server {
+    listen 443 ssl http2;
+    server_name staging.transinfo.ge;
+
+    location ^~ /.well-known/acme-challenge/ {
+        root /var/www/letsencrypt;
+        default_type "text/plain";
+    }
+
+    ssl_certificate     /etc/letsencrypt/live/staging.transinfo.ge/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/staging.transinfo.ge/privkey.pem;
+
+    # Заголовки безопасности
+    add_header X-Frame-Options SAMEORIGIN always;
+    add_header X-Content-Type-Options nosniff always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    proxy_hide_header Permissions-Policy;
+    add_header Permissions-Policy "geolocation=(), camera=(), microphone=(self)" always;
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+
+    # ----- FRONT (Next) -----
+    location / {
+        proxy_http_version 1.1;
+        proxy_set_header Host              $host;
+        proxy_set_header X-Real-IP         $remote_addr;
+        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_connect_timeout 5s;
+        proxy_read_timeout    120s;
+        proxy_pass http://127.0.0.1:3001;
+    }
+
+    # ----- API (FastAPI) -----
+    location /api/ {
+        proxy_http_version 1.1;
+        proxy_set_header Host              $host;
+        proxy_set_header X-Real-IP         $remote_addr;
+        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_connect_timeout 5s;
+        proxy_read_timeout    120s;
+        proxy_pass http://127.0.0.1:8001/;
+    }
+}
+# Healthcheck
+location = /_health {
+    default_type text/plain;                 # корректно выставит Content-Type
+    add_header Cache-Control "no-store" always;
+    return 200 "ok\n";
+}
+
