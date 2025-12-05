@@ -1045,7 +1045,11 @@ def _cors_ok(rest_of_path: str):
 
 
 # Раздаём статику из STATIC_DIR, который мы задали выше
-app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
+# Отдаём статику и под /static, и под /api/static, чтобы файловые ссылки
+# работали независимо от того, проксирует ли nginx backend под /api
+static_files = StaticFiles(directory=str(STATIC_DIR))
+app.mount("/static", static_files, name="static")
+app.mount("/api/static", static_files, name="api-static")
 
 # --- Password reset (forgot/reset via email) ---
 app.include_router(password_reset_router)
@@ -3717,7 +3721,9 @@ def upload_avatar(
     if len(contents) < 100:  # На всякий случай, проверь размер
         raise HTTPException(400, "Файл слишком маленький или не картинка!")
 
-    current_user.avatar = f"/static/{avatar_filename}"
+    # Храним ссылку с префиксом /api/static, чтобы даже за обратным прокси
+    # с префиксом /api файл был доступен без дополнительного конфига nginx
+    current_user.avatar = f"/api/static/{avatar_filename}"
     db.commit()
     db.refresh(current_user)
     return {"avatar": current_user.avatar}
