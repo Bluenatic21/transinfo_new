@@ -241,7 +241,7 @@ export default function EditProfileForm({ user, onClose, onSave }) {
                 </div>
                 <div className="profile-card-row" style={{ marginBottom: 11 }}>
                     <label style={labelStyle}>{t("profile.phone", "Телефон")}</label>
-                    <input pattern="\+?[0-9\s\-()]+" autoComplete="tel" inputMode="tel" type="tel"
+                    <input pattern="\+?[0-9\s\(\)\-]+" autoComplete="tel" inputMode="tel" type="tel"
                         name="phone"
                         value={form.phone}
                         onChange={handleChange}
@@ -266,7 +266,7 @@ export default function EditProfileForm({ user, onClose, onSave }) {
                 </div>
                 <div className="profile-card-row" style={{ marginBottom: 11 }}>
                     <label style={{ color: "#43d854", fontWeight: 600 }}>WhatsApp</label>
-                    <input pattern="\+?[0-9\s\-()]+" autoComplete="tel" inputMode="tel" type="tel"
+                    <input pattern="\+?[0-9\s\(\)\-]+" autoComplete="tel" inputMode="tel" type="tel"
                         name="whatsapp"
                         value={form.whatsapp}
                         onChange={handleChange}
@@ -277,7 +277,7 @@ export default function EditProfileForm({ user, onClose, onSave }) {
                 </div>
                 <div className="profile-card-row" style={{ marginBottom: 11 }}>
                     <label style={{ color: "#7957d5", fontWeight: 600 }}>Viber</label>
-                    <input pattern="\+?[0-9\s\-()]+" autoComplete="tel" inputMode="tel" type="tel"
+                    <input pattern="\+?[0-9\s\(\)\-]+" autoComplete="tel" inputMode="tel" type="tel"
                         name="viber"
                         value={form.viber}
                         onChange={handleChange}
