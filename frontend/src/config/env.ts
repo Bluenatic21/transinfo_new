@@ -19,9 +19,11 @@ export const BASE =
 // Текущий origin в браузере — помогает избежать рассинхрона env и фактического домена
 // (например, prod сборка открыта с www., а API/WS прописаны на transinfo.ge → CORS/mixed content)
 const RUNTIME_BASE =
-  typeof window !== 'undefined' && window?.location?.origin
+  (typeof window !== 'undefined' && window?.location?.origin
     ? window.location.origin
     : '').replace(/\/$/, '');
+
+const getRuntimeBase = (): string => RUNTIME_BASE;
 
 
 // База API
