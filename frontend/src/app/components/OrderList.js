@@ -359,6 +359,7 @@ export default function OrderList() {
                         : `${encodeURIComponent(k)}=${encodeURIComponent(v)}`,
                 )
                 .join("&");
+            const token = (typeof window !== "undefined") ? localStorage.getItem("token") : null;
             const pageQuery = `page=${page}&page_size=${pageSize}`;
             const basePath = token ? "/orders" : "/public/orders";
             const url = api(`${basePath}${query ? "?" + query + "&" + pageQuery : "?" + pageQuery}`);
@@ -367,7 +368,6 @@ export default function OrderList() {
             if (etagRef.current) headers["If-None-Match"] = etagRef.current;
             if (lastModifiedRef.current) headers["If-Modified-Since"] = lastModifiedRef.current;
             // Гость → всегда обычный fetch без Authorization
-            const token = (typeof window !== "undefined") ? localStorage.getItem("token") : null;
             const doFetch =
                 (typeof authFetchWithRefresh === "function" && token)
                     ? authFetchWithRefresh
