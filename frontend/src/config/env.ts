@@ -136,16 +136,15 @@ export function ws(path = ''): string {
     try {
       const envUrl = new URL(ENV_WS_BASE);
 
-      if (APP_ENV === 'production' && runtimeBase) {
+      if (runtimeBase) {
         const runtimeUrl = new URL(runtimeBase);
 
         // HTTPS страница не может открывать небезопасный ws:// — переключаемся на фактический origin
         // или когда хосты различаются (www.transinfo.ge vs transinfo.ge).
-        if (runtimeUrl.protocol === 'https:' && envUrl.protocol === 'ws:') {
-          return buildWsFromBase(runtimeBase, p);
-        }
-
-        if (envUrl.host !== runtimeUrl.host) {
+        if (
+          (runtimeUrl.protocol === 'https:' && envUrl.protocol === 'ws:') ||
+          envUrl.host !== runtimeUrl.host
+        ) {
           return buildWsFromBase(runtimeBase, p);
         }
       }
