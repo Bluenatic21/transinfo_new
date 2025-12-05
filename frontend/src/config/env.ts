@@ -105,15 +105,22 @@ export function abs(path = ''): string {
 
   const p = path.startsWith('/') ? path : `/${path}`;
 
-  const normalizedStaticPath = p.startsWith('/api/static/')
-    ? p.replace(/^\/api/, '')
-    : p;
+  const normalizedPath = p;
+
+  // Аватары и прочие файлы backend приходят либо как /static/..., либо как
+  // /api/static/... (когда FastAPI висит за прокси с префиксом /api). Не
+  // срезаем /api, чтобы ссылки, которые отдаёт бэкенд, работали и в таком
+  // конфиге.
+  if (p.startsWith('/api/static/')) {
+    const apiBaseWithoutApi = stripApiSuffix(getApiBase().replace(/\/$/, ''));
+    return `${apiBaseWithoutApi}${p}`;
+  }
 
   // Файлы, которые отдаёт FastAPI (аватары, документы, support‑лого и т.п.),
   // лежат в backend/static и наружу доступны как /static/....
   // В проде /static может висеть не под /api, а прямо на API‑хосте,
   // поэтому предпочитаем базу API, если домены runtime и API различаются.
-  if (normalizedStaticPath.startsWith('/static/')) {
+  if (p.startsWith('/static/')) {
     const runtimeBase = getRuntimeBase();
     const apiBase = getApiBase().replace(/\/$/, '');
     const apiBaseWithoutApi = stripApiSuffix(apiBase);
@@ -125,7 +132,7 @@ export function abs(path = ''): string {
 
         // Если хосты совпадают — используем текущий origin (www./staging и т.п.)
         if (runtimeHost === apiHost) {
-          return `${runtimeBase}${normalizedStaticPath}`;
+          return `${runtimeBase}${normalizedPath}`;
         }
       } catch {
         // в случае ошибки парсинга URL — падаем на API-хост ниже
@@ -134,12 +141,12 @@ export function abs(path = ''): string {
 
     // По умолчанию отдаём статику с API‑хоста без /api,
     // чтобы попасть в ту же nginx/static, где лежат аватарки
-    return `${apiBaseWithoutApi}${normalizedStaticPath}`;
+    return `${apiBaseWithoutApi}${normalizedPath}`;
   }
 
   // Всё остальное (картинки из Next /public, любые ссылки на фронт)
   // оставляем как раньше: тот же домен, что и у фронта.
-  return `${getEffectiveBase()}${normalizedStaticPath}`;
+  return `${getEffectiveBase()}${normalizedPath}`;
 }
 
 /** WebSocket URL */
