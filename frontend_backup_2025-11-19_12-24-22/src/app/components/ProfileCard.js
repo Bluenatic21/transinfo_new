@@ -1,0 +1,624 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { FaUserShield, FaTruck, FaUser, FaUserCog, FaRegEdit, FaStar, FaRegStar, FaLock } from "react-icons/fa";
+import { FiCheckCircle, FiClock, FiAlertCircle } from "react-icons/fi";
+import EditProfileForm from "./EditProfileForm";
+import {
+    FaComments,
+    FaWhatsapp,
+    FaTelegramPlane,
+    FaViber,
+    FaEnvelope,
+    FaPhoneAlt,
+    FaMapMarkerAlt,
+} from "react-icons/fa";
+import BlockUserButton from "./BlockUserButton";
+import AddContactButton from "./AddContactButton";
+import { useIsMobile } from "../../hooks/useIsMobile"; // единый breakpoint 768px
+import { useLang } from "../i18n/LangProvider";
+import { abs } from "@/config/env";
+
+/* -------------------- helpers -------------------- */
+function getMessengerLinks(user) {
+    const phone = (user?.phone || "").replace(/\D/g, "");
+    const telegram_username = user?.telegram_username || user?.telegram || "";
+    return {
+        whatsapp: phone ? `https://wa.me/${phone}` : null,
+        viber: phone ? `viber://chat?number=${phone}` : null,
+        telegram: telegram_username ? `https://t.me/${String(telegram_username).replace(/^@/, "")}` : null,
+        phone: phone ? `tel:+${phone}` : null,
+        email: user?.email ? `mailto:${user.email}` : null,
+    };
+}
+
+const TenStars = ({ value = 0, t }) => {
+    const v = Math.max(0, Math.min(10, Number(value) || 0));
+    const full = Math.floor(v);
+    const frac = v - full;
+    // 0 -> красный, 10 -> зелёный; между ними — плавный градиент по тону
+    const hue = (v / 10) * 120; // 0..120
+    const color = `hsl(${hue}, 90%, 45%)`;
+    const emptyColor = "#273040";
+
+    return (
+        <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+            {Array.from({ length: 10 }).map((_, i) => {
+                const index = i + 1;
+                if (index <= full) {
+                    return <FaStar key={i} color={color} size={18} />;
+                }
+                if (index === full + 1 && frac > 0) {
+                    return (
+                        <span
+                            key={i}
+                            style={{ position: "relative", width: 18, height: 18, display: "inline-block" }}
+                        >
+                            <FaRegStar size={18} color={emptyColor} style={{ position: "absolute", inset: 0 }} />
+                            <span
+                                style={{
+                                    position: "absolute",
+                                    inset: 0,
+                                    width: `${Math.round(frac * 100)}%`,
+                                    overflow: "hidden",
+                                    display: "inline-block",
+                                }}
+                            >
+                                <FaStar size={18} color={color} />
+                            </span>
+                        </span>
+                    );
+                }
+                return <FaRegStar key={i} size={18} color={emptyColor} />;
+            })}
+            <span style={{ color, fontWeight: 700, marginLeft: 8 }}>{v.toFixed(1)} {t?.("reviews.max10", "/ 10")}</span>
+        </div>
+    );
+};
+
+function getDisplayName(user, t) {
+    return (
+        user?.company ||
+        user?.organization ||
+        user?.name ||
+        (`${user?.first_name || ""} ${user?.last_name || ""}`.trim() || user?.contact_person) ||
+        t("user.noName", "Имя не указано")
+    );
+}
+
+/* small UI */
+const Box = ({ children, style }) => (
+    <div
+        style={{
+            background: "#0f1626",
+            borderRadius: 14,
+            padding: 12,
+            boxShadow: "0 2px 10px rgba(25,57,105,0.18)",
+            ...style,
+        }}
+    >
+        {children}
+    </div>
+);
+
+const InfoRow = ({ icon, children }) => (
+    <div
+        style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            minHeight: 28,
+            lineHeight: "22px",
+            color: "#cfe7ff",
+            overflow: "hidden",
+        }}
+    >
+        <span style={{ opacity: 0.9, flex: "0 0 auto" }}>{icon}</span>
+        <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{children}</span>
+    </div>
+);
+
+/* -------------------- component -------------------- */
+export default function ProfileCard({ user: initialUser, readOnly, onUserUpdate, showMobileLogout = true, onChangePasswordClick }) {
+    const { t } = useLang?.() || { t: (_k, f) => f };
+    const [editMode, setEditMode] = useState(false);
+    const handleOpenChangePassword = onChangePasswordClick || (() => { });
+    const [user, setUser] = useState(initialUser);
+    const isMobile = useIsMobile(768); // <- вместо локального matchMedia на 480px
+
+    const handleLogout = () => {
+        try {
+            localStorage.removeItem("token");
+            localStorage.removeItem("user");
+            localStorage.removeItem("role");
+        } finally {
+            window.location.href = "/";
+        }
+    };
+
+    useEffect(() => setUser(initialUser), [initialUser]);
+
+    const roleValue = (user?.role || "").toUpperCase();
+    const roleIcons = {
+        ADMIN: <FaUserShield style={{ color: "#2acaff" }} title={t("role.admin", "Админ")} />,
+        TRANSPORT: <FaTruck style={{ color: "#ffd600" }} title={t("role.transport", "Перевозчик")} />,
+        OWNER: <FaUser style={{ color: "#4ecdc4" }} title={t("role.owner", "Грузовладелец")} />,
+        MANAGER: <FaUserCog style={{ color: "#c6dafc" }} title={t("role.manager", "Экспедитор")} />,
+        EMPLOYEE: <FaUserCog style={{ color: "#c6dafc" }} title={t("role.employee", "Экспедитор")} />,
+    };
+    const roleLabels = {
+        ADMIN: t("role.admin", "Админ"),
+        TRANSPORT: t("role.transport", "Перевозчик"),
+        OWNER: t("role.owner", "Грузовладелец"),
+        MANAGER: t("role.manager", "Экспедитор"),
+        EMPLOYEE: t("role.employee", "Экспедитор"),
+    };
+
+    const verifStatus = {
+        approved: { text: t("profile.verified", "Профиль верифицирован"), icon: <FiCheckCircle color="#2ecc40" /> },
+        pending: { text: t("profile.verificationPending", "Верификация на проверке"), icon: <FiClock color="#f1c40f" /> },
+        rejected: { text: t("profile.verificationRejected", "Верификация отклонена"), icon: <FiAlertCircle color="#ff5e57" /> },
+        not_sent: { text: t("profile.notVerified", "Не верифицирован"), icon: <FiAlertCircle color="#b0bec5" /> },
+        verified: { text: t("profile.verified", "Профиль верифицирован"), icon: <FiCheckCircle color="#2ecc40" /> },
+    };
+    const status = verifStatus[user?.verification_status] || verifStatus.not_sent;
+
+    const avatarUrl = user?.avatar ? abs(user.avatar) : "/default-avatar.png";
+
+    const handleProfileSave = (updatedUser) => {
+        setUser(updatedUser);
+        setEditMode(false);
+        onUserUpdate?.(updatedUser);
+    };
+
+    if (editMode) {
+        return (
+            <div
+                className="profile-block"
+                style={{
+                    background: "#172135",
+                    borderRadius: 18,
+                    boxShadow: "0 2px 8px rgba(60,130,255,0.08)",
+                    padding: isMobile ? "18px 14px" : "28px 32px",
+                    width: "100%",
+                    maxWidth: "100%",
+                }}
+            >
+                <EditProfileForm user={user} onClose={() => setEditMode(false)} onSave={handleProfileSave} />
+            </div>
+        );
+    }
+
+    const title = getDisplayName(user, t);
+    const place = [user?.city, user?.country].filter(Boolean).join(", ") || user?.location || "";
+    const ratingValue = Number(user?.final_rating) || 0;
+
+    return (
+        <div
+            className="profile-block"
+            style={{
+                background: "#172135",
+                borderRadius: 18,
+                boxShadow: "0 2px 8px rgba(60,130,255,0.08)",
+                padding: isMobile ? "16px 12px" : "24px 28px",
+                width: "100%",
+            }}
+        >
+            {/* grid: avatar | content */}
+            <div
+                style={{
+                    display: "grid",
+                    gridTemplateColumns: isMobile ? "1fr" : "180px 1fr",
+                    gap: isMobile ? 12 : 24,
+                    alignItems: "start",
+                }}
+            >
+                {/* left: avatar + verify */}
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
+                    <div
+                        style={{
+                            width: isMobile ? 96 : 120,
+                            height: isMobile ? 96 : 120,
+                            borderRadius: "50%",
+                            background: "#21304d",
+                            boxShadow: "0 0 0 3px #243a62 inset",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            overflow: "hidden",
+                        }}
+                    >
+                        <img
+                            src={avatarUrl}
+                            alt={title}
+                            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                            onError={(e) => { e.currentTarget.src = "/default-avatar.png"; }}
+                        />
+                    </div>
+
+                    {/* verification pill */}
+                    <div
+                        style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: 8,
+                            padding: isMobile ? "5px 9px" : "6px 10px",
+                            background:
+                                status === verifStatus.pending ? "#2b2a1b" : status === verifStatus.rejected ? "#2a2130" : "#12301f",
+                            border:
+                                status === verifStatus.pending
+                                    ? "1px solid #665f28"
+                                    : status === verifStatus.rejected
+                                        ? "1px solid #6a3b53"
+                                        : "1px solid #1e6b3d",
+                            color:
+                                status === verifStatus.pending
+                                    ? "#ffe89e"
+                                    : status === verifStatus.rejected
+                                        ? "#ffb2d1"
+                                        : "#9ff1bd",
+                            borderRadius: 999,
+                            fontSize: isMobile ? 11 : 12,
+                            fontWeight: 700,
+                            whiteSpace: "nowrap",
+                        }}
+                    >
+                        {status.icon} <span>{status.text}</span>
+                    </div>
+                </div>
+
+                {/* right: header + details */}
+                <div style={{ display: "flex", flexDirection: "column", gap: isMobile ? 12 : 16, minWidth: 0 }}>
+                    {/* header */}
+                    {!isMobile ? (
+                        // desktop: name + rating on the right
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 220px", gap: 16, alignItems: "center" }}>
+                            <div style={{ minWidth: 0 }}>
+                                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
+                                    <span
+                                        title={roleLabels[roleValue] || user?.role}
+                                        style={{
+                                            display: "inline-flex",
+                                            alignItems: "center",
+                                            gap: 8,
+                                            background: "#0f2449",
+                                            border: "1px solid #254985",
+                                            color: "#a7ccff",
+                                            borderRadius: 999,
+                                            padding: "4px 10px",
+                                            fontSize: 12,
+                                            fontWeight: 700,
+                                        }}
+                                    >
+                                        {roleIcons[roleValue] || null}
+                                        {roleLabels[roleValue] || user?.role || t("common.dash", "—")}
+                                    </span>
+                                    <h2
+                                        title={title}
+                                        style={{
+                                            margin: 0,
+                                            fontSize: 22,
+                                            fontWeight: 800,
+                                            color: "#e4f1ff",
+                                            letterSpacing: ".01em",
+                                            overflow: "hidden",
+                                            textOverflow: "ellipsis",
+                                            whiteSpace: "nowrap",
+                                        }}
+                                    >
+                                        {title}
+                                    </h2>
+                                    {!readOnly && (
+                                        <>
+                                            <button
+                                                onClick={() => setEditMode(true)}
+                                                title={t("profile.edit", "Редактировать профиль")}
+                                                style={{
+                                                    marginLeft: 6,
+                                                    display: "inline-flex",
+                                                    alignItems: "center",
+                                                    justifyContent: "center",
+                                                    width: 32,
+                                                    height: 32,
+                                                    borderRadius: 8,
+                                                    background: "#11284e",
+                                                    border: "1px solid #27539a",
+                                                    color: "#acd2ff",
+                                                    cursor: "pointer",
+                                                }}
+                                            >
+                                                <FaRegEdit size={16} />
+                                            </button>
+                                            <button
+                                                onClick={handleOpenChangePassword}
+                                                title={t("profile.changePassword", "Сменить пароль")}
+                                                style={{
+                                                    marginLeft: 6,
+                                                    display: "inline-flex",
+                                                    alignItems: "center",
+                                                    justifyContent: "center",
+                                                    width: 32,
+                                                    height: 32,
+                                                    borderRadius: 8,
+                                                    background: "#11284e",
+                                                    border: "1px solid #27539a",
+                                                    color: "#acd2ff",
+                                                    cursor: "pointer",
+                                                }}
+                                            >
+                                                <FaLock size={16} />
+                                            </button>
+                                        </>
+                                    )}
+                                </div>
+                                {place && <InfoRow icon={<FaMapMarkerAlt />}>{place}</InfoRow>}
+                            </div>
+
+                            <Box style={{ alignSelf: "start" }}>
+                                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, color: "#d9ebff" }}>
+                                    <FaStar />
+                                    <span style={{ fontWeight: 700 }}>{t("profile.rating", "Рейтинг")}</span>
+                                </div>
+                                <TenStars value={ratingValue} t={t} />
+                            </Box>
+                        </div>
+                    ) : (
+                        // mobile: name, role chip, place; rating goes as block below
+                        <>
+                            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                                <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
+                                    <span
+                                        title={roleLabels[roleValue] || user?.role}
+                                        style={{
+                                            display: "inline-flex",
+                                            alignItems: "center",
+                                            gap: 8,
+                                            background: "#0f2449",
+                                            border: "1px solid #254985",
+                                            color: "#a7ccff",
+                                            borderRadius: 999,
+                                            padding: "4px 10px",
+                                            fontSize: 12,
+                                            fontWeight: 700,
+                                            flex: "0 0 auto",
+                                        }}
+                                    >
+                                        {roleIcons[roleValue] || null}
+                                        {roleLabels[roleValue] || user?.role || t("common.dash", "—")}
+                                    </span>
+                                    <h2
+                                        title={title}
+                                        style={{
+                                            margin: 0,
+                                            fontSize: 18,
+                                            lineHeight: "24px",
+                                            fontWeight: 900,
+                                            color: "#e4f1ff",
+                                            overflow: "hidden",
+                                            textOverflow: "ellipsis",
+                                            whiteSpace: "nowrap",
+                                        }}
+                                    >
+                                        {title}
+                                    </h2>
+                                    {!readOnly && (
+                                        <>
+                                            <button
+                                                onClick={() => setEditMode(true)}
+                                                title={t("profile.edit", "Редактировать профиль")}
+                                                style={{
+                                                    marginLeft: "auto",
+                                                    display: "inline-flex",
+                                                    alignItems: "center",
+                                                    justifyContent: "center",
+                                                    width: 30,
+                                                    height: 30,
+                                                    borderRadius: 8,
+                                                    background: "#11284e",
+                                                    border: "1px solid #27539a",
+                                                    color: "#acd2ff",
+                                                }}
+                                            >
+                                                <FaRegEdit size={16} />
+                                            </button>
+                                            <button
+                                                onClick={handleOpenChangePassword}
+                                                title={t("profile.changePassword", "Сменить пароль")}
+                                                style={{
+                                                    marginLeft: 6,
+                                                    display: "inline-flex",
+                                                    alignItems: "center",
+                                                    justifyContent: "center",
+                                                    width: 30,
+                                                    height: 30,
+                                                    borderRadius: 8,
+                                                    background: "#11284e",
+                                                    border: "1px solid #27539a",
+                                                    color: "#acd2ff",
+                                                }}
+                                            >
+                                                <FaLock size={16} />
+                                            </button>
+                                        </>
+                                    )}
+                                </div>
+                                {place && <InfoRow icon={<FaMapMarkerAlt />}>{place}</InfoRow>}
+                            </div>
+
+                            <Box>
+                                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, color: "#d9ebff" }}>
+                                    <FaStar />
+                                    <span style={{ fontWeight: 700 }}>{t("profile.rating", "Рейтинг")}</span>
+                                </div>
+                                <TenStars value={ratingValue} t={t} />
+                            </Box>
+                        </>
+                    )}
+
+                    {/* contacts + messengers (на мобайле одной колонкой) */}
+                    <div
+                        style={{
+                            display: "grid",
+                            gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+                            gap: isMobile ? 12 : 16,
+                        }}
+                    >
+                        <Box>
+                            <div style={{ fontSize: 12, color: "#9fc6ff", fontWeight: 700, marginBottom: 8 }}>{t("profile.contacts", "Контакты")}</div>
+                            {user?.email && <InfoRow icon={<FaEnvelope />}>{user.email}</InfoRow>}
+                            {user?.phone && <InfoRow icon={<FaPhoneAlt />}>{user.phone}</InfoRow>}
+                            {user?.phone2 && <InfoRow icon={<FaPhoneAlt />}>{user.phone2}</InfoRow>}
+                        </Box>
+
+                        <Box>
+                            <div style={{ fontSize: 12, color: "#9fc6ff", fontWeight: 700, marginBottom: 8 }}>{t("profile.messengers", "Мессенджеры")}</div>
+                            {user?.whatsapp && <InfoRow icon={<FaWhatsapp />}>{user.whatsapp}</InfoRow>}
+                            {user?.viber && <InfoRow icon={<FaViber />}>{user.viber}</InfoRow>}
+                            {user?.telegram && <InfoRow icon={<FaTelegramPlane />}>{user.telegram}</InfoRow>}
+                            {user?.contact_person && <InfoRow icon={<FaUserCog />}>{user.contact_person}</InfoRow>}
+                        </Box>
+                    </div>
+
+                    {/* --- Мобильный выход под личным профилем --- */}
+                    {!readOnly && isMobile && showMobileLogout && (
+                        <div style={{ marginTop: 8 }}>
+                            <button
+                                type="button"
+                                onClick={handleLogout}
+                                style={{
+                                    width: "100%",
+                                    height: 48,
+                                    borderRadius: 14,
+                                    border: "none",
+                                    background: "#c62828",
+                                    color: "#fff",
+                                    fontWeight: 800,
+                                    boxShadow: "0 2px 8px rgba(198,40,40,0.35)",
+                                    cursor: "pointer",
+                                }}
+                            >
+                                {t("profile.logout", "Выйти из аккаунта")}
+                            </button>
+                        </div>
+                    )}
+
+                    {/* действия показываем ТОЛЬКО на чужом профиле */}
+                    {readOnly && (
+                        <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 6, flexWrap: "wrap" }}>
+                            <AddContactButton targetId={user.id} />
+                            <BlockUserButton targetId={user.id} />
+                            <button
+                                onClick={() => {
+                                    if (typeof window !== "undefined") {
+                                        window.dispatchEvent(new CustomEvent("profileCardChatClick", { detail: { userId: user.id } }));
+                                    }
+                                }}
+                                title={t("chat.open", "Чат")}
+                                style={{
+                                    background: "#223d59",
+                                    color: "#43c8ff",
+                                    borderRadius: 7,
+                                    border: "none",
+                                    padding: "8px 10px",
+                                    fontSize: 20,
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    cursor: "pointer",
+                                }}
+                            >
+                                <FaComments />
+                            </button>
+                            {(() => {
+                                const links = getMessengerLinks(user);
+                                const pad = isMobile ? "8px 10px" : "8px 12px";
+                                return (
+                                    <>
+                                        {links.whatsapp && (
+                                            <a
+                                                href={links.whatsapp}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                title={t("messenger.whatsapp", "WhatsApp")}
+                                                style={{
+                                                    background: "#192b4b",
+                                                    color: "#74e07e",
+                                                    borderRadius: 7,
+                                                    border: "none",
+                                                    padding: pad,
+                                                    display: "inline-flex",
+                                                    alignItems: "center",
+                                                    fontSize: 20,
+                                                }}
+                                            >
+                                                <FaWhatsapp />
+                                            </a>
+                                        )}
+                                        {links.viber && (
+                                            <a
+                                                href={links.viber}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                title={t("messenger.viber", "Viber")}
+                                                style={{
+                                                    background: "#192b4b",
+                                                    color: "#7954a1",
+                                                    borderRadius: 7,
+                                                    border: "none",
+                                                    padding: pad,
+                                                    display: "inline-flex",
+                                                    alignItems: "center",
+                                                    fontSize: 20,
+                                                }}
+                                            >
+                                                <FaViber />
+                                            </a>
+                                        )}
+                                        {links.telegram && (
+                                            <a
+                                                href={links.telegram}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                title={t("messenger.telegram", "Telegram")}
+                                                style={{
+                                                    background: "#192b4b",
+                                                    color: "#5abdf0",
+                                                    borderRadius: 7,
+                                                    border: "none",
+                                                    padding: pad,
+                                                    display: "inline-flex",
+                                                    alignItems: "center",
+                                                    fontSize: 20,
+                                                }}
+                                            >
+                                                <FaTelegramPlane />
+                                            </a>
+                                        )}
+                                        {links.email && (
+                                            <a
+                                                href={links.email}
+                                                title={t("messenger.email", "Эл. почта")}
+                                                style={{
+                                                    background: "#192b4b",
+                                                    color: "#d2e4ff",
+                                                    borderRadius: 7,
+                                                    border: "none",
+                                                    padding: pad,
+                                                    display: "inline-flex",
+                                                    alignItems: "center",
+                                                    fontSize: 20,
+                                                }}
+                                            >
+                                                <FaEnvelope />
+                                            </a>
+                                        )}
+                                    </>
+                                );
+                            })()}
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+}

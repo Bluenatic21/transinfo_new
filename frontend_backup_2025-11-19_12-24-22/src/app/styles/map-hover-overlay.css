@@ -1,0 +1,28 @@
+/* src/app/styles/map-hover-overlay.css */
+.map-hover-overlay {
+    pointer-events: none;
+    /* главное: оверлей не отбирает ховер у маркера */
+    user-select: none;
+    will-change: transform, opacity;
+}
+
+/* Если оверлей нужен кликабельный, используйте такую структуру:
+   <div class="map-hover-overlay interactive">
+     <div class="shim"></div>
+     <div class="content"> ...кнопки/ссылки... </div>
+   </div>
+*/
+.map-hover-overlay.interactive {
+    pointer-events: auto;
+    /* контейнер снова принимает события */
+}
+
+.map-hover-overlay.interactive .shim {
+    pointer-events: none;
+    /* фон прозрачен для мыши */
+}
+
+.map-hover-overlay.interactive .content {
+    pointer-events: auto;
+    /* кликабельна только «начинка» */
+}

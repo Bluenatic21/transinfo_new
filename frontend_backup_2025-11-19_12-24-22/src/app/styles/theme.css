@@ -1,0 +1,54 @@
+/* styles/theme.css */
+:root {
+    color-scheme: dark;
+    /* дефолт сейчас — тёмная */
+    --bg: 11 22 32;
+    /* #0b1620 — фон */
+    --fg: 236 240 244;
+    /* основной текст */
+    --muted: 148 163 184;
+    /* вторичный текст */
+    --card: 17 27 39;
+    /* фон карточек */
+    --border: 36 51 66;
+    /* цвет границ */
+    --primary: 59 130 246;
+    /* акцент */
+    --accent: 251 146 60;
+    /* доп. акцент */
+
+    /* Алиасы под существующие компоненты/стили: */
+    --text: var(--fg);
+    --surface: var(--card);
+}
+
+/* Светлая тема */
+[data-theme="light"] {
+    color-scheme: light;
+    --bg: 255 255 255;
+    --fg: 17 24 39;
+    --muted: 71 85 105;
+    --card: 248 250 252;
+    --border: 226 232 240;
+    --primary: 37 99 235;
+    --accent: 234 88 12;
+
+    /* Алиасы */
+    --text: var(--fg);
+    --surface: var(--card);
+}
+
+/* === Header design tokens === */
+:root {
+    --header-bg: var(--card);
+    --header-fg: var(--fg);
+    --header-muted: var(--muted);
+    --header-shadow: 0 2px 16px 0 rgba(0, 32, 84, 0.09);
+}
+
+[data-theme="light"] {
+    --header-bg: var(--card);
+    --header-fg: var(--fg);
+    --header-muted: var(--muted);
+    --header-shadow: 0 2px 10px rgb(0 0 0 / 8%);
+}

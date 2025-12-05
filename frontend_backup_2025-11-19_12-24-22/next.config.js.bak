@@ -1,0 +1,37 @@
+// next.config.js
+/** @type {import('next').NextConfig} */
+const path = require('path');
+
+const nextConfig = {
+  reactStrictMode: true,
+  compress: true,
+  distDir: '.next',
+
+  // На стейдже не останавливаем билд из-за eslint
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+
+  // Если вдруг нужно «пропустить» ошибки TS на стейдже, поменяй на true
+  // typescript: { ignoreBuildErrors: true },
+
+  // Гарантированный alias: '@/...' -> '<repo>/src/...'
+  webpack: (config) => {
+    config.resolve = config.resolve || {};
+    config.resolve.alias = {
+      ...(config.resolve.alias || {}),
+      '@': path.resolve(__dirname, 'src'),
+    };
+    return config;
+  },
+
+  // Разрешаем внешние картинки (оставь/сузь при необходимости)
+  images: {
+    remotePatterns: [
+      { protocol: 'https', hostname: '**' },
+      { protocol: 'http', hostname: '**' },
+    ],
+  },
+};
+
+module.exports = nextConfig;
