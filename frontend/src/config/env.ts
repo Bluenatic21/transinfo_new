@@ -99,11 +99,23 @@ export function abs(path = ''): string {
   const p = path.startsWith('/') ? path : `/${path}`;
 
   // Файлы, которые отдаёт FastAPI (аватары, документы, support‑лого и т.п.),
-  // лежат в backend/static и наружу доступны как /api/static/...
-  // Поэтому для /static/... всегда используем хост API, а не фронта.
+  // лежат в backend/static и наружу доступны как /static/....
+  // В проде /static может висеть не под /api, а прямо на основном домене,
+  // поэтому сначала пробуем текущий origin (runtimeBase), а если его нет
+  // (например, при серверном рендеринге) — откатываемся к API‑базе без хвоста /api.
   if (p.startsWith('/static/')) {
-    const apiBase = getApiBase(); // например, https://transinfo.ge/api или http://127.0.0.1:8000
-    return `${apiBase}${p}`;      // -> https://transinfo.ge/api/static/avatars/xxxx.png
+    const runtimeBase = getRuntimeBase();
+    if (runtimeBase) {
+      return `${runtimeBase}${p}`; // -> https://www.transinfo.ge/static/avatars/xxxx.png
+    }
+
+    const apiBase = getApiBase().replace(/\/$/, '');
+    // Если API оканчивается на /api — убираем его, чтобы попасть в ту же статику
+    // (nginx может пробрасывать /static напрямую, минуя /api).
+    const apiBaseWithoutApi = apiBase.endsWith('/api')
+      ? apiBase.slice(0, -4)
+      : apiBase;
+    return `${apiBaseWithoutApi}${p}`;      // -> https://transinfo.ge/static/avatars/xxxx.png
   }
 
   // Всё остальное (картинки из Next /public, любые ссылки на фронт)
