@@ -275,27 +275,6 @@ def get_optional_current_user(
     return user
 
 
-def _has_full_access(db, user: UserModel) -> bool:
-    if not user:
-        return False
-    if user.role in (UserRole.ADMIN, UserRole.MANAGER, UserRole.SUPPORT):
-        return True
-    account_id = _billing_account_id(user)
-    if not account_id:
-        return False
-    sub = (
-        db.query(Subscription)
-        .filter(Subscription.account_id == account_id)
-        .filter(Subscription.status == SubscriptionStatus.ACTIVE)
-        .first()
-    )
-    if not sub:
-        return False
-    if sub.next_renewal_at and sub.next_renewal_at < datetime.utcnow():
-        return False
-    return True
-
-
 def _sanitize_order_for_limited(o: OrderModel) -> dict:
     """
     Возвращаем минимальный безопасный набор полей.
@@ -3992,8 +3971,9 @@ def get_transports(
 
         sub = (
             db.query(Match.transport_id)
+            .join(OrderModel, Match.order_id == OrderModel.id)
             .filter(
-                Match.user_id == current_user.id,
+                OrderModel.owner_id == current_user.id,
                 Match.transport_id != None,
             )
             .distinct()
@@ -4328,8 +4308,9 @@ def get_orders(
 
         sub = (
             db.query(Match.order_id)
+            .join(TransportModel, Match.transport_id == TransportModel.id)
             .filter(
-                Match.user_id == current_user.id,
+                TransportModel.owner_id == current_user.id,
                 Match.order_id != None,
             )
             .distinct()

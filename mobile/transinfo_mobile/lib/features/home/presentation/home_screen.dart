@@ -7,6 +7,7 @@ import '../../transport/presentation/transports_screen.dart';
 import '../../orders/presentation/orders_screen.dart';
 import '../../transport/presentation/create_order_screen.dart';
 import '../../transport/presentation/create_transport_screen.dart';
+import '../../service/presentation/service_screen.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -320,8 +321,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               title: 'О сервисе',
               subtitle: 'Преимущества платформы и возможности',
               color: cardDarkColor,
-              onTap: () {},
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const ServiceScreen(),
+                  ),
+                );
+              },
             ),
+
             const SizedBox(height: 24),
             const Text(
               'Последние заявки',

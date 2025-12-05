@@ -1,8 +1,16 @@
+# Python cache / build
 __pycache__/
-*.pyc
+*.py[cod]
 *.pyo
 *.pyd
-env/
+
+# Virtual env
+.venv/
 venv/
-.env
-.env.production
+env/
+
+# Logs
+*.log
+
+# Tools
+.alembic/
