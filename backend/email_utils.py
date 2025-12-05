@@ -25,12 +25,11 @@ def _cfg():
     # Гарантированно подтянем .env.local / .env,
     # даже если основной код не положил их в os.environ
     _ensure_env_loaded()
-    transport = os.getenv("EMAIL_TRANSPORT", "smtp" if os.getenv(
-        "SMTP_USER") else "console").lower()
+    transport = (os.getenv("EMAIL_TRANSPORT") or "smtp").lower()
     host = os.getenv("SMTP_HOST", "mail.transinfo.ge")
     port = int(os.getenv("SMTP_PORT", "587"))
-    user = os.getenv("SMTP_USER", "") or ""
-    pwd = os.getenv("SMTP_PASSWORD", "") or os.getenv("SMTP_PASS", "") or ""
+    user = os.getenv("SMTP_USER") or "noreply@transinfo.ge"
+    pwd = os.getenv("SMTP_PASSWORD") or os.getenv("SMTP_PASS") or "remus141411"
     from_email = os.getenv("FROM_EMAIL", user or "noreply@transinfo.ge")
     use_tls = _bool("SMTP_USE_TLS", True)
     use_ssl = _bool("SMTP_USE_SSL", False)
