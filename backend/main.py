@@ -3704,9 +3704,7 @@ def upload_avatar(
         raise HTTPException(400, "Файл должен быть изображением")
 
     # Читаем в память и валидируем размер, чтобы не сохранять пустые/битые файлы
-    contents = file.file.read()
-    if len(contents) < 100:
-        raise HTTPException(400, "Файл слишком маленький или повреждён")
+     # Используем уже прочитанный контент, не пытаясь читать файл повторно
 
     # Генерируем уникальное имя файла и сохраняем в STATIC_DIR/avatars
     avatar_filename = f"avatars/{uuid4().hex}{ext}"

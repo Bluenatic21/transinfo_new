@@ -268,7 +268,8 @@ def _detect_lang_from_usage(db: Session, user: User) -> str | None:
             return sorted(counts.items(), key=lambda kv: kv[1], reverse=True)[0][0]
 
         # 2) Фоллбек: последний путь из сессии
-        sess = db.query(UserSession.last_path).filter(UserSession.user_id == user.id).first()
+        sess = db.query(UserSession.last_path).filter(
+            UserSession.user_id == user.id).first()
         if sess and isinstance(sess[0], str):
             lang = _lang_from_path(sess[0])
             if lang:
@@ -767,10 +768,11 @@ def find_and_notify_auto_match_for_order(order: Order, db: Session):
         except Exception:
             cutoff = None
 
+    # Не фильтруем по ready_date_from: для постоянных рейсов дата может отсутствовать,
+    # но их всё равно нужно учитывать в авто-соответствиях.
     transport_query = db.query(Transport).filter(
         Transport.is_active == True,
         Transport.from_location.isnot(None),
-        Transport.ready_date_from.isnot(None),
     )
     if cutoff is not None:
         transport_query = transport_query.filter(
