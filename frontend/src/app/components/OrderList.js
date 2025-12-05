@@ -1948,17 +1948,20 @@ function OrderCard({
                         <>
                             {rateWithVat && (
                                 <span>
-                                    <span style={{ color: cardColors.label }}>{t("rate.withVat", "С НДС:")}</span> <b>{`${rateWithVat} ${rateCurrency}`}</b>
+                                    <span style={{ color: cardColors.label }}>{t("rate.withVat", "С НДС:")}</span>{" "}
+                                    <b style={{ color: "#ff0000", fontSize: "110%" }}>{`${rateWithVat} ${rateCurrency}`}</b>
                                 </span>
                             )}
                             {rateNoVat && (
                                 <span>
-                                    <span style={{ color: rateNoVatColor }}>{t("rate.noVat", "Без НДС:")}</span> <b>{`${rateNoVat} ${rateCurrency}`}</b>
+                                    <span style={{ color: rateNoVatColor }}>{t("rate.noVat", "Без НДС:")}</span>{" "}
+                                    <b style={{ color: "#ff0000", fontSize: "110%" }}>{`${rateNoVat} ${rateCurrency}`}</b>
                                 </span>
                             )}
                             {rateCash && (
                                 <span>
-                                    <span style={{ color: cardColors.label }}>{t("rate.cash", "Наличными:")}</span> <b>{`${rateCash} ${rateCurrency}`}</b>
+                                    <span style={{ color: cardColors.label }}>{t("rate.cash", "Наличными:")}</span>{" "}
+                                    <b style={{ color: "#ff0000", fontSize: "110%" }}>{`${rateCash} ${rateCurrency}`}</b>
                                 </span>
                             )}
                             {order.payment_scenario && (
