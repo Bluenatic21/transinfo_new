@@ -39,10 +39,9 @@ dependencies:
   flutter_secure_storage: ^9.2.2
 
   # Управление состоянием (провайдеры)
-  flutter_riverpod:
-    ^2.6.1
+  flutter_riverpod: ^2.6.1
 
-    # Карта и геокоординаты
+  # Карта и геокоординаты
   flutter_map:
   latlong2:
 
