@@ -28,7 +28,7 @@ export function UserProvider({ children }) {
     if (cached) {
       try {
         setUser(JSON.parse(cached));
-      } catch {}
+      } catch { }
     }
   }, []);
 
@@ -80,16 +80,16 @@ export function UserProvider({ children }) {
   const forceLogout = useCallback((reason = "session_revoked") => {
     try {
       localStorage.removeItem("token");
-    } catch {}
+    } catch { }
     try {
       localStorage.removeItem("user");
-    } catch {}
+    } catch { }
     setUser(null);
     setNotifications([]);
     if (wsRef.current) {
       try {
         wsRef.current.close();
-      } catch {}
+      } catch { }
       wsRef.current = null;
     }
   }, []);
@@ -144,7 +144,7 @@ export function UserProvider({ children }) {
               statusText: "SESSION_REVOKED",
             });
           }
-        } catch {}
+        } catch { }
 
         try {
           const refreshResp = await fetch(`${API}/refresh-token`, {
@@ -202,7 +202,7 @@ export function UserProvider({ children }) {
                   statusText: "SESSION_REVOKED",
                 });
               }
-            } catch {}
+            } catch { }
           }
         } catch (e) {
           console.warn("[UserContext] refresh-token failed:", e);
@@ -222,7 +222,7 @@ export function UserProvider({ children }) {
   const ensureFreshToken = useCallback(async () => {
     try {
       await authFetchWithRefresh(`${API}/auth/whoami`);
-    } catch {}
+    } catch { }
     return localStorage.getItem("token");
   }, [authFetchWithRefresh]);
 
@@ -387,7 +387,7 @@ export function UserProvider({ children }) {
         const data = await res.json();
         _rebuildBlockedSet(data);
       }
-    } catch (_) {}
+    } catch (_) { }
   }
 
   async function blockUser(targetId) {
@@ -419,7 +419,7 @@ export function UserProvider({ children }) {
         const data = await r.json();
         setSavedOrders(Array.isArray(data) ? data : []);
       }
-    } catch {}
+    } catch { }
   }, [authFetchWithRefresh]);
 
   const fetchSavedTransports = useCallback(async () => {
@@ -429,7 +429,7 @@ export function UserProvider({ children }) {
         const data = await r.json();
         setSavedTransports(Array.isArray(data) ? data : []);
       }
-    } catch {}
+    } catch { }
   }, [authFetchWithRefresh]);
 
   const saveOrder = useCallback(
@@ -555,7 +555,7 @@ export function UserProvider({ children }) {
       if (wsRef.current) {
         try {
           wsRef.current.close();
-        } catch {}
+        } catch { }
         wsRef.current = null;
       }
     };
@@ -585,34 +585,19 @@ export function UserProvider({ children }) {
       const freshToken = await ensureFreshToken();
       if (!freshToken || cancelled) return;
 
-      let apiURL;
-      try {
-        apiURL = new URL(API);
-      } catch {
-        // API должен быть абсолютным URL — на всякий случай не падаем
-        return;
-      }
-      const wsBase = makeWsUrl("");
-      let wsURL;
-      try {
-        wsURL = new URL(wsBase || API);
-      } catch {
-        wsURL = apiURL;
-      }
-      const wsProto = wsURL.protocol === "https:" ? "wss" : "ws";
-      const basePath = wsURL.pathname.replace(/\/$/, "");
       const qs = new URLSearchParams();
       if (user?.id) qs.set("user_id", String(user.id));
       qs.set("token", freshToken);
-      const wsUrl = `${wsProto}://${
-        wsURL.host
-      }${basePath}/ws/notifications?${qs.toString()}`;
+
+      // Используем централизованную функцию формирования WS‑URL,
+      // чтобы на HTTPS-странице всегда открывался wss:// (и избегать mixed content).
+      const wsUrl = makeWsUrl(`/ws/notifications?${qs.toString()}`);
       console.log("[UserContext] Connecting WS:", wsUrl);
 
       if (wsRef.current) {
         try {
           wsRef.current.close();
-        } catch {}
+        } catch { }
       }
       const ws = new window.WebSocket(wsUrl, ["bearer", freshToken]);
       wsRef.current = ws;
@@ -628,7 +613,7 @@ export function UserProvider({ children }) {
           if (ws.readyState === WebSocket.OPEN) {
             try {
               ws.send(JSON.stringify({ type: "ping", ts: Date.now() }));
-            } catch {}
+            } catch { }
           }
         }, 30000);
       };
@@ -650,7 +635,7 @@ export function UserProvider({ children }) {
               window.dispatchEvent(
                 new CustomEvent("incoming_call", { detail: msg })
               );
-            } catch {}
+            } catch { }
             return;
           }
 
@@ -660,7 +645,7 @@ export function UserProvider({ children }) {
           if (msg?.event === "contacts_update") {
             try {
               window.dispatchEvent(new Event("contacts_update"));
-            } catch {}
+            } catch { }
           }
 
           if (msg.event === "new_notification") {
@@ -669,7 +654,7 @@ export function UserProvider({ children }) {
               if (incoming?.type === "AUTO_MATCH") {
                 emitMatchesReload();
               }
-            } catch {}
+            } catch { }
             setNotifications((prev) => {
               const updated = [
                 incoming,
@@ -705,7 +690,7 @@ export function UserProvider({ children }) {
               window.dispatchEvent(
                 new CustomEvent("support_ticket_claimed", { detail: msg })
               );
-            } catch {}
+            } catch { }
           }
           if (msg?.event === "new_notification") {
             const n = msg?.notification || {};
@@ -755,7 +740,7 @@ export function UserProvider({ children }) {
             if (isAuthError) {
               await ensureFreshToken();
             }
-          } catch {}
+          } catch { }
           console.log(
             "[UserContext] Reconnecting WS after",
             delay,
@@ -798,7 +783,7 @@ export function UserProvider({ children }) {
         );
         try {
           await fetchNotifications();
-        } catch {}
+        } catch { }
       }
     } catch (e) {
       console.error("[UserContext] markNotificationsRead error", e);
@@ -810,10 +795,10 @@ export function UserProvider({ children }) {
     if (!user || !user.id) return;
     try {
       fetchContacts?.();
-    } catch {}
+    } catch { }
     try {
       fetchContactRequests?.(true);
-    } catch {}
+    } catch { }
   }, [user?.id, fetchContacts, fetchContactRequests]);
 
   // Подписка на contacts_update — после объявлений функций
@@ -821,13 +806,13 @@ export function UserProvider({ children }) {
     const onContactsUpdate = () => {
       try {
         fetchContacts?.();
-      } catch {}
+      } catch { }
       try {
         fetchContactRequests?.(true);
-      } catch {}
+      } catch { }
       try {
         fetchNotifications?.();
-      } catch {}
+      } catch { }
     };
     window.addEventListener("contacts_update", onContactsUpdate);
     return () =>
@@ -842,19 +827,19 @@ export function UserProvider({ children }) {
         credentials: "include",
         keepalive: true, // чтобы запрос не прервался при мгновенной навигации
       });
-    } catch {}
+    } catch { }
     try {
       localStorage.removeItem("user");
-    } catch {}
+    } catch { }
     try {
       localStorage.removeItem("token");
-    } catch {}
+    } catch { }
     setUser(null);
     setNotifications([]);
     if (wsRef.current) {
       try {
         wsRef.current.close();
-      } catch {}
+      } catch { }
       wsRef.current = null;
     }
     setToken(null);
@@ -865,10 +850,10 @@ export function UserProvider({ children }) {
         setTimeout(() => {
           try {
             window.location.replace("/");
-          } catch {}
+          } catch { }
         }, 0);
       }
-    } catch {}
+    } catch { }
   };
 
   const handleLoginClick = () => setShowAuth(true);
