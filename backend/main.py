@@ -3693,7 +3693,7 @@ def upload_avatar(
     current_user: UserModel = Depends(get_current_user),
 ):
 
-  # Проверяем расширение и content-type: принимаем только изображения
+    # Проверяем расширение и content-type: принимаем только изображения
     ext = os.path.splitext(file.filename)[-1].lower()
     allowed_exts = [".png", ".jpg", ".jpeg", ".webp"]
     if ext not in allowed_exts:
@@ -3710,9 +3710,14 @@ def upload_avatar(
 
     # Генерируем уникальное имя файла и сохраняем в STATIC_DIR/avatars
     avatar_filename = f"avatars/{uuid4().hex}{ext}"
+    # Сохраняем именно в STATIC_DIR/avatars
     save_path = STATIC_DIR / avatar_filename
     save_path.parent.mkdir(parents=True, exist_ok=True)
+
+    contents = file.file.read()
     save_path.write_bytes(contents)
+    if len(contents) < 100:  # На всякий случай, проверь размер
+        raise HTTPException(400, "Файл слишком маленький или не картинка!")
 
     current_user.avatar = f"/static/{avatar_filename}"
     db.commit()
