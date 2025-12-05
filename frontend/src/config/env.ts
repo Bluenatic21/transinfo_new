@@ -94,8 +94,15 @@ export function api(path = ''): string {
 // alias под старые импорты
 export const withApi = api;
 
+const ABS_URL_RE = /^(https?:)?\/\//i;
+const NON_HTTP_SCHEMES_RE = /^(data:|blob:|file:|mailto:|tel:)/i;
+
+
 // Абсолютный URL для ресурсов
 export function abs(path = ''): string {
+  // Если пришёл уже абсолютный URL или data/blob-ссылка — отдаём как есть.
+  if (ABS_URL_RE.test(path) || NON_HTTP_SCHEMES_RE.test(path)) return path;
+
   const p = path.startsWith('/') ? path : `/${path}`;
 
   // Файлы, которые отдаёт FastAPI (аватары, документы, support‑лого и т.п.),
