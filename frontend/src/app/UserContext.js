@@ -130,8 +130,14 @@ export function UserProvider({ children }) {
         return new Response(null, { status: 502, statusText: "FETCH_ERROR" });
       }
 
+
       // 2) авто-refresh при 401
       if (response.status === 401) {
+        // Гость или удалённый токен → нет смысла пытаться refresh
+        if (!localStorage.getItem("token")) {
+          return response;
+        }
+
         // явный ревок — выходим без refresh
         try {
           const copy = response.clone();
