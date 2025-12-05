@@ -39,11 +39,21 @@ const ENV_API_BASE =
 
 // Если в проде env указывает на другой домен, чем открытый сайт, — игнорируем его,
 // чтобы избежать CORS/префлайт блокировок.
+// Если в проде env указывает на другой домен, чем открытый сайт, — игнорируем его,
+// чтобы избежать CORS/префлайт блокировок. При этом разрешаем поддомены внутри
+// одного базового домена (api.transinfo.ge vs transinfo.ge).
 const shouldForceRuntimeBase = (runtimeBase: string) => {
   if (!ENV_API_BASE || APP_ENV !== 'production' || !runtimeBase) return false;
+
+  const getBaseDomain = (host: string) => host.split('.').slice(-2).join('.');
+
   try {
     const envHost = new URL(ENV_API_BASE).host;
     const runtimeHost = new URL(runtimeBase).host;
+
+    // Разрешаем api.<domain> и www.<domain> — главное, чтобы базовый домен совпадал
+    if (getBaseDomain(envHost) === getBaseDomain(runtimeHost)) return false;
+
     return envHost !== runtimeHost;
   } catch {
     return false;

@@ -1,35 +1,18 @@
 diff --git a/frontend/src/config/env.ts b/frontend/src/config/env.ts
-index 98f58b9e58d10aa4bf3f2282a067d6eaa6d7e4d3..a72b663222b7a57f32da7c86dc8428a535b24f24 100644
+index d9c64d9ba17bc15b86931d73974acfd80daf8312..4e4e2ee3c6fcf49ff828a8dd0e16ecce38c2b39f 100644
 --- a/frontend/src/config/env.ts
 +++ b/frontend/src/config/env.ts
-@@ -1,127 +1,141 @@
- // src/config/env.ts
- type AppEnv = 'production' | 'staging' | 'development';
- 
- export const APP_ENV: AppEnv =
-   (process.env.NEXT_PUBLIC_APP_ENV as AppEnv) ||
-   (process.env.NODE_ENV === 'production' ? 'production' : 'development');
- 
- // Базовые хосты по окружениям
- const HOST_BY_ENV: Record<AppEnv, string> = {
-   production: 'https://www.transinfo.ge',
-   staging: 'https://staging.transinfo.ge',
-   development: 'http://127.0.0.1:3000'
- };
- 
- // В проде закрепляемся на prod-домене
- export const BASE =
+@@ -17,55 +17,65 @@ export const BASE =
    APP_ENV === 'production' ? 'https://www.transinfo.ge' : HOST_BY_ENV[APP_ENV];
  
  // Текущий origin в браузере — помогает избежать рассинхрона env и фактического домена
  // (например, prod сборка открыта с www., а API/WS прописаны на transinfo.ge → CORS/mixed content)
--const RUNTIME_BASE =
--  typeof window !== 'undefined' && window?.location?.origin
-+const getRuntimeBase = () =>
-+  (typeof window !== 'undefined' && window?.location?.origin
+ const RUNTIME_BASE =
+   (typeof window !== 'undefined' && window?.location?.origin
      ? window.location.origin
--    : '';
-+    : '').replace(/\/$/, '');
+     : '').replace(/\/$/, '');
+ 
+ const getRuntimeBase = (): string => RUNTIME_BASE;
  
  
  // База API
@@ -37,6 +20,7 @@ index 98f58b9e58d10aa4bf3f2282a067d6eaa6d7e4d3..a72b663222b7a57f32da7c86dc8428a5
  // Локально можно переопределить через переменные окружения,
  // чтобы сразу стучаться в FastAPI (например http://127.0.0.1:8004).
  const ENV_API_BASE =
+   process.env.NEXT_PUBLIC_API ||
    process.env.NEXT_PUBLIC_API_URL ||
    process.env.NEXT_PUBLIC_API_BASE_URL ||
    process.env.NEXT_PUBLIC_DEV_API_URL ||
@@ -44,124 +28,43 @@ index 98f58b9e58d10aa4bf3f2282a067d6eaa6d7e4d3..a72b663222b7a57f32da7c86dc8428a5
  
  // Если в проде env указывает на другой домен, чем открытый сайт, — игнорируем его,
  // чтобы избежать CORS/префлайт блокировок.
--const SHOULD_FORCE_RUNTIME_BASE = (() => {
--  if (!ENV_API_BASE || APP_ENV !== 'production' || !RUNTIME_BASE) return false;
-+const shouldForceRuntimeBase = (runtimeBase: string) => {
-+  if (!ENV_API_BASE || APP_ENV !== 'production' || !runtimeBase) return false;
++// Если в проде env указывает на другой домен, чем открытый сайт, — игнорируем его,
++// чтобы избежать CORS/префлайт блокировок. При этом разрешаем поддомены внутри
++// одного базового домена (api.transinfo.ge vs transinfo.ge).
+ const shouldForceRuntimeBase = (runtimeBase: string) => {
+   if (!ENV_API_BASE || APP_ENV !== 'production' || !runtimeBase) return false;
++
++  const getBaseDomain = (host: string) => host.split('.').slice(-2).join('.');
++
    try {
      const envHost = new URL(ENV_API_BASE).host;
--    const runtimeHost = new URL(RUNTIME_BASE).host;
-+    const runtimeHost = new URL(runtimeBase).host;
+     const runtimeHost = new URL(runtimeBase).host;
++
++    // Разрешаем api.<domain> и www.<domain> — главное, чтобы базовый домен совпадал
++    if (getBaseDomain(envHost) === getBaseDomain(runtimeHost)) return false;
++
      return envHost !== runtimeHost;
    } catch {
      return false;
    }
--})();
-+};
-+
-+const getEffectiveBase = (runtimeBase?: string) => {
-+  const rb = (runtimeBase ?? getRuntimeBase()) || '';
-+  return (APP_ENV === 'production' && rb ? rb : BASE).replace(/\/$/, '');
-+};
+ };
  
--const EFFECTIVE_BASE =
--  (APP_ENV === 'production' && RUNTIME_BASE ? RUNTIME_BASE : BASE).replace(/\/$/, '');
-+const resolveApiBase = () => {
-+  const runtimeBase = getRuntimeBase();
-+  const envApiBase = ENV_API_BASE.trim();
+ const getEffectiveBase = (runtimeBase?: string) => {
+   const rb = (runtimeBase ?? getRuntimeBase()) || '';
+   return (APP_ENV === 'production' && rb ? rb : BASE).replace(/\/$/, '');
+ };
  
--export const API_BASE = (() => {
--  if (ENV_API_BASE.trim() && !SHOULD_FORCE_RUNTIME_BASE) {
--    return ENV_API_BASE.replace(/\/$/, '');
-+  if (envApiBase && !shouldForceRuntimeBase(runtimeBase)) {
-+    return envApiBase.replace(/\/$/, '');
+ const resolveApiBase = () => {
+   const runtimeBase = getRuntimeBase();
+   const envApiBase = ENV_API_BASE.trim();
+ 
+   if (envApiBase && !shouldForceRuntimeBase(runtimeBase)) {
+     return envApiBase.replace(/\/$/, '');
    }
--  return `${EFFECTIVE_BASE}/api`;
--})();
-+
-+  return `${getEffectiveBase(runtimeBase)}/api`;
-+};
-+
-+export const API_BASE = resolveApiBase();
+   return `${getEffectiveBase(runtimeBase)}/api`;
+ };
+ 
+ export const API_BASE = resolveApiBase();
  
  // Совместимость с существующим кодом
  export const API = API_BASE;
- 
- /** Склеивает абсолютный URL к API */
-+export function getApiBase(): string {
-+  return resolveApiBase();
-+}
-+
- export function api(path = ''): string {
-   const p = path.startsWith('/') ? path : `/${path}`;
--  return `${API_BASE}${p}`;
-+  const base = resolveApiBase();
-+  return `${base}${p}`;
- }
- 
- // alias под старые импорты
- export const withApi = api;
- 
- // нужно сделать так:
- export function abs(path = ''): string {
-   const p = path.startsWith('/') ? path : `/${path}`;
--  return `${EFFECTIVE_BASE}${p}`;  // а не BASE
-+  return `${getEffectiveBase()}${p}`;  // а не BASE
- }
- 
- /** WebSocket URL */
- const ENV_WS_BASE = (
-   process.env.NEXT_PUBLIC_WS_URL ||
-   process.env.NEXT_PUBLIC_WS_BASE ||
-   ''
- ).trim();
- 
- export function ws(path = ''): string {
-   const p = path.startsWith('/') ? path : `/${path}`;
-+  const runtimeBase = getRuntimeBase();
- 
-   // Если явно задан WS‑URL в env (локальная дев-база) — используем его,
-   // но в проде перепроверяем, что домен совпадает с текущим (иначе mixed content/CORS).
-   if (ENV_WS_BASE) {
-     try {
-       if (
-         APP_ENV === 'production' &&
--        RUNTIME_BASE &&
--        new URL(ENV_WS_BASE).host !== new URL(RUNTIME_BASE).host
-+        runtimeBase &&
-+        new URL(ENV_WS_BASE).host !== new URL(runtimeBase).host
-       ) {
--        const host = RUNTIME_BASE.replace(/^https?:\/\//, '');
--        const proto = RUNTIME_BASE.startsWith('https') ? 'wss' : 'ws';
-+        const host = runtimeBase.replace(/^https?:\/\//, '');
-+        const proto = runtimeBase.startsWith('https') ? 'wss' : 'ws';
-         return `${proto}://${host}${p}`;
-       }
-     } catch { }
- 
-     return `${ENV_WS_BASE.replace(/\/$/, '')}${p}`;
-   }
- 
-   // Иначе старое поведение: тот же хост, что и BASE (или фактический runtime-домен)
--  const base = RUNTIME_BASE || BASE;
-+  const base = runtimeBase || BASE;
-   const host = base.replace(/^https?:\/\//, '');
-   const proto = base.startsWith('https') ? 'wss' : 'ws';
-   return `${proto}://${host}${p}`;
- }
- 
- 
- // Иногда в коде встречается makeWsUrl — оставляем алиас
- export const makeWsUrl = ws;
- 
- export default {
-   APP_ENV,
-   BASE,
-   API_BASE,
-   API,
-   api,
-   withApi,
-   abs,
-   ws,
-   makeWsUrl
- };
