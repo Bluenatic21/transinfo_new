@@ -38,8 +38,6 @@ const ENV_API_BASE =
   '';
 
 // Если в проде env указывает на другой домен, чем открытый сайт, — игнорируем его,
-// чтобы избежать CORS/префлайт блокировок.
-// Если в проде env указывает на другой домен, чем открытый сайт, — игнорируем его,
 // чтобы избежать CORS/префлайт блокировок. При этом разрешаем поддомены внутри
 // одного базового домена (api.transinfo.ge vs transinfo.ge).
 const shouldForceRuntimeBase = (runtimeBase: string) => {
@@ -97,6 +95,8 @@ export const withApi = api;
 const ABS_URL_RE = /^(https?:)?\/\//i;
 const NON_HTTP_SCHEMES_RE = /^(data:|blob:|file:|mailto:|tel:)/i;
 
+const stripApiSuffix = (base: string) =>
+  base.endsWith('/api') ? base.slice(0, -4) : base;
 
 // Абсолютный URL для ресурсов
 export function abs(path = ''): string {
@@ -105,29 +105,41 @@ export function abs(path = ''): string {
 
   const p = path.startsWith('/') ? path : `/${path}`;
 
+  const normalizedStaticPath = p.startsWith('/api/static/')
+    ? p.replace(/^\/api/, '')
+    : p;
+
   // Файлы, которые отдаёт FastAPI (аватары, документы, support‑лого и т.п.),
   // лежат в backend/static и наружу доступны как /static/....
-  // В проде /static может висеть не под /api, а прямо на основном домене,
-  // поэтому сначала пробуем текущий origin (runtimeBase), а если его нет
-  // (например, при серверном рендеринге) — откатываемся к API‑базе без хвоста /api.
-  if (p.startsWith('/static/')) {
+  // В проде /static может висеть не под /api, а прямо на API‑хосте,
+  // поэтому предпочитаем базу API, если домены runtime и API различаются.
+  if (normalizedStaticPath.startsWith('/static/')) {
     const runtimeBase = getRuntimeBase();
+    const apiBase = getApiBase().replace(/\/$/, '');
+    const apiBaseWithoutApi = stripApiSuffix(apiBase);
+
     if (runtimeBase) {
-      return `${runtimeBase}${p}`; // -> https://www.transinfo.ge/static/avatars/xxxx.png
+      try {
+        const runtimeHost = new URL(runtimeBase).host;
+        const apiHost = new URL(apiBaseWithoutApi).host;
+
+        // Если хосты совпадают — используем текущий origin (www./staging и т.п.)
+        if (runtimeHost === apiHost) {
+          return `${runtimeBase}${normalizedStaticPath}`;
+        }
+      } catch {
+        // в случае ошибки парсинга URL — падаем на API-хост ниже
+      }
     }
 
-    const apiBase = getApiBase().replace(/\/$/, '');
-    // Если API оканчивается на /api — убираем его, чтобы попасть в ту же статику
-    // (nginx может пробрасывать /static напрямую, минуя /api).
-    const apiBaseWithoutApi = apiBase.endsWith('/api')
-      ? apiBase.slice(0, -4)
-      : apiBase;
-    return `${apiBaseWithoutApi}${p}`;      // -> https://transinfo.ge/static/avatars/xxxx.png
+    // По умолчанию отдаём статику с API‑хоста без /api,
+    // чтобы попасть в ту же nginx/static, где лежат аватарки
+    return `${apiBaseWithoutApi}${normalizedStaticPath}`;
   }
 
   // Всё остальное (картинки из Next /public, любые ссылки на фронт)
   // оставляем как раньше: тот же домен, что и у фронта.
-  return `${getEffectiveBase()}${p}`;
+  return `${getEffectiveBase()}${normalizedStaticPath}`;
 }
 
 /** WebSocket URL */

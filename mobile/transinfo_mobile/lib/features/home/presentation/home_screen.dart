@@ -285,7 +285,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 );
               },
             ),
-            const HomeMapCard(),
 
             const SizedBox(height: 12),
             _MainActionCard(
@@ -331,6 +330,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 );
               },
             ),
+
+            const HomeMapCard(),
 
             const SizedBox(height: 24),
             const Text(

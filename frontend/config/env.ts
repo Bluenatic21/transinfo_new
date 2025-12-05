@@ -43,6 +43,7 @@ export function api(path = ''): string {
 // alias под старые импорты
 export const withApi = api;
 
+
 /** Абсолютный URL к сайту (assets и пр.) */
 export function abs(path = ''): string {
     const p = path.startsWith('/') ? path : `/${path}`;
