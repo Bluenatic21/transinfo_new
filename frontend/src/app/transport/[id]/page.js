@@ -289,6 +289,7 @@ export default function TransportDetailPage() {
     const { t } = useLang();
     const { resolvedTheme } = useTheme?.() || { resolvedTheme: "dark" };
     const colors = resolvedTheme === "light" ? LIGHT_COLORS : DARK_COLORS;
+    const contactLinkColor = resolvedTheme === "light" ? colors.accent : "#b6eaff";
     const infoPlaceholderStyle = {
         color: colors.infoText,
         fontWeight: 500,
@@ -845,13 +846,13 @@ export default function TransportDetailPage() {
                         <div>
                             <b>{t("contacts.phone", "Телефон")}:</b>{" "}
                             {phone
-                                ? <a href={`tel:${phone}`} style={{ color: "#b6eaff" }}>{phone}</a>
+                                ? <a href={`tel:${phone}`} style={{ color: contactLinkColor }}>{phone}</a>
                                 : "-"}
                         </div>
                         <div>
                             <b>Email:</b>{" "}
                             {email
-                                ? <a href={`mailto:${email}`} style={{ color: "#b6eaff" }}>{email}</a>
+                                ? <a href={`mailto:${email}`} style={{ color: contactLinkColor }}>{email}</a>
                                 : "-"}
                         </div>
                     </Section>
