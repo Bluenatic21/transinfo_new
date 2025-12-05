@@ -118,33 +118,46 @@ const ENV_WS_BASE = (
   ''
 ).trim();
 
+const buildWsFromBase = (base: string, path: string) => {
+  const cleanBase = base.replace(/\/$/, '');
+  const proto = cleanBase.startsWith('https') || cleanBase.startsWith('wss') ? 'wss' : 'ws';
+  const host = cleanBase.replace(/^(https?:\/\/|wss?:\/\/)/, '');
+  return `${proto}://${host}${path}`;
+};
+
+
 export function ws(path = ''): string {
   const p = path.startsWith('/') ? path : `/${path}`;
   const runtimeBase = getRuntimeBase();
 
   // Если явно задан WS‑URL в env (локальная дев-база) — используем его,
-  // но в проде перепроверяем, что домен совпадает с текущим (иначе mixed content/CORS).
+  // но в проде перепроверяем, что домен/протокол совместимы с текущим (иначе mixed content/CORS).
   if (ENV_WS_BASE) {
     try {
-      if (
-        APP_ENV === 'production' &&
-        runtimeBase &&
-        new URL(ENV_WS_BASE).host !== new URL(runtimeBase).host
-      ) {
-        const host = runtimeBase.replace(/^https?:\/\//, '');
-        const proto = runtimeBase.startsWith('https') ? 'wss' : 'ws';
-        return `${proto}://${host}${p}`;
-      }
-    } catch { }
+      const envUrl = new URL(ENV_WS_BASE);
 
-    return `${ENV_WS_BASE.replace(/\/$/, '')}${p}`;
+      if (APP_ENV === 'production' && runtimeBase) {
+        const runtimeUrl = new URL(runtimeBase);
+
+        // HTTPS страница не может открывать небезопасный ws:// — переключаемся на фактический origin
+        // или когда хосты различаются (www.transinfo.ge vs transinfo.ge).
+        if (runtimeUrl.protocol === 'https:' && envUrl.protocol === 'ws:') {
+          return buildWsFromBase(runtimeBase, p);
+        }
+
+        if (envUrl.host !== runtimeUrl.host) {
+          return buildWsFromBase(runtimeBase, p);
+        }
+      }
+      return `${ENV_WS_BASE.replace(/\/$/, '')}${p}`;
+    } catch {
+      // если URL из env битый — возвращаемся к текущему origin
+      return buildWsFromBase(runtimeBase || BASE, p);
+    }
   }
 
-  // Иначе старое поведение: тот же хост, что и BASE (или фактический runtime-домен)
-  const base = runtimeBase || BASE;
-  const host = base.replace(/^https?:\/\//, '');
-  const proto = base.startsWith('https') ? 'wss' : 'ws';
-  return `${proto}://${host}${p}`;
+  // Иначе используем тот же хост, что и BASE (или фактический runtime-домен)
+  return buildWsFromBase(runtimeBase || BASE, p);
 }
 
 

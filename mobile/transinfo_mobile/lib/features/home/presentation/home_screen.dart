@@ -8,6 +8,7 @@ import '../../orders/presentation/orders_screen.dart';
 import '../../transport/presentation/create_order_screen.dart';
 import '../../transport/presentation/create_transport_screen.dart';
 import '../../service/presentation/service_screen.dart';
+import '../../map/presentation/home_map_card.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -284,6 +285,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 );
               },
             ),
+            const HomeMapCard(),
 
             const SizedBox(height: 12),
             _MainActionCard(

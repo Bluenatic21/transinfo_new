@@ -56,18 +56,40 @@ const ENV_WS_BASE = (
     ''
 ).trim();
 
+const buildWsFromBase = (base: string, path: string) => {
+    const cleanBase = base.replace(/\/$/, '');
+    const proto = cleanBase.startsWith('https') || cleanBase.startsWith('wss') ? 'wss' : 'ws';
+    const host = cleanBase.replace(/^(https?:\/\/|wss?:\/\/)/, '');
+    return `${proto}://${host}${path}`;
+};
+
+
 export function ws(path = ''): string {
     const p = path.startsWith('/') ? path : `/${path}`;
 
-    // Если явно задан WS‑URL в env (локальная дев-база) — используем его
+    // Если явно задан WS‑URL в env (локальная дев-база) — используем его,
+    // но при https-странице и небезопасном ws:// переключаемся на текущий origin.
     if (ENV_WS_BASE) {
+        try {
+            const envUrl = new URL(ENV_WS_BASE);
+            if (typeof window !== 'undefined' && window.location) {
+                const runtimeUrl = new URL(window.location.origin);
+
+                if (runtimeUrl.protocol === 'https:' && envUrl.protocol === 'ws:') {
+                    return buildWsFromBase(window.location.origin, p);
+                }
+
+                if (envUrl.host !== runtimeUrl.host) {
+                    return buildWsFromBase(window.location.origin, p);
+                }
+            }
+        } catch { /* ignore */ }
+
         return `${ENV_WS_BASE.replace(/\/$/, '')}${p}`;
     }
 
     // Иначе старое поведение: тот же хост, что и BASE
-    const host = BASE.replace(/^https?:\/\//, '');
-    const proto = BASE.startsWith('https') ? 'wss' : 'ws';
-    return `${proto}://${host}${p}`;
+    return buildWsFromBase(BASE, p);
 }
 
 
