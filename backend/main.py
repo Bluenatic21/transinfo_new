@@ -4582,11 +4582,13 @@ def delete_order(order_id: int, db: Session = Depends(get_db)):
     if not order:
         raise HTTPException(status_code=404, detail="Заявка не найдена")
 
-    # --- Новый блок: найти все биды и уведомить их авторов ---
-    from models import Bid, NotificationType
+    # --- Найти все биды, уведомить их авторов и удалить связанные записи ---
+    from models import Bid, OrderComment, NotificationType
     from notifications import create_notification
 
-    bids = db.query(Bid).filter(Bid.order_id == order_id).all()
+    # Сначала достаём ставки, чтобы разослать уведомления
+    bids_query = db.query(Bid).filter(Bid.order_id == order_id)
+    bids = bids_query.all()
     notified_users = set()
     for bid in bids:
         if bid.user_id in notified_users:
@@ -4600,6 +4602,12 @@ def delete_order(order_id: int, db: Session = Depends(get_db)):
             related_id=str(order.id)
         )
 
+    # Удаляем все комментарии и ставки, чтобы не упереться в FK-ограничения
+    db.query(OrderComment).filter(OrderComment.order_id ==
+                                  order_id).delete(synchronize_session=False)
+    bids_query.delete(synchronize_session=False)
+
+    # И только после этого удаляем саму заявку
     db.delete(order)
     db.commit()
     return {"status": "deleted"}

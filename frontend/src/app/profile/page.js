@@ -648,23 +648,35 @@ export default function ProfilePage() {
     }
 
     // Удалить заявку
-    function handleConfirmDelete() {
+    async function handleConfirmDelete() {
         if (!deleteId) return;
         const idToDelete = deleteId;
 
-        // Оптимистично убираем заявку из списков, чтобы пользователь сразу видел результат.
-        setDeleteId(null);
         setDeleting(true);
-        setMyOrders(orders => orders.filter(o => o.id !== idToDelete));
-        setAccountOrders(list => (Array.isArray(list) ? list.filter(o => o.id !== idToDelete) : list));
 
         const token = localStorage.getItem("token");
-        fetch(api(`/orders/${idToDelete}`), {
-            method: "DELETE",
-            headers: { Authorization: "Bearer " + token }
-        })
-            .catch(() => console.error("Order delete failed"))
-            .finally(() => setDeleting(false));
+        try {
+            const resp = await fetch(api(`/orders/${idToDelete}`), {
+                method: "DELETE",
+                headers: { Authorization: "Bearer " + token }
+            });
+
+            if (!resp.ok) {
+                console.error("Order delete failed", resp.status);
+                alert(t("orders.deleteError", "Ошибка при удалении заявки. Попробуйте ещё раз позже."));
+                return;
+            }
+
+            // Удаляем заявку из списков только после успешного ответа сервера
+            setMyOrders(orders => orders.filter(o => o.id !== idToDelete));
+            setAccountOrders(list => (Array.isArray(list) ? list.filter(o => o.id !== idToDelete) : list));
+        } catch (e) {
+            console.error("Order delete failed", e);
+            alert(t("orders.deleteError", "Ошибка при удалении заявки. Попробуйте ещё раз позже."));
+        } finally {
+            setDeleteId(null);
+            setDeleting(false);
+        }
     }
     function handleCancelDelete() {
         setDeleteId(null);
