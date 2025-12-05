@@ -5,6 +5,8 @@ import '../../auth/presentation/auth_controller.dart';
 import '../../profile/presentation/profile_screen.dart';
 import '../../transport/presentation/transports_screen.dart';
 import '../../orders/presentation/orders_screen.dart';
+import '../../orders/presentation/create_order_screen.dart';
+import '../../transport/presentation/create_transport_screen.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -94,16 +96,67 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Здесь позже будет меню добавления заявки'),
+          showModalBottomSheet<void>(
+            context: context,
+            backgroundColor: const Color(0xFF041322),
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
             ),
+            builder: (context) {
+              return SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ListTile(
+                        leading: const Icon(
+                          Icons.inventory_2_outlined,
+                          color: Colors.white,
+                        ),
+                        title: const Text(
+                          'Добавить груз',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        onTap: () {
+                          Navigator.of(context).pop();
+                          Navigator.of(context).push(
+                            MaterialPageRoute<void>(
+                              builder: (_) => const CreateOrderScreen(),
+                            ),
+                          );
+                        },
+                      ),
+                      ListTile(
+                        leading: const Icon(
+                          Icons.local_shipping_outlined,
+                          color: Colors.white,
+                        ),
+                        title: const Text(
+                          'Добавить транспорт',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        onTap: () {
+                          Navigator.of(context).pop();
+                          Navigator.of(context).push(
+                            MaterialPageRoute<void>(
+                              builder: (_) => const CreateTransportScreen(),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
           );
         },
         shape: const CircleBorder(),
         backgroundColor: accentColor,
         child: const Icon(Icons.add, color: Colors.white),
       ),
+
       bottomNavigationBar: BottomAppBar(
         color: const Color(0xFF041322),
         notchMargin: 6,
@@ -237,16 +290,30 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               title: 'Добавить транспорт',
               subtitle: 'Разместить машину и получить отклики',
               color: cardDarkColor,
-              onTap: () {},
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const CreateTransportScreen(),
+                  ),
+                );
+              },
             ),
+
             const SizedBox(height: 12),
             _MainActionCard(
               icon: Icons.add_box_outlined,
               title: 'Добавить груз',
               subtitle: 'Создать заявку и найти перевозчика',
               color: cardDarkColor,
-              onTap: () {},
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const CreateOrderScreen(),
+                  ),
+                );
+              },
             ),
+
             const SizedBox(height: 12),
             _MainActionCard(
               icon: Icons.info_outline,

@@ -21,7 +21,7 @@ export const BASE =
 const RUNTIME_BASE =
   typeof window !== 'undefined' && window?.location?.origin
     ? window.location.origin
-    : '';
+    : '').replace(/\/$/, '');
 
 
 // База API
@@ -29,6 +29,7 @@ const RUNTIME_BASE =
 // Локально можно переопределить через переменные окружения,
 // чтобы сразу стучаться в FastAPI (например http://127.0.0.1:8004).
 const ENV_API_BASE =
+  process.env.NEXT_PUBLIC_API ||
   process.env.NEXT_PUBLIC_API_URL ||
   process.env.NEXT_PUBLIC_API_BASE_URL ||
   process.env.NEXT_PUBLIC_DEV_API_URL ||
@@ -36,34 +37,46 @@ const ENV_API_BASE =
 
 // Если в проде env указывает на другой домен, чем открытый сайт, — игнорируем его,
 // чтобы избежать CORS/префлайт блокировок.
-const SHOULD_FORCE_RUNTIME_BASE = (() => {
-  if (!ENV_API_BASE || APP_ENV !== 'production' || !RUNTIME_BASE) return false;
+const shouldForceRuntimeBase = (runtimeBase: string) => {
+  if (!ENV_API_BASE || APP_ENV !== 'production' || !runtimeBase) return false;
   try {
     const envHost = new URL(ENV_API_BASE).host;
-    const runtimeHost = new URL(RUNTIME_BASE).host;
+    const runtimeHost = new URL(runtimeBase).host;
     return envHost !== runtimeHost;
   } catch {
     return false;
   }
-})();
+};
 
-const EFFECTIVE_BASE =
-  (APP_ENV === 'production' && RUNTIME_BASE ? RUNTIME_BASE : BASE).replace(/\/$/, '');
+const getEffectiveBase = (runtimeBase?: string) => {
+  const rb = (runtimeBase ?? getRuntimeBase()) || '';
+  return (APP_ENV === 'production' && rb ? rb : BASE).replace(/\/$/, '');
+};
 
-export const API_BASE = (() => {
-  if (ENV_API_BASE.trim() && !SHOULD_FORCE_RUNTIME_BASE) {
-    return ENV_API_BASE.replace(/\/$/, '');
+const resolveApiBase = () => {
+  const runtimeBase = getRuntimeBase();
+  const envApiBase = ENV_API_BASE.trim();
+
+  if (envApiBase && !shouldForceRuntimeBase(runtimeBase)) {
+    return envApiBase.replace(/\/$/, '');
   }
-  return `${EFFECTIVE_BASE}/api`;
-})();
+  return `${getEffectiveBase(runtimeBase)}/api`;
+};
+
+export const API_BASE = resolveApiBase();
 
 // Совместимость с существующим кодом
 export const API = API_BASE;
 
 /** Склеивает абсолютный URL к API */
+export function getApiBase(): string {
+  return resolveApiBase();
+}
+
 export function api(path = ''): string {
   const p = path.startsWith('/') ? path : `/${path}`;
-  return `${API_BASE}${p}`;
+  const base = resolveApiBase();
+  return `${base}${p}`;
 }
 
 // alias под старые импорты
@@ -72,7 +85,7 @@ export const withApi = api;
 // нужно сделать так:
 export function abs(path = ''): string {
   const p = path.startsWith('/') ? path : `/${path}`;
-  return `${EFFECTIVE_BASE}${p}`;  // а не BASE
+  return `${getEffectiveBase()}${p}`;  // а не BASE
 }
 
 /** WebSocket URL */
@@ -84,6 +97,7 @@ const ENV_WS_BASE = (
 
 export function ws(path = ''): string {
   const p = path.startsWith('/') ? path : `/${path}`;
+  const runtimeBase = getRuntimeBase();
 
   // Если явно задан WS‑URL в env (локальная дев-база) — используем его,
   // но в проде перепроверяем, что домен совпадает с текущим (иначе mixed content/CORS).
@@ -91,11 +105,11 @@ export function ws(path = ''): string {
     try {
       if (
         APP_ENV === 'production' &&
-        RUNTIME_BASE &&
-        new URL(ENV_WS_BASE).host !== new URL(RUNTIME_BASE).host
+        runtimeBase &&
+        new URL(ENV_WS_BASE).host !== new URL(runtimeBase).host
       ) {
-        const host = RUNTIME_BASE.replace(/^https?:\/\//, '');
-        const proto = RUNTIME_BASE.startsWith('https') ? 'wss' : 'ws';
+        const host = runtimeBase.replace(/^https?:\/\//, '');
+        const proto = runtimeBase.startsWith('https') ? 'wss' : 'ws';
         return `${proto}://${host}${p}`;
       }
     } catch { }
@@ -104,7 +118,7 @@ export function ws(path = ''): string {
   }
 
   // Иначе старое поведение: тот же хост, что и BASE (или фактический runtime-домен)
-  const base = RUNTIME_BASE || BASE;
+  const base = runtimeBase || BASE;
   const host = base.replace(/^https?:\/\//, '');
   const proto = base.startsWith('https') ? 'wss' : 'ws';
   return `${proto}://${host}${p}`;

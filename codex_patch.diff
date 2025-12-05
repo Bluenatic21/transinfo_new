@@ -1,156 +1,167 @@
-diff --git a/frontend/src/app/styles/theme.css b/frontend/src/app/styles/theme.css
-index 8bc402071691e70a164a39bd98ba73c1de0f5235..40989b2819000e0010eeb55b7625d0e3a433c377 100644
---- a/frontend/src/app/styles/theme.css
-+++ b/frontend/src/app/styles/theme.css
-@@ -77,58 +77,65 @@
+diff --git a/frontend/src/config/env.ts b/frontend/src/config/env.ts
+index 98f58b9e58d10aa4bf3f2282a067d6eaa6d7e4d3..a72b663222b7a57f32da7c86dc8428a535b24f24 100644
+--- a/frontend/src/config/env.ts
++++ b/frontend/src/config/env.ts
+@@ -1,127 +1,141 @@
+ // src/config/env.ts
+ type AppEnv = 'production' | 'staging' | 'development';
  
-   /* legacy tokens for Tailwind и старых стилей */
-   --bg: 5 11 18;
-   --fg: 249 250 251;
-   --muted: 156 163 175;
-   --card: 16 25 39;
-   --border: 36 51 66;
-   --primary: 129 202 255;
-   --accent: 254 152 5;
+ export const APP_ENV: AppEnv =
+   (process.env.NEXT_PUBLIC_APP_ENV as AppEnv) ||
+   (process.env.NODE_ENV === 'production' ? 'production' : 'development');
  
-   /* Messenger bubbles */
-   --chat-bubble-self-bg: #123a72;
-   --chat-bubble-peer-bg: #101b2d;
-   --chat-bubble-self-text: #e6f2ff;
-   --chat-bubble-peer-text: #e8edf7;
-   --chat-bubble-meta: #9fb7d8;
-   --chat-bubble-self-accent: #3b82f6;
-   --chat-bubble-peer-accent: #3aa7c5;
-   --chat-bubble-self-border: #3b82f6;
-   --chat-bubble-peer-border: #2c3f61;
-   --chat-info-card-bg: #29395b;
-   --chat-info-card-text: #caf7e4;
-   --chat-info-card-title: #43c8ff;
-   --chat-info-card-border: #3b82f633;
-   --chat-info-card-shadow: 0 1px 7px #22535b16;
--  --chat-translation-bg: rgba(0, 0, 0, 0.12);
--  --chat-translation-text: #d7e8ff;
--  --chat-reaction-shadow: 0 2px 12px #0002;
--  --chat-input-bg: #232b3c;
--  --chat-input-border: #364869;
--  --chat-input-text: #e8f1ff;
--  --contact-secondary-name: #cfe9ff;
--}
-+  --chat-translation-bg: rgba(0, 0, 0, 0.12);
-+  --chat-translation-text: #d7e8ff;
-+  --chat-reaction-shadow: 0 2px 12px #0002;
-+  --chat-input-bg: #232b3c;
-+  --chat-input-border: #364869;
-+  --chat-input-text: #e8f1ff;
-+  /* Chat menus and action panels */
-+  --chat-menu-panel-bg: #0f172a;
-+  --chat-menu-panel-border: #22304b;
-+  --chat-menu-bg: #111c2e;
-+  --chat-menu-active-bg: #15233d;
-+  --chat-menu-fg: #e5edff;
-+  --chat-menu-border: #273248;
-+  --contact-secondary-name: #cfe9ff;
-+}
+ // Базовые хосты по окружениям
+ const HOST_BY_ENV: Record<AppEnv, string> = {
+   production: 'https://www.transinfo.ge',
+   staging: 'https://staging.transinfo.ge',
+   development: 'http://127.0.0.1:3000'
+ };
  
- /* Светлая тема */
- :root[data-theme="light"] {
-   color-scheme: light;
-   /* Мягкая светлая палитра с более тёмными текстами для читаемости */
-   --bg-body: #f4f6fb;
-   --bg-header: #ffffff;
-   --bg-card: #ffffff;
-   --bg-card-soft: #e9edf5;
+ // В проде закрепляемся на prod-домене
+ export const BASE =
+   APP_ENV === 'production' ? 'https://www.transinfo.ge' : HOST_BY_ENV[APP_ENV];
  
-   --border-subtle: #d7deea;
-   --border-strong: #c4ccdd;
+ // Текущий origin в браузере — помогает избежать рассинхрона env и фактического домена
+ // (например, prod сборка открыта с www., а API/WS прописаны на transinfo.ge → CORS/mixed content)
+-const RUNTIME_BASE =
+-  typeof window !== 'undefined' && window?.location?.origin
++const getRuntimeBase = () =>
++  (typeof window !== 'undefined' && window?.location?.origin
+     ? window.location.origin
+-    : '';
++    : '').replace(/\/$/, '');
  
-   --text-primary: #0f172a;
-   --text-secondary: #334155;
-   --text-muted: #4b5565;
-   --text-on-brand: #ffffff;
  
-   --control-bg: #fbfcff;
-   --control-bg-hover: #eef3fb;
-   --input: var(--control-bg);
-   --input-placeholder: #94a3b8;
+ // База API
+ // По умолчанию (как раньше) ходим на `${BASE}/api`.
+ // Локально можно переопределить через переменные окружения,
+ // чтобы сразу стучаться в FastAPI (например http://127.0.0.1:8004).
+ const ENV_API_BASE =
+   process.env.NEXT_PUBLIC_API_URL ||
+   process.env.NEXT_PUBLIC_API_BASE_URL ||
+   process.env.NEXT_PUBLIC_DEV_API_URL ||
+   '';
  
-   --shadow-soft: 0 10px 28px rgba(15, 23, 42, 0.08);
- 
-@@ -138,60 +145,67 @@
-   --cta-shadow: 0 10px 24px -10px rgba(37, 99, 235, 0.35);
- 
-   --avatar-contrast-bg: #000000;
- 
-   /* legacy tokens for Tailwind и старых стилей */
-   --bg: 244 246 251;
-   --fg: 15 23 42;
-   --muted: 51 65 85;
-   --card: 255 255 255;
-   --border: 215 222 234;
-   --primary: 129 202 255;
-   --accent: 254 152 5;
- 
-   /* Messenger bubbles */
-   --chat-bubble-self-bg: #e5f2ff;
-   --chat-bubble-peer-bg: #f6f8fb;
-   --chat-bubble-self-text: #0f172a;
-   --chat-bubble-peer-text: #0f172a;
-   --chat-bubble-meta: #5e6b7c;
-   --chat-bubble-self-accent: #3b82f6;
-   --chat-bubble-peer-accent: #6aa5d8;
-   --chat-bubble-self-border: #9ec7ff;
-   --chat-bubble-peer-border: #c8d3e2;
-   --chat-info-card-bg: #eef4ff;
-   --chat-info-card-text: #0f172a;
--  --chat-info-card-title: #1d4ed8;
--  --chat-translation-bg: #eef2f7;
--  --chat-translation-text: #0f172a;
--  --chat-reaction-shadow: 0 2px 12px rgba(15, 23, 42, 0.12);
--  --chat-input-bg: #ffffff;
--  --chat-input-border: #cbd5e1;
--  --chat-input-text: #0f172a;
--  --contact-secondary-name: var(--text-secondary);
--
--  /* Call overlay */
-+  --chat-info-card-title: #1d4ed8;
-+  --chat-translation-bg: #eef2f7;
-+  --chat-translation-text: #0f172a;
-+  --chat-reaction-shadow: 0 2px 12px rgba(15, 23, 42, 0.12);
-+  --chat-input-bg: #ffffff;
-+  --chat-input-border: #cbd5e1;
-+  --chat-input-text: #0f172a;
-+  /* Chat menus and action panels */
-+  --chat-menu-panel-bg: #ffffff;
-+  --chat-menu-panel-border: #d7dce6;
-+  --chat-menu-bg: #f8fafc;
-+  --chat-menu-active-bg: #e5e7eb;
-+  --chat-menu-fg: #0f172a;
-+  --chat-menu-border: #cbd5e1;
-+  --contact-secondary-name: var(--text-secondary);
+ // Если в проде env указывает на другой домен, чем открытый сайт, — игнорируем его,
+ // чтобы избежать CORS/префлайт блокировок.
+-const SHOULD_FORCE_RUNTIME_BASE = (() => {
+-  if (!ENV_API_BASE || APP_ENV !== 'production' || !RUNTIME_BASE) return false;
++const shouldForceRuntimeBase = (runtimeBase: string) => {
++  if (!ENV_API_BASE || APP_ENV !== 'production' || !runtimeBase) return false;
+   try {
+     const envHost = new URL(ENV_API_BASE).host;
+-    const runtimeHost = new URL(RUNTIME_BASE).host;
++    const runtimeHost = new URL(runtimeBase).host;
+     return envHost !== runtimeHost;
+   } catch {
+     return false;
+   }
+-})();
++};
 +
-+  /* Call overlay */
-   --call-overlay-bg: var(--bg-card);
-   --call-overlay-text: var(--text-primary);
-   --call-overlay-border: var(--border-subtle);
-   --call-overlay-avatar-bg: var(--avatar-contrast-bg);
-   --call-overlay-shadow: var(--shadow-soft);
-   --call-overlay-mini-shadow: var(--shadow-soft);
-   --call-overlay-btn-neutral-bg: var(--control-bg);
-   --call-overlay-btn-neutral-text: var(--text-primary);
-   --call-overlay-mini-btn-bg: var(--control-bg);
-   --call-overlay-mini-btn-text: var(--text-primary);
++const getEffectiveBase = (runtimeBase?: string) => {
++  const rb = (runtimeBase ?? getRuntimeBase()) || '';
++  return (APP_ENV === 'production' && rb ? rb : BASE).replace(/\/$/, '');
++};
+ 
+-const EFFECTIVE_BASE =
+-  (APP_ENV === 'production' && RUNTIME_BASE ? RUNTIME_BASE : BASE).replace(/\/$/, '');
++const resolveApiBase = () => {
++  const runtimeBase = getRuntimeBase();
++  const envApiBase = ENV_API_BASE.trim();
+ 
+-export const API_BASE = (() => {
+-  if (ENV_API_BASE.trim() && !SHOULD_FORCE_RUNTIME_BASE) {
+-    return ENV_API_BASE.replace(/\/$/, '');
++  if (envApiBase && !shouldForceRuntimeBase(runtimeBase)) {
++    return envApiBase.replace(/\/$/, '');
+   }
+-  return `${EFFECTIVE_BASE}/api`;
+-})();
++
++  return `${getEffectiveBase(runtimeBase)}/api`;
++};
++
++export const API_BASE = resolveApiBase();
+ 
+ // Совместимость с существующим кодом
+ export const API = API_BASE;
+ 
+ /** Склеивает абсолютный URL к API */
++export function getApiBase(): string {
++  return resolveApiBase();
++}
++
+ export function api(path = ''): string {
+   const p = path.startsWith('/') ? path : `/${path}`;
+-  return `${API_BASE}${p}`;
++  const base = resolveApiBase();
++  return `${base}${p}`;
  }
  
- /* === Header design tokens === */
- :root {
-   --header-bg: var(--bg-body);
-   --header-fg: var(--text-primary);
-   --header-muted: var(--text-secondary);
-   --header-shadow: 0 2px 16px 0 rgba(0, 32, 84, 0.09);
+ // alias под старые импорты
+ export const withApi = api;
+ 
+ // нужно сделать так:
+ export function abs(path = ''): string {
+   const p = path.startsWith('/') ? path : `/${path}`;
+-  return `${EFFECTIVE_BASE}${p}`;  // а не BASE
++  return `${getEffectiveBase()}${p}`;  // а не BASE
  }
  
- :root[data-theme="light"] {
-   --header-bg: var(--bg-body);
-   --header-fg: var(--text-primary);
-   --header-muted: var(--text-secondary);
-   --header-shadow: 0 2px 10px rgb(0 0 0 / 8%);
+ /** WebSocket URL */
+ const ENV_WS_BASE = (
+   process.env.NEXT_PUBLIC_WS_URL ||
+   process.env.NEXT_PUBLIC_WS_BASE ||
+   ''
+ ).trim();
+ 
+ export function ws(path = ''): string {
+   const p = path.startsWith('/') ? path : `/${path}`;
++  const runtimeBase = getRuntimeBase();
+ 
+   // Если явно задан WS‑URL в env (локальная дев-база) — используем его,
+   // но в проде перепроверяем, что домен совпадает с текущим (иначе mixed content/CORS).
+   if (ENV_WS_BASE) {
+     try {
+       if (
+         APP_ENV === 'production' &&
+-        RUNTIME_BASE &&
+-        new URL(ENV_WS_BASE).host !== new URL(RUNTIME_BASE).host
++        runtimeBase &&
++        new URL(ENV_WS_BASE).host !== new URL(runtimeBase).host
+       ) {
+-        const host = RUNTIME_BASE.replace(/^https?:\/\//, '');
+-        const proto = RUNTIME_BASE.startsWith('https') ? 'wss' : 'ws';
++        const host = runtimeBase.replace(/^https?:\/\//, '');
++        const proto = runtimeBase.startsWith('https') ? 'wss' : 'ws';
+         return `${proto}://${host}${p}`;
+       }
+     } catch { }
+ 
+     return `${ENV_WS_BASE.replace(/\/$/, '')}${p}`;
+   }
+ 
+   // Иначе старое поведение: тот же хост, что и BASE (или фактический runtime-домен)
+-  const base = RUNTIME_BASE || BASE;
++  const base = runtimeBase || BASE;
+   const host = base.replace(/^https?:\/\//, '');
+   const proto = base.startsWith('https') ? 'wss' : 'ws';
+   return `${proto}://${host}${p}`;
+ }
+ 
+ 
+ // Иногда в коде встречается makeWsUrl — оставляем алиас
+ export const makeWsUrl = ws;
+ 
+ export default {
+   APP_ENV,
+   BASE,
+   API_BASE,
+   API,
+   api,
+   withApi,
+   abs,
+   ws,
+   makeWsUrl
+ };
