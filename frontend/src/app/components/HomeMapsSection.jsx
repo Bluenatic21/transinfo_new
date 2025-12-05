@@ -40,6 +40,7 @@ export default function HomeMapsSection() {
         abortRef.current = controller;
 
         async function load() {
+            const hasToken = typeof window !== "undefined" && Boolean(localStorage.getItem("token"));
             try {
                 const norm = (data) =>
                     Array.isArray(data) ? data :
@@ -53,18 +54,20 @@ export default function HomeMapsSection() {
                 };
 
                 const fetchArrayWithHardFallback = async (authUrl, pubUrl) => {
-                    // 1) пробуем авторизованный
-                    let primary;
-                    try {
-                        const r = await authFetchWithRefresh(authUrl, { signal: controller.signal, cache: "no-store" });
-                        if (r.status === 401 || r.status === 403) throw new Error("UNAUTH");
-                        primary = r.ok ? await r.json() : null;
-                    } catch {
-                        primary = null;
+                    // 1) пробуем авторизованный только при наличии токена
+                    let arr = [];
+                    if (hasToken) {
+                        try {
+                            const r = await authFetchWithRefresh(authUrl, { signal: controller.signal, cache: "no-store" });
+                            if (r.status === 401 || r.status === 403) throw new Error("UNAUTH");
+                            arr = norm(r.ok ? await r.json() : null);
+                        } catch {
+                            arr = [];
+                        }
                     }
-                    let arr = norm(primary);
-                    // 2) если не массив/пусто/нет координат — берём публичный
-                    if (!Array.isArray(arr) || arr.length === 0 || arr.filter(hasCoords).length === 0) {
+
+                    // 2) если нет токена или авторизованный ответ не подходит — берём публичный
+                    if (!hasToken || !Array.isArray(arr) || arr.length === 0 || arr.filter(hasCoords).length === 0) {
                         try {
                             const r2 = await fetch(pubUrl, { signal: controller.signal, cache: "no-store" });
                             const j2 = r2.ok ? await r2.json() : [];

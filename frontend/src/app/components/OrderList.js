@@ -360,8 +360,8 @@ export default function OrderList() {
                 )
                 .join("&");
             const pageQuery = `page=${page}&page_size=${pageSize}`;
-            // 👇 ЭТОГО НЕ ХВАТАЛО
-            const url = api(`/orders${query ? "?" + query + "&" + pageQuery : "?" + pageQuery}`);
+            const basePath = token ? "/orders" : "/public/orders";
+            const url = api(`${basePath}${query ? "?" + query + "&" + pageQuery : "?" + pageQuery}`);
             // условные заголовки, чтобы сервер мог вернуть 304
             const headers = {};
             if (etagRef.current) headers["If-None-Match"] = etagRef.current;
